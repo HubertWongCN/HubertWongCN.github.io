@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 7.0.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>SQL优化最干货总结 - Hubert's Blog</title>
+
+  
+    <meta name="description" content="前言BATJTMD等大厂的面试难度越来越高，但无论从大厂还是到小公司，一直未变的一个重点就是对SQL优化经验的考察。一提到数据库，先“说一说你对SQL优化的见解吧？”。 SQL优化已经成为衡量程序猿优秀与否的硬性指标，甚至在各大厂招聘岗位职能上都有明码标注，如果是你，在这个问题上能吊打面试官还是会被吊打呢？   目录 前言 SELECT语句 - 语法顺序： SELECT语句 - 执行顺序： SQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL优化最干货总结">
+<meta property="og:url" content="https://hubertwongcn.github.io/2023/12/25/SQL%E4%BC%98%E5%8C%96%E6%9C%80%E5%B9%B2%E8%B4%A7%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="Hubert&#39;s Blog">
+<meta property="og:description" content="前言BATJTMD等大厂的面试难度越来越高，但无论从大厂还是到小公司，一直未变的一个重点就是对SQL优化经验的考察。一提到数据库，先“说一说你对SQL优化的见解吧？”。 SQL优化已经成为衡量程序猿优秀与否的硬性指标，甚至在各大厂招聘岗位职能上都有明码标注，如果是你，在这个问题上能吊打面试官还是会被吊打呢？   目录 前言 SELECT语句 - 语法顺序： SELECT语句 - 执行顺序： SQL">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231225110850327">
+<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231225110850358">
+<meta property="article:published_time" content="2023-12-25T03:07:49.000Z">
+<meta property="article:modified_time" content="2023-12-25T03:07:49.000Z">
+<meta property="article:author" content="Hubert Wong">
+<meta property="article:tag" content="MySQL">
+<meta property="article:tag" content="DataBase">
+<meta property="article:tag" content="SQL优化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231225110850327">
+  
+  
+  
+  <meta name="keywords" content="MySQL,DataBase,SQL优化">
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="title" href="/"><div class="main" ff="title">Hubert's Blog</div><div class="sub cap"> Hubert爱猫爱生活</div></a></div>
+
+<nav class="menu dis-select"></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">SQL优化最干货总结</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E5%BD%95"><span class="toc-text">目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SELECT%E8%AF%AD%E5%8F%A5-%E8%AF%AD%E6%B3%95%E9%A1%BA%E5%BA%8F%EF%BC%9A"><span class="toc-text">SELECT语句 - 语法顺序：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SELECT%E8%AF%AD%E5%8F%A5-%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F%EF%BC%9A"><span class="toc-text">SELECT语句 - 执行顺序：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SQL%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-text">SQL优化策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%81%BF%E5%85%8D%E4%B8%8D%E8%B5%B0%E7%B4%A2%E5%BC%95%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-text">一、避免不走索引的场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%B0%BD%E9%87%8F%E9%81%BF%E5%85%8D%E5%9C%A8%E5%AD%97%E6%AE%B5%E5%BC%80%E5%A4%B4%E6%A8%A1%E7%B3%8A%E6%9F%A5%E8%AF%A2%EF%BC%8C%E4%BC%9A%E5%AF%BC%E8%87%B4%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BC%95%E6%93%8E%E6%94%BE%E5%BC%83%E7%B4%A2%E5%BC%95%E8%BF%9B%E8%A1%8C%E5%85%A8%E8%A1%A8%E6%89%AB%E6%8F%8F%E3%80%82"><span class="toc-text">1. 尽量避免在字段开头模糊查询，会导致数据库引擎放弃索引进行全表扫描。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%B0%BD%E9%87%8F%E9%81%BF%E5%85%8D%E4%BD%BF%E7%94%A8in-%E5%92%8Cnot-in%EF%BC%8C%E4%BC%9A%E5%AF%BC%E8%87%B4%E5%BC%95%E6%93%8E%E8%B5%B0%E5%85%A8%E8%A1%A8%E6%89%AB%E6%8F%8F%E3%80%82"><span class="toc-text">2. 尽量避免使用in 和not in，会导致引擎走全表扫描。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%B0%BD%E9%87%8F%E9%81%BF%E5%85%8D%E4%BD%BF%E7%94%A8-or%EF%BC%8C%E4%BC%9A%E5%AF%BC%E8%87%B4%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BC%95%E6%93%8E%E6%94%BE%E5%BC%83%E7%B4%A2%E5%BC%95%E8%BF%9B%E8%A1%8C%E5%85%A8%E8%A1%A8%E6%89%AB%E6%8F%8F%E3%80%82"><span class="toc-text">3. 尽量避免使用 or，会导致数据库引擎放弃索引进行全表扫描。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E5%B0%BD%E9%87%8F%E9%81%BF%E5%85%8D%E8%BF%9B%E8%A1%8Cnull%E5%80%BC%E7%9A%84%E5%88%A4%E6%96%AD%EF%BC%8C%E4%BC%9A%E5%AF%BC%E8%87%B4%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BC%95%E6%93%8E%E6%94%BE%E5%BC%83%E7%B4%A2%E5%BC%95%E8%BF%9B%E8%A1%8C%E5%85%A8%E8%A1%A8%E6%89%AB%E6%8F%8F%E3%80%82"><span class="toc-text">4. 尽量避免进行null值的判断，会导致数据库引擎放弃索引进行全表扫描。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-%E5%B0%BD%E9%87%8F%E9%81%BF%E5%85%8D%E5%9C%A8where%E6%9D%A1%E4%BB%B6%E4%B8%AD%E7%AD%89%E5%8F%B7%E7%9A%84%E5%B7%A6%E4%BE%A7%E8%BF%9B%E8%A1%8C%E8%A1%A8%E8%BE%BE%E5%BC%8F%E3%80%81%E5%87%BD%E6%95%B0%E6%93%8D%E4%BD%9C%EF%BC%8C%E4%BC%9A%E5%AF%BC%E8%87%B4%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BC%95%E6%93%8E%E6%94%BE%E5%BC%83%E7%B4%A2%E5%BC%95%E8%BF%9B%E8%A1%8C%E5%85%A8%E8%A1%A8%E6%89%AB%E6%8F%8F%E3%80%82"><span class="toc-text">5.尽量避免在where条件中等号的左侧进行表达式、函数操作，会导致数据库引擎放弃索引进行全表扫描。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-%E5%BD%93%E6%95%B0%E6%8D%AE%E9%87%8F%E5%A4%A7%E6%97%B6%EF%BC%8C%E9%81%BF%E5%85%8D%E4%BD%BF%E7%94%A8where-1-1%E7%9A%84%E6%9D%A1%E4%BB%B6%E3%80%82"><span class="toc-text">6. 当数据量大时，避免使用where 1&#x3D;1的条件。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-%E6%9F%A5%E8%AF%A2%E6%9D%A1%E4%BB%B6%E4%B8%8D%E8%83%BD%E7%94%A8-%E6%88%96%E8%80%85"><span class="toc-text">7. 查询条件不能用 &lt;&gt; 或者 !&#x3D;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-where%E6%9D%A1%E4%BB%B6%E4%BB%85%E5%8C%85%E5%90%AB%E5%A4%8D%E5%90%88%E7%B4%A2%E5%BC%95%E9%9D%9E%E5%89%8D%E7%BD%AE%E5%88%97"><span class="toc-text">8. where条件仅包含复合索引非前置列</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#9-%E9%9A%90%E5%BC%8F%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E9%80%A0%E6%88%90%E4%B8%8D%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95"><span class="toc-text">9. 隐式类型转换造成不使用索引</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#10-order-by-%E6%9D%A1%E4%BB%B6%E8%A6%81%E4%B8%8Ewhere%E4%B8%AD%E6%9D%A1%E4%BB%B6%E4%B8%80%E8%87%B4%EF%BC%8C%E5%90%A6%E5%88%99order-by%E4%B8%8D%E4%BC%9A%E5%88%A9%E7%94%A8%E7%B4%A2%E5%BC%95%E8%BF%9B%E8%A1%8C%E6%8E%92%E5%BA%8F"><span class="toc-text">10. order by 条件要与where中条件一致，否则order by不会利用索引进行排序</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#11-%E6%AD%A3%E7%A1%AE%E4%BD%BF%E7%94%A8hint%E4%BC%98%E5%8C%96%E8%AF%AD%E5%8F%A5"><span class="toc-text">11. 正确使用hint优化语句</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81SELECT%E8%AF%AD%E5%8F%A5%E5%85%B6%E4%BB%96%E4%BC%98%E5%8C%96"><span class="toc-text">二、SELECT语句其他优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E9%81%BF%E5%85%8D%E5%87%BA%E7%8E%B0select"><span class="toc-text">**1. 避免出现select **</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E9%81%BF%E5%85%8D%E5%87%BA%E7%8E%B0%E4%B8%8D%E7%A1%AE%E5%AE%9A%E7%BB%93%E6%9E%9C%E7%9A%84%E5%87%BD%E6%95%B0"><span class="toc-text">2. 避免出现不确定结果的函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%A4%9A%E8%A1%A8%E5%85%B3%E8%81%94%E6%9F%A5%E8%AF%A2%E6%97%B6%EF%BC%8C%E5%B0%8F%E8%A1%A8%E5%9C%A8%E5%89%8D%EF%BC%8C%E5%A4%A7%E8%A1%A8%E5%9C%A8%E5%90%8E%E3%80%82"><span class="toc-text">3.多表关联查询时，小表在前，大表在后。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E4%BD%BF%E7%94%A8%E8%A1%A8%E7%9A%84%E5%88%AB%E5%90%8D"><span class="toc-text">4. 使用表的别名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-%E7%94%A8where%E5%AD%97%E5%8F%A5%E6%9B%BF%E6%8D%A2HAVING%E5%AD%97%E5%8F%A5"><span class="toc-text">5. 用where字句替换HAVING字句</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-%E8%B0%83%E6%95%B4Where%E5%AD%97%E5%8F%A5%E4%B8%AD%E7%9A%84%E8%BF%9E%E6%8E%A5%E9%A1%BA%E5%BA%8F"><span class="toc-text">6.调整Where字句中的连接顺序</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%A2%9E%E5%88%A0%E6%94%B9-DML-%E8%AF%AD%E5%8F%A5%E4%BC%98%E5%8C%96"><span class="toc-text">三、增删改 DML 语句优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%A4%A7%E6%89%B9%E9%87%8F%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE"><span class="toc-text">1. 大批量插入数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E9%80%82%E5%BD%93%E4%BD%BF%E7%94%A8commit"><span class="toc-text">2. 适当使用commit</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E9%81%BF%E5%85%8D%E9%87%8D%E5%A4%8D%E6%9F%A5%E8%AF%A2%E6%9B%B4%E6%96%B0%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="toc-text">3. 避免重复查询更新的数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%85%88%E8%BF%98%E6%98%AF%E6%9B%B4%E6%96%B0%EF%BC%88insert%E3%80%81update%E3%80%81delete%EF%BC%89%E4%BC%98%E5%85%88"><span class="toc-text">4.查询优先还是更新（insert、update、delete）优先</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%9F%A5%E8%AF%A2%E6%9D%A1%E4%BB%B6%E4%BC%98%E5%8C%96"><span class="toc-text">四、查询条件优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%AF%B9%E4%BA%8E%E5%A4%8D%E6%9D%82%E7%9A%84%E6%9F%A5%E8%AF%A2%EF%BC%8C%E5%8F%AF%E4%BB%A5%E4%BD%BF%E7%94%A8%E4%B8%AD%E9%97%B4%E4%B8%B4%E6%97%B6%E8%A1%A8-%E6%9A%82%E5%AD%98%E6%95%B0%E6%8D%AE"><span class="toc-text">1. 对于复杂的查询，可以使用中间临时表 暂存数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BC%98%E5%8C%96group-by%E8%AF%AD%E5%8F%A5"><span class="toc-text">2. 优化group by语句</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E4%BC%98%E5%8C%96join%E8%AF%AD%E5%8F%A5"><span class="toc-text">3. 优化join语句</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E4%BC%98%E5%8C%96union%E6%9F%A5%E8%AF%A2"><span class="toc-text">4. 优化union查询</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-%E6%8B%86%E5%88%86%E5%A4%8D%E6%9D%82SQL%E4%B8%BA%E5%A4%9A%E4%B8%AA%E5%B0%8FSQL%EF%BC%8C%E9%81%BF%E5%85%8D%E5%A4%A7%E4%BA%8B%E5%8A%A1"><span class="toc-text">5.拆分复杂SQL为多个小SQL，避免大事务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-%E4%BD%BF%E7%94%A8truncate%E4%BB%A3%E6%9B%BFdelete"><span class="toc-text">6. 使用truncate代替delete</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-%E4%BD%BF%E7%94%A8%E5%90%88%E7%90%86%E7%9A%84%E5%88%86%E9%A1%B5%E6%96%B9%E5%BC%8F%E4%BB%A5%E6%8F%90%E9%AB%98%E5%88%86%E9%A1%B5%E6%95%88%E7%8E%87"><span class="toc-text">7. 使用合理的分页方式以提高分页效率</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%BB%BA%E8%A1%A8%E4%BC%98%E5%8C%96"><span class="toc-text">五、建表优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%9C%A8%E8%A1%A8%E4%B8%AD%E5%BB%BA%E7%AB%8B%E7%B4%A2%E5%BC%95%EF%BC%8C%E4%BC%98%E5%85%88%E8%80%83%E8%99%91where%E3%80%81order-by%E4%BD%BF%E7%94%A8%E5%88%B0%E7%9A%84%E5%AD%97%E6%AE%B5%E3%80%82"><span class="toc-text">1. 在表中建立索引，优先考虑where、order by使用到的字段。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%B0%BD%E9%87%8F%E4%BD%BF%E7%94%A8%E6%95%B0%E5%AD%97%E5%9E%8B%E5%AD%97%E6%AE%B5"><span class="toc-text">2. 尽量使用数字型字段</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE%E9%87%8F%E5%A4%A7%E7%9A%84%E8%A1%A8-%E4%BC%9A%E9%80%A0%E6%88%90%E6%9F%A5%E8%AF%A2%E7%BC%93%E6%85%A2%E3%80%82"><span class="toc-text">3. 查询数据量大的表 会造成查询缓慢。</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E7%94%A8varchar-nvarchar-%E4%BB%A3%E6%9B%BF-char-nchar"><span class="toc-text">4. 用varchar&#x2F;nvarchar 代替 char&#x2F;nchar</span></a></li></ol></li></ol></li></ol></div></div></widget>
+
+
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+
+<div class="bread-nav fs12"><div class="left"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/DataBase/">DataBase</a></div><div id="post-meta">
+    <span>发布于&nbsp;<time datetime="2023-12-25T03:07:49.000Z">2023-12-25</time></span>
+    
+    <span>更新于&nbsp;<time datetime="2023-12-25T03:07:49.000Z">2023-12-25</time></span>
+    </div></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>SQL优化最干货总结</span></h1>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>BATJTMD等大厂的面试难度越来越高，但无论从大厂还是到小公司，一直未变的一个重点就是对SQL优化经验的考察。一提到数据库，先“说一说你对SQL优化的见解吧？”。</p>
+<p>SQL优化已经成为衡量程序猿优秀与否的硬性指标，甚至在各大厂招聘岗位职能上都有明码标注，如果是你，在这个问题上能吊打面试官还是会被吊打呢？</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231225110850327"/></div></div>
+
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><blockquote>
+<p>前言</p>
+<p>SELECT语句 - 语法顺序：</p>
+<p>SELECT语句 - 执行顺序：</p>
+<p>SQL优化策略</p>
+<p>一、避免不走索引的场景</p>
+<p>二、SELECT语句其他优化</p>
+<p>三、增删改 DML 语句优化</p>
+<p>四、查询条件优化</p>
+<p>五、建表优化</p>
+</blockquote>
+<hr>
+<p>有朋友疑问到，SQL优化真的有这么重要么？如下图所示，SQL优化在提升系统性能中是：（成本最低 &amp;&amp; 优化效果最明显） 的途径。如果你的团队在SQL优化这方面搞得很优秀，对你们整个大型系统可用性方面无疑是一个质的跨越，真的能让你们老板省下不止几沓子钱。</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231225110850358"/></div></div>
+
+<ul>
+<li>优化成本：硬件&gt;系统配置&gt;数据库表结构&gt;SQL及索引。</li>
+<li>优化效果：硬件&lt;系统配置&lt;数据库表结构&lt;SQL及索引。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> <span class="string">&quot;嗯，不错，&quot;</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> (<span class="string">&quot;SQL优化经验足&quot;</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;熟悉事务锁&quot;</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="string">&quot;并发场景处理666&quot;</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="string">&quot;会打王者荣耀&quot;</span>) &#123;</span><br><span class="line">                result += <span class="string">&quot;明天入职&quot;</span> </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    result += <span class="string">&quot;先回去等消息吧&quot;</span>;</span><br><span class="line">&#125; </span><br><span class="line"> </span><br><span class="line">Logger.info(<span class="string">&quot;面试官：&quot;</span> + result );</span><br></pre></td></tr></table></figure>
+
+<p>别看了，上面这是一道送命题。</p>
+<p>好了我们言归正传，首先，对于MySQL层优化我一般遵从五个原则：</p>
+<ol>
+<li>减少数据访问：设置合理的字段类型，启用压缩，通过索引访问等减少磁盘IO</li>
+<li>返回更少的数据：只返回需要的字段和数据分页处理 减少磁盘io及网络io</li>
+<li>减少交互次数：批量DML操作，函数存储等减少数据连接次数</li>
+<li>减少服务器CPU开销：尽量减少数据库排序操作以及全表查询，减少cpu 内存占用</li>
+<li>利用更多资源：使用表分区，可以增加并行操作，更大限度利用cpu资源</li>
+</ol>
+<p>总结到SQL优化中，就三点:</p>
+<ul>
+<li>最大化利用索引；</li>
+<li>尽可能避免全表扫描；</li>
+<li>减少无效数据的查询；</li>
+</ul>
+<p>理解SQL优化原理 ，首先要搞清楚SQL执行顺序：</p>
+<h2 id="SELECT语句-语法顺序："><a href="#SELECT语句-语法顺序：" class="headerlink" title="SELECT语句 - 语法顺序："></a>SELECT语句 - 语法顺序：</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span> <span class="keyword">SELECT</span> </span><br><span class="line"><span class="number">2.</span> <span class="keyword">DISTINCT</span> <span class="operator">&lt;</span>select_list<span class="operator">&gt;</span></span><br><span class="line"><span class="number">3.</span> <span class="keyword">FROM</span> <span class="operator">&lt;</span>left_table<span class="operator">&gt;</span></span><br><span class="line"><span class="number">4.</span> <span class="operator">&lt;</span>join_type<span class="operator">&gt;</span> <span class="keyword">JOIN</span> <span class="operator">&lt;</span>right_table<span class="operator">&gt;</span></span><br><span class="line"><span class="number">5.</span> <span class="keyword">ON</span> <span class="operator">&lt;</span>join_condition<span class="operator">&gt;</span></span><br><span class="line"><span class="number">6.</span> <span class="keyword">WHERE</span> <span class="operator">&lt;</span>where_condition<span class="operator">&gt;</span></span><br><span class="line"><span class="number">7.</span> <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="operator">&lt;</span>group_by_list<span class="operator">&gt;</span></span><br><span class="line"><span class="number">8.</span> <span class="keyword">HAVING</span> <span class="operator">&lt;</span>having_condition<span class="operator">&gt;</span></span><br><span class="line"><span class="number">9.</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="operator">&lt;</span>order_by_condition<span class="operator">&gt;</span></span><br><span class="line"><span class="number">10.</span>LIMIT <span class="operator">&lt;</span>limit_number<span class="operator">&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="SELECT语句-执行顺序："><a href="#SELECT语句-执行顺序：" class="headerlink" title="SELECT语句 - 执行顺序："></a>SELECT语句 - 执行顺序：</h2><blockquote>
+<p><strong>FROM</strong><br>&lt;表名&gt; # 选取表，将多个表数据通过笛卡尔积变成一个表。<br><strong>ON</strong><br>&lt;筛选条件&gt; # 对笛卡尔积的虚表进行筛选<br><strong>JOIN</strong> &lt;join, left join, right join…&gt;<br>&lt;join表&gt; # 指定join，用于添加数据到on之后的虚表中，例如left join会将左表的剩余数据添加到虚表中<br><strong>WHERE</strong><br>&lt;where条件&gt; # 对上述虚表进行筛选<br><strong>GROUP BY</strong><br>&lt;分组条件&gt; # 分组<br>&lt;SUM()等聚合函数&gt; # 用于having子句进行判断，在书写上这类聚合函数是写在having判断里面的<br><strong>HAVING</strong><br>&lt;分组筛选&gt; # 对分组后的结果进行聚合筛选<br><strong>SELECT</strong><br>&lt;返回数据列表&gt; # 返回的单列必须在group by子句中，聚合函数除外<br><strong>DISTINCT</strong><br># 数据除重<br><strong>ORDER BY</strong><br>&lt;排序条件&gt; # 排序<br><strong>LIMIT</strong><br>&lt;行数限制&gt;</p>
+</blockquote>
+<h2 id="SQL优化策略"><a href="#SQL优化策略" class="headerlink" title="SQL优化策略"></a>SQL优化策略</h2><blockquote>
+<p>声明：以下SQL优化策略适用于数据量较大的场景下，如果数据量较小，没必要以此为准，以免画蛇添足。</p>
+</blockquote>
+<h3 id="一、避免不走索引的场景"><a href="#一、避免不走索引的场景" class="headerlink" title="一、避免不走索引的场景"></a>一、避免不走索引的场景</h3><h4 id="1-尽量避免在字段开头模糊查询，会导致数据库引擎放弃索引进行全表扫描。"><a href="#1-尽量避免在字段开头模糊查询，会导致数据库引擎放弃索引进行全表扫描。" class="headerlink" title="1. 尽量避免在字段开头模糊查询，会导致数据库引擎放弃索引进行全表扫描。"></a><strong>1. 尽量避免在字段开头模糊查询，会导致数据库引擎放弃索引进行全表扫描。</strong></h4><p>如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> username <span class="keyword">LIKE</span> <span class="string">&#x27;%陈%&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>优化方式：尽量在字段后面使用模糊查询。如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> username <span class="keyword">LIKE</span> <span class="string">&#x27;陈%&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>如果需求是要在前面使用模糊查询，</p>
+<ul>
+<li>使用MySQL内置函数INSTR(str,substr) 来匹配，作用类似于java中的indexOf()，查询字符串出现的角标位置</li>
+<li>使用FullText全文索引，用match against 检索</li>
+<li>数据量较大的情况，建议引用ElasticSearch、solr，亿级数据量检索速度秒级</li>
+<li>当表数据量较少（几千条儿那种），别整花里胡哨的，直接用like ‘%xx%’。</li>
+</ul>
+<h4 id="2-尽量避免使用in-和not-in，会导致引擎走全表扫描。"><a href="#2-尽量避免使用in-和not-in，会导致引擎走全表扫描。" class="headerlink" title="2. 尽量避免使用in 和not in，会导致引擎走全表扫描。"></a><strong>2. 尽量避免使用in 和not in，会导致引擎走全表扫描。</strong></h4><p>如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> id <span class="keyword">IN</span> (<span class="number">2</span>,<span class="number">3</span>)</span><br></pre></td></tr></table></figure>
+
+<p>优化方式：如果是连续数值，可以用between代替。如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> id <span class="keyword">BETWEEN</span> <span class="number">2</span> <span class="keyword">AND</span> <span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<p>如果是子查询，可以用exists代替。如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 不走索引</span></span><br><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> A <span class="keyword">where</span> A.id <span class="keyword">in</span> (<span class="keyword">select</span> id <span class="keyword">from</span> B);</span><br><span class="line"><span class="comment">-- 走索引</span></span><br><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> A <span class="keyword">where</span> <span class="keyword">exists</span> (<span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> B <span class="keyword">where</span> B.id <span class="operator">=</span> A.id);</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-尽量避免使用-or，会导致数据库引擎放弃索引进行全表扫描。"><a href="#3-尽量避免使用-or，会导致数据库引擎放弃索引进行全表扫描。" class="headerlink" title="3. 尽量避免使用 or，会导致数据库引擎放弃索引进行全表扫描。"></a><strong>3. 尽量避免使用 or，会导致数据库引擎放弃索引进行全表扫描。</strong></h4><p>如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">OR</span> id <span class="operator">=</span> <span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<p>优化方式：可以用union代替or。如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">1</span></span><br><span class="line">   <span class="keyword">UNION</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> id <span class="operator">=</span> <span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="4-尽量避免进行null值的判断，会导致数据库引擎放弃索引进行全表扫描。"><a href="#4-尽量避免进行null值的判断，会导致数据库引擎放弃索引进行全表扫描。" class="headerlink" title="4. 尽量避免进行null值的判断，会导致数据库引擎放弃索引进行全表扫描。"></a><strong>4. 尽量避免进行null值的判断，会导致数据库引擎放弃索引进行全表扫描。</strong></h4><p>如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> score <span class="keyword">IS</span> <span class="keyword">NULL</span></span><br></pre></td></tr></table></figure>
+
+<p>优化方式：可以给字段添加默认值0，对0值进行判断。如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> score <span class="operator">=</span> <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-尽量避免在where条件中等号的左侧进行表达式、函数操作，会导致数据库引擎放弃索引进行全表扫描。"><a href="#5-尽量避免在where条件中等号的左侧进行表达式、函数操作，会导致数据库引擎放弃索引进行全表扫描。" class="headerlink" title="5.尽量避免在where条件中等号的左侧进行表达式、函数操作，会导致数据库引擎放弃索引进行全表扫描。"></a><strong>5.尽量避免在where条件中等号的左侧进行表达式、函数操作，会导致数据库引擎放弃索引进行全表扫描。</strong></h4><p>可以将表达式、函数操作移动到等号右侧。如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 全表扫描</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> T <span class="keyword">WHERE</span> score<span class="operator">/</span><span class="number">10</span> <span class="operator">=</span> <span class="number">9</span></span><br><span class="line"><span class="comment">-- 走索引</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> T <span class="keyword">WHERE</span> score <span class="operator">=</span> <span class="number">10</span><span class="operator">*</span><span class="number">9</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="6-当数据量大时，避免使用where-1-1的条件。"><a href="#6-当数据量大时，避免使用where-1-1的条件。" class="headerlink" title="6. 当数据量大时，避免使用where 1&#x3D;1的条件。"></a><strong>6. 当数据量大时，避免使用where 1&#x3D;1的条件。</strong></h4><p>通常为了方便拼装查询条件，我们会默认使用该条件，数据库引擎会放弃索引进行全表扫描。如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> username, age, sex <span class="keyword">FROM</span> T <span class="keyword">WHERE</span> <span class="number">1</span><span class="operator">=</span><span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>优化方式：用代码拼装sql时进行判断，没 where 条件就去掉 where，有where条件就加 and。</p>
+<h4 id="7-查询条件不能用-或者"><a href="#7-查询条件不能用-或者" class="headerlink" title="7. 查询条件不能用 &lt;&gt; 或者 !&#x3D;"></a><strong>7. 查询条件不能用 &lt;&gt; 或者 !&#x3D;</strong></h4><p>使用索引列作为条件进行查询时，需要避免使用&lt;&gt;或者!&#x3D;等判断条件。如确实业务需要，使用到不等于符号，需要在重新评估索引建立，避免在此字段上建立索引，改由查询条件中其他索引字段代替。</p>
+<h4 id="8-where条件仅包含复合索引非前置列"><a href="#8-where条件仅包含复合索引非前置列" class="headerlink" title="8. where条件仅包含复合索引非前置列"></a><strong>8. where条件仅包含复合索引非前置列</strong></h4><p>如下：复合（联合）索引包含key_part1，key_part2，key_part3三列，但SQL语句没有包含索引前置列”key_part1”，按照MySQL联合索引的最左匹配原则，不会走联合索引。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> col1 <span class="keyword">from</span> <span class="keyword">table</span> <span class="keyword">where</span> key_part2<span class="operator">=</span><span class="number">1</span> <span class="keyword">and</span> key_part3<span class="operator">=</span><span class="number">2</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="9-隐式类型转换造成不使用索引"><a href="#9-隐式类型转换造成不使用索引" class="headerlink" title="9. 隐式类型转换造成不使用索引"></a><strong>9. 隐式类型转换造成不使用索引</strong></h4><p>如下SQL语句由于索引对列类型为varchar，但给定的值为数值，涉及隐式类型转换，造成不能正确走索引。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> col1 <span class="keyword">from</span> <span class="keyword">table</span> <span class="keyword">where</span> col_varchar<span class="operator">=</span><span class="number">123</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="10-order-by-条件要与where中条件一致，否则order-by不会利用索引进行排序"><a href="#10-order-by-条件要与where中条件一致，否则order-by不会利用索引进行排序" class="headerlink" title="10. order by 条件要与where中条件一致，否则order by不会利用索引进行排序"></a><strong>10. order by 条件要与where中条件一致，否则order by不会利用索引进行排序</strong></h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 不走age索引</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">order</span> <span class="keyword">by</span> age;</span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 走age索引</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">where</span> age <span class="operator">&gt;</span> <span class="number">0</span> <span class="keyword">order</span> <span class="keyword">by</span> age;</span><br></pre></td></tr></table></figure>
+
+<p>对于上面的语句，数据库的处理顺序是：</p>
+<ul>
+<li>第一步：根据where条件和统计信息生成执行计划，得到数据。</li>
+<li>第二步：将得到的数据排序。当执行处理数据（order by）时，数据库会先查看第一步的执行计划，看order by 的字段是否在执行计划中利用了索引。如果是，则可以利用索引顺序而直接取得已经排好序的数据。如果不是，则重新进行排序操作。</li>
+<li>第三步：返回排序后的数据。</li>
+</ul>
+<p>当order by 中的字段出现在where条件中时，才会利用索引而不再二次排序，更准确的说，order by 中的字段在执行计划中利用了索引时，不用排序操作。</p>
+<p>这个结论不仅对order by有效，对其他需要排序的操作也有效。比如group by 、union 、distinct等。</p>
+<h4 id="11-正确使用hint优化语句"><a href="#11-正确使用hint优化语句" class="headerlink" title="11. 正确使用hint优化语句"></a><strong>11. 正确使用hint优化语句</strong></h4><p>MySQL中可以使用hint指定优化器在执行时选择或忽略特定的索引。一般而言，处于版本变更带来的表结构索引变化，更建议避免使用hint，而是通过Analyze table多收集统计信息。但在特定场合下，指定hint可以排除其他索引干扰而指定更优的执行计划。</p>
+<ol>
+<li>USE INDEX 在你查询语句中表名的后面，添加 USE INDEX 来提供希望 MySQL 去参考的索引列表，就可以让 MySQL 不再考虑其他可用的索引。例子: <code>SELECT col1 FROM table USE INDEX (mod_time, name)</code>…</li>
+<li>IGNORE INDEX 如果只是单纯的想让 MySQL 忽略一个或者多个索引，可以使用 IGNORE INDEX 作为 Hint。例子: <code>SELECT col1 FROM table IGNORE INDEX (priority)</code> …</li>
+<li>FORCE INDEX 为强制 MySQL 使用一个特定的索引，可在查询中使用FORCE INDEX 作为Hint。例子: <code>SELECT col1 FROM table FORCE INDEX (mod_time) </code>…</li>
+</ol>
+<p>在查询的时候，数据库系统会自动分析查询语句，并选择一个最合适的索引。但是很多时候，数据库系统的查询优化器并不一定总是能使用最优索引。如果我们知道如何选择索引，可以使用FORCE INDEX强制查询使用指定的索引。</p>
+<p>例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> students FORCE INDEX (idx_class_id) <span class="keyword">WHERE</span> class_id <span class="operator">=</span> <span class="number">1</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> id <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="二、SELECT语句其他优化"><a href="#二、SELECT语句其他优化" class="headerlink" title="二、SELECT语句其他优化"></a>二、SELECT语句其他优化</h3><h4 id="1-避免出现select"><a href="#1-避免出现select" class="headerlink" title="**1. 避免出现select **"></a>**1. 避免出现select **</h4><p>首先，select * 操作在任何类型数据库中都不是一个好的SQL编写习惯。</p>
+<p>使用select * 取出全部列，会让优化器无法完成索引覆盖扫描这类优化，会影响优化器对执行计划的选择，也会增加网络带宽消耗，更会带来额外的I&#x2F;O,内存和CPU消耗。</p>
+<p>建议提出业务实际需要的列数，将指定列名以取代select *。</p>
+<h4 id="2-避免出现不确定结果的函数"><a href="#2-避免出现不确定结果的函数" class="headerlink" title="2. 避免出现不确定结果的函数"></a><strong>2. 避免出现不确定结果的函数</strong></h4><p>特定针对主从复制这类业务场景。由于原理上从库复制的是主库执行的语句，使用如now()、rand()、sysdate()、current_user()等不确定结果的函数很容易导致主库与从库相应的数据不一致。另外不确定值的函数,产生的SQL语句无法利用query cache。</p>
+<h4 id="3-多表关联查询时，小表在前，大表在后。"><a href="#3-多表关联查询时，小表在前，大表在后。" class="headerlink" title="3.多表关联查询时，小表在前，大表在后。"></a><strong>3.多表关联查询时，小表在前，大表在后。</strong></h4><p>在MySQL中，执行 from 后的表关联查询是从左往右执行的（Oracle相反），第一张表会涉及到全表扫描，所以将小表放在前面，先扫小表，扫描快效率较高，在扫描后面的大表，或许只扫描大表的前100行就符合返回条件并return了。</p>
+<p>例如：表1有50条数据，表2有30亿条数据；如果全表扫描表2，你品，那就先去吃个饭再说吧是吧。</p>
+<h4 id="4-使用表的别名"><a href="#4-使用表的别名" class="headerlink" title="4. 使用表的别名"></a><strong>4. 使用表的别名</strong></h4><p>当在SQL语句中连接多个表时，请使用表的别名并把别名前缀于每个列名上。这样就可以减少解析的时间并减少哪些友列名歧义引起的语法错误。</p>
+<h4 id="5-用where字句替换HAVING字句"><a href="#5-用where字句替换HAVING字句" class="headerlink" title="5. 用where字句替换HAVING字句"></a><strong>5. 用where字句替换HAVING字句</strong></h4><p>避免使用HAVING字句，因为HAVING只会在检索出所有记录之后才对结果集进行过滤，而where则是在聚合前刷选记录，如果能通过where字句限制记录的数目，那就能减少这方面的开销。HAVING中的条件一般用于聚合函数的过滤，除此之外，应该将条件写在where字句中。</p>
+<p>where和having的区别：where后面不能使用组函数</p>
+<h4 id="6-调整Where字句中的连接顺序"><a href="#6-调整Where字句中的连接顺序" class="headerlink" title="6.调整Where字句中的连接顺序"></a><strong>6.调整Where字句中的连接顺序</strong></h4><p>MySQL采用从左往右，自上而下的顺序解析where子句。根据这个原理，应将过滤数据多的条件往前放，最快速度缩小结果集。</p>
+<h3 id="三、增删改-DML-语句优化"><a href="#三、增删改-DML-语句优化" class="headerlink" title="三、增删改 DML 语句优化"></a>三、增删改 DML 语句优化</h3><h4 id="1-大批量插入数据"><a href="#1-大批量插入数据" class="headerlink" title="1. 大批量插入数据"></a><strong>1. 大批量插入数据</strong></h4><p>如果同时执行大量的插入，建议使用多个值的INSERT语句(方法二)。这比使用分开INSERT语句快（方法一），一般情况下批量插入效率有几倍的差别。</p>
+<p>方法一：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">insert into T <span class="title function_">values</span><span class="params">(<span class="number">1</span>,<span class="number">2</span>)</span>; </span><br><span class="line"> </span><br><span class="line">insert into T <span class="title function_">values</span><span class="params">(<span class="number">1</span>,<span class="number">3</span>)</span>; </span><br><span class="line"> </span><br><span class="line">insert into T <span class="title function_">values</span><span class="params">(<span class="number">1</span>,<span class="number">4</span>)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>方法二：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Insert into T <span class="title function_">values</span><span class="params">(<span class="number">1</span>,<span class="number">2</span>)</span>,(<span class="number">1</span>,<span class="number">3</span>),(<span class="number">1</span>,<span class="number">4</span>);</span><br></pre></td></tr></table></figure>
+
+<p>选择后一种方法的原因有三。</p>
+<ul>
+<li>减少SQL语句解析的操作，MySQL没有类似Oracle的share pool，采用方法二，只需要解析一次就能进行数据的插入操作；</li>
+<li>在特定场景可以减少对DB连接次数</li>
+<li>SQL语句较短，可以减少网络传输的IO。</li>
+</ul>
+<h4 id="2-适当使用commit"><a href="#2-适当使用commit" class="headerlink" title="2. 适当使用commit"></a><strong>2. 适当使用commit</strong></h4><p>适当使用commit可以释放事务占用的资源而减少消耗，commit后能释放的资源如下：</p>
+<ul>
+<li>事务占用的undo数据块；</li>
+<li>事务在redo log中记录的数据块；</li>
+<li>释放事务施加的，减少锁争用影响性能。特别是在需要使用delete删除大量数据的时候，必须分解删除量并定期commit。</li>
+</ul>
+<h4 id="3-避免重复查询更新的数据"><a href="#3-避免重复查询更新的数据" class="headerlink" title="3. 避免重复查询更新的数据"></a><strong>3. 避免重复查询更新的数据</strong></h4><p>针对业务中经常出现的更新行同时又希望获得改行信息的需求，MySQL并不支持PostgreSQL那样的UPDATE RETURNING语法，在MySQL中可以通过变量实现。</p>
+<p>例如，更新一行记录的时间戳，同时希望查询当前记录中存放的时间戳是什么，简单方法实现：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Update</span> t1 <span class="keyword">set</span> <span class="type">time</span><span class="operator">=</span>now() <span class="keyword">where</span> col1<span class="operator">=</span><span class="number">1</span>; </span><br><span class="line"> </span><br><span class="line"><span class="keyword">Select</span> <span class="type">time</span> <span class="keyword">from</span> t1 <span class="keyword">where</span> id <span class="operator">=</span><span class="number">1</span>; </span><br></pre></td></tr></table></figure>
+
+<p>使用变量，可以重写为以下方式：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Update</span> t1 <span class="keyword">set</span> <span class="type">time</span><span class="operator">=</span>now () <span class="keyword">where</span> col1<span class="operator">=</span><span class="number">1</span> <span class="keyword">and</span> <span class="variable">@now</span>: <span class="operator">=</span> now (); </span><br><span class="line"> </span><br><span class="line"><span class="keyword">Select</span> <span class="variable">@now</span>; </span><br></pre></td></tr></table></figure>
+
+<p>前后二者都需要两次网络来回，但使用变量避免了再次访问数据表，特别是当t1表数据量较大时，后者比前者快很多。</p>
+<h4 id="4-查询优先还是更新（insert、update、delete）优先"><a href="#4-查询优先还是更新（insert、update、delete）优先" class="headerlink" title="4.查询优先还是更新（insert、update、delete）优先"></a><strong>4.查询优先还是更新（insert、update、delete）优先</strong></h4><p>MySQL 还允许改变语句调度的优先级，它可以使来自多个客户端的查询更好地协作，这样单个客户端就不会由于锁定而等待很长时间。改变优先级还可以确保特定类型的查询被处理得更快。我们首先应该确定应用的类型，判断应用是以查询为主还是以更新为主的，是确保查询效率还是确保更新的效率，决定是查询优先还是更新优先。</p>
+<p>下面我们提到的改变调度策略的方法主要是针对只存在表锁的存储引擎，比如 MyISAM 、MEMROY、MERGE，对于Innodb 存储引擎，语句的执行是由获得行锁的顺序决定的。MySQL 的默认的调度策略可用总结如下：</p>
+<p>1）写入操作优先于读取操作。</p>
+<p>2）对某张数据表的写入操作某一时刻只能发生一次，写入请求按照它们到达的次序来处理。</p>
+<p>3）对某张数据表的多个读取操作可以同时地进行。MySQL 提供了几个语句调节符，允许你修改它的调度策略：</p>
+<ul>
+<li>LOW_PRIORITY关键字应用于DELETE、INSERT、LOAD DATA、REPLACE和UPDATE；</li>
+<li>HIGH_PRIORITY关键字应用于SELECT和INSERT语句；</li>
+<li>DELAYED关键字应用于INSERT和REPLACE语句。</li>
+</ul>
+<p>如果写入操作是一个 LOW_PRIORITY（低优先级）请求，那么系统就不会认为它的优先级高于读取操作。在这种情况下，如果写入者在等待的时候，第二个读取者到达了，那么就允许第二个读取者插到写入者之前。只有在没有其它的读取者的时候，才允许写入者开始操作。这种调度修改可能存在 LOW_PRIORITY写入操作永远被阻塞的情况。</p>
+<p>SELECT 查询的HIGH_PRIORITY（高优先级）关键字也类似。它允许SELECT 插入正在等待的写入操作之前，即使在正常情况下写入操作的优先级更高。另外一种影响是，高优先级的 SELECT 在正常的 SELECT 语句之前执行，因为这些语句会被写入操作阻塞。如果希望所有支持LOW_PRIORITY 选项的语句都默认地按照低优先级来处理，那么 请使用–low-priority-updates 选项来启动服务器。通过使用 INSERTHIGH_PRIORITY 来把 INSERT 语句提高到正常的写入优先级，可以消除该选项对单个INSERT语句的影响。</p>
+<h3 id="四、查询条件优化"><a href="#四、查询条件优化" class="headerlink" title="四、查询条件优化"></a>四、查询条件优化</h3><h4 id="1-对于复杂的查询，可以使用中间临时表-暂存数据"><a href="#1-对于复杂的查询，可以使用中间临时表-暂存数据" class="headerlink" title="1. 对于复杂的查询，可以使用中间临时表 暂存数据"></a><strong>1. 对于复杂的查询，可以使用中间临时表 暂存数据</strong></h4><h4 id="2-优化group-by语句"><a href="#2-优化group-by语句" class="headerlink" title="2. 优化group by语句"></a><strong>2. 优化group by语句</strong></h4><p>默认情况下，MySQL 会对GROUP BY分组的所有值进行排序，如 “GROUP BY col1，col2，….;” 查询的方法如同在查询中指定 “ORDER BY col1，col2，…;” 如果显式包括一个包含相同的列的 ORDER BY子句，MySQL 可以毫不减速地对它进行优化，尽管仍然进行排序。</p>
+<p>因此，如果查询包括 GROUP BY 但你并不想对分组的值进行排序，你可以指定 ORDER BY NULL禁止排序。例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> col1, col2, <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> <span class="keyword">table</span> <span class="keyword">GROUP</span> <span class="keyword">BY</span> col1, col2 <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="keyword">NULL</span> ;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-优化join语句"><a href="#3-优化join语句" class="headerlink" title="3. 优化join语句"></a><strong>3. 优化join语句</strong></h4><p>MySQL中可以通过子查询来使用 SELECT 语句来创建一个单列的查询结果，然后把这个结果作为过滤条件用在另一个查询中。使用子查询可以一次性的完成很多逻辑上需要多个步骤才能完成的 SQL 操作，同时也可以避免事务或者表锁死，并且写起来也很容易。但是，有些情况下，子查询可以被更有效率的连接(JOIN)..替代。</p>
+<p>例子：假设要将所有没有订单记录的用户取出来，可以用下面这个查询完成：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> col1 <span class="keyword">FROM</span> customerinfo <span class="keyword">WHERE</span> CustomerID <span class="keyword">NOT</span> <span class="keyword">in</span> (<span class="keyword">SELECT</span> CustomerID <span class="keyword">FROM</span> salesinfo )</span><br></pre></td></tr></table></figure>
+
+<p>如果使用连接(JOIN).. 来完成这个查询工作，速度将会有所提升。尤其是当 salesinfo表中对 CustomerID 建有索引的话，性能将会更好，查询如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> col1 <span class="keyword">FROM</span> customerinfo </span><br><span class="line">   <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> salesinfoON customerinfo.CustomerID<span class="operator">=</span>salesinfo.CustomerID </span><br><span class="line">      <span class="keyword">WHERE</span> salesinfo.CustomerID <span class="keyword">IS</span> <span class="keyword">NULL</span> </span><br></pre></td></tr></table></figure>
+
+<p>连接(JOIN).. 之所以更有效率一些，是因为 MySQL 不需要在内存中创建临时表来完成这个逻辑上的需要两个步骤的查询工作。</p>
+<h4 id="4-优化union查询"><a href="#4-优化union查询" class="headerlink" title="4. 优化union查询"></a><strong>4. 优化union查询</strong></h4><p>MySQL通过创建并填充临时表的方式来执行union查询。除非确实要消除重复的行，否则建议使用union all。原因在于如果没有all这个关键词，MySQL会给临时表加上distinct选项，这会导致对整个临时表的数据做唯一性校验，这样做的消耗相当高。</p>
+<p>高效：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> COL1, COL2, COL3 <span class="keyword">FROM</span> <span class="keyword">TABLE</span> <span class="keyword">WHERE</span> COL1 <span class="operator">=</span> <span class="number">10</span> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">UNION</span> <span class="keyword">ALL</span> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">SELECT</span> COL1, COL2, COL3 <span class="keyword">FROM</span> <span class="keyword">TABLE</span> <span class="keyword">WHERE</span> COL3<span class="operator">=</span> <span class="string">&#x27;TEST&#x27;</span>; </span><br></pre></td></tr></table></figure>
+
+<p>低效：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> COL1, COL2, COL3 <span class="keyword">FROM</span> <span class="keyword">TABLE</span> <span class="keyword">WHERE</span> COL1 <span class="operator">=</span> <span class="number">10</span> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">UNION</span> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">SELECT</span> COL1, COL2, COL3 <span class="keyword">FROM</span> <span class="keyword">TABLE</span> <span class="keyword">WHERE</span> COL3<span class="operator">=</span> <span class="string">&#x27;TEST&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-拆分复杂SQL为多个小SQL，避免大事务"><a href="#5-拆分复杂SQL为多个小SQL，避免大事务" class="headerlink" title="5.拆分复杂SQL为多个小SQL，避免大事务"></a><strong>5.拆分复杂SQL为多个小SQL，避免大事务</strong></h4><ul>
+<li>简单的SQL容易使用到MySQL的QUERY CACHE；</li>
+<li>减少锁表时间特别是使用MyISAM存储引擎的表；</li>
+<li>可以使用多核CPU。</li>
+</ul>
+<h4 id="6-使用truncate代替delete"><a href="#6-使用truncate代替delete" class="headerlink" title="6. 使用truncate代替delete"></a><strong>6. 使用truncate代替delete</strong></h4><p>当删除全表中记录时，使用delete语句的操作会被记录到undo块中，删除记录也记录binlog，当确认需要删除全表时，会产生很大量的binlog并占用大量的undo数据块，此时既没有很好的效率也占用了大量的资源。</p>
+<p>使用truncate替代，不会记录可恢复的信息，数据不能被恢复。也因此使用truncate操作有其极少的资源占用与极快的时间。另外，使用truncate可以回收表的水位，使自增字段值归零。</p>
+<h4 id="7-使用合理的分页方式以提高分页效率"><a href="#7-使用合理的分页方式以提高分页效率" class="headerlink" title="7. 使用合理的分页方式以提高分页效率"></a><strong>7. 使用合理的分页方式以提高分页效率</strong></h4><p>使用合理的分页方式以提高分页效率 针对展现等分页需求，合适的分页方式能够提高分页的效率。</p>
+<p>案例1：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> t <span class="keyword">where</span> thread_id <span class="operator">=</span> <span class="number">10000</span> <span class="keyword">and</span> deleted <span class="operator">=</span> <span class="number">0</span> </span><br><span class="line">   <span class="keyword">order</span> <span class="keyword">by</span> gmt_create <span class="keyword">asc</span> limit <span class="number">0</span>, <span class="number">15</span>;</span><br></pre></td></tr></table></figure>
+
+<p>上述例子通过一次性根据过滤条件取出所有字段进行排序返回。数据访问开销&#x3D;索引IO+索引全部记录结果对应的表数据IO。因此，该种写法越翻到后面执行效率越差，时间越长，尤其表数据量很大的时候。</p>
+<p>适用场景：当中间结果集很小（10000行以下）或者查询条件复杂（指涉及多个不同查询字段或者多表连接）时适用。</p>
+<p>案例2：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> t.<span class="operator">*</span> <span class="keyword">from</span> (<span class="keyword">select</span> id <span class="keyword">from</span> t <span class="keyword">where</span> thread_id <span class="operator">=</span> <span class="number">10000</span> <span class="keyword">and</span> deleted <span class="operator">=</span> <span class="number">0</span></span><br><span class="line">   <span class="keyword">order</span> <span class="keyword">by</span> gmt_create <span class="keyword">asc</span> limit <span class="number">0</span>, <span class="number">15</span>) a, t </span><br><span class="line">      <span class="keyword">where</span> a.id <span class="operator">=</span> t.id; </span><br></pre></td></tr></table></figure>
+
+<p>上述例子必须满足t表主键是id列，且有覆盖索引secondary key:(thread_id, deleted, gmt_create)。通过先根据过滤条件利用覆盖索引取出主键id进行排序，再进行join操作取出其他字段。数据访问开销&#x3D;索引IO+索引分页后结果（例子中是15行）对应的表数据IO。因此，该写法每次翻页消耗的资源和时间都基本相同，就像翻第一页一样。</p>
+<p>适用场景：当查询和排序字段（即where子句和order by子句涉及的字段）有对应覆盖索引时，且中间结果集很大的情况时适用。</p>
+<h3 id="五、建表优化"><a href="#五、建表优化" class="headerlink" title="五、建表优化"></a>五、建表优化</h3><h4 id="1-在表中建立索引，优先考虑where、order-by使用到的字段。"><a href="#1-在表中建立索引，优先考虑where、order-by使用到的字段。" class="headerlink" title="1. 在表中建立索引，优先考虑where、order by使用到的字段。"></a><strong>1. 在表中建立索引，优先考虑where、order by使用到的字段。</strong></h4><h4 id="2-尽量使用数字型字段"><a href="#2-尽量使用数字型字段" class="headerlink" title="2. 尽量使用数字型字段"></a><strong>2. 尽量使用数字型字段</strong></h4><p>（如性别，男：1 女：2），若只含数值信息的字段尽量不要设计为字符型，这会降低查询和连接的性能，并会增加存储开销。</p>
+<p>这是因为引擎在处理查询和连接时会 逐个比较字符串中每一个字符，而对于数字型而言只需要比较一次就够了。</p>
+<h4 id="3-查询数据量大的表-会造成查询缓慢。"><a href="#3-查询数据量大的表-会造成查询缓慢。" class="headerlink" title="3. 查询数据量大的表 会造成查询缓慢。"></a><strong>3. 查询数据量大的表 会造成查询缓慢。</strong></h4><p>主要的原因是扫描行数过多。这个时候可以通过程序，分段分页进行查询，循环遍历，将结果合并处理进行展示。要查询100000到100050的数据，如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> (<span class="keyword">SELECT</span> <span class="built_in">ROW_NUMBER</span>() <span class="keyword">OVER</span>(<span class="keyword">ORDER</span> <span class="keyword">BY</span> ID <span class="keyword">ASC</span>) <span class="keyword">AS</span> rowid,<span class="operator">*</span> </span><br><span class="line">   <span class="keyword">FROM</span> infoTab)t <span class="keyword">WHERE</span> t.rowid <span class="operator">&gt;</span> <span class="number">100000</span> <span class="keyword">AND</span> t.rowid <span class="operator">&lt;=</span> <span class="number">100050</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="4-用varchar-nvarchar-代替-char-nchar"><a href="#4-用varchar-nvarchar-代替-char-nchar" class="headerlink" title="4. 用varchar&#x2F;nvarchar 代替 char&#x2F;nchar"></a><strong>4. 用varchar&#x2F;nvarchar 代替 char&#x2F;nchar</strong></h4><p>尽可能的使用 varchar&#x2F;nvarchar 代替 char&#x2F;nchar ，因为首先变长字段存储空间小，可以节省存储空间，其次对于查询来说，在一个相对较小的字段内搜索效率显然要高些。</p>
+<p>不要以为 NULL 不需要空间，比如：char(100) 型，在字段建立时，空间就固定了， 不管是否插入值（NULL也包含在内），都是占用 100个字符的空间的，如果是varchar这样的变长字段， null 不占用空间。</p>
+
+
+
+<div class="article-footer reveal fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/12/25/TCP-IP%E7%AE%80%E8%BF%B0/">TCP/IP简述</a></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"><p>本站由 <a href="/">@anonymity</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar">Stellar</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.21.0';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img, .gallery img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
