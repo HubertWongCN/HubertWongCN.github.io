@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 7.0.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>使用基于 SpringMVC 的透明 RPC 开发微服务 - Hubert's Blog</title>
+
+  
+    <meta name="description" content="来源：fredal.xin&#x2F;develop-with-transparent-rpc 我司目前 RPC 框架是基于 Java Rest 的方式开发的，形式上可以参考 SpringCloud Feign 的实现。Rest 风格随着微服务的架构兴起，Spring MVC 几乎成为了 Rest 开发的规范，同时对于 Spring 的使用者门槛也比较低。 REST 与 RPC 风格的开发方式RP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用基于 SpringMVC 的透明 RPC 开发微服务">
+<meta property="og:url" content="https://hubertwongcn.github.io/2023/12/25/%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8E-SpringMVC-%E7%9A%84%E9%80%8F%E6%98%8E-RPC-%E5%BC%80%E5%8F%91%E5%BE%AE%E6%9C%8D%E5%8A%A1/index.html">
+<meta property="og:site_name" content="Hubert&#39;s Blog">
+<meta property="og:description" content="来源：fredal.xin&#x2F;develop-with-transparent-rpc 我司目前 RPC 框架是基于 Java Rest 的方式开发的，形式上可以参考 SpringCloud Feign 的实现。Rest 风格随着微服务的架构兴起，Spring MVC 几乎成为了 Rest 开发的规范，同时对于 Spring 的使用者门槛也比较低。 REST 与 RPC 风格的开发方式RP">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/image-20231225112456945.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231225112433957">
+<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/image-20231225112824866.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/image-20231225112836641.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231225112434079">
+<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/image-20231225112849318.png">
+<meta property="article:published_time" content="2023-12-25T03:23:09.000Z">
+<meta property="article:modified_time" content="2023-12-25T03:23:09.000Z">
+<meta property="article:author" content="Hubert Wong">
+<meta property="article:tag" content="框架">
+<meta property="article:tag" content="Spring">
+<meta property="article:tag" content="SpringMVC">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="微服务">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/image-20231225112456945.png">
+  
+  
+  
+  <meta name="keywords" content="框架,Spring,SpringMVC,分布式,微服务">
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="title" href="/"><div class="main" ff="title">Hubert's Blog</div><div class="sub cap"> Hubert爱猫爱生活</div></a></div>
+
+<nav class="menu dis-select"></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">使用基于 SpringMVC 的透明 RPC 开发微服务</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#REST-%E4%B8%8E-RPC-%E9%A3%8E%E6%A0%BC%E7%9A%84%E5%BC%80%E5%8F%91%E6%96%B9%E5%BC%8F"><span class="toc-text">REST 与 RPC 风格的开发方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%90%E5%BC%8F%E7%9A%84%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6"><span class="toc-text">隐式的服务契约</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%9A%84-REST-%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc-text">服务端的 REST 编程模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E-DispatcherServlet-%E8%AF%B4%E8%B5%B7"><span class="toc-text">从 DispatcherServlet 说起</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HandlerMapping-%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">HandlerMapping 的初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HandlerAdapter-%E7%9A%84%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86"><span class="toc-text">HandlerAdapter 的请求处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%9A%84-RPC-%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc-text">服务端的 RPC 编程模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RPC-%E6%96%B9%E6%B3%95%E6%B3%A8%E5%86%8C"><span class="toc-text">RPC 方法注册</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RPC-%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86"><span class="toc-text">RPC 请求处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RPC-%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc-text">RPC 编程模型</span></a></li></ol></li></ol></div></div></widget>
+
+
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+
+<div class="bread-nav fs12"><div class="left"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E6%A1%86%E6%9E%B6/">框架</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E6%A1%86%E6%9E%B6/Spring/">Spring</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E6%A1%86%E6%9E%B6/Spring/SpringMVC/">SpringMVC</a></div><div id="post-meta">
+    <span>发布于&nbsp;<time datetime="2023-12-25T03:23:09.000Z">2023-12-25</time></span>
+    
+    <span>更新于&nbsp;<time datetime="2023-12-25T03:23:09.000Z">2023-12-25</time></span>
+    </div></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>使用基于 SpringMVC 的透明 RPC 开发微服务</span></h1>
+<p><em>来源：fredal.xin&#x2F;develop-with-transparent-rpc</em></p>
+<p>我司目前 RPC 框架是基于 Java Rest 的方式开发的，形式上可以参考 SpringCloud Feign 的实现。Rest 风格随着微服务的架构兴起，Spring MVC 几乎成为了 Rest 开发的规范，同时对于 Spring 的使用者门槛也比较低。</p>
+<h2 id="REST-与-RPC-风格的开发方式"><a href="#REST-与-RPC-风格的开发方式" class="headerlink" title="REST 与 RPC 风格的开发方式"></a><strong>REST 与 RPC 风格的开发方式</strong></h2><p>RPC 框架采用类 Feign 方式的一个简单的实现例子如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RpcClient(schemaId=&quot;hello&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Hello</span> &#123;</span><br><span class="line">    <span class="meta">@GetMapping(&quot;/message&quot;)</span></span><br><span class="line">    HelloMessage <span class="title function_">hello</span><span class="params">(<span class="meta">@RequestParam</span> String name)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而服务提供者直接使用 spring mvc 来暴露服务接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> HelloService helloService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/message&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> HelloMessage <span class="title function_">getMessage</span><span class="params">(<span class="meta">@RequestParam(name=&quot;name&quot;)</span>String name)</span> &#123;</span><br><span class="line">        <span class="type">HelloMessage</span> <span class="variable">hello</span> <span class="operator">=</span> helloService.gen(name);</span><br><span class="line">        <span class="keyword">return</span> hello;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>基于 REST 风格开发的方式有很多优点。一是使用门槛较低，服务端完全基于 Spring MVC，客户端 api 的书写方式也兼容了大部分 Spring 的注解，包括@RequestParam、@RequestBody 等。二是带来的解耦特性，微服务应用注重服务自治，对外则提供松耦合的 REST 接口，这种方式更灵活，可以减轻历史包袱带来的痛点，同时除了提供给类 SDK 的消费者服务外，还可提供浏览器等非 SDK 的消费者服务。</p>
+<p>当然这种方式在实际运用中也带来了很多麻烦。首先，不一致的客户端与服务端 API 带来了出错的可能性，Controller 接口的返回值类型与 RpcClient 的返回值类型可能写的不一致从而导致反序列化失败。其次，RpcClient 的书写虽然兼容了 Spring 的注解，但对于某些开发同学仍然存在不小的门槛，例如写 url param 时@RequestParam 注解常常忘写，写 body param 时候@RequestBody 注解忘记写，用@RequestBody 注解来标注 String 参数，方法类型不指定等等（基本上和使用 Feign 的门槛一样）。</p>
+<p>还有一点，就是比起常见的 RPC 方式，REST 方式相当于多写了一层 Controller，而不是直接将 Service 暴露成接口。DDD 实践中，将一个巨石应用拆分成各个限界上下文时，往往是对旧代码的 Service 方法进行拆分，REST 风格意味着需要多写 Controller 接入表示层，而在内部微服务应用间相互调用的场景下，暴露应用服务层甚至领域服务层给调用者可能是更简便的方法，在满足 DDD 的同时更符合 RPC 的语义。</p>
+<p>那么我们希望能通过一种基于透明 RPC 风格的开发方式来优雅简便地开发微服务。</p>
+<p>首先我们希望服务接口的定义能更简便，不用写多余的注解和信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RpcClient(schemaId=&quot;hello&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Hello</span> &#123;</span><br><span class="line">        HelloMessage <span class="title function_">hello</span><span class="params">(String name)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后我们就可以实现这个服务，并通过使用注解的方式简单的发布服务：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RpcService(schemaId=&quot;hello&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloImpl</span> <span class="keyword">implements</span> <span class="title class_">Hello</span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        HelloMessage <span class="title function_">hello</span><span class="params">(String name)</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">HelloMessage</span>(name);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样客户端在引用 Hello 接口后可以直接使用里面的 hello()方法调用到服务端的实现类 HelloImpl 中，从而获得一个 HelloMessage 对象。相比之前的 REST 实现方式，在简洁性以及一致性上都得到了提升。</p>
+<h2 id="隐式的服务契约"><a href="#隐式的服务契约" class="headerlink" title="隐式的服务契约"></a><strong>隐式的服务契约</strong></h2><p>服务契约指客户端与服务端之间对于接口的描述定义。REST 风格开发方式中，我们使用 Spring MVC annotation 来声明接口的请求、返回参数。但是在透明 RPC 开发方式中，理论上我们可以不用写任何 RESTful 的 annotation 的，这时候怎么去定义服务契约呢。</p>
+<p>其实这里运用了隐式的服务契约，可以不事先定义契约和接口，而是直接定义实现类，根据实现类去自动生成默认的契约，注册到服务中心。</p>
+<p>默认的服务契约内容包括方法类型的选择、URL 地址以及参数注解的处理。方法类型的判断基于入参类型，如果入参类型中包含自定义类型、Object 或者集合等适合放在 Body 中的类型，则会判断为使用 POST 方法，而如果入参仅有 String 或者基本类型等，则判断使用 GET 方法。POST 方法会将所有参数作为 Body 进行传送，而 GET 方法则将参数作为 URL PARAM 进行传送。URL 地址的默认规则为<code>/类名/方法类型+方法名</code>，未被注解的方法都会按此 URL 注册到服务中心。</p>
+<h2 id="服务端的-REST-编程模型"><a href="#服务端的-REST-编程模型" class="headerlink" title="服务端的 REST 编程模型"></a><strong>服务端的 REST 编程模型</strong></h2><p>我们可以发现，两种开发风格最大的改变是服务端编程模型的改变，从 REST 风格的 SpringMVC 编程模型变成了透明 RPC 编程模型。我们应该怎样去实现这一步呢？</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/image-20231225112456945.png"/></div></div>
+
+<p>我们目前的运行架构如上图，服务端的编程模型完全基于 Spring MVC，通信模型则是基于 servlet 的。我们期望服务端的编程模型可以转换为 RPC，那么势必需要我们对通信模型做一定的改造。</p>
+<h2 id="从-DispatcherServlet-说起"><a href="#从-DispatcherServlet-说起" class="headerlink" title="从 DispatcherServlet 说起"></a><strong>从 DispatcherServlet 说起</strong></h2><p>那么首先，我们需要对 Spring MVC 实现的 servlet 规范 DispatcherServlet 做一定的了解，知道它是怎么处理一个请求的。</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231225112433957"/></div></div>
+
+<p>DispatcherServlet 主要包含三部分逻辑，映射处理器(HandlerMapping)，映射适配器(HandlerAdapter)，视图处理器(ViewResolver)。DispatcherServlet 通过 HandlerMapping 找到合适的 Handler，再通过 HandlerAdapter 进行适配，最终返回 ModelAndView 经由 ViewResolver 处理返回给前端。</p>
+<p>回到主题上，我们想要改造这部分通信模型从而能够实现 RPC 的编程模型有两种办法，一是直接编写一个新的 Servlet，实现 REST over Servlet 的效果，从而对服务端通信逻辑得到一个完整的控制，这样我们可以为服务端添加自定义的运行模型(服务端限流、调用链处理等)。二是仅仅修改一部分 HandlerMapping 的代码，将请求映射变得可以适配 RPC 的编程模型。</p>
+<p>鉴于工作量与现实条件，我们选择后一种方法，继续沿用 DispatcherServlet，但改造部分 HandlerMapping 的代码。</p>
+<ol>
+<li>首先我们会通过 Scanner 扫描到标注了@RpcClient 注解的接口以及其实现类，我们会将其注册到 HandlerMapping 中，所以首先我们要看 HandlerMapping 中有没有能扩展注册逻辑的地方。</li>
+<li>接着我们再考虑处理请求的事儿，我们需要 HandlerMapping 能够做到在没有 Spring Annotation 的情况下也能为不同的参数选择不同的 argumentResolver 参数处理器，这一点在 springMVC 中是通过标注注解来区分的(RequestMapping、RequestBody 等)，所以我们还需要看看 HandlerMapping 中有没有能扩展参数注解逻辑的地方。</li>
+</ol>
+<p>带着这两点目的，我们先来看 HandlerMapping 的逻辑。</p>
+<h3 id="HandlerMapping-的初始化"><a href="#HandlerMapping-的初始化" class="headerlink" title="HandlerMapping 的初始化"></a>HandlerMapping 的初始化</h3><p>HandlerMapping 的初始化源码比较长，我们直接一笔略过不是很重要的部分了。首先 RequestMappingHandlerMapping 的父类 AbstractHandlerMethodMapping 类实现了 InitializingBean 接口，在属性初始化完成后会调用 afterPropertiesSet()方法，在该方法中调用 initHandlerMethods()进行 HandlerMethod 初始化。InitHandlerMethods 方法中使用 detectHandlerMethods 方法从 bean 中根据 bean name 查找 handlerMethod，此方法中调用 registerHandlerMethod 来注册正常的 handlerMethod。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">registerHandlerMethod</span><span class="params">(Object handler, Method method, T mapping)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.mappingRegistry.register(mapping, handler, method);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们发现这个方法是 protected 的，那么第一步我们找到了去哪注册我们的 RPC 方法到 RequestMappingHandlerMapping 中。接口可以看到入参是 handler 方法，但在 handlerMapping 中真正被注册的 handlerMethod 对象，显然这部分逻辑在 mappingRegistry 的 register 方法中。register 方法中我们找到了转换的关键方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">HandlerMethod</span> <span class="variable">handlerMethod</span> <span class="operator">=</span> createHandlerMethod(handler, method);</span><br></pre></td></tr></table></figure>
+
+<p>此方法中调用了 handlerMethod 对象的构造器来构造一个 handlerMethod<br>对象。handlerMethod 的属性中包含一个叫 parameters 的 methodParameter 对象数组。我们知道 handlerMethod 对象对应的是一个实现方法，那么 methodParameter 对象对应的就是入参了。</p>
+<p>接着往 methodParameter 对象里看，发现了一个叫 parameterAnnotations 的 Annotation 数组，看样子这就是我们第二个需要关注的地方了。那么总结一下，滤去无需关注的部分，handlerMapping 的初始化整个如下图所示：</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/image-20231225112824866.png"/></div></div>
+
+<h3 id="HandlerAdapter-的请求处理"><a href="#HandlerAdapter-的请求处理" class="headerlink" title="HandlerAdapter 的请求处理"></a>HandlerAdapter 的请求处理</h3><p>这边 dispatcherServlet 在真正处理请求的时候是用 handlerAdapter 去处理再返回 ModelAndView 对象的，但是所有相关对象都是注册在 handlerMapping 中。</p>
+<p>我们直接来看看 RequestMappingHandlerAdapter 的处理逻辑吧，handlerAdapter 在 handle 方法中调用 handleInternal 方法，并调用 invokeHandlerMethod 方法，此方法中使用 createInvocableHandlerMethod 方法将 handlerMethod 对象包装成了一个 servletInvocableHandlerMethod 对象，此对象最终调用 invokeAndHandle 方法完成对应请求逻辑的处理。我们只关注 invokeAndHandle 里面的 invokeForRequest 方法，该方法作为对入参的处理正是我们的目标。最终我们看到了此方法中的 getMethodArgumentValues 方法中的一段对入参注解的处理逻辑:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="built_in">this</span>.argumentResolvers.supportsParameter(parameter)) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        args[i] = <span class="built_in">this</span>.argumentResolvers.resolveArgument(parameter, mavContainer, request, <span class="built_in">this</span>.dataBinderFactory);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception var9) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.logger.isDebugEnabled()) &#123;</span><br><span class="line">            <span class="built_in">this</span>.logger.debug(<span class="built_in">this</span>.getArgumentResolutionErrorMessage(<span class="string">&quot;Error resolving argument&quot;</span>, i), var9);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> var9;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>显然，这里使用 supportsParameter 方法来作为判断依据选择 argumentResolver，里层的逻辑就是一个简单的遍历选择真正支持入参的参数处理器。实际上 RequestMappingHandlerAdapte 在初始化时候就注册了一堆参数处理器：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">private</span> List&lt;HandlerMethodReturnValueHandler&gt; <span class="title function_">getDefaultReturnValueHandlers</span><span class="params">()</span> &#123;</span><br><span class="line">     List&lt;HandlerMethodReturnValueHandler&gt; handlers = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;HandlerMethodReturnValueHandler&gt;();</span><br><span class="line"></span><br><span class="line">  	<span class="comment">// Single-purpose return value types</span></span><br><span class="line">  	handlers.add(<span class="keyword">new</span> <span class="title class_">ModelAndViewMethodReturnValueHandler</span>());</span><br><span class="line">  	handlers.add(<span class="keyword">new</span> <span class="title class_">ModelMethodProcessor</span>());</span><br><span class="line">  	handlers.add(<span class="keyword">new</span> <span class="title class_">ViewMethodReturnValueHandler</span>());</span><br><span class="line">  	handlers.add(<span class="keyword">new</span> <span class="title class_">ResponseBodyEmitterReturnValueHandler</span>(getMessageConverters()));</span><br><span class="line">  	handlers.add(<span class="keyword">new</span> <span class="title class_">StreamingResponseBodyReturnValueHandler</span>());</span><br><span class="line">  	handlers.add(<span class="keyword">new</span> <span class="title class_">HttpEntityMethodProcessor</span>(getMessageConverters(),</span><br><span class="line">    <span class="built_in">this</span>.contentNegotiationManager, <span class="built_in">this</span>.requestResponseBodyAdvice));</span><br><span class="line">  	handlers.add(<span class="keyword">new</span> <span class="title class_">HttpHeadersReturnValueHandler</span>());</span><br><span class="line">  	handlers.add(<span class="keyword">new</span> <span class="title class_">CallableMethodReturnValueHandler</span>());</span><br><span class="line">  	handlers.add(<span class="keyword">new</span> <span class="title class_">DeferredResultMethodReturnValueHandler</span>());</span><br><span class="line">  	handlers.add(<span class="keyword">new</span> <span class="title class_">AsyncTaskMethodReturnValueHandler</span>(<span class="built_in">this</span>.beanFactory));</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们调个眼熟的 RequestResponseBodyMethodProcessor 来看看其 supportsParameter 方法:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">supportsParameter</span><span class="params">(MethodParameter parameter)</span> &#123;</span><br><span class="line">  	<span class="keyword">return</span> parameter.hasParameterAnnotation(RequestBody.class);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里直接调用了 MethodParameter 自身的 public 方法 hasParameterAnnotation 方法来判断是否有相应的注解，比如有 RequestBody 注解那么我们就选用 RequestResponseBodyMethodProcessor 来作为其参数处理器。</p>
+<p>还是滤去无用逻辑，整个流程如下：</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/image-20231225112836641.png"/></div></div>
+
+<h2 id="服务端的-RPC-编程模型"><a href="#服务端的-RPC-编程模型" class="headerlink" title="服务端的 RPC 编程模型"></a><strong>服务端的 RPC 编程模型</strong></h2><p>以上我们了解了 DispatcherServlet 在 REST 编程模型中是部分逻辑，现在我们依据之前讲的改造部分 HandlerMapping 的代码从而使其适配 RPC 编程模型。</p>
+<h3 id="RPC-方法注册"><a href="#RPC-方法注册" class="headerlink" title="RPC 方法注册"></a>RPC 方法注册</h3><p>首先我们需要将方法注册到 handlerMapping，而这点由上述 RequestHandlerMapping 的初始化流程得知直接调用 registerHandlerMethod 方法即可。结合我们的扫描逻辑，大致代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RpcRequestMappingHandlerMapping</span> <span class="keyword">extends</span> <span class="title class_">RequestMappingHandlerMapping</span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">registerRpcToMvc</span><span class="params">(<span class="keyword">final</span> String prefix)</span> &#123;</span><br><span class="line">		<span class="keyword">final</span> <span class="type">AdvancedApiToMvcScanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AdvancedApiToMvcScanner</span>(RpcService.class);</span><br><span class="line">        scanner.setBasePackage(basePackage);</span><br><span class="line">        Map&lt;Class&lt;?&gt;, Set&lt;MethodTemplate&gt;&gt; mvcMap;</span><br><span class="line">        <span class="comment">//扫描到注解了@RpcService的接口及method元信息</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            mvcMap = scanner.scan();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (<span class="keyword">final</span> IOException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">FatalBeanException</span>(<span class="string">&quot;failed to scan&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">final</span> Class&lt;?&gt; clazz : mvcMap.keySet()) &#123;</span><br><span class="line">            <span class="keyword">final</span> Set&lt;MethodTemplate&gt; methodTemplates = mvcMap.get(clazz);</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">final</span> MethodTemplate methodTemplate : methodTemplates) &#123;</span><br><span class="line">                <span class="keyword">if</span> (methodTemplate == <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">final</span> <span class="type">Method</span> <span class="variable">method</span> <span class="operator">=</span> methodTemplate.getMethod();</span><br><span class="line">                Http.HttpMethod httpMethod;</span><br><span class="line">                <span class="type">String</span> <span class="variable">uriTemplate</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">                <span class="comment">//隐式契约：方法类型和url地址</span></span><br><span class="line">                httpMethod = MvcFuncUtil.judgeMethodType(method);</span><br><span class="line">                uriTemplate = MvcFuncUtil.genMvcFuncName(clazz, httpMethod.name(), method);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">final</span> <span class="type">RequestMappingInfo</span> <span class="variable">requestMappingInfo</span> <span class="operator">=</span> RequestMappingInfo</span><br><span class="line">                        .paths(<span class="built_in">this</span>.resolveEmbeddedValuesInPatterns(<span class="keyword">new</span> <span class="title class_">String</span>[]&#123;uriTemplate&#125;))</span><br><span class="line">                        .methods(RequestMethod.valueOf(httpMethod.name()))</span><br><span class="line">                        .build();</span><br><span class="line"></span><br><span class="line">                <span class="comment">//注册到spring mvc</span></span><br><span class="line">                <span class="built_in">this</span>.registerHandlerMethod(handler, method, requestMappingInfo);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们自定义了注册方法，只需在容器启动时调用即可。</p>
+<h3 id="RPC-请求处理"><a href="#RPC-请求处理" class="headerlink" title="RPC 请求处理"></a>RPC 请求处理</h3><p>以上所说，光完成注册是不够的，我们需要对入参注解做一些处理，例如我们虽然没有写注解<code>@RequestBody User user</code>，我们仍然希望 handlerAdapter 在处理的时候能够以为我们写了，并用 RequestResponseBodyMethodProcessor 参数解析器来进行处理。</p>
+<p>我们直接重写 RequestMappingHandlerMapping 的 createHandlerMethod 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">protected</span> HandlerMethod <span class="title function_">createHandlerMethod</span><span class="params">(Object handler, Method method)</span> &#123;</span><br><span class="line">    HandlerMethod handlerMethod;</span><br><span class="line">    <span class="keyword">if</span> (handler <span class="keyword">instanceof</span> String) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">beanName</span> <span class="operator">=</span> (String) handler;</span><br><span class="line">        handlerMethod = <span class="keyword">new</span> <span class="title class_">HandlerMethod</span>(beanName, <span class="built_in">this</span>.getApplicationContext().getAutowireCapableBeanFactory(), method);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        handlerMethod = <span class="keyword">new</span> <span class="title class_">HandlerMethod</span>(handler, method);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RpcHandlerMethod</span>(handlerMethod);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们自定义了自己的 HandlerMethod 对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RpcHandlerMethod</span> <span class="keyword">extends</span> <span class="title class_">HandlerMethod</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">RpcHandlerMethod</span><span class="params">(HandlerMethod handlerMethod)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(handlerMethod);</span><br><span class="line">        initMethodParameters();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">initMethodParameters</span><span class="params">()</span> &#123;</span><br><span class="line">        MethodParameter[] methodParameters = <span class="built_in">super</span>.getMethodParameters();</span><br><span class="line">        Annotation[][] parameterAnnotations = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; methodParameters.length; i++) &#123;</span><br><span class="line">            <span class="type">SynthesizingMethodParameter</span> <span class="variable">methodParameter</span> <span class="operator">=</span> (SynthesizingMethodParameter) methodParameters[i];</span><br><span class="line">            methodParameters[i] = <span class="keyword">new</span> <span class="title class_">RpcMethodParameter</span>(methodParameter);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很容易看到，这里的重点是初始化了自定义的 MethodParameter 对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RpcMethodParameter</span> <span class="keyword">extends</span> <span class="title class_">SynthesizingMethodParameter</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> Annotation[] annotations;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">RpcMethodParameter</span><span class="params">(SynthesizingMethodParameter original)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(original);</span><br><span class="line">        <span class="built_in">this</span>.annotations = initParameterAnnotations();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Annotation[] initParameterAnnotations() &#123;</span><br><span class="line">        List&lt;Annotation&gt; annotationList = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">final</span> Class&lt;?&gt; parameterType = <span class="built_in">this</span>.getParameterType();</span><br><span class="line">        <span class="keyword">if</span> (MvcFuncUtil.isRequestParamClass(parameterType)) &#123;</span><br><span class="line">            annotationList.add(MvcFuncUtil.newRequestParam(MvcFuncUtil.genMvcParamName(<span class="built_in">this</span>.getParameterIndex())));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (MvcFuncUtil.isRequestBodyClass(parameterType)) &#123;</span><br><span class="line">            annotationList.add(MvcFuncUtil.newRequestBody());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> annotationList.toArray(<span class="keyword">new</span> <span class="title class_">Annotation</span>[]&#123;&#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Annotation[] getParameterAnnotations() &#123;</span><br><span class="line">        <span class="keyword">if</span> (annotations != <span class="literal">null</span> &amp;&amp; annotations.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> annotations;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.getParameterAnnotations();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>自定义的 MethodParameter 对象中重写了 getParameterAnnotations 方法，而次方法正是 argumentResolver 用来判断自己是否适合该参数的方法。我们做了些改造使得合适的参数会被合适的参数解析器”误以为”加了对应的注解，从而自己会去进行正常的参数处理逻辑。整个处理流程如下，粉红色部分也正是我们所扩展的点了：</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231225112434079"/></div></div>
+
+<h3 id="RPC-编程模型"><a href="#RPC-编程模型" class="headerlink" title="RPC 编程模型"></a>RPC 编程模型</h3><p>经过改造之后，我们已经可以实现文章开头所描述的透明 RPC 来开发微服务了，整个运行架构变成了下面这样：</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/image-20231225112849318.png"/></div></div>
+
+
+
+<div class="article-footer reveal fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/12/25/%E5%9B%BE%E6%96%87%E8%AE%B2%E8%A7%A3%E5%93%88%E5%B8%8C%E8%A1%A8/">图文讲解哈希表</a></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"><p>本站由 <a href="/">@anonymity</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar">Stellar</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.21.0';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img, .gallery img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
