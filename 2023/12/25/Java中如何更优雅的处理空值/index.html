@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 7.0.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>Java中如何更优雅的处理空值 - Hubert's Blog</title>
+
+  
+    <meta name="description" content="导语在笔者几年的开发经验中，经常看到项目中存在到处空值判断的情况，这些判断，会让人觉得摸不着头绪，它的出现很有可能和当前的业务逻辑并没有关系。但它会让你很头疼。 有时候，更可怕的是系统因为这些空值的情况，会抛出空指针异常，导致业务系统发生问题。 此篇文章，我总结了几种关于空值的处理手法，希望对读者有帮助。 业务中的空值场景存在一个UserSearchService用来提供用户查询的功能: 1234">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java中如何更优雅的处理空值">
+<meta property="og:url" content="https://hubertwongcn.github.io/2023/12/25/Java%E4%B8%AD%E5%A6%82%E4%BD%95%E6%9B%B4%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E7%A9%BA%E5%80%BC/index.html">
+<meta property="og:site_name" content="Hubert&#39;s Blog">
+<meta property="og:description" content="导语在笔者几年的开发经验中，经常看到项目中存在到处空值判断的情况，这些判断，会让人觉得摸不着头绪，它的出现很有可能和当前的业务逻辑并没有关系。但它会让你很头疼。 有时候，更可怕的是系统因为这些空值的情况，会抛出空指针异常，导致业务系统发生问题。 此篇文章，我总结了几种关于空值的处理手法，希望对读者有帮助。 业务中的空值场景存在一个UserSearchService用来提供用户查询的功能: 1234">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-12-25T03:35:32.000Z">
+<meta property="article:modified_time" content="2023-12-25T03:35:32.000Z">
+<meta property="article:author" content="Hubert Wong">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+  
+  
+  
+  <meta name="keywords" content="Java">
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="title" href="/"><div class="main" ff="title">Hubert's Blog</div><div class="sub cap"> Hubert爱猫爱生活</div></a></div>
+
+<nav class="menu dis-select"></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">Java中如何更优雅的处理空值</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%BC%E8%AF%AD"><span class="toc-text">导语</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%9A%E5%8A%A1%E4%B8%AD%E7%9A%84%E7%A9%BA%E5%80%BC"><span class="toc-text">业务中的空值</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF"><span class="toc-text">场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E7%8E%B0%E5%9C%BA"><span class="toc-text">问题现场</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%B1%E5%85%A5listUser%E7%A0%94%E7%A9%B6"><span class="toc-text">深入listUser研究</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%B1%E5%85%A5%E7%A0%94%E7%A9%B6get%E6%96%B9%E6%B3%95"><span class="toc-text">深入研究get方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%B1%E5%85%A5%E5%85%A5%E5%8F%82"><span class="toc-text">深入入参</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A9%BA%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%BC%8F"><span class="toc-text">空对象模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF-1"><span class="toc-text">场景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E4%BF%AE%E6%94%B9"><span class="toc-text">优化修改</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8Optional%E5%8F%AF%E4%BB%A5%E8%BF%9B%E8%A1%8C%E4%BC%98%E5%8C%96"><span class="toc-text">使用Optional可以进行优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Optioanl%E7%9A%84%E6%AD%A3%E7%A1%AE%E4%BD%BF%E7%94%A8"><span class="toc-text">Optioanl的正确使用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Optional%E4%B8%8D%E8%A6%81%E4%BD%9C%E4%B8%BA%E5%8F%82%E6%95%B0"><span class="toc-text">Optional不要作为参数</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Optional%E4%BD%9C%E4%B8%BA%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="toc-text">Optional作为返回值</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BD%93%E4%B8%AA%E5%AE%9E%E4%BD%93%E7%9A%84%E8%BF%94%E5%9B%9E"><span class="toc-text">当个实体的返回</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9B%86%E5%90%88%E5%AE%9E%E4%BD%93%E7%9A%84%E8%BF%94%E5%9B%9E"><span class="toc-text">集合实体的返回</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8Optional%E5%8F%98%E9%87%8F"><span class="toc-text">使用Optional变量</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#getter%E4%B8%AD%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-text">getter中的使用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93-1"><span class="toc-text">小结</span></a></li></ol></li></ol></li></ol></div></div></widget>
+
+
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+
+<div class="bread-nav fs12"><div class="left"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Java/">Java</a></div><div id="post-meta">
+    <span>发布于&nbsp;<time datetime="2023-12-25T03:35:32.000Z">2023-12-25</time></span>
+    
+    <span>更新于&nbsp;<time datetime="2023-12-25T03:35:32.000Z">2023-12-25</time></span>
+    </div></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>Java中如何更优雅的处理空值</span></h1>
+<h2 id="导语"><a href="#导语" class="headerlink" title="导语"></a>导语</h2><p>在笔者几年的开发经验中，经常看到项目中存在到处空值判断的情况，这些判断，会让人觉得摸不着头绪，它的出现很有可能和当前的业务逻辑并没有关系。但它会让你很头疼。</p>
+<p>有时候，更可怕的是系统因为这些空值的情况，会抛出空指针异常，导致业务系统发生问题。</p>
+<p>此篇文章，我总结了几种关于空值的处理手法，希望对读者有帮助。</p>
+<h2 id="业务中的空值"><a href="#业务中的空值" class="headerlink" title="业务中的空值"></a>业务中的空值</h2><h3 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h3><p>存在一个UserSearchService用来提供用户查询的功能:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public interface UserSearchService&#123;  </span><br><span class="line">  List&lt;User&gt; listUser();  </span><br><span class="line">  </span><br><span class="line">  User get(Integer id);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h4 id="问题现场"><a href="#问题现场" class="headerlink" title="问题现场"></a>问题现场</h4><p>对于面向对象语言来讲，抽象层级特别的重要。尤其是对接口的抽象，它在设计和开发中占很大的比重，我们在开发时希望尽量面向接口编程。</p>
+<p>对于以上描述的接口方法来看，大概可以推断出可能它包含了以下两个含义:</p>
+<ul>
+<li>listUser(): 查询用户列表</li>
+<li>get(Integer id): 查询单个用户</li>
+</ul>
+<p>在所有的开发中，XP推崇的TDD模式可以很好的引导我们对接口的定义，所以我们将TDD作为开发代码的”推动者”。</p>
+<p>对于以上的接口，当我们使用TDD进行测试用例先行时，发现了潜在的问题：</p>
+<ul>
+<li>listUser() 如果没有数据，那它是返回空集合还是null呢？</li>
+<li>get(Integer id) 如果没有这个对象，是抛异常还是返回null呢？</li>
+</ul>
+<h4 id="深入listUser研究"><a href="#深入listUser研究" class="headerlink" title="深入listUser研究"></a>深入listUser研究</h4><p>我们先来讨论</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">listUser()  </span><br></pre></td></tr></table></figure>
+
+<p>这个接口，我经常看到如下实现:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public List&lt;User&gt; listUser()&#123;  </span><br><span class="line">    List&lt;User&gt; userList = userListRepostity.selectByExample(new UserExample());  </span><br><span class="line">    if(CollectionUtils.isEmpty(userList))&#123;//spring util工具类  </span><br><span class="line">      return null;  </span><br><span class="line">    &#125;  </span><br><span class="line">    return userList;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>这段代码返回是null,从我多年的开发经验来讲，对于集合这样返回值，最好不要返回null，因为如果返回了null，会给调用者带来很多麻烦。你将会把这种调用风险交给调用者来控制。</p>
+<p>如果调用者是一个谨慎的人，他会进行是否为null的条件判断。如果他并非谨慎，或者他是一个面向接口编程的狂热分子(当然，面向接口编程是正确的方向)，他会按照自己的理解去调用接口，而不进行是否为null的条件判断，如果这样的话，是非常危险的，它很有可能出现空指针异常！</p>
+<p>根据墨菲定律来判断: <strong>“很有可能出现的问题，在将来一定会出现!”</strong></p>
+<p>基于此，我们将它进行优化:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public List&lt;User&gt; listUser()&#123;  </span><br><span class="line">    List&lt;User&gt; userList = userListRepostity.selectByExample(new UserExample());  </span><br><span class="line">    if(CollectionUtils.isEmpty(userList))&#123;  </span><br><span class="line">      return Lists.newArrayList();//guava类库提供的方式  </span><br><span class="line">    &#125;  </span><br><span class="line">    return userList;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>对于接口<code>(List listUser())</code>，它一定会返回List，即使没有数据，它仍然会返回List（集合中没有任何元素）;</p>
+<p>通过以上的修改，我们成功的避免了有可能发生的空指针异常，这样的写法更安全！</p>
+<h4 id="深入研究get方法"><a href="#深入研究get方法" class="headerlink" title="深入研究get方法"></a>深入研究get方法</h4><p>对于接口</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">User get(Integer id)  </span><br></pre></td></tr></table></figure>
+
+<p>你能看到的现象是，我给出id，它一定会给我返回User.但事实真的很有可能不是这样的。</p>
+<p>我看到过的实现:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public User get(Integer id)&#123;  </span><br><span class="line">  return userRepository.selectByPrimaryKey(id);//从数据库中通过id直接获取实体对象  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>相信很多人也都会这样写。</p>
+<p>通过代码的时候得知它的返回值很有可能是null! 但我们通过的接口是分辨不出来的!</p>
+<p>这个是个非常危险的事情。尤其对于调用者来说！</p>
+<p>我给出的建议是，需要在接口明明时补充文档,比如对于异常的说明,使用注解@exception:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public interface UserSearchService&#123;  </span><br><span class="line">  </span><br><span class="line">  /**  </span><br><span class="line">   * 根据用户id获取用户信息  </span><br><span class="line">   * @param id 用户id  </span><br><span class="line">   * @return 用户实体  </span><br><span class="line">   * @exception UserNotFoundException  </span><br><span class="line">   */  </span><br><span class="line">  User get(Integer id);  </span><br><span class="line">  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>我们把接口定义加上了说明之后，调用者会看到，如果调用此接口，很有可能抛出“UserNotFoundException(找不到用户)”这样的异常。</p>
+<p>这种方式可以在调用者调用接口的时候看到接口的定义，但是，这种方式是”弱提示”的！</p>
+<p>如果调用者忽略了注释，有可能就对业务系统产生了风险，这个风险有可能导致一个亿！</p>
+<p><strong>除了以上这种”弱提示”的方式，还有一种方式是，返回值是有可能为空的。那要怎么办呢？</strong></p>
+<p>我认为我们需要增加一个接口，用来描述这种场景.</p>
+<p>引入jdk8的Optional,或者使用guava的Optional.看如下定义:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public interface UserSearchService&#123;  </span><br><span class="line">  </span><br><span class="line">  /**  </span><br><span class="line">   * 根据用户id获取用户信息  </span><br><span class="line">   * @param id 用户id  </span><br><span class="line">   * @return 用户实体,此实体有可能是缺省值  </span><br><span class="line">   */  </span><br><span class="line">  Optional&lt;User&gt; getOptional(Integer id);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>Optional有两个含义: 存在 or 缺省。</p>
+<p>那么通过阅读接口getOptional()，我们可以很快的了解返回值的意图，这个其实是我们想看到的，它去除了二义性。</p>
+<p>它的实现可以写成:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public Optional&lt;User&gt; getOptional(Integer id)&#123;  </span><br><span class="line">  return Optional.ofNullable(userRepository.selectByPrimaryKey(id));  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h4 id="深入入参"><a href="#深入入参" class="headerlink" title="深入入参"></a>深入入参</h4><p>通过上述的所有接口的描述，你能确定入参id一定是必传的吗？我觉得答案应该是：不能确定。除非接口的文档注释上加以说明。</p>
+<p><strong>那如何约束入参呢?</strong></p>
+<p>我给大家推荐两种方式：</p>
+<ul>
+<li>强制约束</li>
+<li>文档性约束（弱提示）</li>
+</ul>
+<p><strong>1.强制约束，我们可以通过jsr 303进行严格的约束声明:</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public interface UserSearchService&#123;  </span><br><span class="line">  /**  </span><br><span class="line">   * 根据用户id获取用户信息  </span><br><span class="line">   * @param id 用户id  </span><br><span class="line">   * @return 用户实体  </span><br><span class="line">   * @exception UserNotFoundException  </span><br><span class="line">   */  </span><br><span class="line">  User get(@NotNull Integer id);  </span><br><span class="line">  </span><br><span class="line">  /**  </span><br><span class="line">   * 根据用户id获取用户信息  </span><br><span class="line">   * @param id 用户id  </span><br><span class="line">   * @return 用户实体,此实体有可能是缺省值  </span><br><span class="line">   */  </span><br><span class="line">  Optional&lt;User&gt; getOptional(@NotNull Integer id);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>当然，这样写，要配合AOP的操作进行验证，但让spring已经提供了很好的集成方案，在此我就不在赘述了。</p>
+<p><strong>2.文档性约束</strong></p>
+<p>在很多时候，我们会遇到遗留代码，对于遗留代码，整体性改造的可能性很小。</p>
+<p>我们更希望通过阅读接口的实现，来进行接口的说明。</p>
+<p>jsr 305规范，给了我们一个描述接口入参的一个方式(需要引入库 com.google.code.findbugs:jsr305):</p>
+<p>可以使用注解: @Nullable @Nonnull @CheckForNull 进行接口说明。比如:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public interface UserSearchService&#123;  </span><br><span class="line">  /**  </span><br><span class="line">   * 根据用户id获取用户信息  </span><br><span class="line">   * @param id 用户id  </span><br><span class="line">   * @return 用户实体  </span><br><span class="line">   * @exception UserNotFoundException  </span><br><span class="line">   */  </span><br><span class="line">  @CheckForNull  </span><br><span class="line">  User get(@NonNull Integer id);  </span><br><span class="line">  </span><br><span class="line">  /**  </span><br><span class="line">   * 根据用户id获取用户信息  </span><br><span class="line">   * @param id 用户id  </span><br><span class="line">   * @return 用户实体,此实体有可能是缺省值  </span><br><span class="line">   */  </span><br><span class="line">  Optional&lt;User&gt; getOptional(@NonNull Integer id);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>通过 空集合返回值,Optional,jsr 303，jsr 305这几种方式，可以让我们的代码可读性更强，出错率更低！</p>
+<ul>
+<li>空集合返回值 ：如果有集合这样返回值时，除非真的有说服自己的理由，否则，一定要返回空集合，而不是null</li>
+<li>Optional: 如果你的代码是jdk8，就引入它！如果不是，则使用Guava的Optional,或者升级jdk版本！它很大程度的能增加了接口的可读性！</li>
+<li>jsr 303: 如果新的项目正在开发，不防加上这个试试！一定有一种特别爽的感觉!</li>
+<li>jsr 305: 如果老的项目在你的手上，你可以尝试的加上这种文档型注解，有助于你后期的重构，或者新功能增加了，对于老接口的理解!</li>
+</ul>
+<h2 id="空对象模式"><a href="#空对象模式" class="headerlink" title="空对象模式"></a>空对象模式</h2><h4 id="场景-1"><a href="#场景-1" class="headerlink" title="场景"></a>场景</h4><p>我们来看一个DTO转化的场景，对象:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@Data  </span><br><span class="line">static class PersonDTO&#123;  </span><br><span class="line">  private String dtoName;  </span><br><span class="line">  private String dtoAge;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line">@Data  </span><br><span class="line">static class Person&#123;  </span><br><span class="line">  private String name;  </span><br><span class="line">  private String age;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>需求是将Person对象转化成PersonDTO，然后进行返回。</p>
+<p>当然对于实际操作来讲，返回如果Person为空，将返回null,但是PersonDTO是不能返回null的（尤其Rest接口返回的这种DTO）。</p>
+<p>在这里，我们只关注转化操作，看如下代码:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@Test  </span><br><span class="line">public void shouldConvertDTO()&#123;  </span><br><span class="line">  </span><br><span class="line">  PersonDTO personDTO = new PersonDTO();  </span><br><span class="line">  </span><br><span class="line">  Person person = new Person();  </span><br><span class="line">  if(!Objects.isNull(person))&#123;  </span><br><span class="line">    personDTO.setDtoAge(person.getAge());  </span><br><span class="line">    personDTO.setDtoName(person.getName());  </span><br><span class="line">  &#125;else&#123;  </span><br><span class="line">    personDTO.setDtoAge(&quot;&quot;);  </span><br><span class="line">    personDTO.setDtoName(&quot;&quot;);  </span><br><span class="line">  &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<h4 id="优化修改"><a href="#优化修改" class="headerlink" title="优化修改"></a>优化修改</h4><p>这样的数据转化，我们认识可读性非常差，每个字段的判断，如果是空就设置为空字符串(“”)</p>
+<p>换一种思维方式进行思考，我们是拿到Person这个类的数据，然后进行赋值操作(setXXX),其实是不关系Person的具体实现是谁的。</p>
+<p>那我们可以创建一个Person子类:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">static class NullPerson extends Person&#123;  </span><br><span class="line">  @Override  </span><br><span class="line">  public String getAge() &#123;  </span><br><span class="line">    return &quot;&quot;;  </span><br><span class="line">  &#125;  </span><br><span class="line">  </span><br><span class="line">  @Override  </span><br><span class="line">  public String getName() &#123;  </span><br><span class="line">    return &quot;&quot;;  </span><br><span class="line">  &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>它作为Person的一种特例而存在，如果当Person为空的时候，则返回一些get*的默认行为.</p>
+<p>所以代码可以修改为:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@Test  </span><br><span class="line"> public void shouldConvertDTO()&#123;  </span><br><span class="line">  </span><br><span class="line">   PersonDTO personDTO = new PersonDTO();  </span><br><span class="line">  </span><br><span class="line">   Person person = getPerson();  </span><br><span class="line">   personDTO.setDtoAge(person.getAge());  </span><br><span class="line">   personDTO.setDtoName(person.getName());  </span><br><span class="line"> &#125;  </span><br><span class="line">  </span><br><span class="line"> private Person getPerson()&#123;  </span><br><span class="line">   return new NullPerson();//如果Person是null ,则返回空对象  </span><br><span class="line"> &#125;  </span><br></pre></td></tr></table></figure>
+
+<p>其中getPerson()方法，可以用来根据业务逻辑获取Person有可能的对象（对当前例子来讲，如果Person不存在，返回Person的的特例NUllPerson），如果修改成这样，代码的可读性就会变的很强了。</p>
+<h4 id="使用Optional可以进行优化"><a href="#使用Optional可以进行优化" class="headerlink" title="使用Optional可以进行优化"></a>使用Optional可以进行优化</h4><p>空对象模式，它的弊端在于需要创建一个特例对象，但是如果特例的情况比较多，我们是不是需要创建多个特例对象呢，虽然我们也使用了面向对象的多态特性，但是，业务的复杂性如果真的让我们创建多个特例对象，我们还是要再三考虑一下这种模式，它可能会带来代码的复杂性。</p>
+<p>对于上述代码，还可以使用Optional进行优化。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@Test  </span><br><span class="line">  public void shouldConvertDTO()&#123;  </span><br><span class="line">  </span><br><span class="line">    PersonDTO personDTO = new PersonDTO();  </span><br><span class="line">  </span><br><span class="line">    Optional.ofNullable(getPerson()).ifPresent(person -&gt; &#123;  </span><br><span class="line">      personDTO.setDtoAge(person.getAge());  </span><br><span class="line">      personDTO.setDtoName(person.getName());  </span><br><span class="line">    &#125;);  </span><br><span class="line">  &#125;  </span><br><span class="line">  </span><br><span class="line">  private Person getPerson()&#123;  </span><br><span class="line">    return null;  </span><br><span class="line">  &#125;  </span><br></pre></td></tr></table></figure>
+
+<p>Optional对空值的使用，我觉得更为贴切，它只适用于”是否存在”的场景。</p>
+<p>如果只对控制的存在判断，我建议使用Optional.</p>
+<h4 id="Optioanl的正确使用"><a href="#Optioanl的正确使用" class="headerlink" title="Optioanl的正确使用"></a>Optioanl的正确使用</h4><p>Optional如此强大，它表达了计算机最原始的特性(0 or 1),那它如何正确的被使用呢!</p>
+<h4 id="Optional不要作为参数"><a href="#Optional不要作为参数" class="headerlink" title="Optional不要作为参数"></a>Optional不要作为参数</h4><p>如果你写了一个public方法，这个方法规定了一些输入参数，这些参数中有一些是可以传入null的，那这时候是否可以使用Optional呢？</p>
+<p><strong>我给的建议是: 一定不要这样使用!</strong></p>
+<p>举个例子:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface UserService&#123;  </span><br><span class="line">  List&lt;User&gt; listUser(Optional&lt;String&gt; username);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>这个例子的方法 listUser,可能在告诉我们需要根据username查询所有数据集合，如果username是空，也要返回所有的用户集合.</p>
+<p>当我们看到这个方法的时候，会觉得有一些歧义:</p>
+<blockquote>
+<p>“如果username是absent,是返回空集合吗？还是返回全部的用户数据集合？”</p>
+</blockquote>
+<p>Optioanl是一种分支的判断，那我们究竟是关注 Optional还是Optional.get()呢？</p>
+<p><strong>我给大家的建议是，如果不想要这样的歧义，就不要使用它！</strong></p>
+<p>如果你真的想表达两个含义，就給它拆分出两个接口:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public interface UserService&#123;  </span><br><span class="line">  List&lt;User&gt; listUser(String username);  </span><br><span class="line">  List&lt;User&gt; listUser();  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>我觉得这样的语义更强，并且更能满足 软件设计原则中的 “单一职责”。</p>
+<p>如果你觉得你的入参真的有必要可能传null,那请使用jsr 303或者jsr 305进行说明和验证!</p>
+<p><strong>请记住! Optional不能作为入参的参数!</strong></p>
+<h2 id="Optional作为返回值"><a href="#Optional作为返回值" class="headerlink" title="Optional作为返回值"></a>Optional作为返回值</h2><h4 id="当个实体的返回"><a href="#当个实体的返回" class="headerlink" title="当个实体的返回"></a>当个实体的返回</h4><p>那Optioanl可以做为返回值吗？</p>
+<p>其实它是非常满足是否存在这个语义的。</p>
+<p>你如说，你要根据id获取用户信息，这个用户有可能存在或者不存在。</p>
+<p>你可以这样使用:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface UserService&#123;  </span><br><span class="line">  Optional&lt;User&gt; get(Integer id);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>当调用这个方法的时候，调用者很清楚get方法返回的数据，有可能不存在，这样可以做一些更合理的判断，更好的防止空指针的错误！</p>
+<p>当然，如果业务方真的需要根据id必须查询出User的话，就不要这样使用了，请说明，你要抛出的异常.</p>
+<p>只有当考虑它返回null是合理的情况下，才进行Optional的返回</p>
+<h4 id="集合实体的返回"><a href="#集合实体的返回" class="headerlink" title="集合实体的返回"></a>集合实体的返回</h4><p>不是所有的返回值都可以这样用的！如果你返回的是集合：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public interface UserService&#123;  </span><br><span class="line">  Optional&lt;List&lt;User&gt;&gt; listUser();  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<p>这样的返回结果，会让调用者不知所措，是否我判断Optional之后，还用进行isEmpty的判断呢？</p>
+<p>这样带来的返回值歧义！我认为是没有必要的。</p>
+<p>我们要约定，对于List这种集合返回值，如果集合真的是null的，请返回空集合(Lists.newArrayList);</p>
+<h2 id="使用Optional变量"><a href="#使用Optional变量" class="headerlink" title="使用Optional变量"></a>使用Optional变量</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Optional&lt;User&gt; userOpt = ...  </span><br></pre></td></tr></table></figure>
+
+<p>如果有这样的变量userOpt,请记住 ：</p>
+<ul>
+<li>一定不能直接使用get ，如果这样用，就丧失了Optional本身的含义 （ 比如userOp.get() ）</li>
+<li>不要直接使用getOrThrow ,如果你有这样的需求：获取不到就抛异常。那就要考虑，是否是调用的接口设计的是否合理</li>
+</ul>
+<h4 id="getter中的使用"><a href="#getter中的使用" class="headerlink" title="getter中的使用"></a>getter中的使用</h4><p>对于一个java bean,所有的属性都有可能返回null,那是否需要改写所有的getter成为Optional类型呢？</p>
+<p><strong>我给大家的建议是，不要这样滥用Optional.</strong></p>
+<p>即便 我java bean中的getter是符合Optional的，但是因为java bean 太多了，这样会导致你的代码有50%以上进行Optinal的判断，这样便污染了代码。(我想说，其实你的实体中的字段应该都是由业务含义的，会认真的思考过它存在的价值的，不能因为Optional的存在而滥用)</p>
+<p>我们应该更关注于业务，而不只是空值的判断。</p>
+<p>请不要在getter中滥用Optional.</p>
+<h4 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h4><p>可以这样总结Optional的使用：</p>
+<ul>
+<li>当使用值为空的情况，并非源于错误时，可以使用Optional!</li>
+<li>Optional不要用于集合操作!</li>
+<li>不要滥用Optional,比如在java bean的getter中!</li>
+</ul>
+
+
+
+<div class="article-footer reveal fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/12/25/Redis-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%EF%BC%8C%E9%85%BF%E6%88%90%E4%B8%80%E4%B8%AA%E9%87%8D%E5%A4%A7%E4%BA%8B%E6%95%85/">Redis 分布式锁使用不当，酿成一个重大事故</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/12/25/Java-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%EF%BC%9A35-%E4%B8%AA%E5%B0%8F%E7%BB%86%E8%8A%82%EF%BC%8C%E6%8F%90%E5%8D%87%E4%BD%A0%E7%9A%84-Java-%E4%BB%A3%E7%A0%81%E8%BF%90%E8%A1%8C%E6%95%88%E7%8E%87/">Java 性能优化：35 个小细节，提升你的 Java 代码运行效率</a></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"><p>本站由 <a href="/">@anonymity</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar">Stellar</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.21.0';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img, .gallery img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
