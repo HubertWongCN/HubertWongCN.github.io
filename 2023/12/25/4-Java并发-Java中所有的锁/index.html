@@ -30,9 +30,9 @@
 <meta property="og:site_name" content="Hubert&#39;s Blog">
 <meta property="og:description" content="Java提供了种类丰富的锁，每种锁因其特性的不同，在适当的场景下能够展现出非常高的效率。本文旨在对锁相关源码（本文中的源码来自JDK 8和Netty 3.10.6）、使用场景进行举例，为读者介绍主流锁的知识点，以及不同的锁的适用场景。  前言Java提供了种类丰富的锁，每种锁因其特性的不同，在适当的场景下能够展现出非常高的效率。本文旨在对锁相关源码（本文中的源码来自JDK 8和Netty 3.1">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-lock-1.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-lock-2.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-lock-4.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261908340.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261908434.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261909775.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-lock-6.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-lock-7.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-lock-8.png">
@@ -46,7 +46,7 @@
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="多线程与并发">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-lock-1.png">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261908340.png">
   
   
   
@@ -122,7 +122,7 @@
 </blockquote>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Java提供了种类丰富的锁，每种锁因其特性的不同，在适当的场景下能够展现出非常高的效率。本文旨在对锁相关源码（本文中的源码来自JDK 8和Netty 3.10.6）、使用场景进行举例，为读者介绍主流锁的知识点，以及不同的锁的适用场景。</p>
 <p>Java中往往是按照是否含有某一特性来定义锁，我们通过特性将锁进行分组归类，再使用对比的方式进行介绍，帮助大家更快捷的理解相关知识。下面给出本文内容的总体分类目录：</p>
-<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-lock-1.png"/></div></div>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261908340.png"/></div></div>
 
 <h2 id="1-乐观锁-VS-悲观锁"><a href="#1-乐观锁-VS-悲观锁" class="headerlink" title="1. 乐观锁 VS 悲观锁"></a>1. 乐观锁 VS 悲观锁</h2><blockquote>
 <p>乐观锁与悲观锁是一种广义上的概念，体现了看待线程同步的不同角度。在Java和数据库中都有此概念对应的实际应用。</p>
@@ -130,7 +130,7 @@
 <p>先说概念。对于同一个数据的并发操作，悲观锁认为自己在使用数据的时候一定有别的线程来修改数据，因此在获取数据的时候会先加锁，确保数据不会被别的线程修改。Java中，synchronized关键字和Lock的实现类都是悲观锁。</p>
 <p>而乐观锁认为自己在使用数据时不会有别的线程修改数据，所以不会添加锁，只是在更新数据的时候去判断之前有没有别的线程更新了这个数据。如果这个数据没有被更新，当前线程将自己修改的数据成功写入。如果数据已经被其他线程更新，则根据不同的实现方式执行不同的操作（例如报错或者自动重试）。</p>
 <p>乐观锁在Java中是通过使用无锁编程来实现，最常采用的是CAS算法，Java原子类中的递增操作就通过CAS自旋实现的。</p>
-<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-lock-2.png"/></div></div>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261908434.png"/></div></div>
 
 <p>根据从上面的概念描述我们可以发现：</p>
 <ul>
@@ -147,11 +147,12 @@
 <p>阻塞或唤醒一个Java线程需要操作系统切换CPU状态来完成，这种状态转换需要耗费处理器时间。如果同步代码块中的内容过于简单，状态转换消耗的时间有可能比用户代码执行的时间还要长。</p>
 <p>在许多场景中，同步资源的锁定时间很短，为了这一小段时间去切换线程，线程挂起和恢复现场的花费可能会让系统得不偿失。如果物理机器有多个处理器，能够让两个或以上的线程同时并行执行，我们就可以让后面那个请求锁的线程不放弃CPU的执行时间，看看持有锁的线程是否很快就会释放锁。</p>
 <p>而为了让当前线程“稍等一下”，我们需让当前线程进行自旋，如果在自旋完成后前面锁定同步资源的线程已经释放了锁，那么当前线程就可以不必阻塞而是直接获取同步资源，从而避免切换线程的开销。这就是自旋锁。</p>
-<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-lock-4.png"/></div></div>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261909775.png"/></div></div>
 
 <p>自旋锁本身是有缺点的，它不能代替阻塞。自旋等待虽然避免了线程切换的开销，但它要占用处理器时间。如果锁被占用的时间很短，自旋等待的效果就会非常好。反之，如果锁被占用的时间很长，那么自旋的线程只会白浪费处理器资源。所以，自旋等待的时间必须要有一定的限度，如果自旋超过了限定次数（默认是10次，可以使用-XX:PreBlockSpin来更改）没有成功获得锁，就应当挂起线程。</p>
 <p>自旋锁的实现原理同样也是CAS，AtomicInteger中调用unsafe进行自增操作的源码中的do-while循环就是一个自旋操作，如果修改数值失败则通过循环来执行自旋，直至修改成功。</p>
 <p>自旋锁相关可以看[关键字 - synchronized详解 - 自旋锁与自适应自旋锁](/2023/12/25/5-%E5%85%B3%E9%94%AE%E5%AD%97-synchronized%E8%AF%A6%E8%A7%A3/###自旋锁与自适应自旋锁)</p>
+<p><a href="/2023/12/25/5-%E5%85%B3%E9%94%AE%E5%AD%97-synchronized%E8%AF%A6%E8%A7%A3/###自旋锁与自适应自旋锁">hexo 安装</a></p>
 <h2 id="3-无锁-VS-偏向锁-VS-轻量级锁-VS-重量级锁"><a href="#3-无锁-VS-偏向锁-VS-轻量级锁-VS-重量级锁" class="headerlink" title="3. 无锁 VS 偏向锁 VS 轻量级锁 VS 重量级锁"></a>3. 无锁 VS 偏向锁 VS 轻量级锁 VS 重量级锁</h2><blockquote>
 <p>这四种锁是指锁的状态，专门针对synchronized的。在介绍这四种锁状态之前还需要介绍一些额外的知识。</p>
 </blockquote>
