@@ -30,17 +30,17 @@
 <meta property="og:site_name" content="Hubert&#39;s Blog">
 <meta property="og:description" content="相比Sychronized(重量级锁，对系统性能影响较大)，volatile提供了另一种解决可见性和有序性问题的方案。  带着BAT大厂的面试问题去理解volatile 提示 请带着这些问题继续后文，会很大程度上帮助你更好的理解volatile。   volatile关键字的作用是什么? volatile能保证原子性吗? 之前32位机器上共享的long和double变量的为什么要用volatil">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-volatile-1.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-volatile-2.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-volatile-3.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-volatile-4.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261932880.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261933925.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261933631.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261933756.png">
 <meta property="article:published_time" content="2023-12-25T07:37:20.000Z">
 <meta property="article:modified_time" content="2023-12-25T07:37:20.000Z">
 <meta property="article:author" content="Hubert Wong">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="多线程与并发">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-volatile-1.png">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261932880.png">
   
   
   
@@ -210,13 +210,13 @@
 <li>根据 volatile 规则：2 happens-before 3。</li>
 <li>根据 happens-before 的传递性规则：1 happens-before 4。</li>
 </ul>
-<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-volatile-1.png"/></div></div>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261932880.png"/></div></div>
 
 <p>因为以上规则，当线程 A 将 volatile 变量 flag 更改为 true 后，线程 B 能够迅速感知。</p>
 <h4 id="volatile-禁止重排序"><a href="#volatile-禁止重排序" class="headerlink" title="volatile 禁止重排序"></a>volatile 禁止重排序</h4><p>为了性能优化，JMM 在不改变正确语义的前提下，会允许编译器和处理器对指令序列进行重排序。JMM 提供了内存屏障阻止这种重排序。</p>
 <p>Java 编译器会在生成指令系列时在适当的位置会插入内存屏障指令来禁止特定类型的处理器重排序。</p>
 <p>JMM 会针对编译器制定 volatile 重排序规则表。</p>
-<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-volatile-2.png"/></div></div>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261933925.png"/></div></div>
 
 <p>“ NO “ 表示禁止重排序。</p>
 <p>为了实现 volatile 内存语义时，编译器在生成字节码时，会在指令序列中插入内存屏障来禁止特定类型的处理器重排序。</p>
@@ -252,9 +252,9 @@
 <td>禁止下面所有的普通写操作和上面的 volatile 读重排序。</td>
 </tr>
 </tbody></table>
-<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-volatile-3.png"/></div></div>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261933631.png"/></div></div>
 
-<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-volatile-4.png"/></div></div>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261933756.png"/></div></div>
 
 <h2 id="volatile-的应用场景"><a href="#volatile-的应用场景" class="headerlink" title="volatile 的应用场景"></a>volatile 的应用场景</h2><p>使用 volatile 必须具备的条件</p>
 <ul>
