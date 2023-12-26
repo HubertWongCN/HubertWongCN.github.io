@@ -208,9 +208,7 @@
 <p>在Java里面，可以通过volatile关键字来保证一定的“有序性”（具体原理在下一节讲述）。另外可以通过synchronized和Lock来保证有序性，很显然，synchronized和Lock保证每个时刻是有一个线程执行同步代码，相当于是让线程顺序执行同步代码，自然就保证了有序性。当然JMM是通过Happens-Before 规则来保证有序性的。</p>
 <h3 id="关键字-volatile、synchronized-和-final"><a href="#关键字-volatile、synchronized-和-final" class="headerlink" title="关键字: volatile、synchronized 和 final"></a>关键字: volatile、synchronized 和 final</h3><p>以下三篇文章详细分析了这三个关键字：</p>
 <ul>
-<li><a href="">关键字: synchronized详解</a></li>
-<li><a href="">关键字: volatile详解</a></li>
-<li><a href="">关键字: final详解</a></li>
+<li>Dd</li>
 </ul>
 <h3 id="Happens-Before-规则"><a href="#Happens-Before-规则" class="headerlink" title="Happens-Before 规则"></a>Happens-Before 规则</h3><p>上面提到了可以用 volatile 和 synchronized 来保证有序性。除此之外，JVM 还规定了先行发生原则，让一个操作无需控制就能先于另一个操作完成。</p>
 <h4 id="1-单一线程原则"><a href="#1-单一线程原则" class="headerlink" title="1. 单一线程原则"></a>1. 单一线程原则</h4><blockquote>
@@ -286,12 +284,11 @@
 <h2 id="线程安全的实现方法"><a href="#线程安全的实现方法" class="headerlink" title="线程安全的实现方法"></a>线程安全的实现方法</h2><h3 id="1-互斥同步"><a href="#1-互斥同步" class="headerlink" title="1. 互斥同步"></a>1. 互斥同步</h3><p>synchronized 和 ReentrantLock。</p>
 <p>初步了解你可以看：</p>
 <ul>
-<li><a href="">Java 并发 - 线程基础：线程互斥同步</a></li>
+<li>[Java 并发 - 线程基础：线程互斥同步](/2023/12/25/3-Java-%E5%B9%B6%E5%8F%91-%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80/#线程互斥同步)</li>
 </ul>
 <p>详细分析请看：</p>
 <ul>
-<li><a href="">关键字: Synchronized详解</a></li>
-<li><a href="">JUC锁: ReentrantLock详解</a></li>
+<li>aa</li>
 </ul>
 <h3 id="2-非阻塞同步"><a href="#2-非阻塞同步" class="headerlink" title="2. 非阻塞同步"></a>2. 非阻塞同步</h3><p>互斥同步最主要的问题就是线程阻塞和唤醒所带来的性能问题，因此这种同步也称为阻塞同步。</p>
 <p>互斥同步属于一种悲观的并发策略，总是认为只要不去做正确的同步措施，那就肯定会出现问题。无论共享数据是否真的会出现竞争，它都要进行加锁(这里讨论的是概念模型，实际上虚拟机会优化掉很大一部分不必要的加锁)、用户态核心态转换、维护锁计数器和检查是否有被阻塞的线程需要唤醒等操作。</p>
@@ -315,7 +312,7 @@
 <p>J.U.C 包提供了一个带有标记的原子引用类 AtomicStampedReference 来解决这个问题，它可以通过控制变量值的版本来保证 CAS 的正确性。大部分情况下 ABA 问题不会影响程序并发的正确性，如果需要解决 ABA 问题，改用传统的互斥同步可能会比原子类更高效。</p>
 <p>CAS, Unsafe和原子类详细分析请看：</p>
 <ul>
-<li><a href="">JUC原子类: CAS, Unsafe和原子类详解</a></li>
+<li>Qq</li>
 </ul>
 <h3 id="3-无同步方案"><a href="#3-无同步方案" class="headerlink" title="3. 无同步方案"></a>3. 无同步方案</h3><p>要保证线程安全，并不是一定就要进行同步。如果一个方法本来就不涉及共享数据，那它自然就无须任何同步措施去保证正确性。</p>
 <p><strong>(一)栈封闭</strong></p>
@@ -324,10 +321,7 @@
 
 <p>更详细的分析请看J.U.C中线程池相关内容详解：</p>
 <ul>
-<li><a href="">JUC线程池: FutureTask详解</a></li>
-<li><a href="">JUC线程池: ThreadPoolExecutor详解</a></li>
-<li><a href="">JUC线程池: ScheduledThreadPool详解</a></li>
-<li><a href="">JUC线程池: Fork&#x2F;Join框架详解</a></li>
+<li>ii</li>
 </ul>
 <p><strong>(二)线程本地存储(Thread Local Storage)</strong></p>
 <p>如果一段代码中所需要的数据必须与其他代码共享，那就看看这些共享数据的代码是否能保证在同一个线程中执行。如果能保证，我们就可以把共享数据的可见范围限制在同一个线程之内，这样，无须同步也能保证线程之间不出现数据争用的问题。</p>
@@ -356,7 +350,7 @@
 
 <p>ThreadLocal 从理论上讲并不是用来解决多线程并发问题的，因为根本不存在多线程竞争。</p>
 <p>在一些场景 (尤其是使用线程池) 下，由于 ThreadLocal.ThreadLocalMap 的底层数据结构导致 ThreadLocal 有内存泄漏的情况，应该尽可能在每次使用 ThreadLocal 后手动调用 remove()，以避免出现 ThreadLocal 经典的内存泄漏甚至是造成自身业务混乱的风险。</p>
-<p>更详细的分析看：<a href="">Java 并发 - ThreadLocal详解</a></p>
+<p>更详细的分析看：kk</p>
 <p><strong>(三)可重入代码(Reentrant Code)</strong></p>
 <p>这种代码也叫做纯代码(Pure Code)，可以在代码执行的任何时刻中断它，转而去执行另外一段代码(包括递归调用它本身)，而在控制权返回后，原来的程序不会出现任何错误。</p>
 <p>可重入代码有一些共同的特征，例如不依赖存储在堆上的数据和公用的系统资源、用到的状态量都由参数中传入、不调用非可重入的方法等。</p>
