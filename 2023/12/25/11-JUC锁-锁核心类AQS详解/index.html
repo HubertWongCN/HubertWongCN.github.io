@@ -172,7 +172,7 @@
 <p>同步器的设计是基于模板方法模式的，如果需要自定义同步器一般的方式是这样(模板方法模式很经典的一个应用)：</p>
 </blockquote>
 <p>使用者继承AbstractQueuedSynchronizer并重写指定的方法。(这些重写方法很简单，无非是对于共享资源state的获取和释放) 将AQS组合在自定义同步组件的实现中，并调用其模板方法，而这些模板方法会调用使用者重写的方法。</p>
-<p>这和我们以往通过实现接口的方式有很大区别，模板方法模式请参看：17 详解  </p>
+<p>这和我们以往通过实现接口的方式有很大区别，模板方法模式请参看：<a href="/2023/12/26/17-%E8%A1%8C%E4%B8%BA%E5%9E%8B-%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95-Template-Method/" title="17.行为型 - 模板方法(Template Method)">通设计模式行为型 - 模板方法(Template Method</a> 详解  </p>
 <p>AQS使用了模板方法模式，自定义同步器时需要重写下面几个AQS提供的模板方法：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">isHeldExclusively()<span class="comment">//该线程是否正在独占资源。只有用到condition才需要去实现它。</span></span><br><span class="line">tryAcquire(<span class="type">int</span>)<span class="comment">//独占方式。尝试获取资源，成功则返回true，失败则返回false。</span></span><br><span class="line">tryRelease(<span class="type">int</span>)<span class="comment">//独占方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br><span class="line">tryAcquireShared(<span class="type">int</span>)<span class="comment">//共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。</span></span><br><span class="line">tryReleaseShared(<span class="type">int</span>)<span class="comment">//共享方式。尝试释放资源，成功则返回true，失败则返回false。</span></span><br></pre></td></tr></table></figure>
 
