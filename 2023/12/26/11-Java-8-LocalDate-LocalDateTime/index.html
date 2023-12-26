@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 7.0.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>11.Java 8 - LocalDate/LocalDateTime - Hubert's Blog</title>
+
+  
+    <meta name="description" content="理解时间和日期库需要理解如下问题:   Java8之前的Date有哪些槽点? Java8之前使用哪些常用的第三方时间库? Java8关于时间和日期有哪些类和方法，变比Java8之前它的特点是什么? 其它语言时间库?   Java8之前的Date有哪些槽点 Tiago Fernandez做过一次投票，选举最烂的JAVA API，排第一的EJB2.X，第二的就是日期API。  槽点一最开始的时候，D">
+<meta property="og:type" content="article">
+<meta property="og:title" content="11.Java 8 - LocalDate&#x2F;LocalDateTime">
+<meta property="og:url" content="https://hubertwongcn.github.io/2023/12/26/11-Java-8-LocalDate-LocalDateTime/index.html">
+<meta property="og:site_name" content="Hubert&#39;s Blog">
+<meta property="og:description" content="理解时间和日期库需要理解如下问题:   Java8之前的Date有哪些槽点? Java8之前使用哪些常用的第三方时间库? Java8关于时间和日期有哪些类和方法，变比Java8之前它的特点是什么? 其它语言时间库?   Java8之前的Date有哪些槽点 Tiago Fernandez做过一次投票，选举最烂的JAVA API，排第一的EJB2.X，第二的就是日期API。  槽点一最开始的时候，D">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-12-26T14:54:04.000Z">
+<meta property="article:modified_time" content="2023-12-26T14:54:04.000Z">
+<meta property="article:author" content="Hubert Wong">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="Java8">
+<meta property="article:tag" content="新特性">
+<meta name="twitter:card" content="summary">
+  
+  
+  
+  <meta name="keywords" content="Java,Java8,新特性">
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="title" href="/"><div class="main" ff="title">Hubert's Blog</div><div class="sub cap"> Hubert爱猫爱生活</div></a></div>
+
+<nav class="menu dis-select"></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">11.Java 8 - LocalDate/LocalDateTime</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java8%E4%B9%8B%E5%89%8D%E7%9A%84Date%E6%9C%89%E5%93%AA%E4%BA%9B%E6%A7%BD%E7%82%B9"><span class="toc-text">Java8之前的Date有哪些槽点</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A7%BD%E7%82%B9%E4%B8%80"><span class="toc-text">槽点一</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A7%BD%E7%82%B9%E4%BA%8C"><span class="toc-text">槽点二</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A7%BD%E7%82%B9%E4%B8%89"><span class="toc-text">槽点三</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A7%BD%E7%82%B9%E5%9B%9B"><span class="toc-text">槽点四</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Java8%E6%97%B6%E9%97%B4%E5%92%8C%E6%97%A5%E6%9C%9F"><span class="toc-text">Java8时间和日期</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E6%A6%82%E8%A7%88"><span class="toc-text">类概览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E6%A6%82%E8%A7%88"><span class="toc-text">方法概览</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E4%BE%8B%E5%AD%90"><span class="toc-text">一些例子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E5%AE%83%E8%AF%AD%E8%A8%80%E6%97%B6%E9%97%B4"><span class="toc-text">其它语言时间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></div></div></widget>
+
+
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+
+<div class="bread-nav fs12"><div class="left"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Java/">Java</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/%E6%96%B0%E7%89%B9%E6%80%A7/">新特性</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/%E6%96%B0%E7%89%B9%E6%80%A7/Java8/">Java8</a></div><div id="post-meta">
+    <span>发布于&nbsp;<time datetime="2023-12-26T14:54:04.000Z">2023-12-26</time></span>
+    
+    <span>更新于&nbsp;<time datetime="2023-12-26T14:54:04.000Z">2023-12-26</time></span>
+    </div></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>11.Java 8 - LocalDate/LocalDateTime</span></h1>
+<blockquote>
+<p>理解时间和日期库需要理解如下问题: </p>
+<ul>
+<li>Java8之前的Date有哪些槽点?</li>
+<li>Java8之前使用哪些常用的第三方时间库?</li>
+<li>Java8关于时间和日期有哪些类和方法，变比Java8之前它的特点是什么?</li>
+<li>其它语言时间库?</li>
+</ul>
+</blockquote>
+<h2 id="Java8之前的Date有哪些槽点"><a href="#Java8之前的Date有哪些槽点" class="headerlink" title="Java8之前的Date有哪些槽点"></a>Java8之前的Date有哪些槽点</h2><blockquote>
+<p>Tiago Fernandez做过一次投票，选举最烂的JAVA API，排第一的EJB2.X，第二的就是日期API。</p>
+</blockquote>
+<h4 id="槽点一"><a href="#槽点一" class="headerlink" title="槽点一"></a>槽点一</h4><p>最开始的时候，Date既要承载日期信息，又要做日期之间的转换，还要做不同日期格式的显示，职责较繁杂(不懂单一职责，你妈妈知道吗? 纯属恶搞~哈哈)</p>
+<p>后来从JDK 1.1 开始，这三项职责分开了:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">使用Calendar类实现日期和时间字段之间转换；</span><br><span class="line">使用DateFormat类来格式化和分析日期字符串；</span><br><span class="line">而Date只用来承载日期和时间信息。</span><br></pre></td></tr></table></figure>
+
+<p>原有Date中的相应方法已废弃。不过，无论是Date，还是Calendar，都用着太不方便了，这是API没有设计好的地方。</p>
+<h4 id="槽点二"><a href="#槽点二" class="headerlink" title="槽点二"></a>槽点二</h4><p>坑爹的year和month</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Date</span> <span class="variable">date</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Date</span>(<span class="number">2012</span>,<span class="number">1</span>,<span class="number">1</span>);</span><br><span class="line">System.out.println(date);</span><br><span class="line">输出Thu Feb <span class="number">01</span> <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> CST <span class="number">3912</span></span><br></pre></td></tr></table></figure>
+
+<p>观察输出结果，year是2012+1900，而month，月份参数我不是给了1吗? 怎么输出二月(Feb)了?</p>
+<p>应该曾有人告诉你，如果你要设置日期，应该使用 java.util.Calendar，像这样…</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Calendar</span> <span class="variable">calendar</span> <span class="operator">=</span> Calendar.getInstance();</span><br><span class="line">calendar.set(<span class="number">2013</span>, <span class="number">8</span>, <span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+
+<p>这样写又不对了，calendar的month也是从0开始的，表达8月份应该用7这个数字，要么就干脆用枚举</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">calendar.set(<span class="number">2013</span>, Calendar.AUGUST, <span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+
+<p>注意上面的代码，Calendar年份的传值不需要减去1900(当然月份的定义和Date还是一样)，这种不一致真是让人抓狂！</p>
+<p>有些人可能知道，Calendar相关的API是IBM捐出去的，所以才导致不一致。</p>
+<h4 id="槽点三"><a href="#槽点三" class="headerlink" title="槽点三"></a>槽点三</h4><p>java.util.Date与java.util.Calendar中的所有属性都是可变的</p>
+<p>下面的代码，计算两个日期之间的天数….</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">Calendar</span> <span class="variable">birth</span> <span class="operator">=</span> Calendar.getInstance();</span><br><span class="line">    birth.set(<span class="number">1975</span>, Calendar.MAY, <span class="number">26</span>);</span><br><span class="line">    <span class="type">Calendar</span> <span class="variable">now</span> <span class="operator">=</span> Calendar.getInstance();</span><br><span class="line">    System.out.println(daysBetween(birth, now));</span><br><span class="line">    System.out.println(daysBetween(birth, now)); <span class="comment">// 显示 0? </span></span><br><span class="line"> &#125;  </span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">long</span> <span class="title function_">daysBetween</span><span class="params">(Calendar begin, Calendar end)</span> &#123;</span><br><span class="line">    <span class="type">long</span> <span class="variable">daysBetween</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(begin.before(end)) &#123;</span><br><span class="line">        begin.add(Calendar.DAY_OF_MONTH, <span class="number">1</span>);</span><br><span class="line">        daysBetween++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> daysBetween;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>daysBetween有点问题，如果连续计算两个Date实例的话，第二次会取得0，因为Calendar状态是可变的，考虑到重复计算的场合，最好复制一个新的Calendar</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">long</span> <span class="title function_">daysBetween</span><span class="params">(Calendar begin, Calendar end)</span> &#123;</span><br><span class="line">    <span class="type">Calendar</span> <span class="variable">calendar</span> <span class="operator">=</span> (Calendar) begin.clone(); <span class="comment">// 复制</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">daysBetween</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(calendar.before(end)) &#123;</span><br><span class="line">        calendar.add(Calendar.DAY_OF_MONTH, <span class="number">1</span>);</span><br><span class="line">        daysBetween++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> daysBetween;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="槽点四"><a href="#槽点四" class="headerlink" title="槽点四"></a>槽点四</h4><p>SimpleDateTimeFormat是非线程安全的。</p>
+<h2 id="Java8时间和日期"><a href="#Java8时间和日期" class="headerlink" title="Java8时间和日期"></a>Java8时间和日期</h2><h3 id="类概览"><a href="#类概览" class="headerlink" title="类概览"></a>类概览</h3><p>Java 8仍然延用了ISO的日历体系，并且与它的前辈们不同，java.time包中的类是不可变且线程安全的。新的时间及日期API位于java.time包中，下面是里面的一些关键的类:</p>
+<ul>
+<li>Instant——它代表的是时间戳</li>
+<li>LocalDate——不包含具体时间的日期，比如2014-01-14。它可以用来存储生日，周年纪念日，入职日期等。</li>
+<li>LocalTime——它代表的是不含日期的时间</li>
+<li>LocalDateTime——它包含了日期及时间，不过还是没有偏移信息或者说时区。</li>
+<li>ZonedDateTime——这是一个包含时区的完整的日期时间，偏移量是以UTC&#x2F;格林威治时间为基准的。</li>
+</ul>
+<p>新的库还增加了ZoneOffset及Zoned，可以为时区提供更好的支持。有了新的DateTimeFormatter之后日期的解析及格式化也变得焕然一新了。</p>
+<h3 id="方法概览"><a href="#方法概览" class="headerlink" title="方法概览"></a>方法概览</h3><p>该包的API提供了大量相关的方法，这些方法一般有一致的方法前缀:</p>
+<ul>
+<li>of: 静态工厂方法。</li>
+<li>parse: 静态工厂方法，关注于解析。</li>
+<li>get: 获取某些东西的值。</li>
+<li>is: 检查某些东西的是否是true。</li>
+<li>with: 不可变的setter等价物。</li>
+<li>plus: 加一些量到某个对象。</li>
+<li>minus: 从某个对象减去一些量。</li>
+<li>to: 转换到另一个类型。</li>
+<li>at: 把这个对象与另一个对象组合起来，例如: date.atTime(time)。</li>
+</ul>
+<h2 id="一些例子"><a href="#一些例子" class="headerlink" title="一些例子"></a>一些例子</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TimeIntroduction</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testClock</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="comment">//时钟提供给我们用于访问某个特定 时区的 瞬时时间、日期 和 时间的。  </span></span><br><span class="line">        <span class="type">Clock</span> <span class="variable">c1</span> <span class="operator">=</span> Clock.systemUTC(); <span class="comment">//系统默认UTC时钟(当前瞬时时间 System.currentTimeMillis())  </span></span><br><span class="line">        System.out.println(c1.millis()); <span class="comment">//每次调用将返回当前瞬时时间(UTC)  </span></span><br><span class="line">        <span class="type">Clock</span> <span class="variable">c2</span> <span class="operator">=</span> Clock.systemDefaultZone(); <span class="comment">//系统默认时区时钟(当前瞬时时间)  </span></span><br><span class="line">        <span class="type">Clock</span> <span class="variable">c31</span> <span class="operator">=</span> Clock.system(ZoneId.of(<span class="string">&quot;Europe/Paris&quot;</span>)); <span class="comment">//巴黎时区  </span></span><br><span class="line">        System.out.println(c31.millis()); <span class="comment">//每次调用将返回当前瞬时时间(UTC)  </span></span><br><span class="line">        <span class="type">Clock</span> <span class="variable">c32</span> <span class="operator">=</span> Clock.system(ZoneId.of(<span class="string">&quot;Asia/Shanghai&quot;</span>));<span class="comment">//上海时区  </span></span><br><span class="line">        System.out.println(c32.millis());<span class="comment">//每次调用将返回当前瞬时时间(UTC)  </span></span><br><span class="line">        <span class="type">Clock</span> <span class="variable">c4</span> <span class="operator">=</span> Clock.fixed(Instant.now(), ZoneId.of(<span class="string">&quot;Asia/Shanghai&quot;</span>));<span class="comment">//固定上海时区时钟  </span></span><br><span class="line">        System.out.println(c4.millis());</span><br><span class="line">        Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        System.out.println(c4.millis()); <span class="comment">//不变 即时钟时钟在那一个点不动  </span></span><br><span class="line">        <span class="type">Clock</span> <span class="variable">c5</span> <span class="operator">=</span> Clock.offset(c1, Duration.ofSeconds(<span class="number">2</span>)); <span class="comment">//相对于系统默认时钟两秒的时钟  </span></span><br><span class="line">        System.out.println(c1.millis());</span><br><span class="line">        System.out.println(c5.millis());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testInstant</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">//瞬时时间 相当于以前的System.currentTimeMillis()  </span></span><br><span class="line">        <span class="type">Instant</span> <span class="variable">instant1</span> <span class="operator">=</span> Instant.now();</span><br><span class="line">        System.out.println(instant1.getEpochSecond());<span class="comment">//精确到秒 得到相对于1970-01-01 00:00:00 UTC的一个时间  </span></span><br><span class="line">        System.out.println(instant1.toEpochMilli()); <span class="comment">//精确到毫秒  </span></span><br><span class="line">        <span class="type">Clock</span> <span class="variable">clock1</span> <span class="operator">=</span> Clock.systemUTC(); <span class="comment">//获取系统UTC默认时钟  </span></span><br><span class="line">        <span class="type">Instant</span> <span class="variable">instant2</span> <span class="operator">=</span> Instant.now(clock1);<span class="comment">//得到时钟的瞬时时间  </span></span><br><span class="line">        System.out.println(instant2.toEpochMilli());</span><br><span class="line">        <span class="type">Clock</span> <span class="variable">clock2</span> <span class="operator">=</span> Clock.fixed(instant1, ZoneId.systemDefault()); <span class="comment">//固定瞬时时间时钟  </span></span><br><span class="line">        <span class="type">Instant</span> <span class="variable">instant3</span> <span class="operator">=</span> Instant.now(clock2);<span class="comment">//得到时钟的瞬时时间  </span></span><br><span class="line">        System.out.println(instant3.toEpochMilli());<span class="comment">//equals instant1  </span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testLocalDateTime</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">//使用默认时区时钟瞬时时间创建 Clock.systemDefaultZone() --&gt;即相对于 ZoneId.systemDefault()默认时区  </span></span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">now</span> <span class="operator">=</span> LocalDateTime.now();</span><br><span class="line">        System.out.println(now);</span><br><span class="line">		<span class="comment">//自定义时区  </span></span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">now2</span> <span class="operator">=</span> LocalDateTime.now(ZoneId.of(<span class="string">&quot;Europe/Paris&quot;</span>));</span><br><span class="line">        System.out.println(now2);<span class="comment">//会以相应的时区显示日期  </span></span><br><span class="line">		<span class="comment">//自定义时钟  </span></span><br><span class="line">        <span class="type">Clock</span> <span class="variable">clock</span> <span class="operator">=</span> Clock.system(ZoneId.of(<span class="string">&quot;Asia/Dhaka&quot;</span>));</span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">now3</span> <span class="operator">=</span> LocalDateTime.now(clock);</span><br><span class="line">        System.out.println(now3);<span class="comment">//会以相应的时区显示日期  </span></span><br><span class="line">		<span class="comment">//不需要写什么相对时间 如java.util.Date 年是相对于1900 月是从0开始  </span></span><br><span class="line">		<span class="comment">//2013-12-31 23:59  </span></span><br><span class="line">		</span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">d1</span> <span class="operator">=</span> LocalDateTime.of(<span class="number">2013</span>, <span class="number">12</span>, <span class="number">31</span>, <span class="number">23</span>, <span class="number">59</span>);</span><br><span class="line">		<span class="comment">//年月日 时分秒 纳秒  </span></span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">d2</span> <span class="operator">=</span> LocalDateTime.of(<span class="number">2013</span>, <span class="number">12</span>, <span class="number">31</span>, <span class="number">23</span>, <span class="number">59</span>, <span class="number">59</span>, <span class="number">11</span>);</span><br><span class="line">		<span class="comment">//使用瞬时时间 + 时区  </span></span><br><span class="line">        <span class="type">Instant</span> <span class="variable">instant</span> <span class="operator">=</span> Instant.now();</span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">d3</span> <span class="operator">=</span> LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());</span><br><span class="line">        System.out.println(d3);</span><br><span class="line">        </span><br><span class="line">		<span class="comment">//解析String---&gt;LocalDateTime  </span></span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">d4</span> <span class="operator">=</span> LocalDateTime.parse(<span class="string">&quot;2013-12-31T23:59&quot;</span>);</span><br><span class="line">        System.out.println(d4);</span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">d5</span> <span class="operator">=</span> LocalDateTime.parse(<span class="string">&quot;2013-12-31T23:59:59.999&quot;</span>);<span class="comment">//999毫秒 等价于999000000纳秒  </span></span><br><span class="line">        System.out.println(d5);</span><br><span class="line">        </span><br><span class="line">		<span class="comment">//使用DateTimeFormatter API 解析 和 格式化  </span></span><br><span class="line">        <span class="type">DateTimeFormatter</span> <span class="variable">formatter</span> <span class="operator">=</span> DateTimeFormatter.ofPattern(<span class="string">&quot;yyyy/MM/dd HH:mm:ss&quot;</span>);</span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">d6</span> <span class="operator">=</span> LocalDateTime.parse(<span class="string">&quot;2013/12/31 23:59:59&quot;</span>, formatter);</span><br><span class="line">        System.out.println(formatter.format(d6));</span><br><span class="line">        </span><br><span class="line">		<span class="comment">//时间获取  </span></span><br><span class="line">        System.out.println(d6.getYear());</span><br><span class="line">        System.out.println(d6.getMonth());</span><br><span class="line">        System.out.println(d6.getDayOfYear());</span><br><span class="line">        System.out.println(d6.getDayOfMonth());</span><br><span class="line">        System.out.println(d6.getDayOfWeek());</span><br><span class="line">        System.out.println(d6.getHour());</span><br><span class="line">        System.out.println(d6.getMinute());</span><br><span class="line">        System.out.println(d6.getSecond());</span><br><span class="line">        System.out.println(d6.getNano());</span><br><span class="line">        </span><br><span class="line">		<span class="comment">//时间增减  </span></span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">d7</span> <span class="operator">=</span> d6.minusDays(<span class="number">1</span>);</span><br><span class="line">        <span class="type">LocalDateTime</span> <span class="variable">d8</span> <span class="operator">=</span> d7.plus(<span class="number">1</span>, IsoFields.QUARTER_YEARS);</span><br><span class="line">		<span class="comment">//LocalDate 即年月日 无时分秒  </span></span><br><span class="line">		<span class="comment">//LocalTime即时分秒 无年月日  </span></span><br><span class="line">		<span class="comment">//API和LocalDateTime类似就不演示了  </span></span><br><span class="line">		</span><br><span class="line">		<span class="comment">// 两个日期是否相等</span></span><br><span class="line">		System.out.println(d1.equals(d2));</span><br><span class="line">		</span><br><span class="line">		<span class="comment">// MonthDay - 用来检查生日</span></span><br><span class="line">		<span class="type">LocalDate</span> <span class="variable">dateOfBirth</span> <span class="operator">=</span> LocalDate.of(<span class="number">2010</span>, <span class="number">01</span>, <span class="number">14</span>); </span><br><span class="line">		<span class="type">MonthDay</span> <span class="variable">birthday</span> <span class="operator">=</span> MonthDay.of(dateOfBirth.getMonth(), dateOfBirth.getDayOfMonth()); </span><br><span class="line">		<span class="type">MonthDay</span> <span class="variable">currentMonthDay</span> <span class="operator">=</span> MonthDay.from(today); </span><br><span class="line">		System.out.println(currentMonthDay.equals(birthday));</span><br><span class="line">		</span><br><span class="line">		<span class="comment">// YearMonth - 用来检查信用卡过期</span></span><br><span class="line">		<span class="type">YearMonth</span> <span class="variable">currentYearMonth</span> <span class="operator">=</span> YearMonth.now(); System.out.printf(<span class="string">&quot;Days in month year %s: %d%n&quot;</span>, currentYearMonth, currentYearMonth.lengthOfMonth()); </span><br><span class="line">		<span class="type">YearMonth</span> <span class="variable">creditCardExpiry</span> <span class="operator">=</span> YearMonth.of(<span class="number">2018</span>, Month.FEBRUARY); </span><br><span class="line">		System.out.printf(<span class="string">&quot;Your credit card expires on %s %n&quot;</span>, creditCardExpiry); </span><br><span class="line">		</span><br><span class="line">		<span class="comment">// 判断闰年 - LocalDate类有一个isLeapYear()的方法</span></span><br><span class="line">		System.out.println(dateOfBirth.isLeapYear());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testZonedDateTime</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">//即带有时区的date-time 存储纳秒、时区和时差(避免与本地date-time歧义)。  </span></span><br><span class="line">		<span class="comment">//API和LocalDateTime类似，只是多了时差(如2013-12-20T10:35:50.711+08:00[Asia/Shanghai])  </span></span><br><span class="line">        <span class="type">ZonedDateTime</span> <span class="variable">now</span> <span class="operator">=</span> ZonedDateTime.now();</span><br><span class="line">        System.out.println(now);</span><br><span class="line">        <span class="type">ZonedDateTime</span> <span class="variable">now2</span> <span class="operator">=</span> ZonedDateTime.now(ZoneId.of(<span class="string">&quot;Europe/Paris&quot;</span>));</span><br><span class="line">        System.out.println(now2);</span><br><span class="line">		<span class="comment">//其他的用法也是类似的 就不介绍了  </span></span><br><span class="line">        <span class="type">ZonedDateTime</span> <span class="variable">z1</span> <span class="operator">=</span> ZonedDateTime.parse(<span class="string">&quot;2013-12-31T23:59:59Z[Europe/Paris]&quot;</span>);</span><br><span class="line">        System.out.println(z1);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testDuration</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">//表示两个瞬时时间的时间段  </span></span><br><span class="line">        <span class="type">Duration</span> <span class="variable">d1</span> <span class="operator">=</span> Duration.between(Instant.ofEpochMilli(System.currentTimeMillis() - <span class="number">12323123</span>), Instant.now());</span><br><span class="line">		<span class="comment">//得到相应的时差  </span></span><br><span class="line">        System.out.println(d1.toDays());</span><br><span class="line">        System.out.println(d1.toHours());</span><br><span class="line">        System.out.println(d1.toMinutes());</span><br><span class="line">        System.out.println(d1.toMillis());</span><br><span class="line">        System.out.println(d1.toNanos());</span><br><span class="line">		<span class="comment">//1天时差 类似的还有如ofHours()  </span></span><br><span class="line">        <span class="type">Duration</span> <span class="variable">d2</span> <span class="operator">=</span> Duration.ofDays(<span class="number">1</span>);</span><br><span class="line">        System.out.println(d2.toDays());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testChronology</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">//提供对java.util.Calendar的替换，提供对年历系统的支持  </span></span><br><span class="line">        <span class="type">Chronology</span> <span class="variable">c</span> <span class="operator">=</span> HijrahChronology.INSTANCE;</span><br><span class="line">        <span class="type">ChronoLocalDateTime</span> <span class="variable">d</span> <span class="operator">=</span> c.localDateTime(LocalDateTime.now());</span><br><span class="line">        System.out.println(d);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 新旧日期转换</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testNewOldDateConversion</span><span class="params">()</span>&#123;</span><br><span class="line">        Instant instant=<span class="keyword">new</span> <span class="title class_">Date</span>().toInstant();</span><br><span class="line">        Date date=Date.from(instant);</span><br><span class="line">        System.out.println(instant);</span><br><span class="line">        System.out.println(date);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        testClock();</span><br><span class="line">        testInstant();</span><br><span class="line">        testLocalDateTime();</span><br><span class="line">        testZonedDateTime();</span><br><span class="line">        testDuration();</span><br><span class="line">        testChronology();</span><br><span class="line">        testNewOldDateConversion();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="其它语言时间"><a href="#其它语言时间" class="headerlink" title="其它语言时间"></a>其它语言时间</h2><p>日期与时间处理API，在各种语言中，可能都只是个不起眼的API，如果你没有较复杂的时间处理需求，可能只是利用日期与时间处理API取得系统时间，简单做些显示罢了，然而如果认真看待日期与时间，其复杂程度可能会远超过你的想象，天文、地理、历史、政治、文化等因素，都会影响到你对时间的处理。所以在处理时间上，最好选用JSR310(如果你用java8的话就实现310了)，或者Joda-Time。</p>
+<p>不止是java面临时间处理的尴尬，其他语言同样也遇到过类似的问题，比如</p>
+<p>Arrow: Python 中更好的日期与时间处理库</p>
+<p>Moment.js: JavaScript 中的日期库</p>
+<p>Noda-Time: .NET 阵营的 Joda-Time 的复制</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>看完了这些例子后，我相信你已经对Java 8这套新的时间日期API有了一定的了解了。现在我们来回顾下关于这个新的API的一些关键的要素。</p>
+<ul>
+<li>它提供了javax.time.ZoneId用来处理时区。</li>
+<li>它提供了LocalDate与LocalTime类 Java 8中新的时间与日期API中的所有类都是不可变且线程安全的，这与之前的Date与Calendar API中的恰好相反，那里面像java.util.Date以及SimpleDateFormat这些关键的类都不是线程安全的。</li>
+<li>新的时间与日期API中很重要的一点是它定义清楚了基本的时间与日期的概念，比方说，瞬时时间，持续时间，日期，时间，时区以及时间段。它们都是基于ISO日历体系的。</li>
+<li>每个Java开发人员都应该至少了解这套新的API中的这五个类: Instant 它代表的是时间戳，比如2014-01-14T02:20:13.592Z，这可以从java.time.Clock类中获取，像这样: Instant current &#x3D; Clock.system(ZoneId.of(“Asia&#x2F;Tokyo”)).instant(); LocalDate 它表示的是不带时间的日期，比如2014-01-14。它可以用来存储生日，周年纪念日，入职日期等。 LocalTime – 它表示的是不带日期的时间 LocalDateTime – 它包含了时间与日期，不过没有带时区的偏移量 ZonedDateTime – 这是一个带时区的完整时间，它根据UTC&#x2F;格林威治时间来进行时区调整</li>
+<li>这个库的主包是java.time，里面包含了代表日期，时间，瞬时以及持续时间的类。它有两个子package，一个是java.time.foramt，这个是什么用途就很明显了，还有一个是java.time.temporal，它能从更低层面对各个字段进行访问。</li>
+<li>时区指的是地球上共享同一标准时间的地区。每个时区都有一个唯一标识符，同时还有一个地区&#x2F;城市(Asia&#x2F;Tokyo)的格式以及从格林威治时间开始的一个偏移时间。比如说，东京的偏移时间就是+09:00。 OffsetDateTime类实际上包含了LocalDateTime与ZoneOffset。它用来表示一个包含格林威治时间偏移量(+&#x2F;-小时: 分，比如+06:00或者 -08: 00)的完整的日期(年月日)及时间(时分秒，纳秒)。 DateTimeFormatter类用于在Java中进行日期的格式化与解析。与SimpleDateFormat不同，它是不可变且线程安全的，如果需要的话，可以赋值给一个静态变量。DateTimeFormatter类提供了许多预定义的格式器，你也可以自定义自己想要的格式。当然了，根据约定，它还有一个parse()方法是用于将字符串转换成日期的，如果转换期间出现任何错误，它会抛出DateTimeParseException异常。类似的，DateFormatter类也有一个用于格式化日期的format()方法，它出错的话则会抛出DateTimeException异常。</li>
+<li>再说一句，“MMM d yyyy”与“MMm dd yyyy”这两个日期格式也略有不同，前者能识别出”Jan 2 2014″与”Jan 14 2014″这两个串，而后者如果传进来的是”Jan 2 2014″则会报错，因为它期望月份处传进来的是两个字符。为了解决这个问题，在天为个位数的情况下，你得在前面补0，比如”Jan 2 2014″应该改为”Jan 02 2014″。</li>
+</ul>
+
+
+
+<div class="article-footer reveal fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/12/26/9-Java-8-%E7%A7%BB%E9%99%A4Permgen/">9.Java 8 - 移除Permgen</a></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"></div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.21.0';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img, .gallery img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
