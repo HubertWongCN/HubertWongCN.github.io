@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 7.0.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>16.调试排错 - Java 问题排查之Linux命令 - Hubert's Blog</title>
+
+  
+    <meta name="description" content="Java 在线问题排查主要分两篇：本文是第一篇，通过linux常用命令排查。  文本操作文本查找 - grepgrep常用命令： 12345678910111213141516# 基本使用grep yoursearchkeyword f.txt     #文件查找grep &#x27;KeyWord otherKeyWord&#x27; f.txt cpf.txt #多文件查找, 含空格加引号g">
+<meta property="og:type" content="article">
+<meta property="og:title" content="16.调试排错 - Java 问题排查之Linux命令">
+<meta property="og:url" content="https://hubertwongcn.github.io/2023/12/27/16-%E8%B0%83%E8%AF%95%E6%8E%92%E9%94%99-Java-%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E4%B9%8BLinux%E5%91%BD%E4%BB%A4/index.html">
+<meta property="og:site_name" content="Hubert&#39;s Blog">
+<meta property="og:description" content="Java 在线问题排查主要分两篇：本文是第一篇，通过linux常用命令排查。  文本操作文本查找 - grepgrep常用命令： 12345678910111213141516# 基本使用grep yoursearchkeyword f.txt     #文件查找grep &#x27;KeyWord otherKeyWord&#x27; f.txt cpf.txt #多文件查找, 含空格加引号g">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-12-27T07:19:50.000Z">
+<meta property="article:modified_time" content="2023-12-27T07:19:50.000Z">
+<meta property="article:author" content="Hubert Wong">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="调试排错">
+<meta property="article:tag" content="问题排查">
+<meta property="article:tag" content="Linux命令">
+<meta name="twitter:card" content="summary">
+  
+  
+  
+  <meta name="keywords" content="Java,JVM,调试排错,问题排查,Linux命令">
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="title" href="/"><div class="main" ff="title">Hubert's Blog</div><div class="sub cap"> Hubert爱猫爱生活</div></a></div>
+
+<nav class="menu dis-select"></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">16.调试排错 - Java 问题排查之Linux命令</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-text">文本操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E6%9C%AC%E6%9F%A5%E6%89%BE-grep"><span class="toc-text">文本查找 - grep</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E6%9C%AC%E5%88%86%E6%9E%90-awk"><span class="toc-text">文本分析 - awk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86-sed"><span class="toc-text">文本处理 - sed</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C"><span class="toc-text">文件操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%9B%91%E5%90%AC-tail"><span class="toc-text">文件监听 - tail</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%9F%A5%E6%89%BE-find"><span class="toc-text">文件查找 - find</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pgm"><span class="toc-text">pgm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%BD%91%E7%BB%9C%E5%92%8C%E8%BF%9B%E7%A8%8B"><span class="toc-text">查看网络和进程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%89%80%E6%9C%89%E7%BD%91%E7%BB%9C%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%B1%9E%E6%80%A7"><span class="toc-text">查看所有网络接口的属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E9%98%B2%E7%81%AB%E5%A2%99%E8%AE%BE%E7%BD%AE"><span class="toc-text">查看防火墙设置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E8%B7%AF%E7%94%B1%E8%A1%A8"><span class="toc-text">查看路由表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#netstat"><span class="toc-text">netstat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%89%80%E6%9C%89%E8%BF%9B%E7%A8%8B"><span class="toc-text">查看所有进程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#top"><span class="toc-text">top</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%A3%81%E7%9B%98%E5%92%8C%E5%86%85%E5%AD%98%E7%9B%B8%E5%85%B3"><span class="toc-text">查看磁盘和内存相关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%86%85%E5%AD%98%E4%BD%BF%E7%94%A8-free-m"><span class="toc-text">查看内存使用 - free -m</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%90%84%E5%88%86%E5%8C%BA%E4%BD%BF%E7%94%A8%E6%83%85%E5%86%B5"><span class="toc-text">查看各分区使用情况</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%8C%87%E5%AE%9A%E7%9B%AE%E5%BD%95%E7%9A%84%E5%A4%A7%E5%B0%8F"><span class="toc-text">查看指定目录的大小</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%86%85%E5%AD%98%E6%80%BB%E9%87%8F"><span class="toc-text">查看内存总量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%A9%BA%E9%97%B2%E5%86%85%E5%AD%98%E9%87%8F"><span class="toc-text">查看空闲内存量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%B3%BB%E7%BB%9F%E8%B4%9F%E8%BD%BD%E7%A3%81%E7%9B%98%E5%92%8C%E5%88%86%E5%8C%BA"><span class="toc-text">查看系统负载磁盘和分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%B3%BB%E7%BB%9F%E8%B4%9F%E8%BD%BD%E7%A3%81%E7%9B%98%E5%92%8C%E5%88%86%E5%8C%BA-1"><span class="toc-text">查看系统负载磁盘和分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%8C%82%E6%8E%A5%E7%9A%84%E5%88%86%E5%8C%BA%E7%8A%B6%E6%80%81"><span class="toc-text">查看挂接的分区状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%89%80%E6%9C%89%E5%88%86%E5%8C%BA"><span class="toc-text">查看所有分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%89%80%E6%9C%89%E4%BA%A4%E6%8D%A2%E5%88%86%E5%8C%BA"><span class="toc-text">查看所有交换分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%A1%AC%E7%9B%98%E5%A4%A7%E5%B0%8F"><span class="toc-text">查看硬盘大小</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%94%A8%E6%88%B7%E5%92%8C%E7%BB%84%E7%9B%B8%E5%85%B3"><span class="toc-text">查看用户和组相关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%B4%BB%E5%8A%A8%E7%94%A8%E6%88%B7"><span class="toc-text">查看活动用户</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%8C%87%E5%AE%9A%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="toc-text">查看指定用户信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E6%97%A5%E5%BF%97"><span class="toc-text">查看用户登录日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%B3%BB%E7%BB%9F%E6%89%80%E6%9C%89%E7%94%A8%E6%88%B7"><span class="toc-text">查看系统所有用户</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%B3%BB%E7%BB%9F%E6%89%80%E6%9C%89%E7%BB%84"><span class="toc-text">查看系统所有组</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%9C%8D%E5%8A%A1%EF%BC%8C%E6%A8%A1%E5%9D%97%E5%92%8C%E5%8C%85%E7%9B%B8%E5%85%B3"><span class="toc-text">查看服务，模块和包相关</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%B3%BB%E7%BB%9F%EF%BC%8C%E8%AE%BE%E5%A4%87%EF%BC%8C%E7%8E%AF%E5%A2%83%E4%BF%A1%E6%81%AF"><span class="toc-text">查看系统，设备，环境信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tsar"><span class="toc-text">tsar</span></a></li></ol></div></div></widget>
+
+
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+
+<div class="bread-nav fs12"><div class="left"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Java/">Java</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/JVM/">JVM</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/JVM/%E8%B0%83%E8%AF%95%E6%8E%92%E9%94%99/">调试排错</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/JVM/%E8%B0%83%E8%AF%95%E6%8E%92%E9%94%99/%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/">问题排查</a></div><div id="post-meta">
+    <span>发布于&nbsp;<time datetime="2023-12-27T07:19:50.000Z">2023-12-27</time></span>
+    
+    <span>更新于&nbsp;<time datetime="2023-12-27T07:19:50.000Z">2023-12-27</time></span>
+    </div></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>16.调试排错 - Java 问题排查之Linux命令</span></h1>
+<blockquote>
+<p>Java 在线问题排查主要分两篇：本文是第一篇，通过linux常用命令排查。</p>
+</blockquote>
+<h2 id="文本操作"><a href="#文本操作" class="headerlink" title="文本操作"></a>文本操作</h2><h3 id="文本查找-grep"><a href="#文本查找-grep" class="headerlink" title="文本查找 - grep"></a>文本查找 - grep</h3><p>grep常用命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 基本使用</span></span><br><span class="line">grep yoursearchkeyword f.txt     <span class="comment">#文件查找</span></span><br><span class="line">grep <span class="string">&#x27;KeyWord otherKeyWord&#x27;</span> f.txt cpf.txt <span class="comment">#多文件查找, 含空格加引号</span></span><br><span class="line">grep <span class="string">&#x27;KeyWord&#x27;</span> /home/admin -r -n <span class="comment">#目录下查找所有符合关键字的文件</span></span><br><span class="line">grep <span class="string">&#x27;keyword&#x27;</span> /home/admin -r -n -i <span class="comment"># -i 忽略大小写</span></span><br><span class="line">grep <span class="string">&#x27;KeyWord&#x27;</span> /home/admin -r -n --include *.&#123;vm,java&#125; <span class="comment">#指定文件后缀</span></span><br><span class="line">grep <span class="string">&#x27;KeyWord&#x27;</span> /home/admin -r -n --exclude *.&#123;vm,java&#125; <span class="comment">#反匹配</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># cat + grep</span></span><br><span class="line"><span class="built_in">cat</span> f.txt | grep -i keyword <span class="comment"># 查找所有keyword且不分大小写  </span></span><br><span class="line"><span class="built_in">cat</span> f.txt | grep -c <span class="string">&#x27;KeyWord&#x27;</span> <span class="comment"># 统计Keyword次数</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># seq + grep</span></span><br><span class="line"><span class="built_in">seq</span> 10 | grep 5 -A 3    <span class="comment">#上匹配</span></span><br><span class="line"><span class="built_in">seq</span> 10 | grep 5 -B 3    <span class="comment">#下匹配</span></span><br><span class="line"><span class="built_in">seq</span> 10 | grep 5 -C 3    <span class="comment">#上下匹配，平时用这个就妥了</span></span><br></pre></td></tr></table></figure>
+
+<p>Grep的参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">--color=auto：显示颜色;</span><br><span class="line">-i, --ignore-case：忽略字符大小写;</span><br><span class="line">-o, --only-matching：只显示匹配到的部分;</span><br><span class="line">-n, --line-number：显示行号;</span><br><span class="line">-v, --invert-match：反向显示,显示未匹配到的行;</span><br><span class="line">-E, --extended-regexp：支持使用扩展的正则表达式;</span><br><span class="line">-q, --quiet, --silent：静默模式,即不输出任何信息;</span><br><span class="line">-w, --word-regexp：整行匹配整个单词;</span><br><span class="line">-c, --count：统计匹配到的行数; <span class="built_in">print</span> a count of matching lines;</span><br><span class="line"></span><br><span class="line">-B, --before-context=NUM：<span class="built_in">print</span> NUM lines of leading context   后<span class="comment">#行 </span></span><br><span class="line">-A, --after-context=NUM：<span class="built_in">print</span> NUM lines of trailing context   前<span class="comment">#行 </span></span><br><span class="line">-C, --context=NUM：<span class="built_in">print</span> NUM lines of output context           前后各<span class="comment">#行 </span></span><br></pre></td></tr></table></figure>
+
+<h3 id="文本分析-awk"><a href="#文本分析-awk" class="headerlink" title="文本分析 - awk"></a>文本分析 - awk</h3><p>awk基本命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 基本使用</span></span><br><span class="line">awk <span class="string">&#x27;&#123;print $4,$6&#125;&#x27;</span> f.txt</span><br><span class="line">awk <span class="string">&#x27;&#123;print NR,$0&#125;&#x27;</span> f.txt cpf.txt    </span><br><span class="line">awk <span class="string">&#x27;&#123;print FNR,$0&#125;&#x27;</span> f.txt cpf.txt</span><br><span class="line">awk <span class="string">&#x27;&#123;print FNR,FILENAME,$0&#125;&#x27;</span> f.txt cpf.txt</span><br><span class="line">awk <span class="string">&#x27;&#123;print FILENAME,&quot;NR=&quot;NR,&quot;FNR=&quot;FNR,&quot;$&quot;NF&quot;=&quot;$NF&#125;&#x27;</span> f.txt cpf.txt</span><br><span class="line"><span class="built_in">echo</span> 1:2:3:4 | awk -F: <span class="string">&#x27;&#123;print $1,$2,$3,$4&#125;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 匹配</span></span><br><span class="line">awk <span class="string">&#x27;/ldb/ &#123;print&#125;&#x27;</span> f.txt   <span class="comment">#匹配ldb</span></span><br><span class="line">awk <span class="string">&#x27;!/ldb/ &#123;print&#125;&#x27;</span> f.txt  <span class="comment">#不匹配ldb</span></span><br><span class="line">awk <span class="string">&#x27;/ldb/ &amp;&amp; /LISTEN/ &#123;print&#125;&#x27;</span> f.txt   <span class="comment">#匹配ldb和LISTEN</span></span><br><span class="line">awk <span class="string">&#x27;$5 ~ /ldb/ &#123;print&#125;&#x27;</span> f.txt <span class="comment">#第五列匹配ldb</span></span><br></pre></td></tr></table></figure>
+
+<p>内建变量</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">`NR`: NR表示从awk开始执行后，按照记录分隔符读取的数据次数，默认的记录分隔符为换行符，因此默认的就是读取的数据行数，NR可以理解为Number of Record的缩写。</span><br><span class="line"></span><br><span class="line">`FNR`: 在awk处理多个输入文件的时候，在处理完第一个文件后，NR并不会从1开始，而是继续累加，因此就出现了FNR，每当处理一个新文件的时候，FNR就从1开始计数，FNR可以理解为File Number of Record。</span><br><span class="line"></span><br><span class="line">`NF`: NF表示目前的记录被分割的字段的数目，NF可以理解为Number of Field。</span><br></pre></td></tr></table></figure>
+
+<p>更多请参考：<a target="_blank" rel="noopener" href="https://www.runoob.com/linux/linux-comm-awk.html">Linux awk 命令</a></p>
+<h3 id="文本处理-sed"><a href="#文本处理-sed" class="headerlink" title="文本处理 - sed"></a>文本处理 - sed</h3><p>sed常用：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 文本打印</span></span><br><span class="line">sed -n <span class="string">&#x27;3p&#x27;</span> xxx.log <span class="comment">#只打印第三行</span></span><br><span class="line">sed -n <span class="string">&#x27;$p&#x27;</span> xxx.log <span class="comment">#只打印最后一行</span></span><br><span class="line">sed -n <span class="string">&#x27;3,9p&#x27;</span> xxx.log <span class="comment">#只查看文件的第3行到第9行</span></span><br><span class="line">sed -n -e <span class="string">&#x27;3,9p&#x27;</span> -e <span class="string">&#x27;=&#x27;</span> xxx.log <span class="comment">#打印3-9行，并显示行号</span></span><br><span class="line">sed -n <span class="string">&#x27;/root/p&#x27;</span> xxx.log <span class="comment">#显示包含root的行</span></span><br><span class="line">sed -n <span class="string">&#x27;/hhh/,/omc/p&#x27;</span> xxx.log <span class="comment"># 显示包含&quot;hhh&quot;的行到包含&quot;omc&quot;的行之间的行</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 文本替换</span></span><br><span class="line">sed -i <span class="string">&#x27;s/root/world/g&#x27;</span> xxx.log <span class="comment"># 用world 替换xxx.log文件中的root; s==search  查找并替换, g==global  全部替换, -i: implace</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 文本插入</span></span><br><span class="line">sed <span class="string">&#x27;1,4i hahaha&#x27;</span> xxx.log <span class="comment"># 在文件第一行和第四行的每行下面添加hahaha</span></span><br><span class="line">sed -e <span class="string">&#x27;1i happy&#x27;</span> -e <span class="string">&#x27;$a new year&#x27;</span> xxx.log  <span class="comment">#【界面显示】在文件第一行添加happy,文件结尾添加new year</span></span><br><span class="line">sed -i -e <span class="string">&#x27;1i happy&#x27;</span> -e <span class="string">&#x27;$a new year&#x27;</span> xxx.log <span class="comment">#【真实写入文件】在文件第一行添加happy,文件结尾添加new year</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 文本删除</span></span><br><span class="line">sed  <span class="string">&#x27;3,9d&#x27;</span> xxx.log <span class="comment"># 删除第3到第9行,只是不显示而已</span></span><br><span class="line">sed <span class="string">&#x27;/hhh/,/omc/d&#x27;</span> xxx.log <span class="comment"># 删除包含&quot;hhh&quot;的行到包含&quot;omc&quot;的行之间的行</span></span><br><span class="line">sed <span class="string">&#x27;/omc/,10d&#x27;</span> xxx.log <span class="comment"># 删除包含&quot;omc&quot;的行到第十行的内容</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 与find结合</span></span><br><span class="line">find . -name  <span class="string">&quot;*.txt&quot;</span> |xargs   sed -i <span class="string">&#x27;s/hhhh/\hHHh/g&#x27;</span></span><br><span class="line">find . -name  <span class="string">&quot;*.txt&quot;</span> |xargs   sed -i <span class="string">&#x27;s#hhhh#hHHh#g&#x27;</span></span><br><span class="line">find . -name  <span class="string">&quot;*.txt&quot;</span> -<span class="built_in">exec</span> sed -i <span class="string">&#x27;s/hhhh/\hHHh/g&#x27;</span> &#123;&#125; \;</span><br><span class="line">find . -name  <span class="string">&quot;*.txt&quot;</span> |xargs <span class="built_in">cat</span></span><br></pre></td></tr></table></figure>
+
+<p>更多请参考：<a target="_blank" rel="noopener" href="https://www.runoob.com/linux/linux-comm-sed.html">Linux sed 命令</a> 或者 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/ftl1012/p/9250171.html">Linux sed命令详解</a></p>
+<h2 id="文件操作"><a href="#文件操作" class="headerlink" title="文件操作"></a>文件操作</h2><h3 id="文件监听-tail"><a href="#文件监听-tail" class="headerlink" title="文件监听 - tail"></a>文件监听 - tail</h3><p>最常用的<code>tail -f filename</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 基本使用</span></span><br><span class="line"><span class="built_in">tail</span> -f xxx.log <span class="comment"># 循环监听文件</span></span><br><span class="line"><span class="built_in">tail</span> -300f xxx.log <span class="comment">#倒数300行并追踪文件</span></span><br><span class="line"><span class="built_in">tail</span> +20 xxx.log <span class="comment">#从第 20 行至文件末尾显示文件内容</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># tailf使用</span></span><br><span class="line">tailf xxx.log <span class="comment">#等同于tail -f -n 10 打印最后10行，然后追踪文件</span></span><br></pre></td></tr></table></figure>
+
+<p>tail -f 与tail F 与tailf三者区别</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">`<span class="built_in">tail</span>  -f `  等于--follow=descriptor，根据文件描述进行追踪，当文件改名或删除后，停止追踪。</span><br><span class="line"></span><br><span class="line">`<span class="built_in">tail</span> -F` 等于 --follow=name ==retry，根据文件名字进行追踪，当文件改名或删除后，保持重试，当有新的文件和他同名时，继续追踪</span><br><span class="line"></span><br><span class="line">`tailf` 等于<span class="built_in">tail</span> -f -n 10（<span class="built_in">tail</span> -f或-F默认也是打印最后10行，然后追踪文件），与<span class="built_in">tail</span> -f不同的是，如果文件不增长，它不会去访问磁盘文件，所以tailf特别适合那些便携机上跟踪日志文件，因为它减少了磁盘访问，可以省电。</span><br></pre></td></tr></table></figure>
+
+<p>tail的参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">-f 循环读取</span><br><span class="line">-q 不显示处理信息</span><br><span class="line">-v 显示详细的处理信息</span><br><span class="line">-c&lt;数目&gt; 显示的字节数</span><br><span class="line">-n&lt;行数&gt; 显示文件的尾部 n 行内容</span><br><span class="line">--pid=PID 与-f合用,表示在进程ID,PID死掉之后结束</span><br><span class="line">-q, --quiet, --silent 从不输出给出文件名的首部</span><br><span class="line">-s, --sleep-interval=S 与-f合用,表示在每次反复的间隔休眠S秒</span><br></pre></td></tr></table></figure>
+
+<h3 id="文件查找-find"><a href="#文件查找-find" class="headerlink" title="文件查找 - find"></a>文件查找 - find</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">sudo -u admin find /home/admin /tmp /usr -name \*.<span class="built_in">log</span>(多个目录去找)</span><br><span class="line">find . -iname \*.txt(大小写都匹配)</span><br><span class="line">find . -<span class="built_in">type</span> d(当前目录下的所有子目录)</span><br><span class="line">find /usr -<span class="built_in">type</span> l(当前目录下所有的符号链接)</span><br><span class="line">find /usr -<span class="built_in">type</span> l -name <span class="string">&quot;z*&quot;</span> -<span class="built_in">ls</span>(符号链接的详细信息 eg:inode,目录)</span><br><span class="line">find /home/admin -size +250000k(超过250000k的文件，当然+改成-就是小于了)</span><br><span class="line">find /home/admin f -perm 777 -<span class="built_in">exec</span> <span class="built_in">ls</span> -l &#123;&#125; \; (按照权限查询文件)</span><br><span class="line">find /home/admin -atime -1  1天内访问过的文件</span><br><span class="line">find /home/admin -ctime -1  1天内状态改变过的文件    </span><br><span class="line">find /home/admin -mtime -1  1天内修改过的文件</span><br><span class="line">find /home/admin -amin -1  1分钟内访问过的文件</span><br><span class="line">find /home/admin -cmin -1  1分钟内状态改变过的文件    </span><br><span class="line">find /home/admin -mmin -1  1分钟内修改过的文件</span><br></pre></td></tr></table></figure>
+
+<h3 id="pgm"><a href="#pgm" class="headerlink" title="pgm"></a>pgm</h3><p>批量查询vm-shopbase满足条件的日志</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pgm -A -f vm-shopbase <span class="string">&#x27;cat /home/admin/shopbase/logs/shopbase.log.2017-01-17|grep 2069861630&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="查看网络和进程"><a href="#查看网络和进程" class="headerlink" title="查看网络和进程"></a>查看网络和进程</h2><h3 id="查看所有网络接口的属性"><a href="#查看所有网络接口的属性" class="headerlink" title="查看所有网络接口的属性"></a>查看所有网络接口的属性</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># ifconfig</span></span><br><span class="line">eth0: flags=4163&lt;UP,BROADCAST,RUNNING,MULTICAST&gt;  mtu 1500</span><br><span class="line">        inet 172.31.165.194  netmask 255.255.240.0  broadcast 172.31.175.255</span><br><span class="line">        ether 00:16:3e:08:c1:ea  txqueuelen 1000  (Ethernet)</span><br><span class="line">        RX packets 21213152  bytes 2812084823 (2.6 GiB)</span><br><span class="line">        RX errors 0  dropped 0  overruns 0  frame 0</span><br><span class="line">        TX packets 25264438  bytes 46566724676 (43.3 GiB)</span><br><span class="line">        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0</span><br><span class="line"></span><br><span class="line">lo: flags=73&lt;UP,LOOPBACK,RUNNING&gt;  mtu 65536</span><br><span class="line">        inet 127.0.0.1  netmask 255.0.0.0</span><br><span class="line">        loop  txqueuelen 1000  (Local Loopback)</span><br><span class="line">        RX packets 502  bytes 86350 (84.3 KiB)</span><br><span class="line">        RX errors 0  dropped 0  overruns 0  frame 0</span><br><span class="line">        TX packets 502  bytes 86350 (84.3 KiB)</span><br><span class="line">        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看防火墙设置"><a href="#查看防火墙设置" class="headerlink" title="查看防火墙设置"></a>查看防火墙设置</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># iptables -L</span></span><br><span class="line">Chain INPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination</span><br><span class="line"></span><br><span class="line">Chain FORWARD (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination</span><br><span class="line"></span><br><span class="line">Chain OUTPUT (policy ACCEPT)</span><br><span class="line">target     prot opt <span class="built_in">source</span>               destination</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看路由表"><a href="#查看路由表" class="headerlink" title="查看路由表"></a>查看路由表</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># route -n</span></span><br><span class="line">Kernel IP routing table</span><br><span class="line">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span><br><span class="line">0.0.0.0         172.31.175.253  0.0.0.0         UG    0      0        0 eth0</span><br><span class="line">169.254.0.0     0.0.0.0         255.255.0.0     U     1002   0        0 eth0</span><br><span class="line">172.31.160.0    0.0.0.0         255.255.240.0   U     0      0        0 eth0</span><br></pre></td></tr></table></figure>
+
+<h3 id="netstat"><a href="#netstat" class="headerlink" title="netstat"></a>netstat</h3><p>查看所有监听端口</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># netstat -lntp</span></span><br><span class="line">Active Internet connections (only servers)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name  </span><br><span class="line">tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN      970/nginx: master p</span><br><span class="line">tcp        0      0 0.0.0.0:9999            0.0.0.0:*               LISTEN      1249/java         </span><br><span class="line">tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      970/nginx: master p</span><br><span class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1547/sshd         </span><br><span class="line">tcp6       0      0 :::3306                 :::*                    LISTEN      1894/mysqld       </span><br></pre></td></tr></table></figure>
+
+<p>查看所有已经建立的连接</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># netstat -antp</span></span><br><span class="line">Active Internet connections (servers and established)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name</span><br><span class="line">tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN      970/nginx: master p</span><br><span class="line">tcp        0      0 0.0.0.0:9999            0.0.0.0:*               LISTEN      1249/java</span><br><span class="line">tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      970/nginx: master p</span><br><span class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1547/sshd</span><br><span class="line">tcp        0      0 172.31.165.194:53874    100.100.30.25:80        ESTABLISHED 18041/AliYunDun</span><br><span class="line">tcp        0     64 172.31.165.194:22       xxx.194.1.200:2649      ESTABLISHED 32516/sshd: root@pt</span><br><span class="line">tcp6       0      0 :::3306                 :::*                    LISTEN      1894/m</span><br></pre></td></tr></table></figure>
+
+<p>查看当前连接</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># netstat -nat|awk  &#x27;&#123;print $6&#125;&#x27;|sort|uniq -c|sort -rn</span></span><br><span class="line">      5 LISTEN</span><br><span class="line">      2 ESTABLISHED</span><br><span class="line">      1 Foreign</span><br><span class="line">      1 established)</span><br></pre></td></tr></table></figure>
+
+<p>查看网络统计信息进程</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># netstat -s</span></span><br><span class="line">Ip:</span><br><span class="line">    21017132 total packets received</span><br><span class="line">    0 forwarded</span><br><span class="line">    0 incoming packets discarded</span><br><span class="line">    21017131 incoming packets delivered</span><br><span class="line">    25114367 requests sent out</span><br><span class="line">    324 dropped because of missing route</span><br><span class="line">Icmp:</span><br><span class="line">    18088 ICMP messages received</span><br><span class="line">    692 input ICMP message failed.</span><br><span class="line">    ICMP input histogram:</span><br><span class="line">        destination unreachable: 4241</span><br><span class="line">        <span class="built_in">timeout</span> <span class="keyword">in</span> transit: 19</span><br><span class="line">        <span class="built_in">echo</span> requests: 13791</span><br><span class="line">        <span class="built_in">echo</span> replies: 4</span><br><span class="line">        timestamp request: 33</span><br><span class="line">    13825 ICMP messages sent</span><br><span class="line">    0 ICMP messages failed</span><br><span class="line">    ICMP output histogram:</span><br><span class="line">        destination unreachable: 1</span><br><span class="line">        <span class="built_in">echo</span> replies: 13791</span><br><span class="line">        timestamp replies: 33</span><br><span class="line">IcmpMsg:</span><br><span class="line">        InType0: 4</span><br><span class="line">        InType3: 4241</span><br><span class="line">        InType8: 13791</span><br><span class="line">        InType11: 19</span><br><span class="line">        InType13: 33</span><br><span class="line">        OutType0: 13791</span><br><span class="line">        OutType3: 1</span><br><span class="line">        OutType14: 33</span><br><span class="line">Tcp:</span><br><span class="line">    12210 active connections openings</span><br><span class="line">    208820 passive connection openings</span><br><span class="line">    54198 failed connection attempts</span><br><span class="line">    9805 connection resets received</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>netstat 请参考这篇文章: <a target="_blank" rel="noopener" href="https://www.cnblogs.com/ftl1012/p/netstat.html">Linux netstat命令详解</a></p>
+<h3 id="查看所有进程"><a href="#查看所有进程" class="headerlink" title="查看所有进程"></a>查看所有进程</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># ps -ef | grep java</span></span><br><span class="line">root      1249     1  0 Nov04 ?        00:58:05 java -jar /opt/tech_doc/bin/tech_arch-0.0.1-RELEASE.jar --server.port=9999</span><br><span class="line">root     32718 32518  0 08:36 pts/0    00:00:00 grep --color=auto java</span><br></pre></td></tr></table></figure>
+
+<h3 id="top"><a href="#top" class="headerlink" title="top"></a>top</h3><p>top除了看一些基本信息之外，剩下的就是配合来查询vm的各种问题了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># top -H -p pid</span></span><br><span class="line">top - 08:37:51 up 45 days, 18:45,  1 user,  load average: 0.01, 0.03, 0.05</span><br><span class="line">Threads:  28 total,   0 running,  28 sleeping,   0 stopped,   0 zombie</span><br><span class="line">%Cpu(s):  0.7 us,  0.7 sy,  0.0 ni, 98.6 <span class="built_in">id</span>,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st</span><br><span class="line">KiB Mem :  1882088 total,    74608 free,   202228 used,  1605252 buff/cache</span><br><span class="line">KiB Swap:  2097148 total,  1835392 free,   261756 used.  1502036 avail Mem</span><br><span class="line"></span><br><span class="line">  PID USER      PR  NI    VIRT    RES    SHR S %CPU %MEM     TIME+ COMMAND</span><br><span class="line"> 1347 root      20   0 2553808 113752   1024 S  0.3  6.0  48:46.74 VM Periodic Tas</span><br><span class="line"> 1249 root      20   0 2553808 113752   1024 S  0.0  6.0   0:00.00 java</span><br><span class="line"> 1289 root      20   0 2553808 113752   1024 S  0.0  6.0   0:03.74 java</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h2 id="查看磁盘和内存相关"><a href="#查看磁盘和内存相关" class="headerlink" title="查看磁盘和内存相关"></a>查看磁盘和内存相关</h2><h3 id="查看内存使用-free-m"><a href="#查看内存使用-free-m" class="headerlink" title="查看内存使用 - free -m"></a>查看内存使用 - free -m</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># free -m</span></span><br><span class="line">              total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:           1837         196         824           0         816        1469</span><br><span class="line">Swap:          2047         255        1792</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看各分区使用情况"><a href="#查看各分区使用情况" class="headerlink" title="查看各分区使用情况"></a>查看各分区使用情况</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># df -h</span></span><br><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">devtmpfs        909M     0  909M   0% /dev</span><br><span class="line">tmpfs           919M     0  919M   0% /dev/shm</span><br><span class="line">tmpfs           919M  452K  919M   1% /run</span><br><span class="line">tmpfs           919M     0  919M   0% /sys/fs/cgroup</span><br><span class="line">/dev/vda1        40G   15G   23G  40% /</span><br><span class="line">tmpfs           184M     0  184M   0% /run/user/0</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看指定目录的大小"><a href="#查看指定目录的大小" class="headerlink" title="查看指定目录的大小"></a>查看指定目录的大小</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># du -sh</span></span><br><span class="line">803M</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看内存总量"><a href="#查看内存总量" class="headerlink" title="查看内存总量"></a>查看内存总量</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># grep MemTotal /proc/meminfo</span></span><br><span class="line">MemTotal:        1882088 kB</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看空闲内存量"><a href="#查看空闲内存量" class="headerlink" title="查看空闲内存量"></a>查看空闲内存量</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># grep MemFree /proc/meminfo</span></span><br><span class="line">MemFree:           74120 kB</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看系统负载磁盘和分区"><a href="#查看系统负载磁盘和分区" class="headerlink" title="查看系统负载磁盘和分区"></a>查看系统负载磁盘和分区</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># grep MemFree /proc/meminfo</span></span><br><span class="line">MemFree:           74120 kB</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看系统负载磁盘和分区-1"><a href="#查看系统负载磁盘和分区-1" class="headerlink" title="查看系统负载磁盘和分区"></a>查看系统负载磁盘和分区</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># cat /proc/loadavg</span></span><br><span class="line">0.01 0.04 0.05 2/174 32751</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看挂接的分区状态"><a href="#查看挂接的分区状态" class="headerlink" title="查看挂接的分区状态"></a>查看挂接的分区状态</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># mount | column -t</span></span><br><span class="line">sysfs       on  /sys                             <span class="built_in">type</span>  sysfs       (rw,nosuid,nodev,noexec,relatime)</span><br><span class="line">proc        on  /proc                            <span class="built_in">type</span>  proc        (rw,nosuid,nodev,noexec,relatime)</span><br><span class="line">devtmpfs    on  /dev                             <span class="built_in">type</span>  devtmpfs    (rw,nosuid,size=930732k,nr_inodes=232683,mode=755)</span><br><span class="line">securityfs  on  /sys/kernel/security             <span class="built_in">type</span>  securityfs  (rw,nosuid,nodev,noexec,relatime)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看所有分区"><a href="#查看所有分区" class="headerlink" title="查看所有分区"></a>查看所有分区</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># fdisk -l</span></span><br><span class="line"></span><br><span class="line">Disk /dev/vda: 42.9 GB, 42949672960 bytes, 83886080 sectors</span><br><span class="line">Units = sectors of 1 * 512 = 512 bytes</span><br><span class="line">Sector size (logical/physical): 512 bytes / 512 bytes</span><br><span class="line">I/O size (minimum/optimal): 512 bytes / 512 bytes</span><br><span class="line">Disk label <span class="built_in">type</span>: dos</span><br><span class="line">Disk identifier: 0x0008d73a</span><br><span class="line"></span><br><span class="line">   Device Boot      Start         End      Blocks   Id  System</span><br><span class="line">/dev/vda1   *        2048    83884031    41940992   83  Linux</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看所有交换分区"><a href="#查看所有交换分区" class="headerlink" title="查看所有交换分区"></a>查看所有交换分区</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># swapon -s</span></span><br><span class="line">Filename                                Type            Size    Used    Priority</span><br><span class="line">/etc/swap                               file    2097148 261756  -2</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看硬盘大小"><a href="#查看硬盘大小" class="headerlink" title="查看硬盘大小"></a>查看硬盘大小</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># fdisk -l |grep Disk</span></span><br><span class="line">Disk /dev/vda: 42.9 GB, 42949672960 bytes, 83886080 sectors</span><br><span class="line">Disk label <span class="built_in">type</span>: dos</span><br><span class="line">Disk identifier: 0x0008d73a</span><br></pre></td></tr></table></figure>
+
+<h2 id="查看用户和组相关"><a href="#查看用户和组相关" class="headerlink" title="查看用户和组相关"></a>查看用户和组相关</h2><h3 id="查看活动用户"><a href="#查看活动用户" class="headerlink" title="查看活动用户"></a>查看活动用户</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># w</span></span><br><span class="line"> 08:47:20 up 45 days, 18:54,  1 user,  load average: 0.01, 0.03, 0.05</span><br><span class="line">USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT</span><br><span class="line">root     pts/0    xxx.194.1.200    08:32    0.00s  0.32s  0.32s -bash</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看指定用户信息"><a href="#查看指定用户信息" class="headerlink" title="查看指定用户信息"></a>查看指定用户信息</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># id</span></span><br><span class="line">uid=0(root) gid=0(root) <span class="built_in">groups</span>=0(root)</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看用户登录日志"><a href="#查看用户登录日志" class="headerlink" title="查看用户登录日志"></a>查看用户登录日志</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># last</span></span><br><span class="line">root     pts/0        xxx.194.1.200    Fri Dec 20 08:32   still logged <span class="keyword">in</span></span><br><span class="line">root     pts/0        xxx.73.164.60     Thu Dec 19 21:47 - 00:28  (02:41)</span><br><span class="line">root     pts/0        xxx.106.236.255  Thu Dec 19 16:00 - 18:24  (02:23)</span><br><span class="line">root     pts/1        xxx.194.3.173    Tue Dec 17 13:35 - 17:37  (04:01)</span><br><span class="line">root     pts/0        xxx.194.3.173    Tue Dec 17 13:35 - 17:37  (04:02)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看系统所有用户"><a href="#查看系统所有用户" class="headerlink" title="查看系统所有用户"></a>查看系统所有用户</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@pdai.tech ~]<span class="comment"># cut -d: -f1 /etc/passwd</span></span><br><span class="line">root</span><br><span class="line">bin</span><br><span class="line">daemon</span><br><span class="line">adm</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看系统所有组"><a href="#查看系统所有组" class="headerlink" title="查看系统所有组"></a>查看系统所有组</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cut</span> -d: -f1 /etc/group</span><br></pre></td></tr></table></figure>
+
+<h2 id="查看服务，模块和包相关"><a href="#查看服务，模块和包相关" class="headerlink" title="查看服务，模块和包相关"></a>查看服务，模块和包相关</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看当前用户的计划任务服务</span></span><br><span class="line">crontab -l </span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出所有系统服务</span></span><br><span class="line">chkconfig –list </span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出所有启动的系统服务程序</span></span><br><span class="line">chkconfig –list | grep on </span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看所有安装的软件包</span></span><br><span class="line">rpm -qa </span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出加载的内核模块</span></span><br><span class="line">lsmod </span><br></pre></td></tr></table></figure>
+
+<h2 id="查看系统，设备，环境信息"><a href="#查看系统，设备，环境信息" class="headerlink" title="查看系统，设备，环境信息"></a>查看系统，设备，环境信息</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 常用</span></span><br><span class="line"><span class="built_in">env</span> <span class="comment"># 查看环境变量资源</span></span><br><span class="line"><span class="built_in">uptime</span> <span class="comment"># 查看系统运行时间、用户数、负载</span></span><br><span class="line">lsusb -tv <span class="comment"># 列出所有USB设备的linux系统信息命令</span></span><br><span class="line">lspci -tv <span class="comment"># 列出所有PCI设备</span></span><br><span class="line"><span class="built_in">head</span> -n 1 /etc/issue <span class="comment"># 查看操作系统版本，是数字1不是字母L</span></span><br><span class="line"><span class="built_in">uname</span> -a <span class="comment"># 查看内核/操作系统/CPU信息的linux系统信息命令</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># /proc/</span></span><br><span class="line"><span class="built_in">cat</span> /proc/cpuinfo ：查看CPU相关参数的linux系统命令</span><br><span class="line"><span class="built_in">cat</span> /proc/partitions ：查看linux硬盘和分区信息的系统信息命令</span><br><span class="line"><span class="built_in">cat</span> /proc/meminfo ：查看linux系统内存信息的linux系统命令</span><br><span class="line"><span class="built_in">cat</span> /proc/version ：查看版本，类似<span class="built_in">uname</span> -r</span><br><span class="line"><span class="built_in">cat</span> /proc/ioports ：查看设备io端口</span><br><span class="line"><span class="built_in">cat</span> /proc/interrupts ：查看中断</span><br><span class="line"><span class="built_in">cat</span> /proc/pci ：查看pci设备的信息</span><br><span class="line"><span class="built_in">cat</span> /proc/swaps ：查看所有swap分区的信息</span><br><span class="line"><span class="built_in">cat</span> /proc/cpuinfo |grep <span class="string">&quot;model name&quot;</span> &amp;&amp; <span class="built_in">cat</span> /proc/cpuinfo |grep <span class="string">&quot;physical id&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="tsar"><a href="#tsar" class="headerlink" title="tsar"></a>tsar</h2><p>tsar是淘宝开源的的采集工具。很好用, 将历史收集到的数据持久化在磁盘上，所以我们快速来查询历史的系统数据。当然实时的应用情况也是可以查询的啦。大部分机器上都有安装。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tsar  <span class="comment">##可以查看最近一天的各项指标</span></span><br><span class="line">tsar --live <span class="comment">##可以查看实时指标，默认五秒一刷</span></span><br><span class="line">tsar -d 20161218 <span class="comment">##指定查看某天的数据，貌似最多只能看四个月的数据</span></span><br><span class="line">tsar --mem</span><br><span class="line">tsar --load</span><br><span class="line">tsar --cpu <span class="comment">##当然这个也可以和-d参数配合来查询某天的单个指标的情况 </span></span><br></pre></td></tr></table></figure>
+
+<p>具体可以看这篇文章：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/5562854ed901">linux 淘宝开源监控工具tsar</a></p>
+
+
+
+<div class="article-footer reveal fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/12/27/17-%E8%B0%83%E8%AF%95%E6%8E%92%E9%94%99-Java-%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E4%B9%8B%E5%B7%A5%E5%85%B7%E5%8D%95/">17.调试排错 - Java 问题排查之工具单</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/12/27/15-%E8%B0%83%E8%AF%95%E6%8E%92%E9%94%99-Java-%E7%BA%BF%E7%A8%8B%E5%88%86%E6%9E%90%E4%B9%8B%E7%BA%BF%E7%A8%8BDump%E5%88%86%E6%9E%90/">15.调试排错 - Java 线程分析之线程Dump分析</a></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"></div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.21.0';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img, .gallery img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>

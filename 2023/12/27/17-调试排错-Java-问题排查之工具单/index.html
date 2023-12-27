@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 7.0.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>17.调试排错 - Java 问题排查之工具单 - Hubert's Blog</title>
+
+  
+    <meta name="description" content="Java 在线问题排查主要分两篇：本文是第二篇，通过java调试&#x2F;排查工具进行问题定位。  Java 调试入门工具jps jps是jdk提供的一个查看当前java进程的小工具， 可以看做是JavaVirtual Machine Process Status Tool的缩写。  jps常用命令 123456jps # 显示进程的ID 和 类的名称jps –l # 输出输出完全的包名，应用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="17.调试排错 - Java 问题排查之工具单">
+<meta property="og:url" content="https://hubertwongcn.github.io/2023/12/27/17-%E8%B0%83%E8%AF%95%E6%8E%92%E9%94%99-Java-%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E4%B9%8B%E5%B7%A5%E5%85%B7%E5%8D%95/index.html">
+<meta property="og:site_name" content="Hubert&#39;s Blog">
+<meta property="og:description" content="Java 在线问题排查主要分两篇：本文是第二篇，通过java调试&#x2F;排查工具进行问题定位。  Java 调试入门工具jps jps是jdk提供的一个查看当前java进程的小工具， 可以看做是JavaVirtual Machine Process Status Tool的缩写。  jps常用命令 123456jps # 显示进程的ID 和 类的名称jps –l # 输出输出完全的包名，应用">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-12-27T07:24:29.000Z">
+<meta property="article:modified_time" content="2023-12-27T07:24:29.000Z">
+<meta property="article:author" content="Hubert Wong">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="调试排错">
+<meta property="article:tag" content="问题排查">
+<meta property="article:tag" content="工具单">
+<meta name="twitter:card" content="summary">
+  
+  
+  
+  <meta name="keywords" content="Java,JVM,调试排错,问题排查,工具单">
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="title" href="/"><div class="main" ff="title">Hubert's Blog</div><div class="sub cap"> Hubert爱猫爱生活</div></a></div>
+
+<nav class="menu dis-select"></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">17.调试排错 - Java 问题排查之工具单</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-%E8%B0%83%E8%AF%95%E5%85%A5%E9%97%A8%E5%B7%A5%E5%85%B7"><span class="toc-text">Java 调试入门工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#jps"><span class="toc-text">jps</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#jstack"><span class="toc-text">jstack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#jinfo"><span class="toc-text">jinfo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#jmap"><span class="toc-text">jmap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#jstat"><span class="toc-text">jstat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#jdb"><span class="toc-text">jdb</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CHLSDB"><span class="toc-text">CHLSDB</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-%E8%B0%83%E8%AF%95%E8%BF%9B%E9%98%B6%E5%B7%A5%E5%85%B7"><span class="toc-text">Java 调试进阶工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#btrace"><span class="toc-text">btrace</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Greys"><span class="toc-text">Greys</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Arthas"><span class="toc-text">Arthas</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#javOSize"><span class="toc-text">javOSize</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JProfiler"><span class="toc-text">JProfiler</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E5%AE%83%E5%B7%A5%E5%85%B7"><span class="toc-text">其它工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#dmesg"><span class="toc-text">dmesg</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-text">参考文章</span></a></li></ol></div></div></widget>
+
+
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+
+<div class="bread-nav fs12"><div class="left"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Java/">Java</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/JVM/">JVM</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/JVM/%E8%B0%83%E8%AF%95%E6%8E%92%E9%94%99/">调试排错</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/JVM/%E8%B0%83%E8%AF%95%E6%8E%92%E9%94%99/%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/">问题排查</a></div><div id="post-meta">
+    <span>发布于&nbsp;<time datetime="2023-12-27T07:24:29.000Z">2023-12-27</time></span>
+    
+    <span>更新于&nbsp;<time datetime="2023-12-27T07:24:29.000Z">2023-12-27</time></span>
+    </div></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>17.调试排错 - Java 问题排查之工具单</span></h1>
+<blockquote>
+<p>Java 在线问题排查主要分两篇：本文是第二篇，通过java调试&#x2F;排查工具进行问题定位。</p>
+</blockquote>
+<h2 id="Java-调试入门工具"><a href="#Java-调试入门工具" class="headerlink" title="Java 调试入门工具"></a>Java 调试入门工具</h2><h3 id="jps"><a href="#jps" class="headerlink" title="jps"></a>jps</h3><blockquote>
+<p>jps是jdk提供的一个查看当前java进程的小工具， 可以看做是JavaVirtual Machine Process Status Tool的缩写。</p>
+</blockquote>
+<p>jps常用命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">jps <span class="comment"># 显示进程的ID 和 类的名称</span></span><br><span class="line">jps –l <span class="comment"># 输出输出完全的包名，应用主类名，jar的完全路径名 </span></span><br><span class="line">jps –v <span class="comment"># 输出jvm参数</span></span><br><span class="line">jps –q <span class="comment"># 显示java进程号</span></span><br><span class="line">jps -m <span class="comment"># main 方法</span></span><br><span class="line">jps -l xxx.xxx.xx.xx <span class="comment"># 远程查看 </span></span><br></pre></td></tr></table></figure>
+
+<p>jps参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-q：仅输出VM标识符，不包括classname,jar name,arguments <span class="keyword">in</span> main method </span><br><span class="line">-m：输出main method的参数 </span><br><span class="line">-l：输出完全的包名，应用主类名，jar的完全路径名 </span><br><span class="line">-v：输出jvm参数 </span><br><span class="line">-V：输出通过flag文件传递到JVM中的参数(.hotspotrc文件或-XX:Flags=所指定的文件 </span><br><span class="line">-Joption：传递参数到vm,例如:-J-Xms512m</span><br></pre></td></tr></table></figure>
+
+<p>jps原理</p>
+<blockquote>
+<p>java程序在启动以后，会在java.io.tmpdir指定的目录下，就是临时文件夹里，生成一个类似于hsperfdata_User的文件夹，这个文件夹里（在Linux中为&#x2F;tmp&#x2F;hsperfdata_{userName}&#x2F;），有几个文件，名字就是java进程的pid，因此列出当前运行的java进程，只是把这个目录里的文件名列一下而已。 至于系统的参数什么，就可以解析这几个文件获得。</p>
+</blockquote>
+<p>更多请参考 <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/share/jps.html">jps - Java Virtual Machine Process Status Tool</a></p>
+<h3 id="jstack"><a href="#jstack" class="headerlink" title="jstack"></a>jstack</h3><blockquote>
+<p>jstack是jdk自带的线程堆栈分析工具，使用该命令可以查看或导出 Java 应用程序中线程堆栈信息。</p>
+</blockquote>
+<p>jstack常用命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 基本</span></span><br><span class="line">jstack 2815</span><br><span class="line"></span><br><span class="line"><span class="comment"># java和native c/c++框架的所有栈信息</span></span><br><span class="line">jstack -m 2815</span><br><span class="line"></span><br><span class="line"><span class="comment"># 额外的锁信息列表，查看是否死锁</span></span><br><span class="line">jstack -l 2815</span><br></pre></td></tr></table></figure>
+
+<p>jstack参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-l 长列表. 打印关于锁的附加信息,例如属于java.util.concurrent 的 ownable synchronizers列表.</span><br><span class="line"></span><br><span class="line">-F 当’jstack [-l] pid’没有相应的时候强制打印栈信息</span><br><span class="line"></span><br><span class="line">-m 打印java和native c/c++框架的所有栈信息.</span><br><span class="line"></span><br><span class="line">-h | -<span class="built_in">help</span> 打印帮助信息</span><br></pre></td></tr></table></figure>
+
+<p>更多请参考: <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/025cb069cb69">jvm 性能调优工具之 jstack</a></p>
+<h3 id="jinfo"><a href="#jinfo" class="headerlink" title="jinfo"></a>jinfo</h3><blockquote>
+<p>jinfo 是 JDK 自带的命令，可以用来查看正在运行的 java 应用程序的扩展参数，包括Java System属性和JVM命令行参数；也可以动态的修改正在运行的 JVM 一些参数。当系统崩溃时，jinfo可以从core文件里面知道崩溃的Java应用程序的配置信息</p>
+</blockquote>
+<p>jinfo常用命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 输出当前 jvm 进程的全部参数和系统属性</span></span><br><span class="line">jinfo 2815</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出所有的参数</span></span><br><span class="line">jinfo -flags 2815</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看指定的 jvm 参数的值</span></span><br><span class="line">jinfo -flag PrintGC 2815</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开启/关闭指定的JVM参数</span></span><br><span class="line">jinfo -flag +PrintGC 2815</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置flag的参数</span></span><br><span class="line">jinfo -flag name=value 2815</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出当前 jvm 进行的全部的系统属性</span></span><br><span class="line">jinfo -sysprops 2815</span><br></pre></td></tr></table></figure>
+
+<p>jinfo参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">no option 输出全部的参数和系统属性</span><br><span class="line">-flag name 输出对应名称的参数</span><br><span class="line">-flag [+|-]name 开启或者关闭对应名称的参数</span><br><span class="line">-flag name=value 设定对应名称的参数</span><br><span class="line">-flags 输出全部的参数</span><br><span class="line">-sysprops 输出系统属性</span><br></pre></td></tr></table></figure>
+
+<p>更多请参考：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8d8aef212b25">jvm 性能调优工具之 jinfo</a></p>
+<h3 id="jmap"><a href="#jmap" class="headerlink" title="jmap"></a>jmap</h3><blockquote>
+<p>命令jmap是一个多功能的命令。它可以生成 java 程序的 dump 文件， 也可以查看堆内对象示例的统计信息、查看 ClassLoader 的信息以及 finalizer 队列。</p>
+</blockquote>
+<p>两个用途</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看堆的情况</span></span><br><span class="line">jmap -heap 2815</span><br><span class="line"></span><br><span class="line"><span class="comment"># dump</span></span><br><span class="line">jmap -dump:live,format=b,file=/tmp/heap2.bin 2815</span><br><span class="line">jmap -dump:format=b,file=/tmp/heap3.bin 2815</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看堆的占用</span></span><br><span class="line">jmap -histo 2815 | <span class="built_in">head</span> -10</span><br></pre></td></tr></table></figure>
+
+<p>jmap参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">no option： 查看进程的内存映像信息,类似 Solaris pmap 命令。</span><br><span class="line">heap： 显示Java堆详细信息</span><br><span class="line">histo[:live]： 显示堆中对象的统计信息</span><br><span class="line">clstats：打印类加载器信息</span><br><span class="line">finalizerinfo： 显示在F-Queue队列等待Finalizer线程执行finalizer方法的对象</span><br><span class="line">dump:&lt;dump-options&gt;：生成堆转储快照</span><br><span class="line">F： 当-dump没有响应时，使用-dump或者-histo参数. 在这个模式下,live子参数无效.</span><br><span class="line"><span class="built_in">help</span>：打印帮助信息</span><br><span class="line">J&lt;flag&gt;：指定传递给运行jmap的JVM的参数</span><br></pre></td></tr></table></figure>
+
+<p>更多请参考：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a4ad53179df3">jvm 性能调优工具之 jmap</a> 和 <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/share/jmap.html">jmap - Memory Map</a></p>
+<h3 id="jstat"><a href="#jstat" class="headerlink" title="jstat"></a>jstat</h3><p>jstat参数众多，但是使用一个就够了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jstat -gcutil 2815 1000 </span><br></pre></td></tr></table></figure>
+
+<h3 id="jdb"><a href="#jdb" class="headerlink" title="jdb"></a>jdb</h3><p>jdb可以用来预发debug,假设你预发的java_home是&#x2F;opt&#x2F;java&#x2F;，远程调试端口是8000.那么</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jdb -attach 8000</span><br></pre></td></tr></table></figure>
+
+<p>出现以上代表jdb启动成功。后续可以进行设置断点进行调试。</p>
+<p>具体参数可见oracle官方说明<a target="_blank" rel="noopener" href="http://docs.oracle.com/javase/7/docs/technotes/tools/windows/jdb.html">jdb - The Java Debugger</a></p>
+<h3 id="CHLSDB"><a href="#CHLSDB" class="headerlink" title="CHLSDB"></a>CHLSDB</h3><p>CHLSDB感觉很多情况下可以看到更好玩的东西，不详细叙述了。 查询资料听说jstack和jmap等工具就是基于它的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -classpath /opt/taobao/java/lib/sa-jdi.jar sun.jvm.hotspot.CLHSDB</span><br></pre></td></tr></table></figure>
+
+<p>更详细的可见R大此贴 <a target="_blank" rel="noopener" href="http://rednaxelafx.iteye.com/blog/1847971">http://rednaxelafx.iteye.com/blog/1847971</a></p>
+<h2 id="Java-调试进阶工具"><a href="#Java-调试进阶工具" class="headerlink" title="Java 调试进阶工具"></a>Java 调试进阶工具</h2><h3 id="btrace"><a href="#btrace" class="headerlink" title="btrace"></a>btrace</h3><p>首当其冲的要说的是btrace。真是生产环境&amp;预发的排查问题大杀器。 简介什么的就不说了。直接上代码干</p>
+<ul>
+<li>查看当前谁调用了ArrayList的add方法，同时只打印当前ArrayList的size大于500的线程调用栈</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@OnMethod(clazz = &quot;java.util.ArrayList&quot;, method=&quot;add&quot;, location = @Location(value = Kind.CALL, clazz = &quot;/./&quot;, method = &quot;/./&quot;))</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">m</span><span class="params">(<span class="meta">@ProbeClassName</span> String probeClass, <span class="meta">@ProbeMethodName</span> String probeMethod, <span class="meta">@TargetInstance</span> Object instance, <span class="meta">@TargetMethodOrField</span> String method)</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(getInt(field(<span class="string">&quot;java.util.ArrayList&quot;</span>, <span class="string">&quot;size&quot;</span>), instance) &gt; <span class="number">479</span>)&#123;</span><br><span class="line">        println(<span class="string">&quot;check who ArrayList.add method:&quot;</span> + probeClass + <span class="string">&quot;#&quot;</span> + probeMethod  + <span class="string">&quot;, method:&quot;</span> + method + <span class="string">&quot;, size:&quot;</span> + getInt(field(<span class="string">&quot;java.util.ArrayList&quot;</span>, <span class="string">&quot;size&quot;</span>), instance));</span><br><span class="line">        jstack();</span><br><span class="line">        println();</span><br><span class="line">        println(<span class="string">&quot;===========================&quot;</span>);</span><br><span class="line">        println();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>监控当前服务方法被调用时返回的值以及请求的参数</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@OnMethod(clazz = &quot;com.taobao.sellerhome.transfer.biz.impl.C2CApplyerServiceImpl&quot;, method=&quot;nav&quot;, location = @Location(value = Kind.RETURN))</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">mt</span><span class="params">(<span class="type">long</span> userId, <span class="type">int</span> current, <span class="type">int</span> relation, String check, String redirectUrl, <span class="meta">@Return</span> AnyType result)</span> &#123;</span><br><span class="line"></span><br><span class="line">    println(<span class="string">&quot;parameter# userId:&quot;</span> + userId + <span class="string">&quot;, current:&quot;</span> + current + <span class="string">&quot;, relation:&quot;</span> + relation + <span class="string">&quot;, check:&quot;</span> + check + <span class="string">&quot;, redirectUrl:&quot;</span> + redirectUrl + <span class="string">&quot;, result:&quot;</span> + result);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>btrace 具体可以参考这里：<a target="_blank" rel="noopener" href="https://github.com/btraceio/btrace">https://github.com/btraceio/btrace</a></p>
+<p>注意:</p>
+<ul>
+<li>经过观察，1.3.9的release输出不稳定，要多触发几次才能看到正确的结果</li>
+<li>正则表达式匹配trace类时范围一定要控制，否则极有可能出现跑满CPU导致应用卡死的情况</li>
+<li>由于是字节码注入的原理，想要应用恢复到正常情况，需要重启应用。</li>
+</ul>
+<h3 id="Greys"><a href="#Greys" class="headerlink" title="Greys"></a>Greys</h3><p>Greys是@杜琨的大作吧。说几个挺棒的功能(部分功能和btrace重合):</p>
+<ul>
+<li><code>sc -df xxx</code>: 输出当前类的详情,包括源码位置和classloader结构</li>
+<li><code>trace class method</code>: 打印出当前方法调用的耗时情况，细分到每个方法, 对排查方法性能时很有帮助。</li>
+</ul>
+<h3 id="Arthas"><a href="#Arthas" class="headerlink" title="Arthas"></a>Arthas</h3><blockquote>
+<p>Arthas是基于Greys。</p>
+</blockquote>
+<p>具体请参考：<a href="">调试排错 - Java应用在线调试Arthas</a></p>
+<h3 id="javOSize"><a href="#javOSize" class="headerlink" title="javOSize"></a>javOSize</h3><p>就说一个功能:</p>
+<ul>
+<li><code>classes</code>：通过修改了字节码，改变了类的内容，即时生效。 所以可以做到快速的在某个地方打个日志看看输出，缺点是对代码的侵入性太大。但是如果自己知道自己在干嘛，的确是不错的玩意儿。</li>
+</ul>
+<p>其他功能Greys和btrace都能很轻易做的到，不说了。</p>
+<p>更多请参考：<a target="_blank" rel="noopener" href="http://www.javosize.com/">官网</a></p>
+<h3 id="JProfiler"><a href="#JProfiler" class="headerlink" title="JProfiler"></a>JProfiler</h3><p>之前判断许多问题要通过JProfiler，但是现在Greys和btrace基本都能搞定了。再加上出问题的基本上都是生产环境(网络隔离)，所以基本不怎么使用了，但是还是要标记一下。</p>
+<p>更多请参考：<a target="_blank" rel="noopener" href="https://www.ej-technologies.com/products/jprofiler/overview.html">官网</a></p>
+<h2 id="其它工具"><a href="#其它工具" class="headerlink" title="其它工具"></a>其它工具</h2><h3 id="dmesg"><a href="#dmesg" class="headerlink" title="dmesg"></a>dmesg</h3><p>如果发现自己的java进程悄无声息的消失了，几乎没有留下任何线索，那么dmesg一发，很有可能有你想要的。</p>
+<p>sudo dmesg|grep -i kill|less 去找关键字oom_killer。找到的结果类似如下:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[6710782.021013] java invoked oom-killer: gfp_mask=0xd0, order=0, oom_adj=0, oom_scoe_adj=0</span><br><span class="line">[6710782.070639] [&lt;ffffffff81118898&gt;] ? oom_kill_process+0x68/0x140 </span><br><span class="line">[6710782.257588] Task <span class="keyword">in</span> /LXC011175068174 killed as a result of <span class="built_in">limit</span> of /LXC011175068174 </span><br><span class="line">[6710784.698347] Memory cgroup out of memory: Kill process 215701 (java) score 854 or sacrifice child </span><br><span class="line">[6710784.707978] Killed process 215701, UID 679, (java) total-vm:11017300kB, anon-rss:7152432kB, file-rss:1232kB</span><br></pre></td></tr></table></figure>
+
+<p>以上表明，对应的java进程被系统的OOM Killer给干掉了，得分为854. 解释一下OOM killer（Out-Of-Memory killer），该机制会监控机器的内存资源消耗。当机器内存耗尽前，该机制会扫描所有的进程（按照一定规则计算，内存占用，时间等），挑选出得分最高的进程，然后杀死，从而保护机器。</p>
+<p>dmesg日志时间转换公式: log实际时间&#x3D;格林威治1970-01-01+(当前时间秒数-系统启动至今的秒数+dmesg打印的log时间)秒数：</p>
+<p>date -d “1970-01-01 UTC <code>echo &quot;$(date +%s)-$(cat /proc/uptime|cut -f 1 -d&#39; &#39;)+12288812.926194&quot;|bc </code> seconds” 剩下的，就是看看为什么内存这么大，触发了OOM-Killer了。</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li>文章主要参考了如下， 在此基础上重新整理，和添加新内容。</li>
+<li>作者：红魔七号</li>
+<li>文章来源：<a target="_blank" rel="noopener" href="https://yq.aliyun.com/articles/69520">https://yq.aliyun.com/articles/69520</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/xuchunlin/p/5671572.html">https://www.cnblogs.com/xuchunlin/p/5671572.html</a></li>
+</ul>
+
+
+
+<div class="article-footer reveal fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/12/27/18-%E8%B0%83%E8%AF%95%E6%8E%92%E9%94%99-Java-%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E4%B9%8BJVM%E5%8F%AF%E8%A7%86%E5%8C%96%E5%B7%A5%E5%85%B7/">18.调试排错 - Java 问题排查之JVM可视化工具</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/12/27/16-%E8%B0%83%E8%AF%95%E6%8E%92%E9%94%99-Java-%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E4%B9%8BLinux%E5%91%BD%E4%BB%A4/">16.调试排错 - Java 问题排查之Linux命令</a></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"></div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.21.0';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img, .gallery img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
