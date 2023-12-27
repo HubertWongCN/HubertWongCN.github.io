@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 7.0.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>7.排序 - 堆排序(Heap Sort) - Hubert's Blog</title>
+
+  
+    <meta name="description" content="堆排序是指利用堆这种数据结构所设计的一种排序算法。堆是一个近似完全二叉树的结构，并同时满足堆积的性质：即子结点的键值或索引总是小于（或者大于）它的父节点。  堆排序介绍学习堆排序之前，有必要了解堆！若读者不熟悉堆，建议先了解堆(建议可以通过二叉堆，左倾堆，斜堆，二项堆或斐波那契堆等文章进行了解)，然后再来学习本章。 我们知道，堆分为”最大堆”和”最小堆”。最大堆通常被用来进行”升序”排序，而最小">
+<meta property="og:type" content="article">
+<meta property="og:title" content="7.排序 - 堆排序(Heap Sort)">
+<meta property="og:url" content="https://hubertwongcn.github.io/2023/12/27/7-%E6%8E%92%E5%BA%8F-%E5%A0%86%E6%8E%92%E5%BA%8F-Heap-Sort/index.html">
+<meta property="og:site_name" content="Hubert&#39;s Blog">
+<meta property="og:description" content="堆排序是指利用堆这种数据结构所设计的一种排序算法。堆是一个近似完全二叉树的结构，并同时满足堆积的性质：即子结点的键值或索引总是小于（或者大于）它的父节点。  堆排序介绍学习堆排序之前，有必要了解堆！若读者不熟悉堆，建议先了解堆(建议可以通过二叉堆，左倾堆，斜堆，二项堆或斐波那契堆等文章进行了解)，然后再来学习本章。 我们知道，堆分为”最大堆”和”最小堆”。最大堆通常被用来进行”升序”排序，而最小">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272003487.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272003059.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272004619.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272004333.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272004109.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272004840.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272004370.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272005306.jpg">
+<meta property="article:published_time" content="2023-12-27T12:02:14.000Z">
+<meta property="article:modified_time" content="2023-12-27T12:02:14.000Z">
+<meta property="article:author" content="Hubert Wong">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="排序算法">
+<meta property="article:tag" content="堆排序">
+<meta property="article:tag" content="Heap Sort">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272003487.jpg">
+  
+  
+  
+  <meta name="keywords" content="算法,排序算法,堆排序,Heap Sort">
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="title" href="/"><div class="main" ff="title">Hubert's Blog</div><div class="sub cap"> Hubert爱猫爱生活</div></a></div>
+
+<nav class="menu dis-select"></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">7.排序 - 堆排序(Heap Sort)</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E6%8E%92%E5%BA%8F%E4%BB%8B%E7%BB%8D"><span class="toc-text">堆排序介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E6%8E%92%E5%BA%8F%E5%AE%9E%E7%8E%B0"><span class="toc-text">堆排序实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E5%A0%86"><span class="toc-text">初始化堆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%A4%E6%8D%A2%E6%95%B0%E6%8D%AE"><span class="toc-text">交换数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E6%8E%92%E5%BA%8F%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%92%8C%E7%A8%B3%E5%AE%9A%E6%80%A7"><span class="toc-text">堆排序复杂度和稳定性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%86%E6%8E%92%E5%BA%8F%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-text">堆排序时间复杂度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%86%E6%8E%92%E5%BA%8F%E7%A8%B3%E5%AE%9A%E6%80%A7"><span class="toc-text">堆排序稳定性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-text">代码实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-text">参考文章</span></a></li></ol></div></div></widget>
+
+
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+
+<div class="bread-nav fs12"><div class="left"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/%E7%AE%97%E6%B3%95/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/">排序算法</a></div><div id="post-meta">
+    <span>发布于&nbsp;<time datetime="2023-12-27T12:02:14.000Z">2023-12-27</time></span>
+    
+    <span>更新于&nbsp;<time datetime="2023-12-27T12:02:14.000Z">2023-12-27</time></span>
+    </div></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>7.排序 - 堆排序(Heap Sort)</span></h1>
+<blockquote>
+<p>堆排序是指利用堆这种数据结构所设计的一种排序算法。堆是一个近似完全二叉树的结构，并同时满足堆积的性质：即子结点的键值或索引总是小于（或者大于）它的父节点。</p>
+</blockquote>
+<h2 id="堆排序介绍"><a href="#堆排序介绍" class="headerlink" title="堆排序介绍"></a>堆排序介绍</h2><p>学习堆排序之前，有必要了解堆！若读者不熟悉堆，建议先了解堆(建议可以通过二叉堆，左倾堆，斜堆，二项堆或斐波那契堆等文章进行了解)，然后再来学习本章。</p>
+<p>我们知道，堆分为”最大堆”和”最小堆”。最大堆通常被用来进行”升序”排序，而最小堆通常被用来进行”降序”排序。 鉴于最大堆和最小堆是对称关系，理解其中一种即可。本文将对最大堆实现的升序排序进行详细说明。</p>
+<p>最大堆进行升序排序的基本思想: ① 初始化堆: 将数列a[1…n]构造成最大堆。 ② 交换数据: 将a[1]和a[n]交换，使a[n]是a[1…n]中的最大值；然后将a[1…n-1]重新调整为最大堆。 接着，将a[1]和a[n-1]交换，使a[n-1]是a[1…n-1]中的最大值；然后将a[1…n-2]重新调整为最大值。 依次类推，直到整个数列都是有序的。</p>
+<p>下面，通过图文来解析堆排序的实现过程。注意实现中用到了”数组实现的二叉堆的性质”。 在第一个元素的索引为 0 的情形中:</p>
+<ul>
+<li>性质一: 索引为i的左孩子的索引是 (2*i+1);</li>
+<li>性质二: 索引为i的右孩子的索引是 (2*i+2);</li>
+<li>性质三: 索引为i的父结点的索引是 floor((i-1)&#x2F;2);</li>
+</ul>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272003487.jpg"/></div></div>
+
+<p>例如，对于最大堆{110,100,90,40,80,20,60,10,30,50,70}而言: 索引为0的左孩子的所有是1；索引为0的右孩子是2；索引为8的父节点是3。</p>
+<h2 id="堆排序实现"><a href="#堆排序实现" class="headerlink" title="堆排序实现"></a>堆排序实现</h2><p>下面演示heap_sort_asc(a, n)对a&#x3D;{20,30,90,40,70,110,60,10,100,50,80}, n&#x3D;11进行堆排序过程。下面是数组a对应的初始化结构:</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272003059.jpg"/></div></div>
+
+<h3 id="初始化堆"><a href="#初始化堆" class="headerlink" title="初始化堆"></a>初始化堆</h3><p>在堆排序算法中，首先要将待排序的数组转化成二叉堆。 下面演示将数组{20,30,90,40,70,110,60,10,100,50,80}转换为最大堆{110,100,90,40,80,20,60,10,30,50,70}的步骤。</p>
+<ul>
+<li>1.1 i&#x3D;11&#x2F;2-1，即i&#x3D;4</li>
+</ul>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272004619.jpg"/></div></div>
+
+<p>上面是maxheap_down(a, 4, 9)调整过程。maxheap_down(a, 4, 9)的作用是将a[4…9]进行下调；a[4]的左孩子是a[9]，右孩子是a[10]。调整时，选择左右孩子中较大的一个(即a[10])和a[4]交换。</p>
+<ul>
+<li>1.2 i&#x3D;3</li>
+</ul>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272004333.jpg"/></div></div>
+
+<p>上面是maxheap_down(a, 3, 9)调整过程。maxheap_down(a, 3, 9)的作用是将a[3…9]进行下调；a[3]的左孩子是a[7]，右孩子是a[8]。调整时，选择左右孩子中较大的一个(即a[8])和a[4]交换。</p>
+<ul>
+<li>1.3 i&#x3D;2</li>
+</ul>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272004109.jpg"/></div></div>
+
+<p>上面是maxheap_down(a, 2, 9)调整过程。maxheap_down(a, 2, 9)的作用是将a[2…9]进行下调；a[2]的左孩子是a[5]，右孩子是a[6]。调整时，选择左右孩子中较大的一个(即a[5])和a[2]交换。</p>
+<ul>
+<li>1.4 i&#x3D;1</li>
+</ul>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272004840.jpg"/></div></div>
+
+<p>上面是maxheap_down(a, 1, 9)调整过程。maxheap_down(a, 1, 9)的作用是将a[1…9]进行下调；a[1]的左孩子是a[3]，右孩子是a[4]。调整时，选择左右孩子中较大的一个(即a[3])和a[1]交换。交换之后，a[3]为30，它比它的右孩子a[8]要大，接着，再将它们交换。</p>
+<ul>
+<li>1.5 i&#x3D;0</li>
+</ul>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272004370.jpg"/></div></div>
+
+<p>上面是maxheap_down(a, 0, 9)调整过程。maxheap_down(a, 0, 9)的作用是将a[0…9]进行下调；a[0]的左孩子是a[1]，右孩子是a[2]。调整时，选择左右孩子中较大的一个(即a[2])和a[0]交换。交换之后，a[2]为20，它比它的左右孩子要大，选择较大的孩子(即左孩子)和a[2]交换。</p>
+<p>调整完毕，就得到了最大堆。此时，数组{20,30,90,40,70,110,60,10,100,50,80}也就变成了{110,100,90,40,80,20,60,10,30,50,70}。</p>
+<h3 id="交换数据"><a href="#交换数据" class="headerlink" title="交换数据"></a>交换数据</h3><p>在将数组转换成最大堆之后，接着要进行交换数据，从而使数组成为一个真正的有序数组。 交换数据部分相对比较简单，下面仅仅给出将最大值放在数组末尾的示意图。</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272005306.jpg"/></div></div>
+
+<p>上面是当n&#x3D;10时，交换数据的示意图。 当n&#x3D;10时，首先交换a[0]和a[10]，使得a[10]是a[0…10]之间的最大值；然后，调整a[0…9]使它称为最大堆。交换之后: a[10]是有序的！ 当n&#x3D;9时， 首先交换a[0]和a[9]，使得a[9]是a[0…9]之间的最大值；然后，调整a[0…8]使它称为最大堆。交换之后: a[9…10]是有序的！ … 依此类推，直到a[0…10]是有序的。</p>
+<h2 id="堆排序复杂度和稳定性"><a href="#堆排序复杂度和稳定性" class="headerlink" title="堆排序复杂度和稳定性"></a>堆排序复杂度和稳定性</h2><h3 id="堆排序时间复杂度"><a href="#堆排序时间复杂度" class="headerlink" title="堆排序时间复杂度"></a>堆排序时间复杂度</h3><p>堆排序的时间复杂度是O(N*lgN)。</p>
+<p>假设被排序的数列中有N个数。遍历一趟的时间复杂度是O(N)，需要遍历多少次呢? 堆排序是采用的二叉堆进行排序的，二叉堆就是一棵二叉树，它需要遍历的次数就是二叉树的深度，而根据完全二叉树的定义，它的深度至少是lg(N+1)。最多是多少呢? 由于二叉堆是完全二叉树，因此，它的深度最多也不会超过lg(2N)。因此，遍历一趟的时间复杂度是O(N)，而遍历次数介于lg(N+1)和lg(2N)之间；因此得出它的时间复杂度是O(N*lgN)。</p>
+<h3 id="堆排序稳定性"><a href="#堆排序稳定性" class="headerlink" title="堆排序稳定性"></a>堆排序稳定性</h3><p>堆排序是不稳定的算法，它不满足稳定算法的定义。它在交换数据的时候，是比较父结点和子节点之间的数据，所以，即便是存在两个数值相等的兄弟节点，它们的相对顺序在排序也可能发生变化。</p>
+<p><code>算法稳定性</code> – 假设在数列中存在a[i]&#x3D;a[j]，若在排序之前，a[i]在a[j]前面；并且排序之后，a[i]仍然在a[j]前面。则这个排序算法是稳定的！</p>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 堆排序: Java</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> skywang</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2014/03/11</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HeapSort</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* </span></span><br><span class="line"><span class="comment">     * (最大)堆的向下调整算法</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 注: 数组实现的堆中，第N个节点的左孩子的索引值是(2N+1)，右孩子的索引是(2N+2)。</span></span><br><span class="line"><span class="comment">     *     其中，N为数组下标索引值，如数组中第1个数对应的N为0。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明: </span></span><br><span class="line"><span class="comment">     *     a -- 待排序的数组</span></span><br><span class="line"><span class="comment">     *     start -- 被下调节点的起始位置(一般为0，表示从第1个开始)</span></span><br><span class="line"><span class="comment">     *     end   -- 截至范围(一般为数组中最后一个元素的索引)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">maxHeapDown</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> start, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> start;            <span class="comment">// 当前(current)节点的位置</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">2</span>*c + <span class="number">1</span>;        <span class="comment">// 左(left)孩子的位置</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">tmp</span> <span class="operator">=</span> a[c];            <span class="comment">// 当前(current)节点的大小</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (; l &lt;= end; c=l,l=<span class="number">2</span>*l+<span class="number">1</span>) &#123;</span><br><span class="line">            <span class="comment">// &quot;l&quot;是左孩子，&quot;l+1&quot;是右孩子</span></span><br><span class="line">            <span class="keyword">if</span> ( l &lt; end &amp;&amp; a[l] &lt; a[l+<span class="number">1</span>])</span><br><span class="line">                l++;        <span class="comment">// 左右两孩子中选择较大者，即m_heap[l+1]</span></span><br><span class="line">            <span class="keyword">if</span> (tmp &gt;= a[l])</span><br><span class="line">                <span class="keyword">break</span>;        <span class="comment">// 调整结束</span></span><br><span class="line">            <span class="keyword">else</span> &#123;            <span class="comment">// 交换值</span></span><br><span class="line">                a[c] = a[l];</span><br><span class="line">                a[l]= tmp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 堆排序(从小到大)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明: </span></span><br><span class="line"><span class="comment">     *     a -- 待排序的数组</span></span><br><span class="line"><span class="comment">     *     n -- 数组的长度</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">heapSortAsc</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="type">int</span> i,tmp;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 从(n/2-1) --&gt; 0逐次遍历。遍历之后，得到的数组实际上是一个(最大)二叉堆。</span></span><br><span class="line">        <span class="keyword">for</span> (i = n / <span class="number">2</span> - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--)</span><br><span class="line">            maxHeapDown(a, i, n-<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 从最后一个元素开始对序列进行调整，不断的缩小调整的范围直到第一个元素</span></span><br><span class="line">        <span class="keyword">for</span> (i = n - <span class="number">1</span>; i &gt; <span class="number">0</span>; i--) &#123;</span><br><span class="line">            <span class="comment">// 交换a[0]和a[i]。交换后，a[i]是a[0...i]中最大的。</span></span><br><span class="line">            tmp = a[<span class="number">0</span>];</span><br><span class="line">            a[<span class="number">0</span>] = a[i];</span><br><span class="line">            a[i] = tmp;</span><br><span class="line">            <span class="comment">// 调整a[0...i-1]，使得a[0...i-1]仍然是一个最大堆。</span></span><br><span class="line">            <span class="comment">// 即，保证a[i-1]是a[0...i-1]中的最大值。</span></span><br><span class="line">            maxHeapDown(a, <span class="number">0</span>, i-<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* </span></span><br><span class="line"><span class="comment">     * (最小)堆的向下调整算法</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 注: 数组实现的堆中，第N个节点的左孩子的索引值是(2N+1)，右孩子的索引是(2N+2)。</span></span><br><span class="line"><span class="comment">     *     其中，N为数组下标索引值，如数组中第1个数对应的N为0。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明: </span></span><br><span class="line"><span class="comment">     *     a -- 待排序的数组</span></span><br><span class="line"><span class="comment">     *     start -- 被下调节点的起始位置(一般为0，表示从第1个开始)</span></span><br><span class="line"><span class="comment">     *     end   -- 截至范围(一般为数组中最后一个元素的索引)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">minHeapDown</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> start, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> start;            <span class="comment">// 当前(current)节点的位置</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">2</span>*c + <span class="number">1</span>;        <span class="comment">// 左(left)孩子的位置</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">tmp</span> <span class="operator">=</span> a[c];            <span class="comment">// 当前(current)节点的大小</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (; l &lt;= end; c=l,l=<span class="number">2</span>*l+<span class="number">1</span>) &#123;</span><br><span class="line">            <span class="comment">// &quot;l&quot;是左孩子，&quot;l+1&quot;是右孩子</span></span><br><span class="line">            <span class="keyword">if</span> ( l &lt; end &amp;&amp; a[l] &gt; a[l+<span class="number">1</span>])</span><br><span class="line">                l++;        <span class="comment">// 左右两孩子中选择较小者</span></span><br><span class="line">            <span class="keyword">if</span> (tmp &lt;= a[l])</span><br><span class="line">                <span class="keyword">break</span>;        <span class="comment">// 调整结束</span></span><br><span class="line">            <span class="keyword">else</span> &#123;            <span class="comment">// 交换值</span></span><br><span class="line">                a[c] = a[l];</span><br><span class="line">                a[l]= tmp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 堆排序(从大到小)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明: </span></span><br><span class="line"><span class="comment">     *     a -- 待排序的数组</span></span><br><span class="line"><span class="comment">     *     n -- 数组的长度</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">heapSortDesc</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="type">int</span> i,tmp;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 从(n/2-1) --&gt; 0逐次遍历每。遍历之后，得到的数组实际上是一个最小堆。</span></span><br><span class="line">        <span class="keyword">for</span> (i = n / <span class="number">2</span> - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--)</span><br><span class="line">            minHeapDown(a, i, n-<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 从最后一个元素开始对序列进行调整，不断的缩小调整的范围直到第一个元素</span></span><br><span class="line">        <span class="keyword">for</span> (i = n - <span class="number">1</span>; i &gt; <span class="number">0</span>; i--) &#123;</span><br><span class="line">            <span class="comment">// 交换a[0]和a[i]。交换后，a[i]是a[0...i]中最小的。</span></span><br><span class="line">            tmp = a[<span class="number">0</span>];</span><br><span class="line">            a[<span class="number">0</span>] = a[i];</span><br><span class="line">            a[i] = tmp;</span><br><span class="line">            <span class="comment">// 调整a[0...i-1]，使得a[0...i-1]仍然是一个最小堆。</span></span><br><span class="line">            <span class="comment">// 即，保证a[i-1]是a[0...i-1]中的最小值。</span></span><br><span class="line">            minHeapDown(a, <span class="number">0</span>, i-<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> i;</span><br><span class="line">        <span class="type">int</span> a[] = &#123;<span class="number">20</span>,<span class="number">30</span>,<span class="number">90</span>,<span class="number">40</span>,<span class="number">70</span>,<span class="number">110</span>,<span class="number">60</span>,<span class="number">10</span>,<span class="number">100</span>,<span class="number">50</span>,<span class="number">80</span>&#125;;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;before sort:&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;a.length; i++)</span><br><span class="line">            System.out.printf(<span class="string">&quot;%d &quot;</span>, a[i]);</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">        heapSortAsc(a, a.length);            <span class="comment">// 升序排列</span></span><br><span class="line">        <span class="comment">//heapSortDesc(a, a.length);        // 降序排列</span></span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;after  sort:&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;a.length; i++)</span><br><span class="line">            System.out.printf(<span class="string">&quot;%d &quot;</span>, a[i]);</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><blockquote>
+<p>提示</p>
+<p>本文主要参考至 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/skywang12345/p/3602162.html">https://www.cnblogs.com/skywang12345/p/3602162.html</a>, 在此基础上做了内容的增改。</p>
+</blockquote>
+
+
+
+<div class="article-footer reveal fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/12/27/8-%E6%8E%92%E5%BA%8F-%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F-Merge-Sort/">8.排序 - 归并排序(Merge Sort)</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/12/27/6-%E6%8E%92%E5%BA%8F-%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F-Selection-sort/">6.排序 - 选择排序(Selection sort)</a></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"></div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.21.0';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img, .gallery img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
