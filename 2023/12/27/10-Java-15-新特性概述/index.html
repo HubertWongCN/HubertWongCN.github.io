@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 7.0.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>10.Java 15 新特性概述 - Hubert's Blog</title>
+
+  
+    <meta name="description" content="JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次发布的 JDK 15 将是一个短期的过度版，只会被 Oracle 支持（维护）6 个月，直到明年 3 月的 JDK 16 发布此版本将停止维护。而 Oracle 下一个长期支持版（LTS 版）会在明年的 9 月份候发布（Java 17），LTS 版每 3 年发布一个，上一次长期支持版是 18 年 9 月发布的 JDK">
+<meta property="og:type" content="article">
+<meta property="og:title" content="10.Java 15 新特性概述">
+<meta property="og:url" content="https://hubertwongcn.github.io/2023/12/27/10-Java-15-%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%BF%B0/index.html">
+<meta property="og:site_name" content="Hubert&#39;s Blog">
+<meta property="og:description" content="JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次发布的 JDK 15 将是一个短期的过度版，只会被 Oracle 支持（维护）6 个月，直到明年 3 月的 JDK 16 发布此版本将停止维护。而 Oracle 下一个长期支持版（LTS 版）会在明年的 9 月份候发布（Java 17），LTS 版每 3 年发布一个，上一次长期支持版是 18 年 9 月发布的 JDK">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271232791.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271235504.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271235025.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271236720.png">
+<meta property="article:published_time" content="2023-12-27T04:31:17.000Z">
+<meta property="article:modified_time" content="2023-12-27T04:31:17.000Z">
+<meta property="article:author" content="Hubert Wong">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="新特性">
+<meta property="article:tag" content="Java15">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271232791.png">
+  
+  
+  
+  <meta name="keywords" content="Java,新特性,Java15">
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="title" href="/"><div class="main" ff="title">Hubert's Blog</div><div class="sub cap"> Hubert爱猫爱生活</div></a></div>
+
+<nav class="menu dis-select"></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">10.Java 15 新特性概述</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB"><span class="toc-text">知识体系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%AD%E8%A8%80%E7%89%B9%E6%80%A7%E5%A2%9E%E5%BC%BA"><span class="toc-text">语言特性增强</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-378-%E6%96%87%E6%9C%AC%E5%9D%97-Text-Blocks"><span class="toc-text">JEP 378: 文本块(Text Blocks)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B0%E5%8A%9F%E8%83%BD%E5%92%8C%E5%BA%93%E7%9A%84%E6%9B%B4%E6%96%B0"><span class="toc-text">新功能和库的更新</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-339-Edwards-Curve-%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E7%AE%97%E6%B3%95-EdDSA"><span class="toc-text">JEP 339: Edwards-Curve 数字签名算法 (EdDSA)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-371-%E9%9A%90%E8%97%8F%E7%B1%BB-Hidden-Classes"><span class="toc-text">JEP 371: 隐藏类 Hidden Classes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-373-%E9%87%8D%E6%96%B0%E5%AE%9E%E7%8E%B0-DatagramSocket-API"><span class="toc-text">JEP 373: 重新实现 DatagramSocket API</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JVM-%E4%BC%98%E5%8C%96"><span class="toc-text">JVM 优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-373-ZGC-%E5%8F%AF%E4%BC%B8%E7%BC%A9%E4%BD%8E%E5%BB%B6%E8%BF%9F%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8"><span class="toc-text">JEP 373: ZGC: 可伸缩低延迟垃圾收集器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-374-%E7%A6%81%E7%94%A8%E5%81%8F%E5%90%91%E9%94%81%E5%AE%9A"><span class="toc-text">JEP 374: 禁用偏向锁定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-379-Shenandoah%EF%BC%9A%E4%BD%8E%E6%9A%82%E5%81%9C%E6%97%B6%E9%97%B4%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8-%E8%BD%AC%E6%AD%A3"><span class="toc-text">JEP 379: Shenandoah：低暂停时间垃圾收集器(转正)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A7%E5%8A%9F%E8%83%BD%E7%9A%84%E5%88%A0%E9%99%A4%E5%92%8C%E5%BC%83%E7%94%A8"><span class="toc-text">旧功能的删除和弃用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-372-%E7%A7%BB%E9%99%A4Nashorn-JavaScript%E5%BC%95%E6%93%8E"><span class="toc-text">JEP 372: 移除Nashorn JavaScript引擎</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-381-%E7%A7%BB%E9%99%A4%E4%BA%86-Solaris-%E5%92%8C-SPARC-%E7%AB%AF%E5%8F%A3%E3%80%82"><span class="toc-text">JEP 381: 移除了 Solaris 和 SPARC 端口。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-385-%E5%BA%9F%E9%99%A4-RMI-%E6%BF%80%E6%B4%BB"><span class="toc-text">JEP 385: 废除 RMI 激活</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B0%E5%8A%9F%E8%83%BD%E7%9A%84%E9%A2%84%E8%A7%88%E5%92%8C%E5%AD%B5%E5%8C%96"><span class="toc-text">新功能的预览和孵化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-375-instanceof-%E8%87%AA%E5%8A%A8%E5%8C%B9%E9%85%8D%E6%A8%A1%E5%BC%8F%EF%BC%88%E7%AC%AC%E4%BA%8C%E6%AC%A1%E9%A2%84%E8%A7%88%EF%BC%89"><span class="toc-text">JEP 375: instanceof 自动匹配模式（第二次预览）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-360-%E5%AF%86%E5%B0%81%E7%9A%84%E7%B1%BB%E5%92%8C%E6%8E%A5%E5%8F%A3%EF%BC%88%E9%A2%84%E8%A7%88%EF%BC%89"><span class="toc-text">JEP 360: 密封的类和接口（预览）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-383-%E5%A4%96%E9%83%A8%E5%AD%98%E5%82%A8%E5%99%A8%E8%AE%BF%E9%97%AE-API%EF%BC%88%E4%BA%8C%E6%AC%A1%E5%AD%B5%E5%8C%96%E5%99%A8%E7%89%88%EF%BC%89"><span class="toc-text">JEP 383: 外部存储器访问 API（二次孵化器版）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JEP-384-Records-%E4%BA%8C%E6%AC%A1%E9%A2%84%E8%A7%88"><span class="toc-text">JEP 384: Records (二次预览)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></div></div></widget>
+
+
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+
+<div class="bread-nav fs12"><div class="left"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Java/">Java</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/%E6%96%B0%E7%89%B9%E6%80%A7/">新特性</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/%E6%96%B0%E7%89%B9%E6%80%A7/Java15/">Java15</a></div><div id="post-meta">
+    <span>发布于&nbsp;<time datetime="2023-12-27T04:31:17.000Z">2023-12-27</time></span>
+    
+    <span>更新于&nbsp;<time datetime="2023-12-27T04:31:17.000Z">2023-12-27</time></span>
+    </div></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>10.Java 15 新特性概述</span></h1>
+<blockquote>
+<p>JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次发布的 JDK 15 将是一个短期的过度版，只会被 Oracle 支持（维护）6 个月，直到明年 3 月的 JDK 16 发布此版本将停止维护。而 Oracle 下一个长期支持版（LTS 版）会在明年的 9 月份候发布（Java 17），LTS 版每 3 年发布一个，上一次长期支持版是 18 年 9 月发布的 JDK 11。</p>
+</blockquote>
+<h2 id="知识体系"><a href="#知识体系" class="headerlink" title="知识体系"></a>知识体系</h2><div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271232791.png"/></div></div>
+
+<h2 id="语言特性增强"><a href="#语言特性增强" class="headerlink" title="语言特性增强"></a>语言特性增强</h2><h3 id="JEP-378-文本块-Text-Blocks"><a href="#JEP-378-文本块-Text-Blocks" class="headerlink" title="JEP 378: 文本块(Text Blocks)"></a>JEP 378: 文本块(Text Blocks)</h3><blockquote>
+<p>文本块，是一个多行字符串，它可以避免使用大多数转义符号，自动以可预测的方式格式化字符串，并让开发人员在需要时可以控制格式。</p>
+</blockquote>
+<p>Text Blocks首次是在JDK 13中以预览功能出现的，然后在JDK 14中又预览了一次，终于在JDK 15中被确定下来，可放心使用了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">query</span> <span class="operator">=</span> <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">           SELECT * from USER \</span></span><br><span class="line"><span class="string">           WHERE `id` = 1 \</span></span><br><span class="line"><span class="string">           ORDER BY `id`, `name`;\</span></span><br><span class="line"><span class="string">           &quot;&quot;&quot;</span>;</span><br><span class="line">    System.out.println(query);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行程序，输出（可以看到展示为一行了）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * from USER WHERE `id` = <span class="number">1</span> ORDER BY `id`, `name`;</span><br></pre></td></tr></table></figure>
+
+<p><a href="/2023/12/27/9-Java-14-%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%BF%B0/#JEP 368: 文本块（第二预览版本）">Java14中文本块相关介绍</a></p>
+<h2 id="新功能和库的更新"><a href="#新功能和库的更新" class="headerlink" title="新功能和库的更新"></a>新功能和库的更新</h2><h3 id="JEP-339-Edwards-Curve-数字签名算法-EdDSA"><a href="#JEP-339-Edwards-Curve-数字签名算法-EdDSA" class="headerlink" title="JEP 339: Edwards-Curve 数字签名算法 (EdDSA)"></a>JEP 339: Edwards-Curve 数字签名算法 (EdDSA)</h3><blockquote>
+<p>Edwards-Curve 数字签名算法（EdDSA），一种根据 RFC 8032 规范所描述的 Edwards-Curve 数字签名算法（EdDSA）实现加密签名，实现了一种 RFC 8032 标准化方案，但它不能代替 ECDSA。</p>
+</blockquote>
+<p>与 JDK 中的现有签名方案相比，EdDSA 具有更高的安全性和性能，因此备受关注。它已经在OpenSSL和BoringSSL等加密库中得到支持，在区块链领域用的比较多。</p>
+<p>EdDSA是一种现代的椭圆曲线方案，具有JDK中现有签名方案的优点。EdDSA将只在SunEC提供商中实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// example: generate a key pair and sign</span></span><br><span class="line"><span class="type">KeyPairGenerator</span> <span class="variable">kpg</span> <span class="operator">=</span> KeyPairGenerator.getInstance(<span class="string">&quot;Ed25519&quot;</span>);</span><br><span class="line"><span class="type">KeyPair</span> <span class="variable">kp</span> <span class="operator">=</span> kpg.generateKeyPair();</span><br><span class="line"><span class="comment">// algorithm is pure Ed25519</span></span><br><span class="line"><span class="type">Signature</span> <span class="variable">sig</span> <span class="operator">=</span> Signature.getInstance(<span class="string">&quot;Ed25519&quot;</span>);</span><br><span class="line">sig.initSign(kp.getPrivate());</span><br><span class="line">sig.update(msg);</span><br><span class="line"><span class="type">byte</span>[] s = sig.sign();</span><br><span class="line"></span><br><span class="line"><span class="comment">// example: use KeyFactory to contruct a public key</span></span><br><span class="line"><span class="type">KeyFactory</span> <span class="variable">kf</span> <span class="operator">=</span> KeyFactory.getInstance(<span class="string">&quot;EdDSA&quot;</span>);</span><br><span class="line"><span class="type">boolean</span> <span class="variable">xOdd</span> <span class="operator">=</span> ...</span><br><span class="line"><span class="type">BigInteger</span> <span class="variable">y</span> <span class="operator">=</span> ...</span><br><span class="line"><span class="type">NamedParameterSpec</span> <span class="variable">paramSpec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">NamedParameterSpec</span>(<span class="string">&quot;Ed25519&quot;</span>);</span><br><span class="line"><span class="type">EdECPublicKeySpec</span> <span class="variable">pubSpec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">EdECPublicKeySpec</span>(paramSpec, <span class="keyword">new</span> <span class="title class_">EdPoint</span>(xOdd, y));</span><br><span class="line"><span class="type">PublicKey</span> <span class="variable">pubKey</span> <span class="operator">=</span> kf.generatePublic(pubSpec);</span><br></pre></td></tr></table></figure>
+
+<h3 id="JEP-371-隐藏类-Hidden-Classes"><a href="#JEP-371-隐藏类-Hidden-Classes" class="headerlink" title="JEP 371: 隐藏类 Hidden Classes"></a>JEP 371: 隐藏类 Hidden Classes</h3><blockquote>
+<p>隐藏类是为框架（frameworks）所设计的，隐藏类不能直接被其他类的字节码使用，只能在运行时生成类并通过反射间接使用它们。</p>
+</blockquote>
+<p>该提案通过启用标准 API 来定义 无法发现 且 具有有限生命周期 的隐藏类，从而提高 JVM 上所有语言的效率。JDK内部和外部的框架将能够动态生成类，而这些类可以定义隐藏类。通常来说基于JVM的很多语言都有动态生成类的机制，这样可以提高语言的灵活性和效率。</p>
+<ul>
+<li>隐藏类天生为框架设计的，在运行时生成内部的class。</li>
+<li>隐藏类只能通过反射访问，不能直接被其他类的字节码访问。</li>
+<li>隐藏类可以独立于其他类加载、卸载，这可以减少框架的内存占用。</li>
+</ul>
+<p><strong>Hidden Classes是什么呢</strong>？</p>
+<p>Hidden Classes就是不能直接被其他class的二进制代码使用的class。Hidden Classes主要被一些框架用来生成运行时类，但是这些类不是被用来直接使用的，而是通过反射机制来调用。</p>
+<p>比如在JDK8中引入的lambda表达式，JVM并不会在编译的时候将lambda表达式转换成为专门的类，而是在运行时将相应的字节码动态生成相应的类对象。</p>
+<p>另外使用动态代理也可以为某些类生成新的动态类。</p>
+<p><strong>那么我们希望这些动态生成的类需要具有什么特性呢</strong>？</p>
+<ul>
+<li><strong>不可发现性</strong>。 因为我们是为某些静态的类动态生成的动态类，所以我们希望把这个动态生成的类看做是静态类的一部分。所以我们不希望除了该静态类之外的其他机制发现。</li>
+<li><strong>访问控制</strong>。 我们希望在访问控制静态类的同时，也能控制到动态生成的类。</li>
+<li><strong>生命周期</strong>。 动态生成类的生命周期一般都比较短，我们并不需要将其保存和静态类的生命周期一致。</li>
+</ul>
+<p><strong>API的支持</strong></p>
+<p>所以我们需要一些API来定义无法发现的且具有有限生命周期的隐藏类。这将提高所有基于JVM的语言实现的效率。</p>
+<p>比如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">java.lang.reflect.Proxy <span class="comment">// 可以定义隐藏类作为实现代理接口的代理类。 </span></span><br><span class="line">java.lang.invoke.StringConcatFactory <span class="comment">// 可以生成隐藏类来保存常量连接方法； </span></span><br><span class="line">java.lang.invoke.LambdaMetaFactory <span class="comment">//可以生成隐藏的nestmate类，以容纳访问封闭变量的lambda主体； </span></span><br></pre></td></tr></table></figure>
+
+<p>普通类是通过调用<code>ClassLoader::defineClass</code>创建的，而隐藏类是通过调用<code>Lookup::defineHiddenClass</code>创建的。这使JVM从提供的字节中派生一个隐藏类，链接该隐藏类，并返回提供对隐藏类的反射访问的查找对象。调用程序可以通过返回的查找对象来获取隐藏类的Class对象。</p>
+<h3 id="JEP-373-重新实现-DatagramSocket-API"><a href="#JEP-373-重新实现-DatagramSocket-API" class="headerlink" title="JEP 373: 重新实现 DatagramSocket API"></a>JEP 373: 重新实现 DatagramSocket API</h3><blockquote>
+<p>重新实现了老的 DatagramSocket API 接口，更改了 java.net.DatagramSocket 和 java.net.MulticastSocket 为更加简单、现代化的底层实现，更易于维护和调试。</p>
+</blockquote>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271235504.png"/></div></div>
+
+<p><code>java.net.datagram.Socket</code>和<code>java.net.MulticastSocket</code>的当前实现可以追溯到JDK 1.0，那时IPv6还在开发中。因此，当前的多播套接字实现尝试调和IPv4和IPv6难以维护的方式。</p>
+<ul>
+<li>通过替换 java.net.datagram 的基础实现，重新实现旧版 DatagramSocket API。</li>
+<li>更改<code>java.net.DatagramSocket</code> 和 <code>java.net.MulticastSocket</code> 为更加简单、现代化的底层实现。提高了 JDK 的可维护性和稳定性。</li>
+<li>通过将<code>java.net.datagram.Socket</code>和<code>java.net.MulticastSocket</code> API的底层实现替换为更简单、更现代的实现来重新实现遗留的DatagramSocket API。</li>
+</ul>
+<p><strong>新的实现</strong>：</p>
+<ul>
+<li>易于调试和维护;</li>
+<li>与Project Loom中正在探索的虚拟线程协同。</li>
+</ul>
+<h2 id="JVM-优化"><a href="#JVM-优化" class="headerlink" title="JVM 优化"></a>JVM 优化</h2><h3 id="JEP-373-ZGC-可伸缩低延迟垃圾收集器"><a href="#JEP-373-ZGC-可伸缩低延迟垃圾收集器" class="headerlink" title="JEP 373: ZGC: 可伸缩低延迟垃圾收集器"></a>JEP 373: ZGC: 可伸缩低延迟垃圾收集器</h3><blockquote>
+<p>ZGC是Java 11引入的新的垃圾收集器（JDK9以后默认的垃圾回收器是G1），经过了多个实验阶段，自此终于成为正式特性。ZGC是一个重新设计的并发的垃圾回收器，可以极大的提升GC的性能。支持任意堆大小而保持稳定的低延迟（10ms以内），性能非常可观。目前默认垃圾回收器仍然是 G1，后续很有可以能将ZGC设为默认垃圾回收器。之前需要通过<code>-XX:+UnlockExperimentalVMOptions -XX:+UseZGC</code>来启用ZGC，现在只需要<code>-XX:+UseZGC</code>就可以。</p>
+</blockquote>
+<p>以下是相关介绍：</p>
+<p>ZGC 是一个可伸缩的、低延迟的垃圾收集器，主要为了满足如下目标进行设计：</p>
+<ul>
+<li>GC 停顿时间不超过 10ms</li>
+<li>即能处理几百 MB 的小堆，也能处理几个 TB 的大堆</li>
+<li>应用吞吐能力不会下降超过 15%（与 G1 回收算法相比）</li>
+<li>方便在此基础上引入新的 GC 特性和利用 colord</li>
+<li>针以及 Load barriers 优化奠定基础</li>
+<li>当前只支持 Linux&#x2F;x64 位平台 停顿时间在 10ms 以下，10ms 其实是一个很保守的数据，即便是 10ms 这个数据，也是 GC 调优几乎达不到的极值。根据 SPECjbb 2015 的基准测试，128G 的大堆下最大停顿时间才 1.68ms，远低于 10ms，和 G1 算法相比，改进非常明显。</li>
+</ul>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271235025.png"/></div></div>
+
+<p>本图片引用自： The Z Garbage Collector – An Introduction</p>
+<p>不过目前 ZGC 还处于实验阶段，目前只在 Linux&#x2F;x64 上可用，如果有足够的需求，将来可能会增加对其他平台的支持。同时作为实验性功能的 ZGC 将不会出现在 JDK 构建中，除非在编译时使用 configure 参数：<code> --with-jvm-features=zgc</code> 显式启用。</p>
+<p>在实验阶段，编译完成之后，已经迫不及待的想试试 ZGC，需要配置以下 JVM 参数，才能使用 ZGC，具体启动 ZGC 参数如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX：+ UnlockExperimentalVMOptions -XX：+ UseZGC -Xmx10g</span><br></pre></td></tr></table></figure>
+
+<p>其中参数： -Xmx 是 ZGC 收集器中最重要的调优选项，大大解决了程序员在 JVM 参数调优上的困扰。ZGC 是一个并发收集器，必须要设置一个最大堆的大小，应用需要多大的堆，主要有下面几个考量：</p>
+<ul>
+<li>对象的分配速率，要保证在 GC 的时候，堆中有足够的内存分配新对象。</li>
+<li>一般来说，给 ZGC 的内存越多越好，但是也不能浪费内存，所以要找到一个平衡。</li>
+</ul>
+<h3 id="JEP-374-禁用偏向锁定"><a href="#JEP-374-禁用偏向锁定" class="headerlink" title="JEP 374: 禁用偏向锁定"></a>JEP 374: 禁用偏向锁定</h3><blockquote>
+<p>准备禁用和废除偏向锁，在 JDK 15 中，默认情况下禁用偏向锁，并弃用所有相关的命令行选项。</p>
+</blockquote>
+<p>在默认情况下禁用偏向锁定，并弃用所有相关命令行选项。目标是确定是否需要继续支持偏置锁定的 <strong>高维护成本</strong> 的遗留同步优化， HotSpot虚拟机使用该优化来减少非竞争锁定的开销。 尽管某些Java应用程序在禁用偏向锁后可能会出现性能下降，但偏向锁的性能提高通常不像以前那么明显。</p>
+<p>该特性默认禁用了<code>biased locking(-XX:+UseBiasedLocking)</code>，并且废弃了所有相关的命令行选型(<code>BiasedLockingStartupDelay</code>, <code>BiasedLockingBulkRebiasThreshold</code>, <code>BiasedLockingBulkRevokeThreshold</code>, <code>BiasedLockingDecayTime</code>, <code>UseOptoBiasInlining</code>, <code>PrintBiasedLockingStatistics</code> and <code>PrintPreciseBiasedLockingStatistics</code>)</p>
+<h3 id="JEP-379-Shenandoah：低暂停时间垃圾收集器-转正"><a href="#JEP-379-Shenandoah：低暂停时间垃圾收集器-转正" class="headerlink" title="JEP 379: Shenandoah：低暂停时间垃圾收集器(转正)"></a>JEP 379: Shenandoah：低暂停时间垃圾收集器(转正)</h3><blockquote>
+<p>Shenandoah垃圾回收算法终于从实验特性转变为产品特性，这是一个从 JDK 12 引入的回收算法，该算法通过与正在运行的 Java 线程同时进行疏散工作来减少 GC 暂停时间。Shenandoah 的暂停时间与堆大小无关，无论堆栈是 200 MB 还是 200 GB，都具有相同的一致暂停时间。</p>
+</blockquote>
+<p><strong>Shenandoah适用于高吞吐和大内存场景，不适合高实时性场景</strong>。Shenandoah算法设计目标主要是响应性和一致可控的短暂停顿，对于垃圾回收生命周期中安全点停顿（TTSP)和内存增长监控的时间开销并无帮助。</p>
+<p>Shenandoah算法为每个Java对象添加了一个间接指针，使得GC线程能够在Java线程运行时压缩堆。标记和压缩是同时执行的，因此我们只需要暂停Java线程在一致可控的时间内扫描线程堆栈以查找和更新对象图的根。</p>
+<p><strong>怎么形容Shenandoah和ZGC的关系呢</strong>？异同点大概如下：</p>
+<ul>
+<li>相同点：性能几乎可认为是相同的</li>
+<li>不同点：ZGC是Oracle JDK的。而Shenandoah只存在于OpenJDK中，因此使用时需注意你的JDK版本</li>
+<li>打开方式：使用<code>-XX:+UseShenandoahGC</code>命令行参数打开。</li>
+</ul>
+<p>Shenandoah在JDK12被作为experimental引入，在JDK15变为Production；之前需要通过<code>-XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC</code>来启用，现在只需要<code>-XX:+UseShenandoahGC</code>即可启用</p>
+<h2 id="旧功能的删除和弃用"><a href="#旧功能的删除和弃用" class="headerlink" title="旧功能的删除和弃用"></a>旧功能的删除和弃用</h2><h3 id="JEP-372-移除Nashorn-JavaScript引擎"><a href="#JEP-372-移除Nashorn-JavaScript引擎" class="headerlink" title="JEP 372: 移除Nashorn JavaScript引擎"></a>JEP 372: 移除Nashorn JavaScript引擎</h3><blockquote>
+<p>移除了 Nashorn JavaScript 脚本引擎、APIs，以及 jjs 工具。这些早在 JDK 11 中就已经被标记为 deprecated 了，JDK 15 被移除就很正常了。</p>
+</blockquote>
+<p><strong>Nashorn引擎是什么</strong>？</p>
+<p>Nashorn 是 JDK 1.8 引入的一个 JavaScript 脚本引擎，用来取代 Rhino 脚本引擎。Nashorn 是 ECMAScript-262 5.1 的完整实现，增强了 Java 和 JavaScript 的兼容性，并且大大提升了性能。</p>
+<p><strong>为什么要移除</strong>？</p>
+<p>官方的描述是，随着 ECMAScript 脚本语言的结构、API 的改编速度越来越快，维护 Nashorn 太有挑战性了，所以……。</p>
+<h3 id="JEP-381-移除了-Solaris-和-SPARC-端口。"><a href="#JEP-381-移除了-Solaris-和-SPARC-端口。" class="headerlink" title="JEP 381: 移除了 Solaris 和 SPARC 端口。"></a>JEP 381: 移除了 Solaris 和 SPARC 端口。</h3><blockquote>
+<p>移除了 Solaris&#x2F;SPARC、Solaris&#x2F;x64 和 Linux&#x2F;SPARC 端口的源代码及构建支持。这些端口在 JDK 14 中就已经被标记为 deprecated 了，JDK 15 被移除也不奇怪。</p>
+</blockquote>
+<p>删除对Solaris&#x2F;SPARC、Solaris&#x2F;x64和Linux&#x2F;SPARC端口的源代码和构建支持，在JDK 14中被标记为废弃，在JDK15版本正式移除。 许多正在开发的项目和功能（如Valhalla、Loom和Panama）需要进行重大更改以适应CPU架构和操作系统特定代码。</p>
+<p>近年来，Solaris 和 SPARC 都已被 Linux 操作系统和英特尔处理器取代。放弃对 Solaris 和 SPARC 端口的支持将使 OpenJDK 社区的贡献者能够加速开发新功能，从而推动平台向前发展。</p>
+<h3 id="JEP-385-废除-RMI-激活"><a href="#JEP-385-废除-RMI-激活" class="headerlink" title="JEP 385: 废除 RMI 激活"></a>JEP 385: 废除 RMI 激活</h3><blockquote>
+<p>RMI Activation被标记为Deprecate,将会在未来的版本中删除。RMI激活机制是RMI中一个过时的部分，<strong>自Java 8以来一直是可选的而非必选项</strong>。RMI激活机制增加了持续的维护负担。RMI的其他部分暂时不会被弃用。</p>
+</blockquote>
+<p>RMI jdk1.2引入，EJB在RMI系统中，我们使用延迟激活。延迟激活将激活对象推迟到客户第一次使用（即第一次方法调用）之前。 既然RMI Activation这么好用，为什么要废弃呢？</p>
+<p>因为对于现代应用程序来说，分布式系统大部分都是基于Web的，web服务器已经解决了穿越防火墙，过滤请求，身份验证和安全性的问题，并且也提供了很多延迟加载的技术。</p>
+<p>所以在现代应用程序中，RMI Activation已经很少被使用到了。并且在各种开源的代码库中，也基本上找不到RMI Activation的使用代码了。 为了减少RMI Activation的维护成本，在JDK8中，RMI Activation被置为可选的。现在在JDK15中，终于可以废弃了。</p>
+<h2 id="新功能的预览和孵化"><a href="#新功能的预览和孵化" class="headerlink" title="新功能的预览和孵化"></a>新功能的预览和孵化</h2><h3 id="JEP-375-instanceof-自动匹配模式（第二次预览）"><a href="#JEP-375-instanceof-自动匹配模式（第二次预览）" class="headerlink" title="JEP 375: instanceof 自动匹配模式（第二次预览）"></a>JEP 375: instanceof 自动匹配模式（第二次预览）</h3><blockquote>
+<p>模式匹配（第二次预览），第一次预览是 JDK 14 中提出来的。</p>
+</blockquote>
+<p>Java 14 之前：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (object <span class="keyword">instanceof</span> Kid) &#123;</span><br><span class="line">    <span class="type">Kid</span> <span class="variable">kid</span> <span class="operator">=</span> (Kid) object;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (object <span class="keyword">instanceof</span> Kiddle) &#123;</span><br><span class="line">    <span class="type">Kid</span> <span class="variable">kid</span> <span class="operator">=</span> (Kid) object;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Java 14+：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (object <span class="keyword">instanceof</span> Kid kid) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (object <span class="keyword">instanceof</span> Kiddle kiddle) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Java 15 并没有对此特性进行调整，继续预览特性，只是为了收集更多的用户反馈，可能还不成熟吧。</p>
+<h3 id="JEP-360-密封的类和接口（预览）"><a href="#JEP-360-密封的类和接口（预览）" class="headerlink" title="JEP 360: 密封的类和接口（预览）"></a>JEP 360: 密封的类和接口（预览）</h3><blockquote>
+<p>封闭类（预览特性），可以是封闭类和或者封闭接口，用来增强 Java 编程语言，<strong>防止其他类或接口扩展或实现它们</strong>。</p>
+</blockquote>
+<p>因为我们引入了<code>sealed</code> <code>class</code>或<code>interfaces</code>，这些class或者interfaces只允许被指定的类或者interface进行扩展和实现。</p>
+<p>使用修饰符<code>sealed</code>，您可以将一个类声明为密封类。密封的类使用reserved关键字permits列出可以直接扩展它的类。子类可以是最终的，非密封的或密封的。</p>
+<p>之前我们的代码是这样的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123; &#125; <span class="comment">//人</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Teacher</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;<span class="comment">//教师</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Worker</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;  <span class="comment">//工人</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span> <span class="keyword">extends</span> <span class="title class_">Person</span>&#123; &#125; <span class="comment">//学生</span></span><br></pre></td></tr></table></figure>
+
+<p>但是我们现在要限制 Person类 只能被这三个类继承，不能被其他类继承，需要这么做。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 添加sealed修饰符，permits后面跟上只能被继承的子类名称</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">sealed</span> <span class="keyword">class</span> <span class="title class_">Person</span> <span class="keyword">permits</span> Teacher, Worker, Student&#123; &#125; <span class="comment">//人</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 子类可以被修饰为 final</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Teacher</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;<span class="comment">//教师</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 子类可以被修饰为 non-sealed，此时 Worker类就成了普通类，谁都可以继承它</span></span><br><span class="line"><span class="keyword">non-sealed</span> <span class="keyword">class</span> <span class="title class_">Worker</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;  <span class="comment">//工人</span></span><br><span class="line"><span class="comment">// 任何类都可以继承Worker</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AnyClass</span> <span class="keyword">extends</span> <span class="title class_">Worker</span>&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//子类可以被修饰为 sealed,同上</span></span><br><span class="line"><span class="keyword">sealed</span> <span class="keyword">class</span> <span class="title class_">Student</span> <span class="keyword">extends</span> <span class="title class_">Person</span> <span class="keyword">permits</span> MiddleSchoolStudent,GraduateStudent&#123; &#125; <span class="comment">//学生</span></span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">MiddleSchoolStudent</span> <span class="keyword">extends</span> <span class="title class_">Student</span> &#123; &#125;  <span class="comment">//中学生</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">GraduateStudent</span> <span class="keyword">extends</span> <span class="title class_">Student</span> &#123; &#125;  <span class="comment">//研究生</span></span><br></pre></td></tr></table></figure>
+
+<p>很强很实用的一个特性，可以限制类的层次结构。</p>
+<h3 id="JEP-383-外部存储器访问-API（二次孵化器版）"><a href="#JEP-383-外部存储器访问-API（二次孵化器版）" class="headerlink" title="JEP 383: 外部存储器访问 API（二次孵化器版）"></a>JEP 383: 外部存储器访问 API（二次孵化器版）</h3><blockquote>
+<p>外存访问 API（二次孵化），可以允许 Java 应用程序安全有效地访问 Java 堆之外的外部内存。目的是引入一个 API，以允许 Java 程序安全、有效地访问 Java 堆之外的外部存储器。如本机、持久和托管堆。如下内容来源于<a target="_blank" rel="noopener" href="https://xie.infoq.cn/article/8304c894c4e38318d38ceb116%EF%BC%8C%E4%BD%9C%E8%80%85%E6%98%AF%E4%B9%9D%E5%8F%94">https://xie.infoq.cn/article/8304c894c4e38318d38ceb116，作者是九叔</a></p>
+</blockquote>
+<p>在实际的开发过程中，绝大多数的开发人员基本都不会直接与堆外内存打交道，但这并不代表你从未接触过堆外内存，像大家经常使用的诸如：RocketMQ、MapDB 等中间件产品底层实现都是基于堆外存储的，换句话说，我们几乎每天都在间接与堆外内存打交道。那么究竟为什么需要使用到堆外内存呢？简单来说，主要是出于以下 3 个方面的考虑：</p>
+<ul>
+<li>减少 GC 次数和降低 Stop-the-world 时间；</li>
+<li>可以扩展和使用更大的内存空间；</li>
+<li>可以省去物理内存和堆内存之间的数据复制步骤。</li>
+</ul>
+<p>在 Java14 之前，如果开发人员想要操作堆外内存，通常的做法就是使用 ByteBuffer 或者 Unsafe，甚至是 JNI 等方式，但无论使用哪一种方式，均<strong>无法同时有效解决安全性和高效性等 2 个问题</strong>，并且，堆外内存的释放也是一个令人头痛的问题。以 DirectByteBuffer 为例，该对象仅仅只是一个引用，其背后还关联着一大段堆外内存，由于 DirectByteBuffer 对象实例仍然是存储在堆空间内，只有当 DirectByteBuffer 对象被 GC 回收时，其背后的堆外内存才会被进一步释放。</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271236720.png"/></div></div>
+
+<p>在此大家需要注意，程序中通过 ByteBuffer.allocateDirect()方法来申请物理内存资源所耗费的成本远远高于直接在 on-heap 中的操作，而且实际开发过程中还需要考虑数据结构如何设计、序列化&#x2F;反序列化如何支撑等诸多难题，所以与其使用语法层面的 API 倒不如直接使用 MapDB 等开源产品来得更实惠。</p>
+<p>如今，在堆外内存领域，我们似乎又多了一个选择，<strong>从 Java14 开始，Java 的设计者们在语法层面为大家带来了崭新的 Memory Access API，极大程度上简化了开发难度，并得以有效的解决了安全性和高效性等 2 个核心问题</strong>。示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取内存访问var句柄</span></span><br><span class="line"><span class="type">var</span> <span class="variable">handle</span> <span class="operator">=</span> MemoryHandles.varHandle(<span class="type">char</span>.class,</span><br><span class="line">        ByteOrder.nativeOrder());</span><br><span class="line"><span class="comment">// 申请200字节的堆外内存</span></span><br><span class="line"><span class="keyword">try</span> (<span class="type">MemorySegment</span> <span class="variable">segment</span> <span class="operator">=</span> MemorySegment.allocateNative(<span class="number">200</span>)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">25</span>; i++) &#123;</span><br><span class="line">        handle.set(segment, i &lt;&lt; <span class="number">2</span>, (<span class="type">char</span>) (i + <span class="number">1</span> + <span class="number">64</span>));</span><br><span class="line">        System.out.println(handle.get(segment, i &lt;&lt; <span class="number">2</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关于堆外内存段的释放，Memory Access API 提供有显式和隐式 2 种方式，开发人员除了可以在程序中通过 MemorySegment 的 close()方法来显式释放所申请的内存资源外，还可以注册 Cleaner 清理器来实现资源的隐式释放，后者会在 GC 确定目标内存段不再可访问时，释放与之关联的堆外内存资源。</p>
+<h3 id="JEP-384-Records-二次预览"><a href="#JEP-384-Records-二次预览" class="headerlink" title="JEP 384: Records (二次预览)"></a>JEP 384: Records (二次预览)</h3><blockquote>
+<p>Records 最早在 JDK 14 中成为预览特性，JDK 15 继续二次预览。</p>
+</blockquote>
+<p><strong>如下内容来自Java14</strong></p>
+<p>Record 类型允许在代码中使用紧凑的语法形式来声明类，而这些类能够作为不可变数据类型的封装持有者。Record 这一特性主要用在特定领域的类上；与枚举类型一样，Record 类型是一种受限形式的类型，主要用于存储、保存数据，并且没有其它额外自定义行为的场景下。</p>
+<p>在以往开发过程中，被当作数据载体的类对象，在正确声明定义过程中，通常需要编写大量的无实际业务、重复性质的代码，其中包括：构造函数、属性调用、访问以及 equals() 、hashCode()、toString() 等方法，因此在 Java 14 中引入了 Record 类型，其效果有些类似 Lombok 的 @Data 注解、Kotlin 中的 data class，但是又不尽完全相同，它们的共同点都是类的部分或者全部可以直接在类头中定义、描述，并且这个类只用于存储数据而已。对于 Record 类型，具体可以用下面代码来说明：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">record</span> <span class="title class_">Person</span><span class="params">(String name, <span class="type">int</span> age)</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String address;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对上述代码进行编译，然后反编译之后可以看到如下结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Person</span> <span class="keyword">extends</span> <span class="title class_">java</span>.lang.Record &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> java.lang.String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> java.lang.String age;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Person</span><span class="params">(java.lang.String name, java.lang.String age)</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">getName</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">toString</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(java.lang.Object o)</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">name</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">age</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据反编译结果，可以得出，当用 Record 来声明一个类时，该类将自动拥有下面特征：</p>
+<ul>
+<li>拥有一个构造方法</li>
+<li>获取成员属性值的方法：name()、age()</li>
+<li>hashCode() 方法和 euqals() 方法</li>
+<li>toString() 方法</li>
+<li>类对象和属性被 final 关键字修饰，不能被继承，类的示例属性也都被 final 修饰，不能再被赋值使用。</li>
+<li>还可以在 Record 声明的类中定义静态属性、方法和示例方法。注意，不能在 Record 声明的类中定义示例字段，类也不能声明为抽象类等。</li>
+</ul>
+<p>可以看到，该预览特性提供了一种更为紧凑的语法来声明类，并且可以大幅减少定义类似数据类型时所需的重复性代码。</p>
+<p>另外 Java 14 中为了引入 Record 这种新的类型，在 java.lang.Class 中引入了下面两个新方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RecordComponent[] getRecordComponents()</span><br><span class="line"><span class="type">boolean</span> <span class="title function_">isRecord</span><span class="params">()</span></span><br></pre></td></tr></table></figure>
+
+<p>其中 getRecordComponents() 方法返回一组 java.lang.reflect.RecordComponent 对象组成的数组，java.lang.reflect.RecordComponent也是一个新引入类，该数组的元素与 Record 类中的组件相对应，其顺序与在记录声明中出现的顺序相同，可以从该数组中的每个 RecordComponent 中提取到组件信息，包括其名称、类型、泛型类型、注释及其访问方法。</p>
+<p>而 isRecord() 方法，则返回所在类是否是 Record 类型，如果是，则返回 true。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>OracleJDK 15 下载地址：</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/javase-downloads.html">https://www.oracle.com/java/technologies/javase-downloads.html</a></p>
+<ul>
+<li>OpenJDK 15 地址：</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://openjdk.java.net/projects/jdk/15/">https://openjdk.java.net/projects/jdk/15/</a></p>
+<ul>
+<li>参考文章</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://openjdk.java.net/projects/jdk/15/">https://openjdk.java.net/projects/jdk/15/</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/javastack/p/13683220.html">https://www.cnblogs.com/javastack/p/13683220.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/cyberherman/article/details/109253931">https://blog.csdn.net/cyberherman/article/details/109253931</a></p>
+<p><a target="_blank" rel="noopener" href="https://my.oschina.net/u/4262150/blog/4656149">https://my.oschina.net/u/4262150/blog/4656149</a></p>
+
+
+
+<div class="article-footer reveal fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2023/12/27/11-Java-16-%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%BF%B0/">11.Java 16 新特性概述</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/12/27/9-Java-14-%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%BF%B0/">9.Java 14 新特性概述</a></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"></div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.21.0';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img, .gallery img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
