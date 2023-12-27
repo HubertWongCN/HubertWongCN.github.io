@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 7.0.0">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://gcore.jsdelivr.net'>
+  <link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin>
+  <link rel='dns-prefetch' href='//unpkg.com'>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  
+  <title>16.Java 21 新特性概述 - Hubert's Blog</title>
+
+  
+    <meta name="description" content="本文章转载自 京东云开发社社区 原文  一、导语几天前 Oracle 刚刚发布了 Java21，由于这是最新的 LTS 版本，引起了大家的关注。我也第一时间在个人项目中进行了升级体验。 一探究竟，和大家分享。 二、Java21 更新内容介绍官方 release 公告：https:&#x2F;&#x2F;jdk.java.net&#x2F;21&#x2F;release-notes 开源中国介绍：https:&#x2F;&#x2F;my.oschina.n">
+<meta property="og:type" content="article">
+<meta property="og:title" content="16.Java 21 新特性概述">
+<meta property="og:url" content="https://hubertwongcn.github.io/2023/12/27/16-Java-21-%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%BF%B0/index.html">
+<meta property="og:site_name" content="Hubert&#39;s Blog">
+<meta property="og:description" content="本文章转载自 京东云开发社社区 原文  一、导语几天前 Oracle 刚刚发布了 Java21，由于这是最新的 LTS 版本，引起了大家的关注。我也第一时间在个人项目中进行了升级体验。 一探究竟，和大家分享。 二、Java21 更新内容介绍官方 release 公告：https:&#x2F;&#x2F;jdk.java.net&#x2F;21&#x2F;release-notes 开源中国介绍：https:&#x2F;&#x2F;my.oschina.n">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323553.webp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323661.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323705.webp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323758.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323784.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323810.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323513.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323361.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323327.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323439.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323413.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323437.webp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323854.webp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271324012.webp">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271324214.webp">
+<meta property="article:published_time" content="2023-12-27T05:23:24.000Z">
+<meta property="article:modified_time" content="2023-12-27T05:23:24.000Z">
+<meta property="article:author" content="Hubert Wong">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="新特性">
+<meta property="article:tag" content="Java21">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323553.webp">
+  
+  
+  
+  <meta name="keywords" content="Java,新特性,Java21">
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+
+  
+
+
+  
+</head>
+
+<body>
+  
+
+
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+  
+
+<header class="header"><div class="logo-wrap"><a class="title" href="/"><div class="main" ff="title">Hubert's Blog</div><div class="sub cap"> Hubert爱猫爱生活</div></a></div>
+
+<nav class="menu dis-select"></nav>
+</header>
+
+
+<div class="widgets">
+<widget class="widget-wrapper search"><div class="widget-body"><div class="search-wrapper" id="search"><form class="search-form"><input type="text" class="search-input" id="search-input" data-filter="/blog/" placeholder="文章搜索"><svg t="1670596976048" class="icon search-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2676" width="200" height="200"><path d="M938.2 832.6L723.8 618.1c-2.5-2.5-5.3-4.4-7.9-6.4 36.2-55.6 57.3-121.8 57.3-193.1C773.3 222.8 614.6 64 418.7 64S64 222.8 64 418.6c0 195.9 158.8 354.6 354.6 354.6 71.3 0 137.5-21.2 193.2-57.4 2 2.7 3.9 5.4 6.3 7.8L832.5 938c14.6 14.6 33.7 21.9 52.8 21.9 19.1 0 38.2-7.3 52.8-21.8 29.2-29.1 29.2-76.4 0.1-105.5M418.7 661.3C284.9 661.3 176 552.4 176 418.6 176 284.9 284.9 176 418.7 176c133.8 0 242.6 108.9 242.6 242.7 0 133.7-108.9 242.6-242.6 242.6" p-id="2677"></path></svg></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div></div></widget>
+
+
+<widget class="widget-wrapper toc single" id="data-toc"><div class="widget-header cap dis-select"><span class="name">16.Java 21 新特性概述</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AF%BC%E8%AF%AD"><span class="toc-text">一、导语</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Java21-%E6%9B%B4%E6%96%B0%E5%86%85%E5%AE%B9%E4%BB%8B%E7%BB%8D"><span class="toc-text">二、Java21 更新内容介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%98%E6%96%B9-release-%E5%85%AC%E5%91%8A%EF%BC%9A"><span class="toc-text">官方 release 公告：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%80%E6%BA%90%E4%B8%AD%E5%9B%BD%E4%BB%8B%E7%BB%8D%EF%BC%9A"><span class="toc-text">开源中国介绍：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E7%89%B9%E6%80%A7%E4%B8%80%E8%A7%88%EF%BC%9A"><span class="toc-text">新特性一览：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%BC%80%E7%AE%B1"><span class="toc-text">三、开箱</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E5%9C%B0%E5%9D%80%EF%BC%9A"><span class="toc-text">下载地址：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E6%AF%94-17"><span class="toc-text">对比 17</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%8D%87%E7%BA%A7%E4%BD%93%E9%AA%8C"><span class="toc-text">四、升级体验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD"><span class="toc-text">下载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0-pom"><span class="toc-text">更新 pom</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%9D%E8%AF%95%E8%BF%90%E8%A1%8C"><span class="toc-text">尝试运行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%BC%E5%AE%B9%E6%80%A7%E6%A3%80%E6%9F%A5%EF%BC%9A"><span class="toc-text">兼容性检查：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%88%86%E4%BB%A3-ZGC-%E4%BD%93%E9%AA%8C"><span class="toc-text">五、分代 ZGC 体验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JVM-%E5%8F%82%E6%95%B0%EF%BC%9A-XX-UseZGC-XX-ZGenerational"><span class="toc-text">JVM 参数：-XX:+UseZGC -XX:+ZGenerational</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-Java21%EF%BC%8C%E6%9C%AA%E4%BD%BF%E7%94%A8-ZGC"><span class="toc-text">使用 Java21，未使用 ZGC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-Java21%EF%BC%8C%E4%BD%BF%E7%94%A8%E5%88%86%E4%BB%A3-ZGC"><span class="toc-text">使用 Java21，使用分代 ZGC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E8%99%9A%E6%8B%9F%E7%BA%BF%E7%A8%8B%E6%8E%A2%E7%B4%A2"><span class="toc-text">六、虚拟线程探索</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B3%E5%8F%B0%E7%BA%BF%E7%A8%8B"><span class="toc-text">平台线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E7%BA%BF%E7%A8%8B"><span class="toc-text">虚拟线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E7%BA%BF%E7%A8%8B%E7%94%A8%E6%B3%95"><span class="toc-text">虚拟线程用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B3%E5%8F%B0%E7%BA%BF%E7%A8%8B%E5%92%8C%E8%99%9A%E6%8B%9F%E7%BA%BF%E7%A8%8B%E5%AF%B9%E6%AF%94%E6%B5%8B%E8%AF%95"><span class="toc-text">平台线程和虚拟线程对比测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%9F%E5%BF%98%E4%BA%86%E5%AE%83%E5%90%A7"><span class="toc-text">线程池？忘了它吧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%B8%80%E9%A2%97%E8%AF%AD%E6%B3%95%E7%B3%96%EF%BC%9FJava21-%E6%96%B0%E7%89%B9%E6%80%A7%EF%BC%9ARecord-Patterns"><span class="toc-text">七、一颗语法糖？Java21 新特性：Record Patterns</span></a></li></ol></div></div></widget>
+
+
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+
+<div class="bread-nav fs12"><div class="left"><div id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Java/">Java</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/%E6%96%B0%E7%89%B9%E6%80%A7/">新特性</a> <span class="sep"></span> <a class="cap breadcrumb-link" href="/categories/Java/%E6%96%B0%E7%89%B9%E6%80%A7/Java21/">Java21</a></div><div id="post-meta">
+    <span>发布于&nbsp;<time datetime="2023-12-27T05:23:24.000Z">2023-12-27</time></span>
+    
+    <span>更新于&nbsp;<time datetime="2023-12-27T05:23:24.000Z">2023-12-27</time></span>
+    </div></div></div>
+
+<article class='md-text content post'>
+<h1 class="article-title"><span>16.Java 21 新特性概述</span></h1>
+<blockquote>
+<p>本文章转载自 京东云开发社社区 <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/660250427">原文</a></p>
+</blockquote>
+<h2 id="一、导语"><a href="#一、导语" class="headerlink" title="一、导语"></a>一、导语</h2><p>几天前 Oracle 刚刚发布了 Java21，<br>由于这是最新的 LTS 版本，引起了大家的关注。<br>我也第一时间在个人项目中进行了升级体验。</p>
+<p>一探究竟，和大家分享。</p>
+<h2 id="二、Java21-更新内容介绍"><a href="#二、Java21-更新内容介绍" class="headerlink" title="二、Java21 更新内容介绍"></a>二、Java21 更新内容介绍</h2><h3 id="官方-release-公告："><a href="#官方-release-公告：" class="headerlink" title="官方 release 公告："></a>官方 release 公告：</h3><p><a href="https://link.zhihu.com/?target=https://www.oschina.net/action/GoToLink?url=https://jdk.java.net/21/release-notes">https://jdk.java.net/21/release-notes</a></p>
+<h3 id="开源中国介绍："><a href="#开源中国介绍：" class="headerlink" title="开源中国介绍："></a>开源中国介绍：</h3><p><a href="https://link.zhihu.com/?target=https://my.oschina.net/waylau/blog/10112170">https://my.oschina.net/waylau/blog/10112170</a></p>
+<h3 id="新特性一览："><a href="#新特性一览：" class="headerlink" title="新特性一览："></a>新特性一览：</h3><ul>
+<li>JEP 431：序列集合</li>
+<li>JEP 439：分代 ZGC</li>
+<li>JEP 440：记录模式</li>
+<li>JEP 441：switch 模式匹配</li>
+<li>JEP 444：虚拟线程</li>
+<li>JEP 449：弃用 Windows 32 位 x86 移植</li>
+<li>JEP 451：准备禁止动态加载代理</li>
+<li>JEP 452：密钥封装机制 API</li>
+<li>JEP 430：字符串模板（预览）</li>
+<li>JEP 442：外部函数和内存 API（第三次预览）</li>
+<li>JEP 443：未命名模式和变量（预览）</li>
+<li>JEP 445：未命名类和实例主方法（预览）</li>
+<li>JEP 446：作用域值（预览）</li>
+<li>JEP 453：结构化并发（预览）</li>
+<li>JEP 448：Vector API（孵化器第六阶段）</li>
+</ul>
+<p>其中大家比较关注的是分代 ZGC 和虚拟线程。</p>
+<h2 id="三、开箱"><a href="#三、开箱" class="headerlink" title="三、开箱"></a>三、开箱</h2><h3 id="下载地址："><a href="#下载地址：" class="headerlink" title="下载地址："></a>下载地址：</h3><blockquote>
+<p>OpenJDK 版本：<a href="https://link.zhihu.com/?target=https://www.oschina.net/action/GoToLink?url=https://jdk.java.net/21/">https://jdk.java.net/21/</a><br>Oracle 版本：<a href="https://link.zhihu.com/?target=https://www.oschina.net/action/GoToLink?url=https://www.oracle.com/java/technologies/downloads/">https://www.oracle.com/java/technologies/downloads/</a></p>
+</blockquote>
+<h3 id="对比-17"><a href="#对比-17" class="headerlink" title="对比 17"></a>对比 17</h3><p>边框由不锈钢升级为钛金属<br>目录结构一致：</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323553.webp"/></div></div>
+
+
+
+<p>模块数量比 17 少一个：</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323661.png"/></div></div>
+
+
+
+<p>整体大小从 289MB 增加到了 320MB</p>
+<h2 id="四、升级体验"><a href="#四、升级体验" class="headerlink" title="四、升级体验"></a>四、升级体验</h2><h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323705.webp"/></div></div>
+
+
+
+<h3 id="更新-pom"><a href="#更新-pom" class="headerlink" title="更新 pom"></a>更新 pom</h3><div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323758.png"/></div></div>
+
+
+
+<h3 id="尝试运行"><a href="#尝试运行" class="headerlink" title="尝试运行"></a>尝试运行</h3><p>运行报错：<br><code>java.lang.NoSuchFieldError: Class com.sun.tools.javac.tree.JCTree$JCImport does not have member field &#39;com.sun.tools.javac.tree.JCTree qualid&#39;</code><br>解决办法：<br>升级 lombok 至 1.18.30</p>
+<blockquote>
+<p>原因：<a href="https://link.zhihu.com/?target=https://www.oschina.net/action/GoToLink?url=https://github.com/projectlombok/lombok/issues/3393">https://github.com/projectlombok/lombok/issues/3393</a></p>
+</blockquote>
+<h3 id="兼容性检查："><a href="#兼容性检查：" class="headerlink" title="兼容性检查："></a>兼容性检查：</h3><p>由于我的项目以前用的 JDK17，本次升级兼容性良好，只发现了一处：<br>系统托盘中 使用了 PopupMenu，出现了字符集问题：</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323784.png"/></div></div>
+
+
+
+<h2 id="五、分代-ZGC-体验"><a href="#五、分代-ZGC-体验" class="headerlink" title="五、分代 ZGC 体验"></a>五、分代 ZGC 体验</h2><p>ZGC 在之前的 JDK 版本中也有，这次的分代 ZGC 更是被大家看好，官方的介绍如下：</p>
+<blockquote>
+<p>Applications running with Generational ZGC should enjoy:<br>Lower risks of allocations stalls,<br>Lower required heap memory overhead, and<br>Lower garbage collection CPU overhead.<br>Enable Generational ZGC with command line options -XX:+UseZGC -XX:+ZGenerational</p>
+</blockquote>
+<p>性能测试参考：</p>
+<blockquote>
+<p><a href="https://link.zhihu.com/?target=https://www.oschina.net/action/GoToLink?url=https://inside.java/2023/09/03/roadto21-performance/">https://inside.java/2023/09/03/roadto21-performance/</a></p>
+</blockquote>
+<h3 id="JVM-参数：-XX-UseZGC-XX-ZGenerational"><a href="#JVM-参数：-XX-UseZGC-XX-ZGenerational" class="headerlink" title="JVM 参数：-XX:+UseZGC -XX:+ZGenerational"></a>JVM 参数：-XX:+UseZGC -XX:+ZGenerational</h3><h3 id="使用-Java21，未使用-ZGC"><a href="#使用-Java21，未使用-ZGC" class="headerlink" title="使用 Java21，未使用 ZGC"></a>使用 Java21，未使用 ZGC</h3><p>MooInfo 内存占用查看</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323810.png"/></div></div>
+
+
+
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323513.png"/></div></div>
+
+
+
+<h3 id="使用-Java21，使用分代-ZGC"><a href="#使用-Java21，使用分代-ZGC" class="headerlink" title="使用 Java21，使用分代 ZGC"></a>使用 Java21，使用分代 ZGC</h3><p>MooInfo 内存占用查看</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323361.png"/></div></div>
+
+
+
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323327.png"/></div></div>
+
+
+<p>以上只是初步体验，关于 ZGC 的更多内容，如详细的分代回收情况后续进一步探索。</p>
+<p>以上内存占用查看使用我之前做的一个工具，MooInfo：<br><a href="https://link.zhihu.com/?target=https://www.oschina.net/action/GoToLink?url=https://github.com/rememberber/MooInfo">https://github.com/rememberber/MooInfo</a></p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323439.png"/></div></div>
+
+
+
+<h2 id="六、虚拟线程探索"><a href="#六、虚拟线程探索" class="headerlink" title="六、虚拟线程探索"></a>六、虚拟线程探索</h2><p>Virtual threads are lightweight threads that reduce the effort of writing, maintaining, and debugging high-throughput concurrent applications.</p>
+<p>虚拟线程是轻量级线程，可以减少编写、维护和调试高吞吐量并发应用程序的工作量。</p>
+<p>Oracle 介绍原文：</p>
+<blockquote>
+<p><a href="https://link.zhihu.com/?target=https://www.oschina.net/action/GoToLink?url=https://docs.oracle.com/en/java/javase/20/core/virtual-threads.html%23GUID-DC4306FC-D6C1-4BCC-AECE-48C32C1A8DAA">https://docs.oracle.com/en/java/javase/20/core/virtual-threads.html#GUID-DC4306FC-D6C1-4BCC-AECE-48C32C1A8DAA</a></p>
+</blockquote>
+<h3 id="平台线程"><a href="#平台线程" class="headerlink" title="平台线程"></a>平台线程</h3><p>Oracle 官方文档的机器翻译：</p>
+<blockquote>
+<p>平台线程是作为操作系统 (OS) 线程的瘦包装器实现的。<br>平台线程在其底层操作系统线程上运行 Java 代码，平台线程在平台线程的整个生命周期内捕获其操作系统线程。<br>因此，可用平台线程的数量受限于操作系统线程的数量。<br>平台线程通常有一个大的线程堆栈和其他由操作系统维护的资源。<br>平台线程支持线程局部变量。<br>平台线程适合运行所有类型的任务，但可能是有限的资源。</p>
+</blockquote>
+<h3 id="虚拟线程"><a href="#虚拟线程" class="headerlink" title="虚拟线程"></a>虚拟线程</h3><p>Oracle 官方文档的机器翻译：</p>
+<blockquote>
+<p>与平台线程一样，虚拟线程也是 java.lang.Thread 的一个实例。<br>但是，虚拟线程并不依赖于特定的操作系统线程。<br>虚拟线程仍然在操作系统线程上运行代码。<br>但是，当虚拟线程中运行的代码调用阻塞 I&#x2F;O 操作时，Java 运行时会挂起虚拟线程，直到可以恢复为止。<br>与挂起的虚拟线程关联的操作系统线程现在可以自由地为其他虚拟线程执行操作。</p>
+</blockquote>
+<p>实现原理</p>
+<blockquote>
+<p>虚拟线程的实现方式与虚拟内存类似。<br>为了模拟大量内存，操作系统将较大的虚拟地址空间映射到有限的 RAM。<br>同样，为了模拟大量线程，Java 运行时将大量虚拟线程映射到少量操作系统线程。<br>与平台线程不同，虚拟线程通常具有浅调用堆栈，只执行单个 HTTP 客户端调用或单个 JDBC 查询。<br>尽管虚拟线程支持线程局部变量，但您应该仔细考虑使用它们，因为单个 JVM 可能支持数百万个虚拟线程。</p>
+</blockquote>
+<p><strong>虚拟线程适合运行大部分时间处于阻塞状态、通常等待 I&#x2F;O 操作完成的任务。</strong><br><strong>但是，它们不适用于长时间运行的 CPU 密集型操作。</strong></p>
+<h3 id="虚拟线程用法"><a href="#虚拟线程用法" class="headerlink" title="虚拟线程用法"></a>虚拟线程用法</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Thread thread = Thread.ofVirtual().start(() -&gt; System.out.println(&quot;Hello&quot;));</span><br><span class="line">thread.join();</span><br></pre></td></tr></table></figure>
+
+<p>或者</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">try &#123;</span><br><span class="line">            Thread.Builder builder = Thread.ofVirtual().name(&quot;MyThread&quot;);</span><br><span class="line">            Runnable task = () -&gt; &#123;</span><br><span class="line">                System.out.println(&quot;Running thread&quot;);</span><br><span class="line">            &#125;;</span><br><span class="line">            Thread t = builder.start(task);</span><br><span class="line">            System.out.println(&quot;Thread t name: &quot; + t.getName());</span><br><span class="line">            t.join();</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>或者</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">public class CreateNamedThreadsWithBuilders &#123;</span><br><span class="line">    </span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        </span><br><span class="line">        try &#123;</span><br><span class="line">            Thread.Builder builder =</span><br><span class="line">                Thread.ofVirtual().name(&quot;worker-&quot;, 0);</span><br><span class="line"></span><br><span class="line">            Runnable task = () -&gt; &#123;</span><br><span class="line">                System.out.println(&quot;Thread ID: &quot; +</span><br><span class="line">                    Thread.currentThread().threadId());</span><br><span class="line">            &#125;;            </span><br><span class="line"></span><br><span class="line">            // name &quot;worker-0&quot;</span><br><span class="line">            Thread t1 = builder.start(task);   </span><br><span class="line">            t1.join();</span><br><span class="line">            System.out.println(t1.getName() + &quot; terminated&quot;);</span><br><span class="line"></span><br><span class="line">            // name &quot;worker-1&quot;</span><br><span class="line">            Thread t2 = builder.start(task);   </span><br><span class="line">            t2.join();  </span><br><span class="line">            System.out.println(t2.getName() + &quot; terminated&quot;);</span><br><span class="line">            </span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>或者</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">try (ExecutorService myExecutor =</span><br><span class="line">            Executors.newVirtualThreadPerTaskExecutor()) &#123;</span><br><span class="line">            Future&lt;?&gt; future =</span><br><span class="line">                myExecutor.submit(() -&gt; System.out.println(&quot;Running thread&quot;));</span><br><span class="line">            future.get();</span><br><span class="line">            System.out.println(&quot;Task completed&quot;);</span><br><span class="line">        &#125; catch (InterruptedException | ExecutionException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>以上是 Java20 文档的用法，实际使用时我发现还可以这样：</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Thread.startVirtualThread(() -&gt; &#123;</span><br><span class="line">                // do something</span><br><span class="line">               </span><br><span class="line">            &#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="平台线程和虚拟线程对比测试"><a href="#平台线程和虚拟线程对比测试" class="headerlink" title="平台线程和虚拟线程对比测试"></a>平台线程和虚拟线程对比测试</h3><p>为了测试对比，我建了一个项目</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323413.png"/></div></div>
+
+
+
+<p><strong>初步对比，和官网描述一致，计算密集型场景差别不大，IO 密集型场景有明显改善</strong>：<br>虚拟线程 100 个，IO 读文件</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323437.webp"/></div></div>
+
+
+<p>平台线程 100 个，IO 读文件</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323854.webp"/></div></div>
+
+
+<p>虚拟线程 100 个，Get 请求百度首页</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271324012.webp"/></div></div>
+
+
+<p>平台线程 100 个，Get 请求百度首页</p>
+<div class="tag-plugin image"><div class="image-bg"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271324214.webp"/></div></div>
+
+
+
+<p>但是由于是本地测试，且用例比较简陋，无法完全得出准确结论。<br>日后大家有实际 IO 密集性多线程场景可以实际感受下。</p>
+<h3 id="线程池？忘了它吧"><a href="#线程池？忘了它吧" class="headerlink" title="线程池？忘了它吧"></a>线程池？忘了它吧</h3><p>开发人员通常会将应用程序代码从基于线程池的传统 ExecutorService 迁移到虚拟线程每任务 ExecutorService。<br>线程池和所有资源池一样，旨在共享昂贵的资源，<br>但虚拟线程并不昂贵，而且永远不需要将它们池化。</p>
+<h2 id="七、一颗语法糖？Java21-新特性：Record-Patterns"><a href="#七、一颗语法糖？Java21-新特性：Record-Patterns" class="headerlink" title="七、一颗语法糖？Java21 新特性：Record Patterns"></a>七、一颗语法糖？Java21 新特性：Record Patterns</h2><p>一个例子感受一下新特性：Record Patterns<br>before：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">static void printSum(Object obj) &#123;</span><br><span class="line">    if (obj instanceof Point p) &#123;</span><br><span class="line">        int x = p.x();</span><br><span class="line">        int y = p.y();</span><br><span class="line">        System.out.println(x+y);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>after:</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">static void printSum(Object obj) &#123;</span><br><span class="line">    if (obj instanceof Point(int x, int y)) &#123;</span><br><span class="line">        System.out.println(x+y);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<div class="article-footer reveal fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2023/12/27/15-Java-20-%E6%96%B0%E7%89%B9%E6%80%A7%E6%A6%82%E8%A7%88/">15.Java 20 新特性概览</a></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"></div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  const stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = stellar.config.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.version = '1.21.0';
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.21.0';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+    root : '/',
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://gcore.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js'
+  };
+
+  if ('local_search') {
+    stellar.search = {};
+    stellar.search.service = 'local_search';
+    if (stellar.search.service == 'local_search') {
+      let service_obj = Object.assign({}, {"field":"all","path":"/search.json","content":true,"sort":"-date"});
+      stellar.search[stellar.search.service] = service_obj;
+    }
+  }
+
+  // stellar js
+  stellar.plugins.stellar = Object.assign({"sites":"/js/plugins/sites.js","friends":"/js/plugins/friends.js","ghinfo":"/js/plugins/ghinfo.js","timeline":"/js/plugins/timeline.js","linkcard":"/js/plugins/linkcard.js","fcircle":"/js/plugins/fcircle.js","weibo":"/js/plugins/weibo.js","memos":"/js/plugins/memos.js"});
+
+  stellar.plugins.marked = Object.assign("https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js");
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://gcore.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://gcore.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://gcore.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.fancybox = Object.assign({"enable":true,"js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css","selector":".swiper-slide img, .gallery img"});
+  }
+  if ('false' == 'true') {
+    stellar.plugins.heti = Object.assign({"enable":false,"css":"https://unpkg.com/heti@0.9.2/umd/heti.min.css","js":"https://unpkg.com/heti@0.9.2/umd/heti-addon.min.js"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.copycode = Object.assign({"enable":true,"js":"/js/plugins/copycode.js","default_text":"Copy","success_text":"Copied"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
