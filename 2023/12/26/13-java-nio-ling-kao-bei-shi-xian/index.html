@@ -1,0 +1,1954 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN,en,default">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="13.Java NIO - 零拷贝实现, 生活，养猫，Java，后端开发">
+    <meta name="description" content="
+这里转一篇Java NIO 零拷贝的实现文章，在此之前建议先理解什么是Linux中零拷贝，可以先看这篇文章。本文从源码着手分析了 Java NIO 对零拷贝的实现，主要包括基于内存映射（mmap）方式的 MappedByteBuffer ">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>13.Java NIO - 零拷贝实现 | Hubert&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/hubert-logo.png">
+    
+    <style>
+        body{
+            background-image: url(https://cdn.jsdelivr.net/gh/Tokisaki-Galaxy/res/site/medias/background.jpg);
+            background-repeat:no-repeat;
+            background-size: 100% 100%;
+            background-attachment:fixed;
+        }
+    </style>
+
+
+
+    <!-- bg-cover style     -->
+
+
+
+<link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+<link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+<link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+<link rel="stylesheet" type="text/css" href="/css/matery.css">
+<link rel="stylesheet" type="text/css" href="/css/my.css">
+<link rel="stylesheet" type="text/css" href="/css/dark.css" media="none" onload="if(media!='all')media='all'">
+
+
+
+
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+    <link rel="stylesheet" href="/css/post.css">
+
+
+
+
+    
+
+
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.0.0"><link rel="alternate" href="/atom.xml" title="Hubert's Blog" type="application/atom+xml">
+</head>
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/hubert-logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Hubert&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+  <li>
+    <a href="javascript:;" class="waves-effect waves-light" onclick="switchNightMode()" title="深色/浅色模式" >
+      <i id="sum-moon-icon" class="fas fa-sun" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/hubert-logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Hubert&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            记录猫奴生活、后端学习笔记，由Hexo+Github搭建
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/21.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">13.Java NIO - 零拷贝实现</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/Java/">
+                                <span class="chip bg-color">Java</span>
+                            </a>
+                        
+                            <a href="/tags/IO/">
+                                <span class="chip bg-color">IO</span>
+                            </a>
+                        
+                            <a href="/tags/NIO/">
+                                <span class="chip bg-color">NIO</span>
+                            </a>
+                        
+                            <a href="/tags/%E9%9B%B6%E6%8B%B7%E8%B4%9D/">
+                                <span class="chip bg-color">零拷贝</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/Java/" class="post-category">
+                                Java
+                            </a>
+                        
+                            <a href="/categories/Java/IO/" class="post-category">
+                                IO
+                            </a>
+                        
+                            <a href="/categories/Java/IO/NIO/" class="post-category">
+                                NIO
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2023-12-26
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2023-12-26
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    5.3k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                    23 分
+                </div>
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.min.css">
+        
+
+        
+        <!-- 代码块折行 -->
+        <style type="text/css">
+            code[class*="language-"], pre[class*="language-"] { white-space: pre-wrap !important; }
+        </style>
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p>这里转一篇Java NIO 零拷贝的实现文章，在此之前建议先理解什么是Linux中零拷贝，可以先看这篇文章。本文从源码着手分析了 Java NIO 对零拷贝的实现，主要包括基于内存映射（mmap）方式的 MappedByteBuffer 以及基于 sendfile 方式的 FileChannel。最后在篇末简单的阐述了一下 Netty 中的零拷贝机制，以及 RocketMQ 和 Kafka 两种消息队列在零拷贝实现方式上的区别。</p>
+</blockquote>
+<h2 id="Java-NIO零拷贝"><a href="#Java-NIO零拷贝" class="headerlink" title="Java NIO零拷贝"></a>Java NIO零拷贝</h2><p>在 Java NIO 中的<strong>通道（Channel）**就相当于操作系统的**内核空间**（kernel space）的缓冲区，而</strong>缓冲区<strong>（Buffer）对应的相当于操作系统的</strong>用户空间<strong>（user space）中的</strong>用户缓冲区**（user buffer）。</p>
+<ul>
+<li><strong>通道</strong>（Channel）是全双工的（双向传输），它既可能是读缓冲区（read buffer），也可能是网络缓冲区（socket buffer）。</li>
+<li><strong>缓冲区</strong>（Buffer）分为堆内存（HeapBuffer）和堆外内存（DirectBuffer），这是通过 malloc() 分配出来的用户态内存。</li>
+</ul>
+<p>堆外内存（DirectBuffer）在使用后需要应用程序手动回收，而堆内存（HeapBuffer）的数据在 GC 时可能会被自动回收。因此，在使用 HeapBuffer 读写数据时，为了避免缓冲区数据因为 GC 而丢失，NIO 会先把 HeapBuffer 内部的数据拷贝到一个临时的 DirectBuffer 中的本地内存（native memory），这个拷贝涉及到 <code>sun.misc.Unsafe.copyMemory()</code> 的调用，背后的实现原理与 <code>memcpy()</code> 类似。 最后，将临时生成的 DirectBuffer 内部的数据的内存地址传给 I&#x2F;O 调用函数，这样就避免了再去访问 Java 对象处理 I&#x2F;O 读写。</p>
+<h3 id="MappedByteBuffer"><a href="#MappedByteBuffer" class="headerlink" title="MappedByteBuffer"></a>MappedByteBuffer</h3><p>MappedByteBuffer 是 NIO 基于<strong>内存映射（mmap）</strong>这种零拷贝方式的提供的一种实现，它继承自 ByteBuffer。FileChannel 定义了一个 map() 方法，它可以把一个文件从 position 位置开始的 size 大小的区域映射为内存映像文件。抽象方法 map() 方法在 FileChannel 中的定义如下：</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">abstract</span> <span class="token class-name">MappedByteBuffer</span> <span class="token function">map</span><span class="token punctuation">(</span><span class="token class-name">MapMode</span> mode<span class="token punctuation">,</span> <span class="token keyword">long</span> position<span class="token punctuation">,</span> <span class="token keyword">long</span> size<span class="token punctuation">)</span>
+        <span class="token keyword">throws</span> <span class="token class-name">IOException</span><span class="token punctuation">;</span></code></pre>
+
+<ul>
+<li><strong>mode</strong>：限定内存映射区域（MappedByteBuffer）对内存映像文件的访问模式，包括只可读（READ_ONLY）、可读可写（READ_WRITE）和写时拷贝（PRIVATE）三种模式。</li>
+<li><strong>position</strong>：文件映射的起始地址，对应内存映射区域（MappedByteBuffer）的首地址。</li>
+<li><strong>size</strong>：文件映射的字节长度，从 position 往后的字节数，对应内存映射区域（MappedByteBuffer）的大小。</li>
+</ul>
+<p>MappedByteBuffer 相比 ByteBuffer 新增了 fore()、load() 和 isLoad() 三个重要的方法：</p>
+<ul>
+<li>**fore()**：对于处于 READ_WRITE 模式下的缓冲区，把对缓冲区内容的修改强制刷新到本地文件。</li>
+<li>**load()**：将缓冲区的内容载入物理内存中，并返回这个缓冲区的引用。</li>
+<li>**isLoaded()**：如果缓冲区的内容在物理内存中，则返回 true，否则返回 false。</li>
+</ul>
+<p>下面给出一个利用 MappedByteBuffer 对文件进行读写的使用示例：</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">final</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token constant">CONTENT</span> <span class="token operator">=</span> <span class="token string">"Zero copy implemented by MappedByteBuffer"</span><span class="token punctuation">;</span>
+<span class="token keyword">private</span> <span class="token keyword">final</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token constant">FILE_NAME</span> <span class="token operator">=</span> <span class="token string">"/mmap.txt"</span><span class="token punctuation">;</span>
+<span class="token keyword">private</span> <span class="token keyword">final</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token constant">CHARSET</span> <span class="token operator">=</span> <span class="token string">"UTF-8"</span><span class="token punctuation">;</span></code></pre>
+
+<ul>
+<li><strong>写文件数据</strong>：打开文件通道 fileChannel 并提供读权限、写权限和数据清空权限，通过 fileChannel 映射到一个可写的内存缓冲区 mappedByteBuffer，将目标数据写入 mappedByteBuffer，通过 <code>force()</code> 方法把缓冲区更改的内容强制写入本地文件。</li>
+</ul>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Test</span>
+<span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">writeToFileByMappedByteBuffer</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token class-name">Path</span> path <span class="token operator">=</span> <span class="token class-name">Paths</span><span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token function">getClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getResource</span><span class="token punctuation">(</span><span class="token constant">FILE_NAME</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bytes <span class="token operator">=</span> <span class="token constant">CONTENT</span><span class="token punctuation">.</span><span class="token function">getBytes</span><span class="token punctuation">(</span><span class="token class-name">Charset</span><span class="token punctuation">.</span><span class="token function">forName</span><span class="token punctuation">(</span><span class="token constant">CHARSET</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">try</span> <span class="token punctuation">(</span><span class="token class-name">FileChannel</span> fileChannel <span class="token operator">=</span> <span class="token class-name">FileChannel</span><span class="token punctuation">.</span><span class="token keyword">open</span><span class="token punctuation">(</span>path<span class="token punctuation">,</span> <span class="token class-name">StandardOpenOption</span><span class="token punctuation">.</span><span class="token constant">READ</span><span class="token punctuation">,</span>
+            <span class="token class-name">StandardOpenOption</span><span class="token punctuation">.</span><span class="token constant">WRITE</span><span class="token punctuation">,</span> <span class="token class-name">StandardOpenOption</span><span class="token punctuation">.</span><span class="token constant">TRUNCATE_EXISTING</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">MappedByteBuffer</span> mappedByteBuffer <span class="token operator">=</span> fileChannel<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token constant">READ_WRITE</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> bytes<span class="token punctuation">.</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>mappedByteBuffer <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            mappedByteBuffer<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>bytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            mappedByteBuffer<span class="token punctuation">.</span><span class="token function">force</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">IOException</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<ul>
+<li><strong>读文件数据</strong>：打开文件通道 fileChannel 并提供只读权限，通过 fileChannel 映射到一个只可读的内存缓冲区 mappedByteBuffer，读取 mappedByteBuffer 中的字节数组即可得到文件数据。</li>
+</ul>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Test</span>
+<span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">readFromFileByMappedByteBuffer</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token class-name">Path</span> path <span class="token operator">=</span> <span class="token class-name">Paths</span><span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token function">getClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getResource</span><span class="token punctuation">(</span><span class="token constant">FILE_NAME</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> length <span class="token operator">=</span> <span class="token constant">CONTENT</span><span class="token punctuation">.</span><span class="token function">getBytes</span><span class="token punctuation">(</span><span class="token class-name">Charset</span><span class="token punctuation">.</span><span class="token function">forName</span><span class="token punctuation">(</span><span class="token constant">CHARSET</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span>length<span class="token punctuation">;</span>
+    <span class="token keyword">try</span> <span class="token punctuation">(</span><span class="token class-name">FileChannel</span> fileChannel <span class="token operator">=</span> <span class="token class-name">FileChannel</span><span class="token punctuation">.</span><span class="token keyword">open</span><span class="token punctuation">(</span>path<span class="token punctuation">,</span> <span class="token class-name">StandardOpenOption</span><span class="token punctuation">.</span><span class="token constant">READ</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">MappedByteBuffer</span> mappedByteBuffer <span class="token operator">=</span> fileChannel<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token constant">READ_ONLY</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>mappedByteBuffer <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bytes <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token keyword">byte</span><span class="token punctuation">[</span>length<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            mappedByteBuffer<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>bytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">String</span> content <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">String</span><span class="token punctuation">(</span>bytes<span class="token punctuation">,</span> <span class="token class-name">StandardCharsets</span><span class="token punctuation">.</span><span class="token constant">UTF_8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">assertEquals</span><span class="token punctuation">(</span>content<span class="token punctuation">,</span> <span class="token string">"Zero copy implemented by MappedByteBuffer"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">IOException</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>下面介绍 <code>map()</code> 方法的<strong>底层实现原理</strong>。<code>map()</code> 方法是 <code>java.nio.channels.FileChannel</code> 的抽象方法，由子类 <code>sun.nio.ch.FileChannelImpl.java</code> 实现，下面是和内存映射相关的核心代码：</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token class-name">MappedByteBuffer</span> <span class="token function">map</span><span class="token punctuation">(</span><span class="token class-name">MapMode</span> mode<span class="token punctuation">,</span> <span class="token keyword">long</span> position<span class="token punctuation">,</span> <span class="token keyword">long</span> size<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IOException</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> pagePosition <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">(</span>position <span class="token operator">%</span> allocationGranularity<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">long</span> mapPosition <span class="token operator">=</span> position <span class="token operator">-</span> pagePosition<span class="token punctuation">;</span>
+    <span class="token keyword">long</span> mapSize <span class="token operator">=</span> size <span class="token operator">+</span> pagePosition<span class="token punctuation">;</span>
+    <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+        addr <span class="token operator">=</span> <span class="token function">map0</span><span class="token punctuation">(</span>imode<span class="token punctuation">,</span> mapPosition<span class="token punctuation">,</span> mapSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">OutOfMemoryError</span> x<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span><span class="token function">gc</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">Thread</span><span class="token punctuation">.</span><span class="token function">sleep</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">InterruptedException</span> y<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">Thread</span><span class="token punctuation">.</span><span class="token function">currentThread</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">interrupt</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+            addr <span class="token operator">=</span> <span class="token function">map0</span><span class="token punctuation">(</span>imode<span class="token punctuation">,</span> mapPosition<span class="token punctuation">,</span> mapSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">OutOfMemoryError</span> y<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">IOException</span><span class="token punctuation">(</span><span class="token string">"Map failed"</span><span class="token punctuation">,</span> y<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">int</span> isize <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span>size<span class="token punctuation">;</span>
+    <span class="token class-name">Unmapper</span> um <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Unmapper</span><span class="token punctuation">(</span>addr<span class="token punctuation">,</span> mapSize<span class="token punctuation">,</span> isize<span class="token punctuation">,</span> mfd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token operator">!</span>writable<span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token punctuation">(</span>imode <span class="token operator">==</span> <span class="token constant">MAP_RO</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> <span class="token class-name">Util</span><span class="token punctuation">.</span><span class="token function">newMappedByteBufferR</span><span class="token punctuation">(</span>isize<span class="token punctuation">,</span> addr <span class="token operator">+</span> pagePosition<span class="token punctuation">,</span> mfd<span class="token punctuation">,</span> um<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> <span class="token class-name">Util</span><span class="token punctuation">.</span><span class="token function">newMappedByteBuffer</span><span class="token punctuation">(</span>isize<span class="token punctuation">,</span> addr <span class="token operator">+</span> pagePosition<span class="token punctuation">,</span> mfd<span class="token punctuation">,</span> um<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>map() 方法通过本地方法 map0() 为文件分配一块虚拟内存，作为它的内存映射区域，然后返回这块内存映射区域的起始地址。</p>
+<ul>
+<li>文件映射需要在 Java 堆中创建一个 MappedByteBuffer 的实例。如果第一次文件映射导致 OOM，则手动触发垃圾回收，休眠 100ms 后再尝试映射，如果失败则抛出异常。</li>
+<li>通过 Util 的 newMappedByteBuffer （可读可写）方法或者 newMappedByteBufferR（仅读） 方法方法反射创建一个 DirectByteBuffer 实例，其中 DirectByteBuffer 是 MappedByteBuffer 的子类。</li>
+</ul>
+<p><code>map()</code> 方法返回的是内存映射区域的起始地址，通过（<strong>起始地址 + 偏移量</strong>）就可以获取指定内存的数据。这样一定程度上替代了 <code>read()</code> 或 <code>write()</code> 方法，底层直接采用 <code>sun.misc.Unsafe</code>类的 <code>getByte()</code> 和 <code>putByte()</code> 方法对数据进行读写。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">native</span> <span class="token keyword">long</span> <span class="token function">map0</span><span class="token punctuation">(</span><span class="token keyword">int</span> prot<span class="token punctuation">,</span> <span class="token keyword">long</span> position<span class="token punctuation">,</span> <span class="token keyword">long</span> mapSize<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IOException</span><span class="token punctuation">;</span></code></pre>
+
+<p>上面是本地方法（native method）map0 的定义，它通过 JNI（Java Native Interface）调用底层 C 的实现，这个 native 函数（Java_sun_nio_ch_FileChannelImpl_map0）的实现位于 JDK 源码包下的 <code>native/sun/nio/ch/FileChannelImpl.c</code>这个源文件里面。</p>
+<pre class="language-c" data-language="c"><code class="language-c">JNIEXPORT jlong JNICALL
+<span class="token function">Java_sun_nio_ch_FileChannelImpl_map0</span><span class="token punctuation">(</span>JNIEnv <span class="token operator">*</span>env<span class="token punctuation">,</span> jobject this<span class="token punctuation">,</span>
+                                     jint prot<span class="token punctuation">,</span> jlong off<span class="token punctuation">,</span> jlong len<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">void</span> <span class="token operator">*</span>mapAddress <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    jobject fdo <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token operator">*</span>env<span class="token punctuation">)</span><span class="token operator">-></span><span class="token function">GetObjectField</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> this<span class="token punctuation">,</span> chan_fd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    jint fd <span class="token operator">=</span> <span class="token function">fdval</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> fdo<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> protections <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> flags <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>prot <span class="token operator">==</span> sun_nio_ch_FileChannelImpl_MAP_RO<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        protections <span class="token operator">=</span> PROT_READ<span class="token punctuation">;</span>
+        flags <span class="token operator">=</span> MAP_SHARED<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>prot <span class="token operator">==</span> sun_nio_ch_FileChannelImpl_MAP_RW<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        protections <span class="token operator">=</span> PROT_WRITE <span class="token operator">|</span> PROT_READ<span class="token punctuation">;</span>
+        flags <span class="token operator">=</span> MAP_SHARED<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>prot <span class="token operator">==</span> sun_nio_ch_FileChannelImpl_MAP_PV<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        protections <span class="token operator">=</span>  PROT_WRITE <span class="token operator">|</span> PROT_READ<span class="token punctuation">;</span>
+        flags <span class="token operator">=</span> MAP_PRIVATE<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    mapAddress <span class="token operator">=</span> <span class="token function">mmap64</span><span class="token punctuation">(</span>
+        <span class="token number">0</span><span class="token punctuation">,</span>                    <span class="token comment">/* Let OS decide location */</span>
+        len<span class="token punctuation">,</span>                  <span class="token comment">/* Number of bytes to map */</span>
+        protections<span class="token punctuation">,</span>          <span class="token comment">/* File permissions */</span>
+        flags<span class="token punctuation">,</span>                <span class="token comment">/* Changes are shared */</span>
+        fd<span class="token punctuation">,</span>                   <span class="token comment">/* File descriptor of mapped file */</span>
+        off<span class="token punctuation">)</span><span class="token punctuation">;</span>                 <span class="token comment">/* Offset into file */</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>mapAddress <span class="token operator">==</span> MAP_FAILED<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>errno <span class="token operator">==</span> ENOMEM<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token function">JNU_ThrowOutOfMemoryError</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> <span class="token string">"Map failed"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> IOS_THROWN<span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">return</span> <span class="token function">handle</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"Map failed"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>jlong<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">)</span> mapAddress<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>可以看出 map0() 函数最终是通过 <code>mmap64()</code> 这个函数对 Linux 底层内核发出内存映射的调用， <code>mmap64()</code> 函数的原型如下：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/mman.h></span></span>
+
+<span class="token keyword">void</span> <span class="token operator">*</span><span class="token function">mmap64</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span>addr<span class="token punctuation">,</span> <span class="token class-name">size_t</span> len<span class="token punctuation">,</span> <span class="token keyword">int</span> prot<span class="token punctuation">,</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span> <span class="token keyword">int</span> fd<span class="token punctuation">,</span> <span class="token class-name">off64_t</span> offset<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>下面详细介绍一下 <code>mmap64()</code> 函数各个参数的含义以及参数可选值：</p>
+<ul>
+<li><p><code>addr</code>：文件在用户进程空间的内存映射区中的起始地址，是一个建议的参数，通常可设置为 0 或 NULL，此时由内核去决定真实的起始地址。当 + flags 为 MAP_FIXED 时，addr 就是一个必选的参数，即需要提供一个存在的地址。</p>
+</li>
+<li><p><code>len</code>：文件需要进行内存映射的字节长度</p>
+</li>
+<li><pre><code>prot
+<pre class="language-none"><code class="language-none">
+  ：控制用户进程对内存映射区的访问权限 
+
+  - &#96;PROT_READ&#96;：读权限
+  - &#96;PROT_WRITE&#96;：写权限
+  - &#96;PROT_EXEC&#96;：执行权限
+  - &#96;PROT_NONE&#96;：无权限
+
+- &#96;&#96;&#96;
+  flags</code></pre>
+
+：控制内存映射区的修改是否被多个进程共享 
+
+- `MAP_PRIVATE`：对内存映射区数据的修改不会反映到真正的文件，数据修改发生时采用写时复制机制
+- `MAP_SHARED`：对内存映射区的修改会同步到真正的文件，修改对共享此内存映射区的进程是可见的
+- `MAP_FIXED`：不建议使用，这种模式下 addr 参数指定的必须的提供一个存在的 addr 参数
+</code></pre>
+</li>
+<li><p><code>fd</code>：文件描述符。每次 map 操作会导致文件的引用计数加 1，每次 unmap 操作或者结束进程会导致引用计数减 1</p>
+</li>
+<li><p><code>offset</code>：文件偏移量。进行映射的文件位置，从文件起始地址向后的位移量</p>
+</li>
+</ul>
+<p>下面总结一下 MappedByteBuffer 的特点和不足之处：</p>
+<ul>
+<li><strong>MappedByteBuffer 使用是堆外的虚拟内存</strong>，因此分配（map）的内存大小不受 JVM 的 -Xmx 参数限制，但是也是有大小限制的。 如果当文件超出 Integer.MAX_VALUE 字节限制时，可以通过 position 参数重新 map 文件后面的内容。</li>
+<li><strong>MappedByteBuffer 在处理大文件时性能的确很高，但也存内存占用、文件关闭不确定等问题</strong>，被其打开的文件只有在垃圾回收的才会被关闭，而且这个时间点是不确定的。</li>
+<li>MappedByteBuffer 提供了文件映射内存的 mmap() 方法，也提供了释放映射内存的 unmap() 方法。然而 unmap() 是 FileChannelImpl 中的私有方法，无法直接显示调用。因此，<strong>用户程序需要通过 Java 反射的调用 sun.misc.Cleaner 类的 clean() 方法手动释放映射占用的内存区域</strong>。</li>
+</ul>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">clean</span><span class="token punctuation">(</span><span class="token keyword">final</span> <span class="token class-name">Object</span> buffer<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">Exception</span> <span class="token punctuation">&#123;</span>
+    <span class="token class-name">AccessController</span><span class="token punctuation">.</span><span class="token function">doPrivileged</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token class-name">PrivilegedAction</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Void</span><span class="token punctuation">></span></span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">Method</span> getCleanerMethod <span class="token operator">=</span> buffer<span class="token punctuation">.</span><span class="token function">getClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getMethod</span><span class="token punctuation">(</span><span class="token string">"cleaner"</span><span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">Class</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            getCleanerMethod<span class="token punctuation">.</span><span class="token function">setAccessible</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">Cleaner</span> cleaner <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">Cleaner</span><span class="token punctuation">)</span> getCleanerMethod<span class="token punctuation">.</span><span class="token function">invoke</span><span class="token punctuation">(</span>buffer<span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">Object</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            cleaner<span class="token punctuation">.</span><span class="token function">clean</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span><span class="token punctuation">(</span><span class="token class-name">Exception</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<h3 id="DirectByteBuffer"><a href="#DirectByteBuffer" class="headerlink" title="DirectByteBuffer"></a>DirectByteBuffer</h3><p>DirectByteBuffer 的对象引用位于 Java 内存模型的堆里面，JVM 可以对 DirectByteBuffer 的对象进行内存分配和回收管理，一般使用 DirectByteBuffer 的静态方法 allocateDirect() 创建 DirectByteBuffer 实例并分配内存。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token class-name">ByteBuffer</span> <span class="token function">allocateDirect</span><span class="token punctuation">(</span><span class="token keyword">int</span> capacity<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> <span class="token keyword">new</span> <span class="token class-name">DirectByteBuffer</span><span class="token punctuation">(</span>capacity<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>DirectByteBuffer 内部的字节缓冲区位在于堆外的（用户态）直接内存，它是通过 Unsafe 的本地方法 allocateMemory() 进行内存分配，底层调用的是操作系统的 malloc() 函数。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token class-name">DirectByteBuffer</span><span class="token punctuation">(</span><span class="token keyword">int</span> cap<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">super</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> cap<span class="token punctuation">,</span> cap<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">boolean</span> pa <span class="token operator">=</span> <span class="token constant">VM</span><span class="token punctuation">.</span><span class="token function">isDirectMemoryPageAligned</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> ps <span class="token operator">=</span> <span class="token class-name">Bits</span><span class="token punctuation">.</span><span class="token function">pageSize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">long</span> size <span class="token operator">=</span> <span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">max</span><span class="token punctuation">(</span><span class="token number">1L</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span>cap <span class="token operator">+</span> <span class="token punctuation">(</span>pa <span class="token operator">?</span> ps <span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token class-name">Bits</span><span class="token punctuation">.</span><span class="token function">reserveMemory</span><span class="token punctuation">(</span>size<span class="token punctuation">,</span> cap<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">long</span> base <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+        base <span class="token operator">=</span> unsafe<span class="token punctuation">.</span><span class="token function">allocateMemory</span><span class="token punctuation">(</span>size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">OutOfMemoryError</span> x<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">Bits</span><span class="token punctuation">.</span><span class="token function">unreserveMemory</span><span class="token punctuation">(</span>size<span class="token punctuation">,</span> cap<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">throw</span> x<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    unsafe<span class="token punctuation">.</span><span class="token function">setMemory</span><span class="token punctuation">(</span>base<span class="token punctuation">,</span> size<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">byte</span><span class="token punctuation">)</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pa <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>base <span class="token operator">%</span> ps <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        address <span class="token operator">=</span> base <span class="token operator">+</span> ps <span class="token operator">-</span> <span class="token punctuation">(</span>base <span class="token operator">&amp;</span> <span class="token punctuation">(</span>ps <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+        address <span class="token operator">=</span> base<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    cleaner <span class="token operator">=</span> <span class="token class-name">Cleaner</span><span class="token punctuation">.</span><span class="token function">create</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">Deallocator</span><span class="token punctuation">(</span>base<span class="token punctuation">,</span> size<span class="token punctuation">,</span> cap<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    att <span class="token operator">=</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>除此之外，初始化 DirectByteBuffer 时还会创建一个 Deallocator 线程，并通过 Cleaner 的 freeMemory() 方法来对直接内存进行回收操作，freeMemory() 底层调用的是操作系统的 free() 函数。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">class</span> <span class="token class-name">Deallocator</span> <span class="token keyword">implements</span> <span class="token class-name">Runnable</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token class-name">Unsafe</span> unsafe <span class="token operator">=</span> <span class="token class-name">Unsafe</span><span class="token punctuation">.</span><span class="token function">getUnsafe</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">private</span> <span class="token keyword">long</span> address<span class="token punctuation">;</span>
+    <span class="token keyword">private</span> <span class="token keyword">long</span> size<span class="token punctuation">;</span>
+    <span class="token keyword">private</span> <span class="token keyword">int</span> capacity<span class="token punctuation">;</span>
+
+    <span class="token keyword">private</span> <span class="token class-name">Deallocator</span><span class="token punctuation">(</span><span class="token keyword">long</span> address<span class="token punctuation">,</span> <span class="token keyword">long</span> size<span class="token punctuation">,</span> <span class="token keyword">int</span> capacity<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">assert</span> <span class="token punctuation">(</span>address <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>address <span class="token operator">=</span> address<span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>size <span class="token operator">=</span> size<span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>capacity <span class="token operator">=</span> capacity<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">run</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>address <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        unsafe<span class="token punctuation">.</span><span class="token function">freeMemory</span><span class="token punctuation">(</span>address<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        address <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token class-name">Bits</span><span class="token punctuation">.</span><span class="token function">unreserveMemory</span><span class="token punctuation">(</span>size<span class="token punctuation">,</span> capacity<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>由于使用 DirectByteBuffer 分配的是系统本地的内存，不在 JVM 的管控范围之内，因此直接内存的回收和堆内存的回收不同，直接内存如果使用不当，很容易造成 OutOfMemoryError。</p>
+<p>说了这么多，那么 DirectByteBuffer 和零拷贝有什么关系？前面有提到在 MappedByteBuffer 进行内存映射时，它的 map() 方法会通过 Util.newMappedByteBuffer() 来创建一个缓冲区实例，初始化的代码如下：</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">static</span> <span class="token class-name">MappedByteBuffer</span> <span class="token function">newMappedByteBuffer</span><span class="token punctuation">(</span><span class="token keyword">int</span> size<span class="token punctuation">,</span> <span class="token keyword">long</span> addr<span class="token punctuation">,</span> <span class="token class-name">FileDescriptor</span> fd<span class="token punctuation">,</span>
+                                            <span class="token class-name">Runnable</span> unmapper<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token class-name">MappedByteBuffer</span> dbb<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>directByteBufferConstructor <span class="token operator">==</span> <span class="token keyword">null</span><span class="token punctuation">)</span>
+        <span class="token function">initDBBConstructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+        dbb <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">MappedByteBuffer</span><span class="token punctuation">)</span>directByteBufferConstructor<span class="token punctuation">.</span><span class="token function">newInstance</span><span class="token punctuation">(</span>
+            <span class="token keyword">new</span> <span class="token class-name">Object</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token punctuation">&#123;</span> <span class="token keyword">new</span> <span class="token class-name">Integer</span><span class="token punctuation">(</span>size<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token keyword">new</span> <span class="token class-name">Long</span><span class="token punctuation">(</span>addr<span class="token punctuation">)</span><span class="token punctuation">,</span> fd<span class="token punctuation">,</span> unmapper <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">InstantiationException</span> <span class="token operator">|</span> <span class="token class-name">IllegalAccessException</span> <span class="token operator">|</span> <span class="token class-name">InvocationTargetException</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">InternalError</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">return</span> dbb<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">initDBBRConstructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token class-name">AccessController</span><span class="token punctuation">.</span><span class="token function">doPrivileged</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">PrivilegedAction</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Void</span><span class="token punctuation">></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">public</span> <span class="token class-name">Void</span> <span class="token function">run</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+                <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> cl <span class="token operator">=</span> <span class="token class-name">Class</span><span class="token punctuation">.</span><span class="token function">forName</span><span class="token punctuation">(</span><span class="token string">"java.nio.DirectByteBufferR"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token class-name">Constructor</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> ctor <span class="token operator">=</span> cl<span class="token punctuation">.</span><span class="token function">getDeclaredConstructor</span><span class="token punctuation">(</span>
+                    <span class="token keyword">new</span> <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token punctuation">&#123;</span> <span class="token keyword">int</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">,</span> <span class="token keyword">long</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">,</span> <span class="token class-name">FileDescriptor</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">,</span>
+                                    <span class="token class-name">Runnable</span><span class="token punctuation">.</span><span class="token keyword">class</span> <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                ctor<span class="token punctuation">.</span><span class="token function">setAccessible</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                directByteBufferRConstructor <span class="token operator">=</span> ctor<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">ClassNotFoundException</span> <span class="token operator">|</span> <span class="token class-name">NoSuchMethodException</span> <span class="token operator">|</span>
+                     <span class="token class-name">IllegalArgumentException</span> <span class="token operator">|</span> <span class="token class-name">ClassCastException</span> x<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">InternalError</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            <span class="token keyword">return</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>DirectByteBuffer 是 MappedByteBuffer 的具体实现类。实际上，Util.newMappedByteBuffer() 方法通过反射机制获取 DirectByteBuffer 的构造器，然后创建一个 DirectByteBuffer 的实例，对应的是一个单独用于内存映射的构造方法：</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">protected</span> <span class="token class-name">DirectByteBuffer</span><span class="token punctuation">(</span><span class="token keyword">int</span> cap<span class="token punctuation">,</span> <span class="token keyword">long</span> addr<span class="token punctuation">,</span> <span class="token class-name">FileDescriptor</span> fd<span class="token punctuation">,</span> <span class="token class-name">Runnable</span> unmapper<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">super</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> cap<span class="token punctuation">,</span> cap<span class="token punctuation">,</span> fd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    address <span class="token operator">=</span> addr<span class="token punctuation">;</span>
+    cleaner <span class="token operator">=</span> <span class="token class-name">Cleaner</span><span class="token punctuation">.</span><span class="token function">create</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">,</span> unmapper<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    att <span class="token operator">=</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>因此，除了允许分配操作系统的直接内存以外，DirectByteBuffer 本身也具有文件内存映射的功能，这里不做过多说明。我们需要关注的是，DirectByteBuffer 在 MappedByteBuffer 的基础上提供了内存映像文件的随机读取 get() 和写入 write() 的操作。</p>
+<ul>
+<li>内存映像文件的随机读操作</li>
+</ul>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">byte</span> <span class="token function">get</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>unsafe<span class="token punctuation">.</span><span class="token function">getByte</span><span class="token punctuation">(</span><span class="token function">ix</span><span class="token punctuation">(</span><span class="token function">nextGetIndex</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">byte</span> <span class="token function">get</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>unsafe<span class="token punctuation">.</span><span class="token function">getByte</span><span class="token punctuation">(</span><span class="token function">ix</span><span class="token punctuation">(</span><span class="token function">checkIndex</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<ul>
+<li>内存映像文件的随机写操作</li>
+</ul>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token class-name">ByteBuffer</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token keyword">byte</span> x<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    unsafe<span class="token punctuation">.</span><span class="token function">putByte</span><span class="token punctuation">(</span><span class="token function">ix</span><span class="token punctuation">(</span><span class="token function">nextPutIndex</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token keyword">this</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">public</span> <span class="token class-name">ByteBuffer</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token punctuation">,</span> <span class="token keyword">byte</span> x<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    unsafe<span class="token punctuation">.</span><span class="token function">putByte</span><span class="token punctuation">(</span><span class="token function">ix</span><span class="token punctuation">(</span><span class="token function">checkIndex</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token keyword">this</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>内存映像文件的随机读写都是借助 ix() 方法实现定位的， ix() 方法通过内存映射空间的内存首地址（address）和给定偏移量 i 计算出指针地址，然后由 unsafe 类的 get() 和 put() 方法和对指针指向的数据进行读取或写入。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">long</span> <span class="token function">ix</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> address <span class="token operator">+</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span>i <span class="token operator">&lt;&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<h3 id="FileChannel"><a href="#FileChannel" class="headerlink" title="FileChannel"></a>FileChannel</h3><p>FileChannel 是一个用于文件读写、映射和操作的通道，同时它在并发环境下是线程安全的，基于 FileInputStream、FileOutputStream 或者 RandomAccessFile 的 getChannel() 方法可以创建并打开一个文件通道。FileChannel 定义了 transferFrom() 和 transferTo() 两个抽象方法，它通过在通道和通道之间建立连接实现数据传输的。</p>
+<ul>
+<li><code>transferTo()</code>：通过 FileChannel 把文件里面的源数据写入一个 WritableByteChannel 的目的通道。</li>
+</ul>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">abstract</span> <span class="token keyword">long</span> <span class="token function">transferTo</span><span class="token punctuation">(</span><span class="token keyword">long</span> position<span class="token punctuation">,</span> <span class="token keyword">long</span> count<span class="token punctuation">,</span> <span class="token class-name">WritableByteChannel</span> target<span class="token punctuation">)</span>
+        <span class="token keyword">throws</span> <span class="token class-name">IOException</span><span class="token punctuation">;</span></code></pre>
+
+<ul>
+<li><code>transferFrom()</code>：把一个源通道 ReadableByteChannel 中的数据读取到当前 FileChannel 的文件里面。</li>
+</ul>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">abstract</span> <span class="token keyword">long</span> <span class="token function">transferFrom</span><span class="token punctuation">(</span><span class="token class-name">ReadableByteChannel</span> src<span class="token punctuation">,</span> <span class="token keyword">long</span> position<span class="token punctuation">,</span> <span class="token keyword">long</span> count<span class="token punctuation">)</span>
+        <span class="token keyword">throws</span> <span class="token class-name">IOException</span><span class="token punctuation">;</span></code></pre>
+
+<p>下面给出 FileChannel 利用 transferTo() 和 transferFrom() 方法进行数据传输的使用示例：</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token class-name">String</span> <span class="token constant">CONTENT</span> <span class="token operator">=</span> <span class="token string">"Zero copy implemented by FileChannel"</span><span class="token punctuation">;</span>
+<span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token class-name">String</span> <span class="token constant">SOURCE_FILE</span> <span class="token operator">=</span> <span class="token string">"/source.txt"</span><span class="token punctuation">;</span>
+<span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token class-name">String</span> <span class="token constant">TARGET_FILE</span> <span class="token operator">=</span> <span class="token string">"/target.txt"</span><span class="token punctuation">;</span>
+<span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token class-name">String</span> <span class="token constant">CHARSET</span> <span class="token operator">=</span> <span class="token string">"UTF-8"</span><span class="token punctuation">;</span></code></pre>
+
+<p>首先在类加载根路径下创建 source.txt 和 target.txt 两个文件，对源文件 source.txt 文件写入初始化数据。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Before</span>
+<span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">setup</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token class-name">Path</span> source <span class="token operator">=</span> <span class="token class-name">Paths</span><span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token function">getClassPath</span><span class="token punctuation">(</span><span class="token constant">SOURCE_FILE</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">byte</span><span class="token punctuation">[</span><span class="token punctuation">]</span> bytes <span class="token operator">=</span> <span class="token constant">CONTENT</span><span class="token punctuation">.</span><span class="token function">getBytes</span><span class="token punctuation">(</span><span class="token class-name">Charset</span><span class="token punctuation">.</span><span class="token function">forName</span><span class="token punctuation">(</span><span class="token constant">CHARSET</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">try</span> <span class="token punctuation">(</span><span class="token class-name">FileChannel</span> fromChannel <span class="token operator">=</span> <span class="token class-name">FileChannel</span><span class="token punctuation">.</span><span class="token keyword">open</span><span class="token punctuation">(</span>source<span class="token punctuation">,</span> <span class="token class-name">StandardOpenOption</span><span class="token punctuation">.</span><span class="token constant">READ</span><span class="token punctuation">,</span>
+            <span class="token class-name">StandardOpenOption</span><span class="token punctuation">.</span><span class="token constant">WRITE</span><span class="token punctuation">,</span> <span class="token class-name">StandardOpenOption</span><span class="token punctuation">.</span><span class="token constant">TRUNCATE_EXISTING</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        fromChannel<span class="token punctuation">.</span><span class="token function">write</span><span class="token punctuation">(</span><span class="token class-name">ByteBuffer</span><span class="token punctuation">.</span><span class="token function">wrap</span><span class="token punctuation">(</span>bytes<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">IOException</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>对于 transferTo() 方法而言，目的通道 toChannel 可以是任意的单向字节写通道 WritableByteChannel；而对于 transferFrom() 方法而言，源通道 fromChannel 可以是任意的单向字节读通道 ReadableByteChannel。其中，FileChannel、SocketChannel 和 DatagramChannel 等通道实现了 WritableByteChannel 和 ReadableByteChannel 接口，都是同时支持读写的双向通道。为了方便测试，下面给出基于 FileChannel 完成 channel-to-channel 的数据传输示例。</p>
+<p>通过 transferTo() 将 fromChannel 中的数据拷贝到 toChannel</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Test</span>
+<span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">transferTo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">Exception</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">try</span> <span class="token punctuation">(</span><span class="token class-name">FileChannel</span> fromChannel <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">RandomAccessFile</span><span class="token punctuation">(</span>
+             <span class="token function">getClassPath</span><span class="token punctuation">(</span><span class="token constant">SOURCE_FILE</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">"rw"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getChannel</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token class-name">FileChannel</span> toChannel <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">RandomAccessFile</span><span class="token punctuation">(</span>
+             <span class="token function">getClassPath</span><span class="token punctuation">(</span><span class="token constant">TARGET_FILE</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">"rw"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getChannel</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">long</span> position <span class="token operator">=</span> <span class="token number">0L</span><span class="token punctuation">;</span>
+        <span class="token keyword">long</span> offset <span class="token operator">=</span> fromChannel<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        fromChannel<span class="token punctuation">.</span><span class="token function">transferTo</span><span class="token punctuation">(</span>position<span class="token punctuation">,</span> offset<span class="token punctuation">,</span> toChannel<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>通过 transferFrom() 将 fromChannel 中的数据拷贝到 toChannel</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Test</span>
+<span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">transferFrom</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">Exception</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">try</span> <span class="token punctuation">(</span><span class="token class-name">FileChannel</span> fromChannel <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">RandomAccessFile</span><span class="token punctuation">(</span>
+             <span class="token function">getClassPath</span><span class="token punctuation">(</span><span class="token constant">SOURCE_FILE</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">"rw"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getChannel</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+         <span class="token class-name">FileChannel</span> toChannel <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">RandomAccessFile</span><span class="token punctuation">(</span>
+             <span class="token function">getClassPath</span><span class="token punctuation">(</span><span class="token constant">TARGET_FILE</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">"rw"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getChannel</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">long</span> position <span class="token operator">=</span> <span class="token number">0L</span><span class="token punctuation">;</span>
+        <span class="token keyword">long</span> offset <span class="token operator">=</span> fromChannel<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        toChannel<span class="token punctuation">.</span><span class="token function">transferFrom</span><span class="token punctuation">(</span>fromChannel<span class="token punctuation">,</span> position<span class="token punctuation">,</span> offset<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>下面介绍 transferTo() 和 transferFrom() 方法的底层实现原理，这两个方法也是 java.nio.channels.FileChannel 的抽象方法，由子类 sun.nio.ch.FileChannelImpl.java 实现。transferTo() 和 transferFrom() 底层都是基于 sendfile 实现数据传输的，其中 FileChannelImpl.java 定义了 3 个常量，用于标示当前操作系统的内核是否支持 sendfile 以及 sendfile 的相关特性。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">volatile</span> <span class="token keyword">boolean</span> transferSupported <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+<span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">volatile</span> <span class="token keyword">boolean</span> pipeSupported <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+<span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">volatile</span> <span class="token keyword">boolean</span> fileSupported <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span></code></pre>
+
+<ul>
+<li><code>transferSupported</code>：用于标记当前的系统内核是否支持 sendfile() 调用，默认为 true。</li>
+<li><code>pipeSupported</code>：用于标记当前的系统内核是否支持文件描述符（fd）基于管道（pipe）的 sendfile() 调用，默认为 true。</li>
+<li><code>fileSupported</code>：用于标记当前的系统内核是否支持文件描述符（fd）基于文件（file）的 sendfile() 调用，默认为 true。</li>
+</ul>
+<p>下面以 transferTo() 的源码实现为例。FileChannelImpl 首先执行 transferToDirectly() 方法，以 sendfile 的零拷贝方式尝试数据拷贝。如果系统内核不支持 sendfile，进一步执行 transferToTrustedChannel() 方法，以 mmap 的零拷贝方式进行内存映射，这种情况下目的通道必须是 FileChannelImpl 或者 SelChImpl 类型。如果以上两步都失败了，则执行 transferToArbitraryChannel() 方法，基于传统的 I&#x2F;O 方式完成读写，具体步骤是初始化一个临时的 DirectBuffer，将源通道 FileChannel 的数据读取到 DirectBuffer，再写入目的通道 WritableByteChannel 里面。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">long</span> <span class="token function">transferTo</span><span class="token punctuation">(</span><span class="token keyword">long</span> position<span class="token punctuation">,</span> <span class="token keyword">long</span> count<span class="token punctuation">,</span> <span class="token class-name">WritableByteChannel</span> target<span class="token punctuation">)</span>
+        <span class="token keyword">throws</span> <span class="token class-name">IOException</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">// 计算文件的大小</span>
+    <span class="token keyword">long</span> sz <span class="token operator">=</span> <span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 校验起始位置</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>position <span class="token operator">></span> sz<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> icount <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token class-name">Math</span><span class="token punctuation">.</span><span class="token function">min</span><span class="token punctuation">(</span>count<span class="token punctuation">,</span> <span class="token class-name">Integer</span><span class="token punctuation">.</span><span class="token constant">MAX_VALUE</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// 校验偏移量</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>sz <span class="token operator">-</span> position<span class="token punctuation">)</span> <span class="token operator">&lt;</span> icount<span class="token punctuation">)</span>
+        icount <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">(</span>sz <span class="token operator">-</span> position<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">long</span> n<span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>n <span class="token operator">=</span> <span class="token function">transferToDirectly</span><span class="token punctuation">(</span>position<span class="token punctuation">,</span> icount<span class="token punctuation">,</span> target<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> n<span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>n <span class="token operator">=</span> <span class="token function">transferToTrustedChannel</span><span class="token punctuation">(</span>position<span class="token punctuation">,</span> icount<span class="token punctuation">,</span> target<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> n<span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token function">transferToArbitraryChannel</span><span class="token punctuation">(</span>position<span class="token punctuation">,</span> icount<span class="token punctuation">,</span> target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>接下来重点分析一下 transferToDirectly() 方法的实现，也就是 transferTo() 通过 sendfile 实现零拷贝的精髓所在。可以看到，transferToDirectlyInternal() 方法先获取到目的通道 WritableByteChannel 的文件描述符 targetFD，获取同步锁然后执行 transferToDirectlyInternal() 方法。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">long</span> <span class="token function">transferToDirectly</span><span class="token punctuation">(</span><span class="token keyword">long</span> position<span class="token punctuation">,</span> <span class="token keyword">int</span> icount<span class="token punctuation">,</span> <span class="token class-name">WritableByteChannel</span> target<span class="token punctuation">)</span>
+        <span class="token keyword">throws</span> <span class="token class-name">IOException</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">// 省略从target获取targetFD的过程</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>nd<span class="token punctuation">.</span><span class="token function">transferToDirectlyNeedsPositionLock</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">synchronized</span> <span class="token punctuation">(</span>positionLock<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">long</span> pos <span class="token operator">=</span> <span class="token function">position</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+                <span class="token keyword">return</span> <span class="token function">transferToDirectlyInternal</span><span class="token punctuation">(</span>position<span class="token punctuation">,</span> icount<span class="token punctuation">,</span>
+                        target<span class="token punctuation">,</span> targetFD<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">finally</span> <span class="token punctuation">&#123;</span>
+                <span class="token function">position</span><span class="token punctuation">(</span>pos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> <span class="token function">transferToDirectlyInternal</span><span class="token punctuation">(</span>position<span class="token punctuation">,</span> icount<span class="token punctuation">,</span> target<span class="token punctuation">,</span> targetFD<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>最终由 transferToDirectlyInternal() 调用本地方法 transferTo0() ，尝试以 sendfile 的方式进行数据传输。如果系统内核完全不支持 sendfile，比如 Windows 操作系统，则返回 UNSUPPORTED 并把 transferSupported 标识为 false。如果系统内核不支持 sendfile 的一些特性，比如说低版本的 Linux 内核不支持 DMA gather copy 操作，则返回 UNSUPPORTED_CASE 并把 pipeSupported 或者 fileSupported 标识为 false。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">long</span> <span class="token function">transferToDirectlyInternal</span><span class="token punctuation">(</span><span class="token keyword">long</span> position<span class="token punctuation">,</span> <span class="token keyword">int</span> icount<span class="token punctuation">,</span>
+                                        <span class="token class-name">WritableByteChannel</span> target<span class="token punctuation">,</span>
+                                        <span class="token class-name">FileDescriptor</span> targetFD<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">IOException</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">assert</span> <span class="token operator">!</span>nd<span class="token punctuation">.</span><span class="token function">transferToDirectlyNeedsPositionLock</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span>
+            <span class="token class-name">Thread</span><span class="token punctuation">.</span><span class="token function">holdsLock</span><span class="token punctuation">(</span>positionLock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">long</span> n <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> ti <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        ti <span class="token operator">=</span> threads<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">isOpen</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token keyword">do</span> <span class="token punctuation">&#123;</span>
+            n <span class="token operator">=</span> <span class="token function">transferTo0</span><span class="token punctuation">(</span>fd<span class="token punctuation">,</span> position<span class="token punctuation">,</span> icount<span class="token punctuation">,</span> targetFD<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>n <span class="token operator">==</span> <span class="token class-name">IOStatus</span><span class="token punctuation">.</span><span class="token constant">INTERRUPTED</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isOpen</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">==</span> <span class="token class-name">IOStatus</span><span class="token punctuation">.</span><span class="token constant">UNSUPPORTED_CASE</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>target <span class="token keyword">instanceof</span> <span class="token class-name">SinkChannelImpl</span><span class="token punctuation">)</span>
+                pipeSupported <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>target <span class="token keyword">instanceof</span> <span class="token class-name">FileChannelImpl</span><span class="token punctuation">)</span>
+                fileSupported <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token class-name">IOStatus</span><span class="token punctuation">.</span><span class="token constant">UNSUPPORTED_CASE</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">==</span> <span class="token class-name">IOStatus</span><span class="token punctuation">.</span><span class="token constant">UNSUPPORTED</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            transferSupported <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token class-name">IOStatus</span><span class="token punctuation">.</span><span class="token constant">UNSUPPORTED</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">return</span> <span class="token class-name">IOStatus</span><span class="token punctuation">.</span><span class="token function">normalize</span><span class="token punctuation">(</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">finally</span> <span class="token punctuation">&#123;</span>
+        threads<span class="token punctuation">.</span><span class="token function">remove</span><span class="token punctuation">(</span>ti<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        end <span class="token punctuation">(</span>n <span class="token operator">></span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>本地方法（native method）transferTo0() 通过 JNI（Java Native Interface）调用底层 C 的函数，这个 native 函数（Java_sun_nio_ch_FileChannelImpl_transferTo0）同样位于 JDK 源码包下的 native&#x2F;sun&#x2F;nio&#x2F;ch&#x2F;FileChannelImpl.c 源文件里面。JNI 函数 Java_sun_nio_ch_FileChannelImpl_transferTo0() 基于条件编译对不同的系统进行预编译，下面是 JDK 基于 Linux 系统内核对 transferTo() 提供的调用封装。</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">if</span> <span class="token expression"><span class="token function">defined</span><span class="token punctuation">(</span>__linux__<span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token function">defined</span><span class="token punctuation">(</span>__solaris__<span class="token punctuation">)</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/sendfile.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">elif</span> <span class="token expression"><span class="token function">defined</span><span class="token punctuation">(</span>_AIX<span class="token punctuation">)</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/socket.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">elif</span> <span class="token expression"><span class="token function">defined</span><span class="token punctuation">(</span>_ALLBSD_SOURCE<span class="token punctuation">)</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/types.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/socket.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/uio.h></span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">lseek64</span> <span class="token expression">lseek</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">mmap64</span> <span class="token expression">mmap</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+
+JNIEXPORT jlong JNICALL
+<span class="token function">Java_sun_nio_ch_FileChannelImpl_transferTo0</span><span class="token punctuation">(</span>JNIEnv <span class="token operator">*</span>env<span class="token punctuation">,</span> jobject this<span class="token punctuation">,</span>
+                                            jobject srcFDO<span class="token punctuation">,</span>
+                                            jlong position<span class="token punctuation">,</span> jlong count<span class="token punctuation">,</span>
+                                            jobject dstFDO<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    jint srcFD <span class="token operator">=</span> <span class="token function">fdval</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> srcFDO<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    jint dstFD <span class="token operator">=</span> <span class="token function">fdval</span><span class="token punctuation">(</span>env<span class="token punctuation">,</span> dstFDO<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">if</span> <span class="token expression"><span class="token function">defined</span><span class="token punctuation">(</span>__linux__<span class="token punctuation">)</span></span></span>
+    <span class="token class-name">off64_t</span> offset <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">off64_t</span><span class="token punctuation">)</span>position<span class="token punctuation">;</span>
+    jlong n <span class="token operator">=</span> <span class="token function">sendfile64</span><span class="token punctuation">(</span>dstFD<span class="token punctuation">,</span> srcFD<span class="token punctuation">,</span> <span class="token operator">&amp;</span>offset<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span>count<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> n<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">elif</span> <span class="token expression"><span class="token function">defined</span><span class="token punctuation">(</span>__solaris__<span class="token punctuation">)</span></span></span>
+    result <span class="token operator">=</span> <span class="token function">sendfilev64</span><span class="token punctuation">(</span>dstFD<span class="token punctuation">,</span> <span class="token operator">&amp;</span>sfv<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>numBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>    
+    <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">elif</span> <span class="token expression"><span class="token function">defined</span><span class="token punctuation">(</span>__APPLE__<span class="token punctuation">)</span></span></span>
+    result <span class="token operator">=</span> <span class="token function">sendfile</span><span class="token punctuation">(</span>srcFD<span class="token punctuation">,</span> dstFD<span class="token punctuation">,</span> position<span class="token punctuation">,</span> <span class="token operator">&amp;</span>numBytes<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>对 Linux、Solaris 以及 Apple 系统而言，transferTo0() 函数底层会执行 sendfile64 这个系统调用完成零拷贝操作，sendfile64() 函数的原型如下：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/sendfile.h></span></span>
+
+<span class="token class-name">ssize_t</span> <span class="token function">sendfile64</span><span class="token punctuation">(</span><span class="token keyword">int</span> out_fd<span class="token punctuation">,</span> <span class="token keyword">int</span> in_fd<span class="token punctuation">,</span> <span class="token class-name">off_t</span> <span class="token operator">*</span>offset<span class="token punctuation">,</span> <span class="token class-name">size_t</span> count<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>下面简单介绍一下 sendfile64() 函数各个参数的含义：</p>
+<ul>
+<li><code>out_fd</code>：待写入的文件描述符</li>
+<li><code>in_fd</code>：待读取的文件描述符</li>
+<li><code>offset</code>：指定 in_fd 对应文件流的读取位置，如果为空，则默认从起始位置开始</li>
+<li><code>count</code>：指定在文件描述符 in_fd 和 out_fd 之间传输的字节数</li>
+</ul>
+<p>在 Linux 2.6.3 之前，out_fd 必须是一个 socket，而从 Linux 2.6.3 以后，out_fd 可以是任何文件。也就是说，sendfile64() 函数不仅可以进行网络文件传输，还可以对本地文件实现零拷贝操作。</p>
+<h2 id="其它的零拷贝实现"><a href="#其它的零拷贝实现" class="headerlink" title="其它的零拷贝实现"></a>其它的零拷贝实现</h2><h3 id="Netty零拷贝"><a href="#Netty零拷贝" class="headerlink" title="Netty零拷贝"></a>Netty零拷贝</h3><p>Netty 中的零拷贝和上面提到的操作系统层面上的零拷贝不太一样, 我们所说的 Netty 零拷贝完全是基于（Java 层面）用户态的，它的更多的是偏向于数据操作优化这样的概念，具体表现在以下几个方面：</p>
+<p>Netty 通过 DefaultFileRegion 类对 java.nio.channels.FileChannel 的 tranferTo() 方法进行包装，在文件传输时可以将文件缓冲区的数据直接发送到目的通道（Channel）</p>
+<p>ByteBuf 可以通过 wrap 操作把字节数组、ByteBuf、ByteBuffer 包装成一个 ByteBuf 对象, 进而避免了拷贝操作 ByteBuf 支持 slice 操作, 因此可以将 ByteBuf 分解为多个共享同一个存储区域的 ByteBuf，避免了内存的拷贝 Netty 提供了 CompositeByteBuf 类，它可以将多个 ByteBuf 合并为一个逻辑上的 ByteBuf，避免了各个 ByteBuf 之间的拷贝 其中第 1 条属于操作系统层面的零拷贝操作，后面 3 条只能算用户层面的数据操作优化。</p>
+<h3 id="RocketMQ和Kafka对比"><a href="#RocketMQ和Kafka对比" class="headerlink" title="RocketMQ和Kafka对比"></a>RocketMQ和Kafka对比</h3><p>RocketMQ 选择了 mmap + write 这种零拷贝方式，适用于业务级消息这种小块文件的数据持久化和传输；而 Kafka 采用的是 sendfile 这种零拷贝方式，适用于系统日志消息这种高吞吐量的大块文件的数据持久化和传输。但是值得注意的一点是，Kafka 的索引文件使用的是 mmap + write 方式，数据文件使用的是 sendfile 方式。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262219649.jpg" alt="img"></p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li>本文主要整理自 <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/83398714">https://zhuanlan.zhihu.com/p/83398714</a></li>
+<li>作者：零壹技术栈</li>
+</ul>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Hubert Wong</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://hubertwongcn.github.io/2023/12/26/13-java-nio-ling-kao-bei-shi-xian/">https://hubertwongcn.github.io/2023/12/26/13-java-nio-ling-kao-bei-shi-xian/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Hubert Wong</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/Java/">
+                                    <span class="chip bg-color">Java</span>
+                                </a>
+                            
+                                <a href="/tags/IO/">
+                                    <span class="chip bg-color">IO</span>
+                                </a>
+                            
+                                <a href="/tags/NIO/">
+                                    <span class="chip bg-color">NIO</span>
+                                </a>
+                            
+                                <a href="/tags/%E9%9B%B6%E6%8B%B7%E8%B4%9D/">
+                                    <span class="chip bg-color">零拷贝</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+        <style>
+    .valine-card {
+        margin: 1.5rem auto;
+    }
+
+    .valine-card .card-content {
+        padding: 20px 20px 5px 20px;
+    }
+
+    #vcomments textarea {
+        box-sizing: border-box;
+        background: url("/medias/comment_bg.png") 100% 100% no-repeat;
+    }
+
+    #vcomments p {
+        margin: 2px 2px 10px;
+        font-size: 1.05rem;
+        line-height: 1.78rem;
+    }
+
+    #vcomments blockquote p {
+        text-indent: 0.2rem;
+    }
+
+    #vcomments a {
+        padding: 0 2px;
+        color: #4cbf30;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    #vcomments img {
+        max-width: 100%;
+        height: auto;
+        cursor: pointer;
+    }
+
+    #vcomments ol li {
+        list-style-type: decimal;
+    }
+
+    #vcomments ol,
+    ul {
+        display: block;
+        padding-left: 2em;
+        word-spacing: 0.05rem;
+    }
+
+    #vcomments ul li,
+    ol li {
+        display: list-item;
+        line-height: 1.8rem;
+        font-size: 1rem;
+    }
+
+    #vcomments ul li {
+        list-style-type: disc;
+    }
+
+    #vcomments ul ul li {
+        list-style-type: circle;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    #vcomments table, th, td {
+        border: 0;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments h1 {
+        font-size: 1.85rem;
+        font-weight: bold;
+        line-height: 2.2rem;
+    }
+
+    #vcomments h2 {
+        font-size: 1.65rem;
+        font-weight: bold;
+        line-height: 1.9rem;
+    }
+
+    #vcomments h3 {
+        font-size: 1.45rem;
+        font-weight: bold;
+        line-height: 1.7rem;
+    }
+
+    #vcomments h4 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    #vcomments h5 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        line-height: 1.4rem;
+    }
+
+    #vcomments h6 {
+        font-size: 1rem;
+        line-height: 1.3rem;
+    }
+
+    #vcomments p {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    #vcomments hr {
+        margin: 12px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
+    }
+
+    #vcomments blockquote {
+        margin: 15px 0;
+        border-left: 5px solid #42b983;
+        padding: 1rem 0.8rem 0.3rem 0.8rem;
+        color: #666;
+        background-color: rgba(66, 185, 131, .1);
+    }
+
+    #vcomments pre {
+        font-family: monospace, monospace;
+        padding: 1.2em;
+        margin: .5em 0;
+        background: #272822;
+        overflow: auto;
+        border-radius: 0.3em;
+        tab-size: 4;
+    }
+
+    #vcomments code {
+        font-family: monospace, monospace;
+        padding: 1px 3px;
+        font-size: 0.92rem;
+        color: #e96900;
+        background-color: #f8f8f8;
+        border-radius: 2px;
+    }
+
+    #vcomments pre code {
+        font-family: monospace, monospace;
+        padding: 0;
+        color: #e8eaf6;
+        background-color: #272822;
+    }
+
+    #vcomments pre[class*="language-"] {
+        padding: 1.2em;
+        margin: .5em 0;
+    }
+
+    #vcomments code[class*="language-"],
+    pre[class*="language-"] {
+        color: #e8eaf6;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+
+    #vcomments b,
+    strong {
+        font-weight: bold;
+    }
+
+    #vcomments dfn {
+        font-style: italic;
+    }
+
+    #vcomments small {
+        font-size: 85%;
+    }
+
+    #vcomments cite {
+        font-style: normal;
+    }
+
+    #vcomments mark {
+        background-color: #fcf8e3;
+        padding: .2em;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+</style>
+
+<div class="card valine-card" data-aos="fade-up">
+    <div class="comment_headling" style="font-size: 20px; font-weight: 700; position: relative; padding-left: 20px; top: 15px; padding-bottom: 5px;">
+        <i class="fas fa-comments fa-fw" aria-hidden="true"></i>
+        <span>评论</span>
+    </div>
+    <div id="vcomments" class="card-content" style="display: grid">
+    </div>
+</div>
+
+<script src="/libs/valine/av-min.js"></script>
+<script src="https://unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        appId: 'oTH4fV5e9iBU62LIVFq44U80-gzGzoHsz',
+        appKey: 'oTH4fV5e9iBU62LIVFq44U80-gzGzoHsz',
+        serverURLs: 'https://oth4fv5e.lc-cn-n1-shared.com',
+        notify: 'false' === 'true',
+        verify: 'false' === 'true',
+        visitor: 'false' === 'true',
+        avatar: 'mm',
+        pageSize: '10',
+        lang: 'en',
+        placeholder: 'just go go'
+    });
+</script>
+
+<!--酷Q推送-->
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2023/12/26/1-java8-te-xing-zhi-shi-ti-xi-xiang-jie/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="1.Java8特性知识体系详解">
+                        
+                        <span class="card-title">1.Java8特性知识体系详解</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2023-12-26
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Java/" class="post-category">
+                                    Java
+                                </a>
+                            
+                            <a href="/categories/Java/%E6%96%B0%E7%89%B9%E6%80%A7/" class="post-category">
+                                    新特性
+                                </a>
+                            
+                            <a href="/categories/Java/%E6%96%B0%E7%89%B9%E6%80%A7/Java8/" class="post-category">
+                                    Java8
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Java/">
+                        <span class="chip bg-color">Java</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
+                        <span class="chip bg-color">新特性</span>
+                    </a>
+                    
+                    <a href="/tags/Java8/">
+                        <span class="chip bg-color">Java8</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2023/12/26/12-java-n-a-io-kuang-jia-netty/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/10.jpg" class="responsive-img" alt="12.Java N(A)IO - 框架: Netty">
+                        
+                        <span class="card-title">12.Java N(A)IO - 框架: Netty</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2023-12-26
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Java/" class="post-category">
+                                    Java
+                                </a>
+                            
+                            <a href="/categories/Java/IO/" class="post-category">
+                                    IO
+                                </a>
+                            
+                            <a href="/categories/Java/IO/NIO/" class="post-category">
+                                    NIO
+                                </a>
+                            
+                            <a href="/categories/Java/IO/NIO/Netty/" class="post-category">
+                                    Netty
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Java/">
+                        <span class="chip bg-color">Java</span>
+                    </a>
+                    
+                    <a href="/tags/IO/">
+                        <span class="chip bg-color">IO</span>
+                    </a>
+                    
+                    <a href="/tags/NIO/">
+                        <span class="chip bg-color">NIO</span>
+                    </a>
+                    
+                    <a href="/tags/Netty/">
+                        <span class="chip bg-color">Netty</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+
+  <!-- 是否加载使用自带的 prismjs. -->
+  <script type="text/javascript" src="/libs/prism/prism.min.js"></script>
+
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('3'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2023</span>
+            
+            <a href="/about" target="_blank">Hubert Wong</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            
+                <span id="translate">|&nbsp;繁/简：</span><a id="translateLink" href="javascript:translatePage();">繁</a>
+            
+            <br>
+            
+                &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                        class="white-color">675.3k</span>
+            
+            
+            
+                
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/HubertWongCN" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:hubertwongcn@gmail.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 白天和黑夜主题 -->
+<div class="stars-con">
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>  
+</div>
+
+<script>
+    function switchNightMode() {
+        $('<div class="Cuteen_DarkSky"><div class="Cuteen_DarkPlanet"></div></div>').appendTo($('body')),
+        setTimeout(function () {
+            $('body').hasClass('DarkMode') 
+            ? ($('body').removeClass('DarkMode'), localStorage.setItem('isDark', '0'), $('#sum-moon-icon').removeClass("fa-sun").addClass('fa-moon')) 
+            : ($('body').addClass('DarkMode'), localStorage.setItem('isDark', '1'), $('#sum-moon-icon').addClass("fa-sun").removeClass('fa-moon')),
+            
+            setTimeout(function () {
+            $('.Cuteen_DarkSky').fadeOut(1e3, function () {
+                $(this).remove()
+            })
+            }, 2e3)
+        })
+    }
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+        <script type="text/javascript" src="/js/tw_cn.js"></script>
+        <script type="text/javascript">
+          var defaultEncoding = 2; //网站编写字体是否繁体，1-繁体，2-简体
+          var translateDelay = 0; //延迟时间,若不在前, 要设定延迟翻译时间, 如100表示100ms,默认为0
+          var cookieDomain = "https://hubertwongcn.github.io"; //Cookie地址, 一定要设定, 通常为你的网址
+          var msgToTraditionalChinese = "繁"; //此处可以更改为你想要显示的文字
+          var msgToSimplifiedChinese = "简"; //同上，但两处均不建议更改
+          var translateButtonId = "translateLink"; //默认互换id
+          translateInitilization();
+        </script>
+    
+    
+    
+
+    <!-- 雪花特效 -->
+     
+        <script type="text/javascript">
+            // 只在桌面版网页启用特效
+            var windowWidth = $(window).width();
+            if (windowWidth > 768) {
+                document.write('<script type="text/javascript" src="/libs/others/snow.js"><\/script>');
+            }
+        </script>
+    
+
+    <!-- 鼠标星星特效 -->
+    
+
+     
+        <script src="https://ssl.captcha.qq.com/TCaptcha.js"></script>
+        <script src="/libs/others/TencentCaptcha.js"></script>
+        <button id="TencentCaptcha" data-appid="xxxxxxxxxx" data-cbfn="callback" type="button" hidden></button>
+    
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+        <script src="//code.tidio.co/qst6g32qs2bibjqjp6oqgpe69j3qtrn9.js"></script>
+        <script>
+            $(document).ready(function () {
+                setInterval(change_Tidio, 50);
+                function change_Tidio() {
+                    var tidio=$("#tidio-chat iframe");
+                    if(tidio.css("display")=="block"&& $(window).width()>977 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" &&$(window).width()>977)>0? "-40px" : ($("div.toc-title").length&&$(window).width()>977)>0?"85px":"20px";
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.height=parseInt(tidio.css("height"))>=520?"520px":tidio.css("height");
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()>601 &&$(window).width()<992 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && 601< $(window).width()<992)>0? "-40px":"20px" ;
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))<230){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && $(window).width()<601)>0? "-10px":"45px" ;
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    if( tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))>=230){
+                        document.getElementById("tidio-chat-iframe").style.zIndex="998";
+                    }
+                }
+            });
+        </script>
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
