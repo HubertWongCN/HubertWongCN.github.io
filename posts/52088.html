@@ -476,7 +476,7 @@ Java提供了种类丰富的锁，每种锁因其特性的不同，在适当的�
 <span class="token keyword">private</span> <span class="token class-name">AtomicInteger</span> atomicInteger <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">AtomicInteger</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// 需要保证多个线程使用的是同一个AtomicInteger</span>
 atomicInteger<span class="token punctuation">.</span><span class="token function">incrementAndGet</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//执行自增1</span></code></pre>
 
-<p>通过调用方式示例，我们可以发现悲观锁基本都是在显式的锁定之后再操作同步资源，而乐观锁则直接去操作同步资源。那么，为何乐观锁能够做到不锁定同步资源也可以正确的实现线程同步呢？具体可以参看 <a href="/posts/undefined.html" title="9.JUC原子类: CAS, Unsafe和原子类详解">JUC原子类: CAS, Unsafe和原子类详解</a>。</p>
+<p>通过调用方式示例，我们可以发现悲观锁基本都是在显式的锁定之后再操作同步资源，而乐观锁则直接去操作同步资源。那么，为何乐观锁能够做到不锁定同步资源也可以正确的实现线程同步呢？具体可以参看 <a href="/posts/62512.html" title="9.JUC原子类: CAS, Unsafe和原子类详解">JUC原子类: CAS, Unsafe和原子类详解</a>。</p>
 <h2 id="2-自旋锁-VS-适应性自旋锁"><a href="#2-自旋锁-VS-适应性自旋锁" class="headerlink" title="2. 自旋锁 VS 适应性自旋锁"></a>2. 自旋锁 VS 适应性自旋锁</h2><blockquote>
 <p>在介绍自旋锁前，我们需要介绍一些前提知识来帮助大家明白自旋锁的概念。</p>
 </blockquote>
@@ -486,13 +486,13 @@ atomicInteger<span class="token punctuation">.</span><span class="token function
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261909775.png" alt="img"></p>
 <p>自旋锁本身是有缺点的，它不能代替阻塞。自旋等待虽然避免了线程切换的开销，但它要占用处理器时间。如果锁被占用的时间很短，自旋等待的效果就会非常好。反之，如果锁被占用的时间很长，那么自旋的线程只会白浪费处理器资源。所以，自旋等待的时间必须要有一定的限度，如果自旋超过了限定次数（默认是10次，可以使用-XX:PreBlockSpin来更改）没有成功获得锁，就应当挂起线程。</p>
 <p>自旋锁的实现原理同样也是CAS，AtomicInteger中调用unsafe进行自增操作的源码中的do-while循环就是一个自旋操作，如果修改数值失败则通过循环来执行自旋，直至修改成功。</p>
-<p>自旋锁相关可以看<a href="/posts/undefined.html#自旋锁与自适应自旋锁">关键字 - synchronized详解 - 自旋锁与自适应自旋锁</a></p>
+<p>自旋锁相关可以看<a href="/posts/9336.html#自旋锁与自适应自旋锁">关键字 - synchronized详解 - 自旋锁与自适应自旋锁</a></p>
 <h2 id="3-无锁-VS-偏向锁-VS-轻量级锁-VS-重量级锁"><a href="#3-无锁-VS-偏向锁-VS-轻量级锁-VS-重量级锁" class="headerlink" title="3. 无锁 VS 偏向锁 VS 轻量级锁 VS 重量级锁"></a>3. 无锁 VS 偏向锁 VS 轻量级锁 VS 重量级锁</h2><blockquote>
 <p>这四种锁是指锁的状态，专门针对synchronized的。在介绍这四种锁状态之前还需要介绍一些额外的知识。</p>
 </blockquote>
 <p>总结而言： 偏向锁通过对比Mark Word解决加锁问题，避免执行CAS操作。而轻量级锁是通过用CAS操作和自旋来解决加锁问题，避免线程阻塞和唤醒而影响性能。重量级锁是将除了拥有锁的线程以外的线程都阻塞。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261922967.png" alt="img"></p>
-<p>相关可以看<a href="/posts/undefined.html#锁的类型">关键字 - synchronized详解 - 锁的类型</a></p>
+<p>相关可以看<a href="/posts/9336.html#锁的类型">关键字 - synchronized详解 - 锁的类型</a></p>
 <h2 id="4-公平锁-VS-非公平锁"><a href="#4-公平锁-VS-非公平锁" class="headerlink" title="4. 公平锁 VS 非公平锁"></a>4. 公平锁 VS 非公平锁</h2><p>公平锁是指多个线程按照申请锁的顺序来获取锁，线程直接进入队列中排队，队列中的第一个线程才能获得锁。公平锁的优点是等待锁的线程不会饿死。缺点是整体吞吐效率相对非公平锁要低，等待队列中除第一个线程以外的所有线程都会阻塞，CPU唤醒阻塞线程的开销比非公平锁大。</p>
 <p>非公平锁是多个线程加锁时直接尝试获取锁，获取不到才会到等待队列的队尾等待。但如果此时锁刚好可用，那么这个线程可以无需阻塞直接获取到锁，所以非公平锁有可能出现后申请锁的线程先获取锁的场景。非公平锁的优点是可以减少唤起线程的开销，整体的吞吐效率高，因为线程有几率不阻塞直接获得锁，CPU不必唤醒所有线程。缺点是处于等待队列中的线程可能会饿死，或者等很久才会获得锁。</p>
 <p>直接用语言描述可能有点抽象，这里作者用从别处看到的一个例子来讲述一下公平锁和非公平锁。</p>
@@ -500,7 +500,7 @@ atomicInteger<span class="token punctuation">.</span><span class="token function
 <p>如上图所示，假设有一口水井，有管理员看守，管理员有一把锁，只有拿到锁的人才能够打水，打完水要把锁还给管理员。每个过来打水的人都要管理员的允许并拿到锁之后才能去打水，如果前面有人正在打水，那么这个想要打水的人就必须排队。管理员会查看下一个要去打水的人是不是队伍里排最前面的人，如果是的话，才会给你锁让你去打水；如果你不是排第一的人，就必须去队尾排队，这就是公平锁。</p>
 <p>但是对于非公平锁，管理员对打水的人没有要求。即使等待队伍里有排队等待的人，但如果在上一个人刚打完水把锁还给管理员而且管理员还没有允许等待队伍里下一个人去打水时，刚好来了一个插队的人，这个插队的人是可以直接从管理员那里拿到锁去打水，不需要排队，原本排队等待的人只能继续等待。如下图所示：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261922905.png"></p>
-<p>更多请参看<a href="/posts/undefined.html" title="12.JUC锁: ReentrantLock详解">JUC - ReentrantLock详解</a>。</p>
+<p>更多请参看<a href="/posts/47686.html" title="12.JUC锁: ReentrantLock详解">JUC - ReentrantLock详解</a>。</p>
 <h2 id="5-可重入锁-VS-非可重入锁"><a href="#5-可重入锁-VS-非可重入锁" class="headerlink" title="5. 可重入锁 VS 非可重入锁"></a>5. 可重入锁 VS 非可重入锁</h2><p>可重入锁又名递归锁，是指在同一个线程在外层方法获取锁的时候，再进入该线程的内层方法会自动获取锁（前提锁对象得是同一个对象或者class），不会因为之前已经获取过还没释放而阻塞。Java中ReentrantLock和synchronized都是可重入锁，可重入锁的一个优点是可一定程度避免死锁。下面用示例代码来进行分析：</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Widget</span> <span class="token punctuation">{</span>
     <span class="token keyword">public</span> <span class="token keyword">synchronized</span> <span class="token keyword">void</span> <span class="token function">doSomething</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
@@ -527,10 +527,10 @@ atomicInteger<span class="token punctuation">.</span><span class="token function
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261924525.png" alt="img"></p>
 <p>更多请参看：</p>
 <ul>
-<li><a href="/posts/undefined.html" title="10.JUC锁: LockSupport详解">JUC锁: LockSupport详解</a></li>
-<li><a href="/posts/undefined.html" title="11.JUC锁: 锁核心类AQS详解">JUC锁: AbstractQueuedSynchronizer详解</a></li>
-<li><a href="/posts/undefined.html" title="12.JUC锁: ReentrantLock详解">JUC锁 - ReentrantLock详解</a></li>
-<li><a href="/posts/undefined.html" title="5.关键字: synchronized详解">关键字 - synchronized详解</a></li>
+<li><a href="/posts/60945.html" title="10.JUC锁: LockSupport详解">JUC锁: LockSupport详解</a></li>
+<li><a href="/posts/16863.html" title="11.JUC锁: 锁核心类AQS详解">JUC锁: AbstractQueuedSynchronizer详解</a></li>
+<li><a href="/posts/47686.html" title="12.JUC锁: ReentrantLock详解">JUC锁 - ReentrantLock详解</a></li>
+<li><a href="/posts/9336.html" title="5.关键字: synchronized详解">关键字 - synchronized详解</a></li>
 </ul>
 <h2 id="6-独享锁-排他锁-VS-共享锁"><a href="#6-独享锁-排他锁-VS-共享锁" class="headerlink" title="6. 独享锁(排他锁) VS 共享锁"></a>6. 独享锁(排他锁) VS 共享锁</h2><blockquote>
 <p>独享锁和共享锁同样是一种概念。我们先介绍一下具体的概念，然后通过ReentrantLock和ReentrantReadWriteLock的源码来介绍独享锁和共享锁。</p>
@@ -544,7 +544,7 @@ atomicInteger<span class="token punctuation">.</span><span class="token function
 <p>在ReentrantReadWriteLock里面，读锁和写锁的锁主体都是Sync，但读锁和写锁的加锁方式不一样。读锁是共享锁，写锁是独享锁。读锁的共享锁可保证并发读非常高效，而读写、写读、写写的过程互斥，因为读锁和写锁是分离的。所以ReentrantReadWriteLock的并发性相比一般的互斥锁有了很大提升。</p>
 <p>更多请参看</p>
 <ul>
-<li><a href="/posts/undefined.html" title="13.JUC锁: ReentrantReadWriteLock详解">JUC锁: ReentrantReadWriteLock详解</a></li>
+<li><a href="/posts/58976.html" title="13.JUC锁: ReentrantReadWriteLock详解">JUC锁: ReentrantReadWriteLock详解</a></li>
 </ul>
 <h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本文Java中常用的锁以及常见的锁的概念进行了基本介绍，并从源码以及实际应用的角度进行了对比分析。限于篇幅以及个人水平，没有在本篇文章中对所有内容进行深层次的讲解。</p>
 <p>其实Java本身已经对锁本身进行了良好的封装，降低了研发同学在平时工作中的使用难度。但是研发同学也需要熟悉锁的底层原理，不同场景下选择最适合的锁。而且源码中的思路都是非常好的思路，也是值得大家去学习和借鉴的。</p>

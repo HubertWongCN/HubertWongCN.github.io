@@ -472,7 +472,7 @@ JUC中多数类是通过volatile和CAS来实现的，CAS本质上提供的是一
 <li>非阻塞同步: CAS, AtomicXXXX</li>
 <li>无同步方案: 栈封闭，Thread Local，可重入代码</li>
 </ul>
-<p>具体可以参看：<a href="/posts/undefined.html#线程安全的实现方法">线程安全的实现方法</a>，这里我们将对CAS重点阐释。</p>
+<p>具体可以参看：<a href="/posts/6919.html#线程安全的实现方法">线程安全的实现方法</a>，这里我们将对CAS重点阐释。</p>
 <h3 id="什么是CAS"><a href="#什么是CAS" class="headerlink" title="什么是CAS"></a>什么是CAS</h3><p>CAS的全称为Compare-And-Swap，直译就是对比交换。是一条CPU的原子指令，其作用是让CPU先进行比较两个值是否相等，然后原子地更新某个位置的值，经过调查发现，其实现方式是基于硬件平台的汇编指令，就是说CAS是靠硬件实现的，JVM只是封装了汇编调用，那些AtomicInteger类便是使用了这些封装后的接口。   简单解释：CAS操作需要输入两个数值，一个旧值(期望操作前的值)和一个新值，在操作期间先比较下在旧值有没有发生变化，如果没有发生变化，才交换成新值，发生了变化则不交换。</p>
 <p>CAS操作是原子性的，所以多线程并发使用CAS更新数据时，可以不使用锁。JDK中大量使用了CAS来更新数据而防止加锁(synchronized 重量级锁)来保持原子更新。</p>
 <p>相信sql大家都熟悉，类似sql中的条件更新一样：update set id=3 from table where id=2。因为单条sql执行具有原子性，如果有多个线程同时执行此sql语句，只有一条能更新成功。</p>
