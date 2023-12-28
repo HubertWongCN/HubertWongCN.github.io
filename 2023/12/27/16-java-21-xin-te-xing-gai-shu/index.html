@@ -489,19 +489,68 @@
 <p>虚拟线程的实现方式与虚拟内存类似。<br>为了模拟大量内存，操作系统将较大的虚拟地址空间映射到有限的 RAM。<br>同样，为了模拟大量线程，Java 运行时将大量虚拟线程映射到少量操作系统线程。<br>与平台线程不同，虚拟线程通常具有浅调用堆栈，只执行单个 HTTP 客户端调用或单个 JDBC 查询。<br>尽管虚拟线程支持线程局部变量，但您应该仔细考虑使用它们，因为单个 JVM 可能支持数百万个虚拟线程。</p>
 </blockquote>
 <p><strong>虚拟线程适合运行大部分时间处于阻塞状态、通常等待 I&#x2F;O 操作完成的任务。</strong><br><strong>但是，它们不适用于长时间运行的 CPU 密集型操作。</strong></p>
-<h3 id="虚拟线程用法"><a href="#虚拟线程用法" class="headerlink" title="虚拟线程用法"></a>虚拟线程用法</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Thread thread = Thread.ofVirtual().start(() -&gt; System.out.println(&quot;Hello&quot;));</span><br><span class="line">thread.join();</span><br></pre></td></tr></table></figure>
+<h3 id="虚拟线程用法"><a href="#虚拟线程用法" class="headerlink" title="虚拟线程用法"></a>虚拟线程用法</h3><pre class="language-text" data-language="text"><code class="language-text">Thread thread = Thread.ofVirtual().start(() -> System.out.println("Hello"));
+thread.join();</code></pre>
 
 <p>或者</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">try &#123;</span><br><span class="line">            Thread.Builder builder = Thread.ofVirtual().name(&quot;MyThread&quot;);</span><br><span class="line">            Runnable task = () -&gt; &#123;</span><br><span class="line">                System.out.println(&quot;Running thread&quot;);</span><br><span class="line">            &#125;;</span><br><span class="line">            Thread t = builder.start(task);</span><br><span class="line">            System.out.println(&quot;Thread t name: &quot; + t.getName());</span><br><span class="line">            t.join();</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-text" data-language="text"><code class="language-text">try &#123;
+            Thread.Builder builder = Thread.ofVirtual().name("MyThread");
+            Runnable task = () -> &#123;
+                System.out.println("Running thread");
+            &#125;;
+            Thread t = builder.start(task);
+            System.out.println("Thread t name: " + t.getName());
+            t.join();
+        &#125; catch (InterruptedException e) &#123;
+            e.printStackTrace();
+        &#125;</code></pre>
 
 <p>或者</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">public class CreateNamedThreadsWithBuilders &#123;</span><br><span class="line">    </span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        </span><br><span class="line">        try &#123;</span><br><span class="line">            Thread.Builder builder =</span><br><span class="line">                Thread.ofVirtual().name(&quot;worker-&quot;, 0);</span><br><span class="line"></span><br><span class="line">            Runnable task = () -&gt; &#123;</span><br><span class="line">                System.out.println(&quot;Thread ID: &quot; +</span><br><span class="line">                    Thread.currentThread().threadId());</span><br><span class="line">            &#125;;            </span><br><span class="line"></span><br><span class="line">            // name &quot;worker-0&quot;</span><br><span class="line">            Thread t1 = builder.start(task);   </span><br><span class="line">            t1.join();</span><br><span class="line">            System.out.println(t1.getName() + &quot; terminated&quot;);</span><br><span class="line"></span><br><span class="line">            // name &quot;worker-1&quot;</span><br><span class="line">            Thread t2 = builder.start(task);   </span><br><span class="line">            t2.join();  </span><br><span class="line">            System.out.println(t2.getName() + &quot; terminated&quot;);</span><br><span class="line">            </span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-text" data-language="text"><code class="language-text">public class CreateNamedThreadsWithBuilders &#123;
+    
+    public static void main(String[] args) &#123;
+        
+        try &#123;
+            Thread.Builder builder =
+                Thread.ofVirtual().name("worker-", 0);
+
+            Runnable task = () -> &#123;
+                System.out.println("Thread ID: " +
+                    Thread.currentThread().threadId());
+            &#125;;            
+
+            // name "worker-0"
+            Thread t1 = builder.start(task);   
+            t1.join();
+            System.out.println(t1.getName() + " terminated");
+
+            // name "worker-1"
+            Thread t2 = builder.start(task);   
+            t2.join();  
+            System.out.println(t2.getName() + " terminated");
+            
+        &#125; catch (InterruptedException e) &#123;
+            e.printStackTrace();
+        &#125;
+    &#125;
+&#125;</code></pre>
 
 <p>或者</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">try (ExecutorService myExecutor =</span><br><span class="line">            Executors.newVirtualThreadPerTaskExecutor()) &#123;</span><br><span class="line">            Future&lt;?&gt; future =</span><br><span class="line">                myExecutor.submit(() -&gt; System.out.println(&quot;Running thread&quot;));</span><br><span class="line">            future.get();</span><br><span class="line">            System.out.println(&quot;Task completed&quot;);</span><br><span class="line">        &#125; catch (InterruptedException | ExecutionException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-text" data-language="text"><code class="language-text">try (ExecutorService myExecutor =
+            Executors.newVirtualThreadPerTaskExecutor()) &#123;
+            Future&lt;?> future =
+                myExecutor.submit(() -> System.out.println("Running thread"));
+            future.get();
+            System.out.println("Task completed");
+        &#125; catch (InterruptedException | ExecutionException e) &#123;
+            e.printStackTrace();
+        &#125;</code></pre>
 
 <p><strong>以上是 Java20 文档的用法，实际使用时我发现还可以这样：</strong></p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Thread.startVirtualThread(() -&gt; &#123;</span><br><span class="line">                // do something</span><br><span class="line">               </span><br><span class="line">            &#125;);</span><br></pre></td></tr></table></figure>
+<pre class="language-text" data-language="text"><code class="language-text">Thread.startVirtualThread(() -> &#123;
+                // do something
+               
+            &#125;);</code></pre>
 
 <h3 id="平台线程和虚拟线程对比测试"><a href="#平台线程和虚拟线程对比测试" class="headerlink" title="平台线程和虚拟线程对比测试"></a>平台线程和虚拟线程对比测试</h3><p>为了测试对比，我建了一个项目</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271323413.png" alt="img"></p>
@@ -516,10 +565,20 @@
 <p>但是由于是本地测试，且用例比较简陋，无法完全得出准确结论。<br>日后大家有实际 IO 密集性多线程场景可以实际感受下。</p>
 <h3 id="线程池？忘了它吧"><a href="#线程池？忘了它吧" class="headerlink" title="线程池？忘了它吧"></a>线程池？忘了它吧</h3><p>开发人员通常会将应用程序代码从基于线程池的传统 ExecutorService 迁移到虚拟线程每任务 ExecutorService。<br>线程池和所有资源池一样，旨在共享昂贵的资源，<br>但虚拟线程并不昂贵，而且永远不需要将它们池化。</p>
 <h2 id="七、一颗语法糖？Java21-新特性：Record-Patterns"><a href="#七、一颗语法糖？Java21-新特性：Record-Patterns" class="headerlink" title="七、一颗语法糖？Java21 新特性：Record Patterns"></a>七、一颗语法糖？Java21 新特性：Record Patterns</h2><p>一个例子感受一下新特性：Record Patterns<br>before：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">static void printSum(Object obj) &#123;</span><br><span class="line">    if (obj instanceof Point p) &#123;</span><br><span class="line">        int x = p.x();</span><br><span class="line">        int y = p.y();</span><br><span class="line">        System.out.println(x+y);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-text" data-language="text"><code class="language-text">static void printSum(Object obj) &#123;
+    if (obj instanceof Point p) &#123;
+        int x = p.x();
+        int y = p.y();
+        System.out.println(x+y);
+    &#125;
+&#125;</code></pre>
 
 <p>after:</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">static void printSum(Object obj) &#123;</span><br><span class="line">    if (obj instanceof Point(int x, int y)) &#123;</span><br><span class="line">        System.out.println(x+y);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-text" data-language="text"><code class="language-text">static void printSum(Object obj) &#123;
+    if (obj instanceof Point(int x, int y)) &#123;
+        System.out.println(x+y);
+    &#125;
+&#125;</code></pre>
 
                 
             </div>
@@ -951,7 +1010,7 @@
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">683.3k</span>
+                        class="white-color">675.3k</span>
             
             
             

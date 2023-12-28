@@ -376,7 +376,7 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    222
+                    204
                 </div>
                 
 
@@ -410,7 +410,41 @@
 <p>分治算法的基本思想是将一个规模为N的问题分解为K个规模较小的子问题，这些子问题相互独立且与原问题性质相同。求出子问题的解，就可得到原问题的解。</p>
 </blockquote>
 <h2 id="分治相关题目"><a href="#分治相关题目" class="headerlink" title="分治相关题目"></a>分治相关题目</h2><h3 id="给表达式加括号"><a href="#给表达式加括号" class="headerlink" title="给表达式加括号"></a>给表达式加括号</h3><p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/different-ways-to-add-parentheses/description/">241. Different Ways to Add Parentheses (Medium)</a></p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">Input: &quot;2-1-1&quot;.</span><br><span class="line"></span><br><span class="line">((2-1)-1) = 0</span><br><span class="line">(2-(1-1)) = 2</span><br><span class="line"></span><br><span class="line">Output : [0, 2]</span><br><span class="line">public List<span class="tag">&lt;<span class="name">Integer</span>&gt;</span> diffWaysToCompute(String input) &#123;</span><br><span class="line">    List<span class="tag">&lt;<span class="name">Integer</span>&gt;</span> ways = new ArrayList<span class="tag">&lt;&gt;</span>();</span><br><span class="line">    for (int i = 0; i &lt; input.length(); i++) &#123;</span><br><span class="line">        char c = input.charAt(i);</span><br><span class="line">        if (c == &#x27;+&#x27; || c == &#x27;-&#x27; || c == &#x27;*&#x27;) &#123;</span><br><span class="line">            List<span class="tag">&lt;<span class="name">Integer</span>&gt;</span> left = diffWaysToCompute(input.substring(0, i));</span><br><span class="line">            List<span class="tag">&lt;<span class="name">Integer</span>&gt;</span> right = diffWaysToCompute(input.substring(i + 1));</span><br><span class="line">            for (int l : left) &#123;</span><br><span class="line">                for (int r : right) &#123;</span><br><span class="line">                    switch (c) &#123;</span><br><span class="line">                        case &#x27;+&#x27;:</span><br><span class="line">                            ways.add(l + r);</span><br><span class="line">                            break;</span><br><span class="line">                        case &#x27;-&#x27;:</span><br><span class="line">                            ways.add(l - r);</span><br><span class="line">                            break;</span><br><span class="line">                        case &#x27;*&#x27;:</span><br><span class="line">                            ways.add(l * r);</span><br><span class="line">                            break;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    if (ways.size() == 0) &#123;</span><br><span class="line">        ways.add(Integer.valueOf(input));</span><br><span class="line">    &#125;</span><br><span class="line">    return ways;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-markup" data-language="markup"><code class="language-markup">Input: "2-1-1".
+
+((2-1)-1) = 0
+(2-(1-1)) = 2
+
+Output : [0, 2]
+public List<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Integer</span><span class="token punctuation">></span></span> diffWaysToCompute(String input) &#123;
+    List<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Integer</span><span class="token punctuation">></span></span> ways = new ArrayList&lt;>();
+    for (int i = 0; i &lt; input.length(); i++) &#123;
+        char c = input.charAt(i);
+        if (c == '+' || c == '-' || c == '*') &#123;
+            List<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Integer</span><span class="token punctuation">></span></span> left = diffWaysToCompute(input.substring(0, i));
+            List<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Integer</span><span class="token punctuation">></span></span> right = diffWaysToCompute(input.substring(i + 1));
+            for (int l : left) &#123;
+                for (int r : right) &#123;
+                    switch (c) &#123;
+                        case '+':
+                            ways.add(l + r);
+                            break;
+                        case '-':
+                            ways.add(l - r);
+                            break;
+                        case '*':
+                            ways.add(l * r);
+                            break;
+                    &#125;
+                &#125;
+            &#125;
+        &#125;
+    &#125;
+    if (ways.size() == 0) &#123;
+        ways.add(Integer.valueOf(input));
+    &#125;
+    return ways;
+&#125;</code></pre>
 
 
                 
@@ -847,7 +881,7 @@
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">683.3k</span>
+                        class="white-color">675.3k</span>
             
             
             
