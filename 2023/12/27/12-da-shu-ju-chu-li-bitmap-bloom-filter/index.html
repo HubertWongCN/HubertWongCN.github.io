@@ -453,76 +453,8 @@
 <li>检查字符串是否存在的过程</li>
 </ul>
 <p>下面是检查字符串str是否被BitSet记录过的过程: 对于字符串str，分别计算h(1，str)，h(2，str)…… h(k，str)。然后检查BitSet的第h(1，str)、h(2，str)…… h(k，str)位是否为1，若其中任何一位不为1则可以判定str一定没有被记录过。若全部位都是1，则“认为”字符串str存在。 若一个字符串对应的Bit不全为1，则可以肯定该字符串一定没有被Bloom Filter记录过。(这是显然的，因为字符串被记录过，其对应的二进制位肯定全部被设为1了)</p>
-<h3 id="以BitSet-实现代码"><a href="#以BitSet-实现代码" class="headerlink" title="以BitSet 实现代码"></a>以BitSet 实现代码</h3><pre><code class="java">package algorithm;
-import java.util.BitSet;
-public class BloomFilter
-&#123;
-    /* BitSet初始分配2^24个bit */
-    private static final int DEFAULT_SIZE = 1 &lt;&lt; 25;
-    /* 不同哈希函数的种子，一般应取质数 */
-    private static final int[] seeds = new int[]&#123; 5, 7, 11, 13, 31, 37, 61 &#125;;
-    private BitSet bits = new BitSet(DEFAULT_SIZE);
-    /* 哈希函数对象 */
-    private SimpleHash[] func = new SimpleHash[seeds.length];
- 
-    public BloomFilter()
-    &#123;
-        for (int i = 0; i &lt; seeds.length; i++)
-        &#123;
-            func[i] = new SimpleHash(DEFAULT_SIZE, seeds[i]);
-        &#125;
-    &#125;
- 
-    // 将字符串标记到bits中
-    public void add(String value)
-    &#123;
-        for (SimpleHash f : func)
-        &#123;
-            bits.set(f.hash(value), true);
-        &#125;
-    &#125;
- 
-    // 判断字符串是否已经被bits标记
-    public boolean contains(String value)
-    &#123;
-        if (value == null)
-        &#123;
-            return false;
-        &#125;
-        boolean ret = true;
-        for (SimpleHash f : func)
-        &#123;
-            ret = ret &amp;&amp; bits.get(f.hash(value));
-        &#125;
-        return ret;
-    &#125;
- 
-    /* 哈希函数类 */
-    public static class SimpleHash
-    &#123;
-        private int cap;
-        private int seed;
- 
-        public SimpleHash(int cap, int seed)
-        &#123;
-            this.cap = cap;
-            this.seed = seed;
-        &#125;
- 
-        // hash函数，采用简单的加权和hash
-        public int hash(String value)
-        &#123;
-            int result = 0;
-            int len = value.length();
-            for (int i = 0; i &lt; len; i++)
-            &#123;
-                result = seed * result + value.charAt(i);
-            &#125;
-            return (cap - 1) &amp; result;
-        &#125;
-    &#125;
-&#125;
-</code></pre>
+<h3 id="以BitSet-实现代码"><a href="#以BitSet-实现代码" class="headerlink" title="以BitSet 实现代码"></a>以BitSet 实现代码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> algorithm;</span><br><span class="line"><span class="keyword">import</span> java.util.BitSet;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BloomFilter</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/* BitSet初始分配2^24个bit */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">DEFAULT_SIZE</span> <span class="operator">=</span> <span class="number">1</span> &lt;&lt; <span class="number">25</span>;</span><br><span class="line">    <span class="comment">/* 不同哈希函数的种子，一般应取质数 */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span>[] seeds = <span class="keyword">new</span> <span class="title class_">int</span>[]&#123; <span class="number">5</span>, <span class="number">7</span>, <span class="number">11</span>, <span class="number">13</span>, <span class="number">31</span>, <span class="number">37</span>, <span class="number">61</span> &#125;;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">BitSet</span> <span class="variable">bits</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BitSet</span>(DEFAULT_SIZE);</span><br><span class="line">    <span class="comment">/* 哈希函数对象 */</span></span><br><span class="line">    <span class="keyword">private</span> SimpleHash[] func = <span class="keyword">new</span> <span class="title class_">SimpleHash</span>[seeds.length];</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BloomFilter</span><span class="params">()</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; seeds.length; i++)</span><br><span class="line">        &#123;</span><br><span class="line">            func[i] = <span class="keyword">new</span> <span class="title class_">SimpleHash</span>(DEFAULT_SIZE, seeds[i]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 将字符串标记到bits中</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">add</span><span class="params">(String value)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (SimpleHash f : func)</span><br><span class="line">        &#123;</span><br><span class="line">            bits.set(f.hash(value), <span class="literal">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 判断字符串是否已经被bits标记</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">contains</span><span class="params">(String value)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (value == <span class="literal">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">boolean</span> <span class="variable">ret</span> <span class="operator">=</span> <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">for</span> (SimpleHash f : func)</span><br><span class="line">        &#123;</span><br><span class="line">            ret = ret &amp;&amp; bits.get(f.hash(value));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/* 哈希函数类 */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">SimpleHash</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">int</span> cap;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">int</span> seed;</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">SimpleHash</span><span class="params">(<span class="type">int</span> cap, <span class="type">int</span> seed)</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">this</span>.cap = cap;</span><br><span class="line">            <span class="built_in">this</span>.seed = seed;</span><br><span class="line">        &#125;</span><br><span class="line"> </span><br><span class="line">        <span class="comment">// hash函数，采用简单的加权和hash</span></span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(String value)</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">result</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">            <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> value.length();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; len; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                result = seed * result + value.charAt(i);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> (cap - <span class="number">1</span>) &amp; result;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h2 id="误报率-False-Positive-Rate"><a href="#误报率-False-Positive-Rate" class="headerlink" title="误报率 - False Positive Rate"></a>误报率 - False Positive Rate</h2><p>原文地址：<a target="_blank" rel="noopener" href="https://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html">https://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html</a></p>
 <h3 id="误报率的产生"><a href="#误报率的产生" class="headerlink" title="误报率的产生"></a>误报率的产生</h3><p>初始状态下，Bloom Filter是一个m位的位数组，且数组被0所填充。同时，我们需要定义k个不同的hash函数，每一个hash函数都随机的将每一个输入元素映射到位数组中的一个位上。那么对于一个确定的输入，我们会得到k个索引。</p>
 <p>插入元素: 经过k个hash函数的映射，我们会得到k个索引，我们把位数组中这k个位置全部置1(不管其中的位之前是0还是1)</p>

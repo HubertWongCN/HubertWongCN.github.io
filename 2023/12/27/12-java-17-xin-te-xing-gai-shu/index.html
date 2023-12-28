@@ -421,34 +421,11 @@ JDK 17 在 2021 年 9 月 14 号正式发布了！根据发布的规划，这次
 <p>因为我们引入了<code>sealed</code> <code>class</code>或<code>interfaces</code>，这些class或者interfaces只允许被指定的类或者interface进行扩展和实现。</p>
 <p>使用修饰符<code>sealed</code>，您可以将一个类声明为密封类。密封的类使用reserved关键字permits列出可以直接扩展它的类。子类可以是最终的，非密封的或密封的。</p>
 <p>之前我们的代码是这样的。</p>
-<pre><code class="java">public class Person &#123; &#125; //人
- 
-class Teacher extends Person &#123; &#125;//教师
- 
-class Worker extends Person &#123; &#125;  //工人
- 
-class Student extends Person&#123; &#125; //学生
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123; &#125; <span class="comment">//人</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Teacher</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;<span class="comment">//教师</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Worker</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;  <span class="comment">//工人</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span> <span class="keyword">extends</span> <span class="title class_">Person</span>&#123; &#125; <span class="comment">//学生</span></span><br></pre></td></tr></table></figure>
+
 <p>但是我们现在要限制 Person类 只能被这三个类继承，不能被其他类继承，需要这么做。</p>
-<pre><code class="java">// 添加sealed修饰符，permits后面跟上只能被继承的子类名称
-public sealed class Person permits Teacher, Worker, Student&#123; &#125; //人
- 
-// 子类可以被修饰为 final
-final class Teacher extends Person &#123; &#125;//教师
- 
-// 子类可以被修饰为 non-sealed，此时 Worker类就成了普通类，谁都可以继承它
-non-sealed class Worker extends Person &#123; &#125;  //工人
-// 任何类都可以继承Worker
-class AnyClass extends Worker&#123;&#125;
- 
-//子类可以被修饰为 sealed,同上
-sealed class Student extends Person permits MiddleSchoolStudent,GraduateStudent&#123; &#125; //学生
- 
- 
-final class MiddleSchoolStudent extends Student &#123; &#125;  //中学生
- 
-final class GraduateStudent extends Student &#123; &#125;  //研究生
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 添加sealed修饰符，permits后面跟上只能被继承的子类名称</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">sealed</span> <span class="keyword">class</span> <span class="title class_">Person</span> <span class="keyword">permits</span> Teacher, Worker, Student&#123; &#125; <span class="comment">//人</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 子类可以被修饰为 final</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Teacher</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;<span class="comment">//教师</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 子类可以被修饰为 non-sealed，此时 Worker类就成了普通类，谁都可以继承它</span></span><br><span class="line"><span class="keyword">non-sealed</span> <span class="keyword">class</span> <span class="title class_">Worker</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;  <span class="comment">//工人</span></span><br><span class="line"><span class="comment">// 任何类都可以继承Worker</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AnyClass</span> <span class="keyword">extends</span> <span class="title class_">Worker</span>&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//子类可以被修饰为 sealed,同上</span></span><br><span class="line"><span class="keyword">sealed</span> <span class="keyword">class</span> <span class="title class_">Student</span> <span class="keyword">extends</span> <span class="title class_">Person</span> <span class="keyword">permits</span> MiddleSchoolStudent,GraduateStudent&#123; &#125; <span class="comment">//学生</span></span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">MiddleSchoolStudent</span> <span class="keyword">extends</span> <span class="title class_">Student</span> &#123; &#125;  <span class="comment">//中学生</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">GraduateStudent</span> <span class="keyword">extends</span> <span class="title class_">Student</span> &#123; &#125;  <span class="comment">//研究生</span></span><br></pre></td></tr></table></figure>
+
 <p>很强很实用的一个特性，可以限制类的层次结构。</p>
 <ul>
 <li><strong>补充：它是由Amber项目孵化而来（会经历两轮以上预览版本）</strong></li>
@@ -463,66 +440,20 @@ final class GraduateStudent extends Student &#123; &#125;  //研究生
 <li><strong>Random 类</strong></li>
 </ol>
 <p>典型的使用如下，随机一个int值</p>
-<pre><code class="java">// random int
-new Random().nextInt();
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// random int</span></span><br><span class="line"><span class="keyword">new</span> <span class="title class_">Random</span>().nextInt();</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * description 获取指定位数的随机数</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> length 1</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> java.lang.String</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">getRandomString</span><span class="params">(<span class="type">int</span> length)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">base</span> <span class="operator">=</span> <span class="string">&quot;abcdefghijklmnopqrstuvwxyz0123456789&quot;</span>;</span><br><span class="line">    <span class="type">Random</span> <span class="variable">random</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line">    <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; length; i++) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">number</span> <span class="operator">=</span> random.nextInt(base.length());</span><br><span class="line">        sb.append(base.charAt(number));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sb.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-/**
- * description 获取指定位数的随机数
- *
- * @param length 1
- * @return java.lang.String
- */
-public static String getRandomString(int length) &#123;
-    String base = &quot;abcdefghijklmnopqrstuvwxyz0123456789&quot;;
-    Random random = new Random();
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i &lt; length; i++) &#123;
-        int number = random.nextInt(base.length());
-        sb.append(base.charAt(number));
-    &#125;
-    return sb.toString();
-&#125;
-</code></pre>
 <ol>
 <li><strong>ThreadLocalRandom 类</strong></li>
 </ol>
 <p>提供线程间独立的随机序列。它只有一个实例，多个线程用到这个实例，也会在线程内部各自更新状态。它同时也是 Random 的子类，不过它几乎把所有 Random 的方法又实现了一遍。</p>
-<pre><code class="java">/**
- * nextInt(bound) returns 0 &lt;= value &lt; bound; repeated calls produce at
- * least two distinct results
- */
-public void testNextIntBounded() &#123;
-    // sample bound space across prime number increments
-    for (int bound = 2; bound &lt; MAX_INT_BOUND; bound += 524959) &#123;
-        int f = ThreadLocalRandom.current().nextInt(bound);
-        assertTrue(0 &lt;= f &amp;&amp; f &lt; bound);
-        int i = 0;
-        int j;
-        while (i &lt; NCALLS &amp;&amp;
-               (j = ThreadLocalRandom.current().nextInt(bound)) == f) &#123;
-            assertTrue(0 &lt;= j &amp;&amp; j &lt; bound);
-            ++i;
-        &#125;
-        assertTrue(i &lt; NCALLS);
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * nextInt(bound) returns 0 &lt;= value &lt; bound; repeated calls produce at</span></span><br><span class="line"><span class="comment"> * least two distinct results</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testNextIntBounded</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// sample bound space across prime number increments</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">bound</span> <span class="operator">=</span> <span class="number">2</span>; bound &lt; MAX_INT_BOUND; bound += <span class="number">524959</span>) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">f</span> <span class="operator">=</span> ThreadLocalRandom.current().nextInt(bound);</span><br><span class="line">        assertTrue(<span class="number">0</span> &lt;= f &amp;&amp; f &lt; bound);</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> j;</span><br><span class="line">        <span class="keyword">while</span> (i &lt; NCALLS &amp;&amp;</span><br><span class="line">               (j = ThreadLocalRandom.current().nextInt(bound)) == f) &#123;</span><br><span class="line">            assertTrue(<span class="number">0</span> &lt;= j &amp;&amp; j &lt; bound);</span><br><span class="line">            ++i;</span><br><span class="line">        &#125;</span><br><span class="line">        assertTrue(i &lt; NCALLS);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ol>
 <li><strong>SplittableRandom 类</strong></li>
 </ol>
 <p>非线程安全，但可以 fork 的随机序列实现，适用于拆分子任务的场景。</p>
-<pre><code class="java">/**
- * Repeated calls to nextLong produce at least two distinct results
- */
-public void testNextLong() &#123;
-    SplittableRandom sr = new SplittableRandom();
-    long f = sr.nextLong();
-    int i = 0;
-    while (i &lt; NCALLS &amp;&amp; sr.nextLong() == f)
-        ++i;
-    assertTrue(i &lt; NCALLS);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Repeated calls to nextLong produce at least two distinct results</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testNextLong</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">SplittableRandom</span> <span class="variable">sr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SplittableRandom</span>();</span><br><span class="line">    <span class="type">long</span> <span class="variable">f</span> <span class="operator">=</span> sr.nextLong();</span><br><span class="line">    <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (i &lt; NCALLS &amp;&amp; sr.nextLong() == f)</span><br><span class="line">        ++i;</span><br><span class="line">    assertTrue(i &lt; NCALLS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h4 id="为什么需要增强？"><a href="#为什么需要增强？" class="headerlink" title="为什么需要增强？"></a>为什么需要增强？</h4><ol>
 <li>上述几个类实现代码质量和接口抽象不佳</li>
 <li>缺少常见的伪随机算法</li>
@@ -531,14 +462,14 @@ public void testNextLong() &#123;
 <h4 id="增强后是什么样的？"><a href="#增强后是什么样的？" class="headerlink" title="增强后是什么样的？"></a>增强后是什么样的？</h4><p>代码的优化自不必说，我们就看下新增了哪些常见的伪随机算法</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271256410.png" alt="img"></p>
 <p>如何使用这个呢？可以使用RandomGenerator</p>
-<pre><code class="java">RandomGenerator g = RandomGenerator.of(&quot;L64X128MixRandom&quot;);
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">RandomGenerator</span> <span class="variable">g</span> <span class="operator">=</span> RandomGenerator.of(<span class="string">&quot;L64X128MixRandom&quot;</span>);</span><br></pre></td></tr></table></figure>
+
 <h3 id="JEP-382：新的macOS渲染管道"><a href="#JEP-382：新的macOS渲染管道" class="headerlink" title="JEP 382：新的macOS渲染管道"></a>JEP 382：新的macOS渲染管道</h3><blockquote>
 <p>使用 Apple Metal API 为 macOS 实现 Java 2D 管道。新管道将减少 JDK 对已弃用的 Apple OpenGL API 的依赖。</p>
 </blockquote>
 <p>目前默认情况下，这是禁用的，因此渲染仍然使用OpenGL API；要启用metal，应用程序应通过设置系统属性指定其使用：</p>
-<pre><code class="java">-Dsun.java2d.metal=true
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Dsun.java2d.metal=<span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
 <p>Metal或OpenGL的使用对应用程序是透明的，因为这是内部实现的区别，对Java API没有影响。Metal管道需要macOS 10.14.x或更高版本。在早期版本上设置它的尝试将被忽略。</p>
 <h2 id="新的平台支持"><a href="#新的平台支持" class="headerlink" title="新的平台支持"></a>新的平台支持</h2><h3 id="JEP-391：支持macOS-AArch64"><a href="#JEP-391：支持macOS-AArch64" class="headerlink" title="JEP 391：支持macOS AArch64"></a>JEP 391：支持macOS AArch64</h3><p>将 JDK 移植到 macOS&#x2F;AArch64 平台。该端口将允许 Java 应用程序在新的基于 Arm 64 的 Apple Silicon 计算机上本地运行。</p>
 <h2 id="旧功能的删除和弃用"><a href="#旧功能的删除和弃用" class="headerlink" title="旧功能的删除和弃用"></a>旧功能的删除和弃用</h2><h3 id="JEP-398：弃用-Applet-API"><a href="#JEP-398：弃用-Applet-API" class="headerlink" title="JEP 398：弃用 Applet API"></a>JEP 398：弃用 Applet API</h3><p>所有网络浏览器供应商要么已取消对 Java 浏览器插件的支持，要么已宣布计划这样做。 Applet API 已于 2017 年 9 月在 Java 9 中弃用，但并未移除。</p>
@@ -553,41 +484,15 @@ public void testNextLong() &#123;
 <p>AVX（Advanced Vector Extensions，高级向量扩展）实际上是 x86-64 处理器上的一套 SIMD（Single Instruction Multiple Data，单指令多数据流）指令集，相对于 SISD（Single instruction, Single dat，单指令流但数据流）而言，SIMD 非常适用于 CPU 密集型场景，因为向量计算允许在同一个 CPU 时钟周期内对多组数据批量进行数据运算，执行性能非常高效，甚至从某种程度上来看，向量运算似乎更像是一种并行任务，而非像标量计算那样，在同一个 CPU 时钟周期内仅允许执行一组数据运算，存在严重的执行效率低下问题。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271257933.png" alt="img"></p>
 <p>随着 Java16 的正式来临，开发人员可以在程序中使用 Vector API 来实现各种复杂的向量计算，由 JIT 编译器 Server Compiler(C2)在运行期将其编译为对应的底层 AVX 指令执行。当然，在讲解如何使用 Vector API 之前，我们首先来看一个简单的标量计算程序。示例：</p>
-<pre><code class="java">void scalarComputation() &#123;
-    var a = new float[10000000];
-    var b = new float[10000000];
-    // 省略数组a和b的赋值操作
-    var c = new float[10000000];
-    for (int i = 0; i &lt; a.length; i++) &#123;
-        c[i] = (a[i] * a[i] + b[i] * b[i]) * -1.0f;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">scalarComputation</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">var</span> <span class="variable">a</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">float</span>[<span class="number">10000000</span>];</span><br><span class="line">    <span class="type">var</span> <span class="variable">b</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">float</span>[<span class="number">10000000</span>];</span><br><span class="line">    <span class="comment">// 省略数组a和b的赋值操作</span></span><br><span class="line">    <span class="type">var</span> <span class="variable">c</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">float</span>[<span class="number">10000000</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; a.length; i++) &#123;</span><br><span class="line">        c[i] = (a[i] * a[i] + b[i] * b[i]) * -<span class="number">1.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>在上述程序示例中，循环体内每次只能执行一组浮点运算，总共需要执行约 1000 万次才能够获得最终的运算结果，可想而知，这样的执行效率必然低效。值得庆幸的是，从 Java6 的时代开始，Java 的设计者们就在 HotSpot 虚拟机中引入了一种被称之为 SuperWord 的自动向量优化算法，该算法缺省会将循环体内的标量计算自动优化为向量计算，以此来提升数据运算时的执行效率。当然，我们可以通过虚拟机参数-XX:-UseSuperWord来显式关闭这项优化（从实际测试结果来看，如果不开启自动向量优化，存在约 20%~22%之间的性能下降）。</p>
 <p>在此大家需要注意，尽管 HotSpot 缺省支持自动向量优化，但局限性仍然非常明显，首先，JIT 编译器 Server Compiler(C2)仅仅只会对循环体内的代码块做向量优化，并且这样的优化也是极不可靠的；其次，对于一些复杂的向量运算，SuperWord 则显得无能为力。因此，在一些特定场景下（比如：机器学习，线性代数，密码学等），建议大家还是尽可能使用 Java16 为大家提供的 Vector API 来实现复杂的向量计算。示例：</p>
-<pre><code class="java">// 定义256bit的向量浮点运算
-static final VectorSpecies&lt;Float&gt; SPECIES = FloatVector.SPECIES_256;
-void vectorComputation(float[] a, float[] b, float[] c) &#123;
-    var i = 0;
-    var upperBound = SPECIES.loopBound(a.length);
-    for (; i &lt; upperBound; i += SPECIES.length()) &#123;
-        var va = FloatVector.fromArray(SPECIES, a, i);
-        var vb = FloatVector.fromArray(SPECIES, b, i);
-        var vc = va.mul(va).
-                add(vb.mul(vb)).
-                neg();
-        vc.intoArray(c, i);
-    &#125;
-    for (; i &lt; a.length; i++) &#123;
-        c[i] = (a[i] * a[i] + b[i] * b[i]) * -1.0f;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 定义256bit的向量浮点运算</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> VectorSpecies&lt;Float&gt; SPECIES = FloatVector.SPECIES_256;</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">vectorComputation</span><span class="params">(<span class="type">float</span>[] a, <span class="type">float</span>[] b, <span class="type">float</span>[] c)</span> &#123;</span><br><span class="line">    <span class="type">var</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">var</span> <span class="variable">upperBound</span> <span class="operator">=</span> SPECIES.loopBound(a.length);</span><br><span class="line">    <span class="keyword">for</span> (; i &lt; upperBound; i += SPECIES.length()) &#123;</span><br><span class="line">        <span class="type">var</span> <span class="variable">va</span> <span class="operator">=</span> FloatVector.fromArray(SPECIES, a, i);</span><br><span class="line">        <span class="type">var</span> <span class="variable">vb</span> <span class="operator">=</span> FloatVector.fromArray(SPECIES, b, i);</span><br><span class="line">        <span class="type">var</span> <span class="variable">vc</span> <span class="operator">=</span> va.mul(va).</span><br><span class="line">                add(vb.mul(vb)).</span><br><span class="line">                neg();</span><br><span class="line">        vc.intoArray(c, i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (; i &lt; a.length; i++) &#123;</span><br><span class="line">        c[i] = (a[i] * a[i] + b[i] * b[i]) * -<span class="number">1.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>值得注意的是，Vector API 包含在 jdk.incubator.vector 模块中，程序中如果需要使用 Vector API 则需要在 module-info.java 文件中引入该模块。：</p>
-<pre><code class="java">module java16.test&#123;
-    requires jdk.incubator.vector;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">module</span> java16.test&#123;</span><br><span class="line">    <span class="keyword">requires</span> jdk.incubator.vector;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="JEP-389：外部链接器-API（孵化器）"><a href="#JEP-389：外部链接器-API（孵化器）" class="headerlink" title="JEP 389：外部链接器 API（孵化器）"></a>JEP 389：外部链接器 API（孵化器）</h3><p>该孵化器 API 提供了静态类型、纯 Java 访问原生代码的特性，该 API 将大大简化绑定原生库的原本复杂且容易出错的过程。Java 1.1 就已通过 Java 原生接口（JNI）支持了原生方法调用，但并不好用。Java 开发人员应该能够为特定任务绑定特定的原生库。它还提供了外来函数支持，而无需任何中间的 JNI 粘合代码。</p>
 <h3 id="JEP-393：外部存储器访问-API（第三次孵化）"><a href="#JEP-393：外部存储器访问-API（第三次孵化）" class="headerlink" title="JEP 393：外部存储器访问 API（第三次孵化）"></a>JEP 393：外部存储器访问 API（第三次孵化）</h3><blockquote>
 <p>在 Java 14 和 Java 15 中作为孵化器 API 引入的这个 API 使 Java 程序能够安全有效地对各种外部存储器（例如本机存储器、持久性存储器、托管堆存储器等）进行操作。它提供了外部链接器 API 的基础。</p>
@@ -603,17 +508,8 @@ void vectorComputation(float[] a, float[] b, float[] c) &#123;
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271258373.png" alt="img"></p>
 <p>在此大家需要注意，程序中通过 ByteBuffer.allocateDirect()方法来申请物理内存资源所耗费的成本远远高于直接在 on-heap 中的操作，而且实际开发过程中还需要考虑数据结构如何设计、序列化&#x2F;反序列化如何支撑等诸多难题，所以与其使用语法层面的 API 倒不如直接使用 MapDB 等开源产品来得更实惠。</p>
 <p>如今，在堆外内存领域，我们似乎又多了一个选择，<strong>从 Java14 开始，Java 的设计者们在语法层面为大家带来了崭新的 Memory Access API，极大程度上简化了开发难度，并得以有效的解决了安全性和高效性等 2 个核心问题</strong>。示例：</p>
-<pre><code class="java">// 获取内存访问var句柄
-var handle = MemoryHandles.varHandle(char.class,
-        ByteOrder.nativeOrder());
-// 申请200字节的堆外内存
-try (MemorySegment segment = MemorySegment.allocateNative(200)) &#123;
-    for (int i = 0; i &lt; 25; i++) &#123;
-        handle.set(segment, i &lt;&lt; 2, (char) (i + 1 + 64));
-        System.out.println(handle.get(segment, i &lt;&lt; 2));
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取内存访问var句柄</span></span><br><span class="line"><span class="type">var</span> <span class="variable">handle</span> <span class="operator">=</span> MemoryHandles.varHandle(<span class="type">char</span>.class,</span><br><span class="line">        ByteOrder.nativeOrder());</span><br><span class="line"><span class="comment">// 申请200字节的堆外内存</span></span><br><span class="line"><span class="keyword">try</span> (<span class="type">MemorySegment</span> <span class="variable">segment</span> <span class="operator">=</span> MemorySegment.allocateNative(<span class="number">200</span>)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">25</span>; i++) &#123;</span><br><span class="line">        handle.set(segment, i &lt;&lt; <span class="number">2</span>, (<span class="type">char</span>) (i + <span class="number">1</span> + <span class="number">64</span>));</span><br><span class="line">        System.out.println(handle.get(segment, i &lt;&lt; <span class="number">2</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>关于堆外内存段的释放，Memory Access API 提供有显式和隐式 2 种方式，开发人员除了可以在程序中通过 MemorySegment 的 close()方法来显式释放所申请的内存资源外，还可以注册 Cleaner 清理器来实现资源的隐式释放，后者会在 GC 确定目标内存段不再可访问时，释放与之关联的堆外内存资源。</p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://www.oracle.com/news/announcement/oracle-releases-java-17-2021-09-14/">https://www.oracle.com/news/announcement/oracle-releases-java-17-2021-09-14/</a></li>

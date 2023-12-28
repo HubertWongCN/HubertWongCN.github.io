@@ -415,20 +415,17 @@
 <h2 id="局部变量类型推断"><a href="#局部变量类型推断" class="headerlink" title="局部变量类型推断"></a>局部变量类型推断</h2><p>局部变量类型推断是 Java 10 中最值得开发人员注意的新特性，这是 Java 语言开发人员为了简化 Java 应用程序的编写而进行的又一重要改进。</p>
 <p>这一新功能将为 Java 增加一些新语法，允许开发人员省略通常不必要的局部变量类型初始化声明。新的语法将减少 Java 代码的冗长度，同时保持对静态类型安全性的承诺。局部变量类型推断主要是向 Java 语法中引入在其他语言（比如 C#、JavaScript）中很常见的保留类型名称 var 。但需要特别注意的是： var 不是一个关键字，而是一个保留字。只要编译器可以推断此种类型，开发人员不再需要专门声明一个局部变量的类型，也就是可以随意定义变量而不必指定变量的类型。这种改进对于链式表达式来说，也会很方便。以下是一个简单的例子：</p>
 <p>清单 1. 局部变量类型推断示例</p>
-<pre><code class="java">var list = new ArrayList&lt;String&gt;(); // ArrayList&lt;String&gt;
-var stream = list.stream(); // Stream&lt;String&gt;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">var</span> <span class="variable">list</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;(); <span class="comment">// ArrayList&lt;String&gt;</span></span><br><span class="line"><span class="type">var</span> <span class="variable">stream</span> <span class="operator">=</span> list.stream(); <span class="comment">// Stream&lt;String&gt;</span></span><br></pre></td></tr></table></figure>
+
 <p>看着是不是有点 JS 的感觉？有没有感觉越来越像 JS 了？虽然变量类型的推断在 Java 中不是一个崭新的概念，但在局部变量中确是很大的一个改进。说到变量类型推断，从 Java 5 中引进泛型，到 Java 7 的 <code>&lt;&gt;</code> 操作符允许不绑定类型而初始化 List，再到 Java 8 中的 Lambda 表达式，再到现在 Java 10 中引入的局部变量类型推断，Java 类型推断正大刀阔斧地向前进步、发展。</p>
 <p>而上面这段例子，在以前版本的 Java 语法中初始化列表的写法为：</p>
 <p>清单 2. Java 类型初始化示例</p>
-<pre><code class="java">List&lt;String&gt; list = new ArrayList&lt;String&gt;();
-Stream&lt;String&gt; stream = getStream();
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;();</span><br><span class="line">Stream&lt;String&gt; stream = getStream();</span><br></pre></td></tr></table></figure>
+
 <p>在运算符允许在没有绑定 <code>ArrayList &lt;&gt;</code> 的类型的情况下初始化列表的写法为：</p>
 <p>清单 3. Java 7 之后版本类型初始化示例</p>
-<pre><code class="java">List&lt;String&gt; list = new LinkedList&lt;&gt;();
-Stream&lt;String&gt; stream = getStream();
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; list = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">Stream&lt;String&gt; stream = getStream();</span><br></pre></td></tr></table></figure>
+
 <p>但这种 var 变量类型推断的使用也有局限性，仅局限于具有初始化器的局部变量、增强型 for 循环中的索引变量以及在传统 for 循环中声明的局部变量，而不能用于推断方法的参数类型，不能用于构造函数参数类型推断，不能用于推断方法返回类型，也不能用于字段类型推断，同时还不能用于捕获表达式（或任何其他类型的变量声明）。</p>
 <p>不过对于开发者而言，变量类型显式声明会提供更加全面的程序语言信息，对于理解和维护代码有很大的帮助。Java 10 中新引入的局部变量类型推断能够帮助我们快速编写更加简洁的代码，但是局部变量类型推断的保留字 var 的使用势必会引起变量类型可视化缺失，并不是任何时候使用 var 都能容易、清晰的分辨出变量的类型。一旦 var 被广泛运用，开发者在没有 IDE 的支持下阅读代码，势必会对理解程序的执行流程带来一定的困难。所以还是建议尽量显式定义变量类型，在保持代码简洁的同时，也需要兼顾程序的易读性、可维护性。</p>
 <h2 id="整合-JDK-代码仓库"><a href="#整合-JDK-代码仓库" class="headerlink" title="整合 JDK 代码仓库"></a>整合 JDK 代码仓库</h2><p>为了简化开发流程，Java 10 中会将多个代码库合并到一个代码仓库中。</p>
@@ -476,8 +473,8 @@ Stream&lt;String&gt; stream = getStream();
 </tbody></table>
 <p>如 Java 10 加入的一个方法：</p>
 <p>清单 4. Unicode 语言标签扩展示例</p>
-<pre><code class="java">java.time.format.DateTimeFormatter::localizedBy
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java.time.format.DateTimeFormatter::localizedBy</span><br></pre></td></tr></table></figure>
+
 <p>通过这个方法，可以采用某种数字样式，区域定义或者时区来获得时间信息所需的语言地域本地环境信息。</p>
 <h2 id="备用存储装置上的堆分配"><a href="#备用存储装置上的堆分配" class="headerlink" title="备用存储装置上的堆分配"></a>备用存储装置上的堆分配</h2><p>硬件技术在持续进化，现在可以使用与传统 DRAM 具有相同接口和类似性能特点的非易失性 RAM。Java 10 中将使得 JVM 能够使用适用于不同类型的存储机制的堆，在可选内存设备上进行堆内存分配。</p>
 <p>一些操作系统中已经通过文件系统提供了使用非 DRAM 内存的方法。例如：NTFS DAX 模式和 ext4 DAX。这些文件系统中的内存映射文件可绕过页面缓存并提供虚拟内存与设备物理内存的相互映射。与 DRAM 相比，NV-DIMM 可能具有更高的访问延迟，低优先级进程可以为堆使用 NV-DIMM 内存，允许高优先级进程使用更多 DRAM。</p>
@@ -486,8 +483,8 @@ Stream&lt;String&gt; stream = getStream();
 <p>Graal 是一个以 Java 为主要编程语言、面向 Java bytecode 的编译器。与用 C++实现的 C1 及 C2 相比，它的模块化更加明显，也更加容易维护。Graal 既可以作为动态编译器，在运行时编译热点方法；亦可以作为静态编译器，实现 AOT 编译。在 Java 10 中，Graal 作为试验性 JIT 编译器一同发布（JEP 317）。将 Graal 编译器研究项目引入到 Java 中，或许能够为 JVM 性能与当前 C++ 所写版本匹敌（或有幸超越）提供基础。</p>
 <p>Java 10 中默认情况下 HotSpot 仍使用的是 C2 编译器，要启用 Graal 作为 JIT 编译器，请在 Java 命令行上使用以下参数：</p>
 <p>清单 5. 启用 Graal 为 JIT 编译器示例</p>
-<pre><code class="java">-XX：+ UnlockExperimentalVMOptions -XX：+ UseJVMCICompiler
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX：+ UnlockExperimentalVMOptions -XX：+ UseJVMCICompiler</span><br></pre></td></tr></table></figure>
+
 <h2 id="根证书认证"><a href="#根证书认证" class="headerlink" title="根证书认证"></a>根证书认证</h2><p>自 Java 9 起在 keytool 中加入参数 -cacerts ，可以查看当前 JDK 管理的根证书。而 Java 9 中 cacerts 目录为空，这样就会给开发者带来很多不便。从 Java 10 开始，将会在 JDK 中提供一套默认的 CA 根证书。</p>
 <p>作为 JDK 一部分的 cacerts 密钥库旨在包含一组能够用于在各种安全协议的证书链中建立信任的根证书。但是，JDK 源代码中的 cacerts 密钥库至目前为止一直是空的。因此，在 JDK 构建中，默认情况下，关键安全组件（如 TLS）是不起作用的。要解决此问题，用户必须使用一组根证书配置和 cacerts 密钥库下的 CA 根证书。</p>
 <h2 id="基于时间的版本发布模式"><a href="#基于时间的版本发布模式" class="headerlink" title="基于时间的版本发布模式"></a>基于时间的版本发布模式</h2><p>虽然 JEP 223 中引入的版本字符串方案较以往有了显著的改进。但是，该方案并不适合以后严格按照六个月的节奏来发布 Java 新版本的这种情况。</p>
@@ -496,8 +493,8 @@ Stream&lt;String&gt; stream = getStream();
 <p>Oracle Java 平台组的首席架构师 Mark Reinhold 在博客上介绍了有关 Java 未来版本的一些想法（你能接受 Java 9 的下一个版本是 Java 18.3 吗？）。他提到，Java 计划按照时间来发布，每半年一个版本，而不是像之前那样按照重要特性来确定大版本，如果某个大的特性因故延期，这个版本可能一拖再拖。</p>
 <p>当时，Mark 也提出来一种基于时间命名版本号的机制，比如下一个将于 2018 年 3 月发布的版本，就是 18.3，再下一个版本是 18.9，以后版本依此类推。</p>
 <p>不过经过讨论，考虑和之前版本号的兼容等问题，最终选择的命名机制是：</p>
-<pre><code class="java">$FEATURE.$INTERIM.$UPDATE.$PATCH
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$FEATURE.$INTERIM.$UPDATE.$PATCH</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><strong>$FEATURE</strong>：每次版本发布加 1，不考虑具体的版本内容。2018 年 3 月的版本是 JDK 10，9 月的版本是 JDK 11，依此类推。</li>
 <li><strong>$INTERIM</strong>：中间版本号，在大版本中间发布的，包含问题修复和增强的版本，不会引入非兼容性修改。</li>

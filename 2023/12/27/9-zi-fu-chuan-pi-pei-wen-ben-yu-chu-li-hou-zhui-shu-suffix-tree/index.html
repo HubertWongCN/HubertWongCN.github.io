@@ -439,14 +439,8 @@
 <li>将每个后缀作为一个单独的关键词，构建一棵 Compressed Trie。</li>
 </ul>
 <p>比如，对于文本 “banana\0”，其中 “\0” 作为文本结束符号。下面是该文本所对应的所有后缀。</p>
-<pre><code class="bash">banana\0
-anana\0
-nana\0
-ana\0
-na\0
-a\0
-\0
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">banana\0</span><br><span class="line">anana\0</span><br><span class="line">nana\0</span><br><span class="line">ana\0</span><br><span class="line">na\0</span><br><span class="line">a\0</span><br><span class="line">\0</span><br></pre></td></tr></table></figure>
+
 <p>将每个后缀作为一个关键词，构建一棵 Trie。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272311414.png" alt="img"></p>
 <p>然后，将独立的节点合并，形成 Compressed Trie。</p>
@@ -454,28 +448,19 @@ a\0
 <p>则上面这棵树就是文本 “banana\0” 所对应的后缀树。</p>
 <p>现在我们先熟悉两个概念：**显式后缀树（Explicit Suffix Tree）**和**隐式后缀树（Implicit Suffix Tree）**。</p>
 <p>下面用字符串 “xabxa” 举例说明两者的区别，其包括后缀列表如下。</p>
-<pre><code class="bash">xabxa
-abxa
-bxa
-xa
-a
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">xabxa</span><br><span class="line">abxa</span><br><span class="line">bxa</span><br><span class="line">xa</span><br><span class="line">a</span><br></pre></td></tr></table></figure>
+
 <p>我们发现，后缀 “xa” 和 “a” 已经分别包含在后缀 “xabxa” 和 “abxa” 的前缀中，这样构造出来的后缀树称为隐式后缀树（Implicit Suffix Tree）。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272311580.png" alt="img"></p>
 <p>而如果不希望这样的情形发生，可以在每个后缀的结尾加上一个特殊字符，比如 “$” 或 “#” 等，这样我们就可以使得后缀保持唯一性。</p>
-<pre><code class="bash">xabxa$
-abxa$
-bxa$
-xa$
-a$
-$
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">xabxa$</span><br><span class="line">abxa$</span><br><span class="line">bxa$</span><br><span class="line">xa$</span><br><span class="line">a$</span><br><span class="line">$</span><br></pre></td></tr></table></figure>
+
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272311433.jpg" alt="img"></p>
 <p>在 1995 年，Esko Ukkonen 发表了论文《<a target="_blank" rel="noopener" href="https://www.cs.helsinki.fi/u/ukkonen/SuffixT1withFigs.pdf">On-line construction of suffix trees</a>》，描述了在线性时间内构建后缀树的方法。下面尝试描述 Ukkonen 算法的基本实现原理，从简单的字符串开始描述，然后扩展到更复杂的情形。</p>
 <p>Suffix Tree 与 Trie 的不同在于，边（Edge）不再只代表单个字符，而是通过一对整数 [from, to] 来表示。其中 from 和 to 所指向的是 Text 中的位置，这样每个边可以表示任意的长度，而且仅需两个指针，耗费 O(1) 的空间。</p>
 <p>首先，我们从一个最简单的字符串 Text &#x3D; “abc” 开始实践构建后缀树，”abc” 中没有重复字符，使得构建过程更简单些。构建过程的步骤是：从左到右，对逐个字符进行操作。</p>
-<pre><code class="bash">abc
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">abc</span><br></pre></td></tr></table></figure>
+
 <p>第 1 个字符是 “a”，创建一条边从根节点（root）到叶节点，以 [0, #] 作为标签代表其在 Text 中的位置从 0 开始。使用 “#” 表示末尾，可以认为 “#” 在 “a” 的右侧，位置从 0 开始，则当前位置 “#” 在 1 位。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272312081.png" alt="img"></p>
 <p>其代表的后缀意义如下。</p>
@@ -504,8 +489,8 @@ $
 <li>每个步骤的工作量是 O(1)，因为已存在的边都是依据 “#” 的挪动而自动更改的，仅需为最后一个字符添加一条新边，所以时间复杂度为 O(1)。则，对于一个长度为 n 的 Text，共需要 O(n) 的时间构建后缀树。</li>
 </ul>
 <p>当然，我们进展的这么顺利，完全是因为所操作的字符串 Text &#x3D; “abc” 太简单，没有任何重复的字符。那么现在我们来处理一个更复杂一些的字符串 Text &#x3D; “abcabxabcd”。</p>
-<pre><code class="bash">abcabxabcd
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">abcabxabcd</span><br></pre></td></tr></table></figure>
+
 <p>同上面的例子类似的是，这个新的 Text 同样以 “abc” 开头，但其后接着 “ab”,”x”,”abc”,”d” 等，并且出现了重复的字符。</p>
 <p>前 3 个字符 “abc” 的操作步骤与上面介绍的相同，所以我们会得到下面这颗树：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272313021.png" alt="img"></p>
@@ -521,16 +506,16 @@ $
 <li>在 Text &#x3D; “abc” 的例子中，活动点（active point）总是 (root, ‘\0x’, 0)。也就是说，活动节点（active_node）总是根节点（root），活动边（active_edge）是空字符 ‘\0x’ 所指定的边，活动长度（active_length）是 0。</li>
 <li>在每个步骤开始时，剩余后缀数（remainder）总是 1。意味着，每次我们要插入的新的后缀数目为 1，即最后一个字符。</li>
 </ul>
-<pre><code class="bash"># = 3, active_point = (root, &#39;\0x&#39;, 1), remainder = 1
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 3, active_point = (root, &#x27;\0x&#x27;, 1), remainder = 1</span></span><br></pre></td></tr></table></figure>
+
 <p>当处理第 4 字符 “a” 时，我们注意到，事实上已经存在一条边 “abca” 的前缀包含了后缀 “a”。在这种情况下：</p>
 <ul>
 <li>我们不再向 root 插入一条全新的边，也就是 [3, #]。相反，既然后缀 “a” 已经被包含在树中的一条边上 “abca”，我们保留它们原来的样子。</li>
 <li>设置 active point 为 (root, ‘a’, 1)，也就是说，active_node 仍为 root，active_edge 为 ‘a’，active_length 为 1。这就意味着，活动点现在是从根节点开始，活动边是以 ‘a’ 开头的某个边，而位置就是在这个边的第 1 位。这个活动边的首字符为 ‘a’，实际上，仅会有一个边是以一个特定字符开头的。</li>
 <li>remainder 的值需要 +1，也就是 2。</li>
 </ul>
-<pre><code class="bash"># = 4, active_point = (root, &#39;a&#39;, 1), remainder = 2
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 4, active_point = (root, &#x27;a&#x27;, 1), remainder = 2</span></span><br></pre></td></tr></table></figure>
+
 <p>此时，我们还观察到：当我们要插入的后缀已经存在于树中时，这颗树实际上根本就没有改变，我们仅修改了 active point 和 remainder。那么，这颗树也就不再能准确地描述当前位置了，不过它却正确地包含了所有的后缀，即使是通过隐式的方式（Implicitly）。因此，处理修改变量，这一步没有其他工作，而修改变量的时间复杂度为 O(1)。</p>
 <p>继续处理下一个字符 “b”，”#” 继续向后挪动一位，即第 5 位时，树被自动的更新为：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272314986.png" alt="img"></p>
@@ -544,8 +529,8 @@ $
 <li>修改活动点为 (root, ‘a’, 2)，实际还是与之前相同的边，只是将指向的位置向后挪到 “b”，修改了 active_length，即 “ab”。</li>
 <li>增加剩余后缀数（remainder）为 3，因为我们又没有为 “b” 插入全新的边。</li>
 </ul>
-<pre><code class="bash"># = 5, active_point = (root, &#39;a&#39;, 2), remainder = 3
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 5, active_point = (root, &#x27;a&#x27;, 2), remainder = 3</span></span><br></pre></td></tr></table></figure>
+
 <p>再具体一点，我们本来准备插入两个最终后缀 “ab” 和 “b”，但因为 “ab” 已经存在于其他的边的前缀中，所以我们只修改了活动点。对于 “b”，我们甚至都没有考虑要插入，为什么呢？因为如果 “ab” 存在于树中，那么他的每个后缀都一定存在于树中。虽然仅仅是隐含性的，但却一定存在，因为我们一直以来就是按照这样的方式来构建这颗树的。</p>
 <p>继续处理下一个字符 “x”，”#” 继续向后挪动一位，即第 6 位时，树被自动的更新为：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272314827.png" alt="img"></p>
@@ -565,13 +550,13 @@ $
 </ul>
 </blockquote>
 <p>因此，新的活动点为 (root, ‘b’, 1)，表明下一个插入一定会发生在边 “bcabx” 上，在 1 个字符之后，即 “b” 的后面。</p>
-<pre><code class="bash"># = 6, active_point = (root, &#39;b&#39;, 1), remainder = 2
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 6, active_point = (root, &#x27;b&#x27;, 1), remainder = 2</span></span><br></pre></td></tr></table></figure>
+
 <p>我们需要检查 “x” 是否在 “b” 后面出现，如果出现了，就是我们上面见到过的样子，可以什么都不做，只更新活动点。如果未出现，则需要分裂边并插入新的边。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272315789.png" alt="img"></p>
 <p>同样，这次操作也花费了 O(1) 时间。然后将 remainder 更新为 1，依据 Rule 1 活动点更新为 (root, ‘x’, 0)。</p>
-<pre><code class="bash"># = 6, active_point = (root, &#39;x&#39;, 0), remainder = 1
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 6, active_point = (root, &#x27;x&#x27;, 0), remainder = 1</span></span><br></pre></td></tr></table></figure>
+
 <p>此时，我们将归纳出 Rule 2。</p>
 <blockquote>
 <p>Rule 2</p>
@@ -583,17 +568,17 @@ $
 <p>继续上面的操作，插入最终后缀 “x”。因为活动点中的 active_length 已经降到 0，所以插入操作将发生在 root 上。由于没有以 “x” 为前缀的边，所以插入一条新的边：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272315581.png" alt="img"></p>
 <p>这样，这一步骤中的所有操作就完成了。</p>
-<pre><code class="bash"># = 6, active_point = (root, &#39;\0x&#39;, 0), remainder = 1
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 6, active_point = (root, &#x27;\0x&#x27;, 0), remainder = 1</span></span><br></pre></td></tr></table></figure>
+
 <p>继续处理下一个字符 “a”，”#” 继续向后挪动一位。发现后缀 “a” 已经存在于数中的边中，所以仅更新 active point 和 remainder。</p>
-<pre><code class="bash"># = 7, active_point = (root, &#39;a&#39;, 1), remainder = 2
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 7, active_point = (root, &#x27;a&#x27;, 1), remainder = 2</span></span><br></pre></td></tr></table></figure>
+
 <p>继续处理下一个字符 “b”，”#” 继续向后挪动一位。发现后缀 “ab” 和 “b” 都已经存在于树中，所以仅更新 active point 和 remainder。这里我们先称 “ab” 所在的边的节点为 node1。</p>
-<pre><code class="bash"># = 8, active_point = (root, &#39;a&#39;, 2), remainder = 3
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 8, active_point = (root, &#x27;a&#x27;, 2), remainder = 3</span></span><br></pre></td></tr></table></figure>
+
 <p>继续处理下一个字符 “c”，”#” 继续向后挪动一位。此时由于 remainder &#x3D; 3，所以需要插入 “abc”,”bc”,”c” 三个后缀。”c” 实际上已经存在于 node1 后的边上。</p>
-<pre><code class="bash"># = 9, active_point = (node1, &#39;c&#39;, 1), remainder = 4
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 9, active_point = (node1, &#x27;c&#x27;, 1), remainder = 4</span></span><br></pre></td></tr></table></figure>
+
 <p>继续处理下一个字符 “d”，”#” 继续向后挪动一位。此时由于 remainder &#x3D; 4，所以需要插入 “abcd”,”bcd”,”cd”,”d” 四个后缀。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272316608.png" alt="img"></p>
 <p>上图中的 active_node，当节点准备分裂时，被标记了红色。则归纳出了 Rule 3。</p>
@@ -605,21 +590,21 @@ $
 </blockquote>
 <p>所以，现在活动点为 (node2, ‘c’, 1)，其中 node2 为下图中的红色节点：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272316425.png" alt="img"></p>
-<pre><code class="bash"># = 10, active_point = (node2, &#39;c&#39;, 1), remainder = 3
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 10, active_point = (node2, &#x27;c&#x27;, 1), remainder = 3</span></span><br></pre></td></tr></table></figure>
+
 <p>由于对 “abcd” 的插入已经完成，所以将 remainder 的值减至 3，并且开始处理下一个剩余后缀 “bcd”。此时需要将边 “cabxabcd” 分裂，然后插入新的边 “d”。根据 Rule 2，我们需要在之前插入的节点与当前插入的节点间创建一条新的后缀连接。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272316357.png" alt="img"></p>
 <p>此时，我们观察到，后缀连接（Suffix Link）让我们能够重置活动点，使得对下一个后缀的插入操作仅需 O(1) 时间。从上图也确认了，”ab” 连接的是其后缀 “b”，而 “abc” 连接的是其后缀 “bc”。</p>
 <p>当前操作还没有完成，因为 remainder 是 2，根绝 Rule 3 我们需要重新设置活动点。因为上图中的红色 active_node 没有后缀连接（Suffix Link），所以活动点被设置为 root，也就是 (root, ‘c’, 1)。</p>
-<pre><code class="bash"># = 10, active_point = (root, &#39;c&#39;, 1), remainder = 2
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 10, active_point = (root, &#x27;c&#x27;, 1), remainder = 2</span></span><br></pre></td></tr></table></figure>
+
 <p>因此，下一个插入操作 “cd” 将从 Root 开始，寻找以 “c” 为前缀的边 “cabxabcd”，这也引起又一次分裂：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272317602.png" alt="img"></p>
 <p>由于此处又创建了一个新的内部节点，依据 Rule 2，我们需要建立一条与前一个被创建内节点的后缀连接。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272317719.png" alt="img"></p>
 <p>然后，remainder 减为 1，active_node 为 root，根据 Rule 1 则活动点为 (root, ‘d’, 0)。也就是说，仅需在根节点上插入一条 “d” 新边。</p>
-<pre><code class="bash"># = 10, active_point = (root, &#39;d&#39;, 0), remainder = 1
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># = 10, active_point = (root, &#x27;d&#x27;, 0), remainder = 1</span></span><br></pre></td></tr></table></figure>
+
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272317653.png" alt="img"></p>
 <p>整个步骤完成。</p>
 <p><strong>总体上看，我们有一系列的观察结果</strong>：</p>

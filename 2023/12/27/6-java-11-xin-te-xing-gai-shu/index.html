@@ -421,15 +421,8 @@ Java 11 在 2018 年 9 月 25 日正式发布，之前在 Java 10 新特性介�
 <p>新版 Java 中，Http Client 的包名由 jdk.incubator.http 改为 java.net.http，该 API 通过 CompleteableFutures 提供非阻塞请求和响应语义，可以联合使用以触发相应的动作，并且 RX Flo w 的概念也在 Java 11 中得到了实现。现在，在用户层请求发布者和响应发布者与底层套接字之间追踪数据流更容易了。这降低了复杂性，并最大程度上提高了 HTTP&#x2F;1 和 HTTP&#x2F;2 之间的重用的可能性。</p>
 <p>Java 11 中的新 Http Client API，提供了对 HTTP&#x2F;2 等业界前沿标准的支持，同时也向下兼容 HTTP&#x2F;1.1，精简而又友好的 API 接口，与主流开源 API（如：Apache HttpClient、Jetty、OkHttp 等）类似甚至拥有更高的性能。与此同时它是 Java 在 Reactive-Stream 方面的第一个生产实践，其中广泛使用了 Java Flow API，终于让 Java 标准 HTTP 类库在扩展能力等方面，满足了现代互联网的需求，是一个难得的现代 Http&#x2F;2 Client API 标准的实现，Java 工程师终于可以摆脱老旧的 HttpURLConnection 了。下面模拟 Http GET 请求并打印返回内容：</p>
 <p>清单 1. GET 请求示例</p>
-<pre><code class="java">    HttpClient client = HttpClient.newHttpClient();
-    HttpRequest request = HttpRequest.newBuilder()
-          .uri(URI.create(&quot;http://openjdk.java.net/&quot;))
-          .build();
-    client.sendAsync(request, BodyHandlers.ofString())
-          .thenApply(HttpResponse::body)
-          .thenAccept(System.out::println)
-          .join();
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">HttpClient</span> <span class="variable">client</span> <span class="operator">=</span> HttpClient.newHttpClient();</span><br><span class="line"><span class="type">HttpRequest</span> <span class="variable">request</span> <span class="operator">=</span> HttpRequest.newBuilder()</span><br><span class="line">      .uri(URI.create(<span class="string">&quot;http://openjdk.java.net/&quot;</span>))</span><br><span class="line">      .build();</span><br><span class="line">client.sendAsync(request, BodyHandlers.ofString())</span><br><span class="line">      .thenApply(HttpResponse::body)</span><br><span class="line">      .thenAccept(System.out::println)</span><br><span class="line">      .join();</span><br></pre></td></tr></table></figure>
+
 <h2 id="Epsilon：低开销垃圾回收器"><a href="#Epsilon：低开销垃圾回收器" class="headerlink" title="Epsilon：低开销垃圾回收器"></a>Epsilon：低开销垃圾回收器</h2><p>Epsilon 垃圾回收器的目标是开发一个控制内存分配，但是不执行任何实际的垃圾回收工作。它提供一个完全消极的 GC 实现，分配有限的内存资源，最大限度的降低内存占用和内存吞吐延迟时间。</p>
 <p>Java 版本中已经包含了一系列的高度可配置化的 GC 实现。各种不同的垃圾回收器可以面对各种情况。但是有些时候使用一种独特的实现，而不是将其堆积在其他 GC 实现上将会是事情变得更加简单。</p>
 <p>下面是 no-op GC 的几个使用场景：</p>
@@ -452,18 +445,16 @@ Java 11 在 2018 年 9 月 25 日正式发布，之前在 Java 10 新特性介�
 <li>作为模块中的主类</li>
 </ul>
 <p>而在最新的 Java 11 中新增了一个启动方式，即可以在源代码中声明类，例如：如果名为 HelloWorld.java 的文件包含一个名为 hello.World 的类，那么该命令：</p>
-<pre><code class="java">$ java HelloWorld.java
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ java HelloWorld.java</span><br></pre></td></tr></table></figure>
+
 <p>也等同于：</p>
-<pre><code class="java">$ javac HelloWorld.java
-$ java -cp . hello.World
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ javac HelloWorld.java</span><br><span class="line">$ java -cp . hello.World</span><br></pre></td></tr></table></figure>
+
 <h2 id="用于-Lambda-参数的局部变量语法"><a href="#用于-Lambda-参数的局部变量语法" class="headerlink" title="用于 Lambda 参数的局部变量语法"></a>用于 Lambda 参数的局部变量语法</h2><p>在 Lambda 表达式中使用局部变量类型推断是 Java 11 引入的唯一与语言相关的特性，这一节，我们将探索这一新特性。</p>
 <p>从 Java 10 开始，便引入了局部变量类型推断这一关键特性。类型推断允许使用关键字 var 作为局部变量的类型而不是实际类型，编译器根据分配给变量的值推断出类型。这一改进简化了代码编写、节省了开发者的工作时间，因为不再需要显式声明局部变量的类型，而是可以使用关键字 var，且不会使源代码过于复杂。</p>
 <p>可以使用关键字 var 声明局部变量，如下所示：</p>
-<pre><code class="java">var s = &quot;Hello Java 11&quot;;
-System.out.println(s);
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">var</span> <span class="variable">s</span> <span class="operator">=</span> <span class="string">&quot;Hello Java 11&quot;</span>;</span><br><span class="line">System.out.println(s);</span><br></pre></td></tr></table></figure>
+
 <p>但是在 Java 10 中，还有下面几个限制：</p>
 <ul>
 <li>只能用于局部变量上</li>
@@ -473,20 +464,17 @@ System.out.println(s);
 </ul>
 <p>Java 11 与 Java 10 的不同之处在于允许开发者在 Lambda 表达式中使用 var 进行参数声明。乍一看，这一举措似乎有点多余，因为在写代码过程中可以省略 Lambda 参数的类型，并通过类型推断确定它们。但是，添加上类型定义同时使用 @Nonnull 和 @Nullable 等类型注释还是很有用的，既能保持与局部变量的一致写法，也不丢失代码简洁。</p>
 <p>Lambda 表达式使用隐式类型定义，它形参的所有类型全部靠推断出来的。隐式类型 Lambda 表达式如下：</p>
-<pre><code class="java">(x, y) -&gt; x.process(y)
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(x, y) -&gt; x.process(y)</span><br></pre></td></tr></table></figure>
+
 <p>Java 10 为局部变量提供隐式定义写法如下：</p>
-<pre><code class="java">var x = new Foo();
-for (var x : xs) &#123; ... &#125;
-try (var x = ...) &#123; ... &#125; catch ...
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">var</span> <span class="variable">x</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Foo</span>();</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> x : xs) &#123; ... &#125;</span><br><span class="line"><span class="keyword">try</span> (<span class="type">var</span> <span class="variable">x</span> <span class="operator">=</span> ...) &#123; ... &#125; <span class="keyword">catch</span> ...</span><br></pre></td></tr></table></figure>
+
 <p>为了 Lambda 类型表达式中正式参数定义的语法与局部变量定义语法的不一致，且为了保持与其他局部变量用法上的一致性，希望能够使用关键字 var 隐式定义 Lambda 表达式的形参：</p>
-<pre><code class="java">(var x, var y) -&gt; x.process(y)
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">var</span> x, <span class="keyword">var</span> y) -&gt; x.process(y)</span><br></pre></td></tr></table></figure>
+
 <p>于是在 Java 11 中将局部变量和 Lambda 表达式的用法进行了统一，并且可以将注释应用于局部变量和 Lambda 表达式：</p>
-<pre><code class="java">@Nonnull var x = new Foo();
-(@Nonnull var x, @Nullable var y) -&gt; x.process(y)
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Nonnull</span> <span class="type">var</span> <span class="variable">x</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Foo</span>();</span><br><span class="line">(<span class="meta">@Nonnull</span> <span class="keyword">var</span> x, <span class="meta">@Nullable</span> <span class="keyword">var</span> y) -&gt; x.process(y)</span><br></pre></td></tr></table></figure>
+
 <h2 id="低开销的-Heap-Profiling"><a href="#低开销的-Heap-Profiling" class="headerlink" title="低开销的 Heap Profiling"></a>低开销的 Heap Profiling</h2><p>Java 11 中提供一种低开销的 Java 堆分配采样方法，能够得到堆分配的 Java 对象信息，并且能够通过 JVMTI 访问堆信息。</p>
 <p>引入这个低开销内存分析工具是为了达到如下目的：</p>
 <ul>
@@ -529,8 +517,8 @@ try (var x = ...) &#123; ... &#125; catch ...
 <p>本图片引用自： The Z Garbage Collector – An Introduction</p>
 <p>不过目前 ZGC 还处于实验阶段，目前只在 Linux&#x2F;x64 上可用，如果有足够的需求，将来可能会增加对其他平台的支持。同时作为实验性功能的 ZGC 将不会出现在 JDK 构建中，除非在编译时使用 configure 参数：<code> --with-jvm-features=zgc</code> 显式启用。</p>
 <p>在实验阶段，编译完成之后，已经迫不及待的想试试 ZGC，需要配置以下 JVM 参数，才能使用 ZGC，具体启动 ZGC 参数如下：</p>
-<pre><code class="java">-XX：+ UnlockExperimentalVMOptions -XX：+ UseZGC -Xmx10g
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX：+ UnlockExperimentalVMOptions -XX：+ UseZGC -Xmx10g</span><br></pre></td></tr></table></figure>
+
 <p>其中参数： -Xmx 是 ZGC 收集器中最重要的调优选项，大大解决了程序员在 JVM 参数调优上的困扰。ZGC 是一个并发收集器，必须要设置一个最大堆的大小，应用需要多大的堆，主要有下面几个考量：</p>
 <ul>
 <li>对象的分配速率，要保证在 GC 的时候，堆中有足够的内存分配新对象。</li>
@@ -539,44 +527,23 @@ try (var x = ...) &#123; ... &#125; catch ...
 <h2 id="飞行记录器"><a href="#飞行记录器" class="headerlink" title="飞行记录器"></a>飞行记录器</h2><p>飞行记录器之前是商业版 JDK 的一项分析工具，但在 Java 11 中，其代码被包含到公开代码库中，这样所有人都能使用该功能了。</p>
 <p>Java 语言中的飞行记录器类似飞机上的黑盒子，是一种低开销的事件信息收集框架，主要用于对应用程序和 JVM 进行故障检查、分析。飞行记录器记录的主要数据源于应用程序、JVM 和 OS，这些事件信息保存在单独的事件记录文件中，故障发生后，能够从事件记录文件中提取出有用信息对故障进行分析。</p>
 <p>启用飞行记录器参数如下：</p>
-<pre><code class="java">-XX:StartFlightRecording
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:StartFlightRecording</span><br></pre></td></tr></table></figure>
+
 <p>也可以使用 bin&#x2F;jcmd 工具启动和配置飞行记录器：</p>
 <p>清单 2. 飞行记录器启动、配置参数示例</p>
-<pre><code class="java">    $ jcmd &lt;pid&gt; JFR.start
-    $ jcmd &lt;pid&gt; JFR.dump filename=recording.jfr
-    $ jcmd &lt;pid&gt; JFR.stop
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ jcmd &lt;pid&gt; JFR.start</span><br><span class="line">$ jcmd &lt;pid&gt; JFR.dump filename=recording.jfr</span><br><span class="line">$ jcmd &lt;pid&gt; JFR.stop</span><br></pre></td></tr></table></figure>
+
 <p><strong>JFR 使用测试</strong>：</p>
 <p>清单 3. JFR 使用示例</p>
-<pre><code class="java">    public class FlightRecorderTest extends Event &#123;
-        @Label(&quot;Hello World&quot;)
-        @Description(&quot;Helps the programmer getting started&quot;)
-        static class HelloWorld extends Event &#123;
-            @Label(&quot;Message&quot;)
-            String message;
-        &#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FlightRecorderTest</span> <span class="keyword">extends</span> <span class="title class_">Event</span> &#123;</span><br><span class="line">    <span class="meta">@Label(&quot;Hello World&quot;)</span></span><br><span class="line">    <span class="meta">@Description(&quot;Helps the programmer getting started&quot;)</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">HelloWorld</span> <span class="keyword">extends</span> <span class="title class_">Event</span> &#123;</span><br><span class="line">        <span class="meta">@Label(&quot;Message&quot;)</span></span><br><span class="line">        String message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">HelloWorld</span> <span class="variable">event</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HelloWorld</span>();</span><br><span class="line">        event.message = <span class="string">&quot;hello, world!&quot;</span>;</span><br><span class="line">        event.commit();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-        public static void main(String[] args) &#123;
-            HelloWorld event = new HelloWorld();
-            event.message = &quot;hello, world!&quot;;
-            event.commit();
-        &#125;
-    &#125;
-</code></pre>
 <p>在运行时加上如下参数：</p>
-<pre><code class="java">java -XX:StartFlightRecording=duration=1s, filename=recording.jfr
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -XX:StartFlightRecording=duration=1s, filename=recording.jfr</span><br></pre></td></tr></table></figure>
+
 <p>下面读取上一步中生成的 JFR 文件：recording.jfr</p>
 <p>清单 4. 飞行记录器分析示例</p>
-<pre><code class="java">    public void readRecordFile() throws IOException &#123;
-        final Path path = Paths.get(&quot;D:\\ java \\recording.jfr&quot;);
-        final List&lt;RecordedEvent&gt; recordedEvents = RecordingFile.readAllEvents(path);
-        for (RecordedEvent event : recordedEvents) &#123;
-            System.out.println(event.getStartTime() + &quot;,&quot; + event.getValue(&quot;message&quot;));
-        &#125;
-    &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">readRecordFile</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">Path</span> <span class="variable">path</span> <span class="operator">=</span> Paths.get(<span class="string">&quot;D:\\ java \\recording.jfr&quot;</span>);</span><br><span class="line">    <span class="keyword">final</span> List&lt;RecordedEvent&gt; recordedEvents = RecordingFile.readAllEvents(path);</span><br><span class="line">    <span class="keyword">for</span> (RecordedEvent event : recordedEvents) &#123;</span><br><span class="line">        System.out.println(event.getStartTime() + <span class="string">&quot;,&quot;</span> + event.getValue(<span class="string">&quot;message&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h2 id="动态类文件常量"><a href="#动态类文件常量" class="headerlink" title="动态类文件常量"></a>动态类文件常量</h2><p>为了使 JVM 对动态语言更具吸引力，Java 的第七个版本已将 invokedynamic 引入其指令集。</p>
 <p>不过 Java 开发人员通常不会注意到此功能，因为它隐藏在 Java 字节代码中。通过使用 invokedynamic，可以延迟方法调用的绑定，直到第一次调用。例如，Java 语言使用该技术来实现 Lambda 表达式，这些表达式仅在首次使用时才显示出来。这样做，invokedynamic 已经演变成一种必不可少的语言功能。</p>
 <p>Java 11 引入了类似的机制，扩展了 Java 文件格式，以支持新的常量池：CONSTANT_Dynamic，它在初始化的时候，像 invokedynamic 指令生成代理方法一样，委托给 bootstrap 方法进行初始化创建，对上层软件没有很大的影响，降低开发新形式的可实现类文件约束带来的成本和干扰。</p>

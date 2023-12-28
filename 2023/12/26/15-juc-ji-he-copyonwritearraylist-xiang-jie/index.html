@@ -428,154 +428,27 @@ CopyOnWriteArrayList是ArrayList 的一个线程安全的变体，其中所有�
 <li>CopyOnWriteArrayList有何缺陷，说说其应用场景?</li>
 </ul>
 <h2 id="CopyOnWriteArrayList源码分析"><a href="#CopyOnWriteArrayList源码分析" class="headerlink" title="CopyOnWriteArrayList源码分析"></a>CopyOnWriteArrayList源码分析</h2><h3 id="类的继承关系"><a href="#类的继承关系" class="headerlink" title="类的继承关系"></a>类的继承关系</h3><p>CopyOnWriteArrayList实现了List接口，List接口定义了对列表的基本操作；同时实现了RandomAccess接口，表示可以随机访问(数组具有随机访问的特性)；同时实现了Cloneable接口，表示可克隆；同时也实现了Serializable接口，表示可被序列化。</p>
-<pre><code class="java">public class CopyOnWriteArrayList&lt;E&gt; implements List&lt;E&gt;, RandomAccess, Cloneable, java.io.Serializable &#123;&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CopyOnWriteArrayList</span>&lt;E&gt; <span class="keyword">implements</span> <span class="title class_">List</span>&lt;E&gt;, RandomAccess, Cloneable, java.io.Serializable &#123;&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="类的内部类"><a href="#类的内部类" class="headerlink" title="类的内部类"></a>类的内部类</h3><ul>
 <li>COWIterator类</li>
 </ul>
 <p>COWIterator表示迭代器，其也有一个Object类型的数组作为CopyOnWriteArrayList数组的快照，这种快照风格的迭代器方法在创建迭代器时使用了对当时数组状态的引用。此数组在迭代器的生存期内不会更改，因此不可能发生冲突，并且迭代器保证不会抛出 ConcurrentModificationException。创建迭代器以后，迭代器就不会反映列表的添加、移除或者更改。在迭代器上进行的元素更改操作(remove、set 和 add)不受支持。这些方法将抛出 UnsupportedOperationException。</p>
-<pre><code class="java">static final class COWIterator&lt;E&gt; implements ListIterator&lt;E&gt; &#123;
-    /** Snapshot of the array */
-    // 快照
-    private final Object[] snapshot;
-    /** Index of element to be returned by subsequent call to next.  */
-    // 游标
-    private int cursor;
-    // 构造函数
-    private COWIterator(Object[] elements, int initialCursor) &#123;
-        cursor = initialCursor;
-        snapshot = elements;
-    &#125;
-    // 是否还有下一项
-    public boolean hasNext() &#123;
-        return cursor &lt; snapshot.length;
-    &#125;
-    // 是否有上一项
-    public boolean hasPrevious() &#123;
-        return cursor &gt; 0;
-    &#125;
-    // next项
-    @SuppressWarnings(&quot;unchecked&quot;)
-    public E next() &#123;
-        if (! hasNext()) // 不存在下一项，抛出异常
-            throw new NoSuchElementException();
-        // 返回下一项
-        return (E) snapshot[cursor++];
-    &#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">COWIterator</span>&lt;E&gt; <span class="keyword">implements</span> <span class="title class_">ListIterator</span>&lt;E&gt; &#123;</span><br><span class="line">    <span class="comment">/** Snapshot of the array */</span></span><br><span class="line">    <span class="comment">// 快照</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Object[] snapshot;</span><br><span class="line">    <span class="comment">/** Index of element to be returned by subsequent call to next.  */</span></span><br><span class="line">    <span class="comment">// 游标</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> cursor;</span><br><span class="line">    <span class="comment">// 构造函数</span></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">COWIterator</span><span class="params">(Object[] elements, <span class="type">int</span> initialCursor)</span> &#123;</span><br><span class="line">        cursor = initialCursor;</span><br><span class="line">        snapshot = elements;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 是否还有下一项</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasNext</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> cursor &lt; snapshot.length;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 是否有上一项</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasPrevious</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> cursor &gt; <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// next项</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> E <span class="title function_">next</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (! hasNext()) <span class="comment">// 不存在下一项，抛出异常</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NoSuchElementException</span>();</span><br><span class="line">        <span class="comment">// 返回下一项</span></span><br><span class="line">        <span class="keyword">return</span> (E) snapshot[cursor++];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> E <span class="title function_">previous</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (! hasPrevious())</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NoSuchElementException</span>();</span><br><span class="line">        <span class="keyword">return</span> (E) snapshot[--cursor];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 下一项索引</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">nextIndex</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> cursor;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 上一项索引</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">previousIndex</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> cursor-<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">        * Not supported. Always throws UnsupportedOperationException.</span></span><br><span class="line"><span class="comment">        * <span class="doctag">@throws</span> UnsupportedOperationException always; &#123;<span class="doctag">@code</span> remove&#125;</span></span><br><span class="line"><span class="comment">        *         is not supported by this iterator.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="comment">// 不支持remove操作</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">remove</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">UnsupportedOperationException</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">        * Not supported. Always throws UnsupportedOperationException.</span></span><br><span class="line"><span class="comment">        * <span class="doctag">@throws</span> UnsupportedOperationException always; &#123;<span class="doctag">@code</span> set&#125;</span></span><br><span class="line"><span class="comment">        *         is not supported by this iterator.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="comment">// 不支持set操作</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">set</span><span class="params">(E e)</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">UnsupportedOperationException</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">        * Not supported. Always throws UnsupportedOperationException.</span></span><br><span class="line"><span class="comment">        * <span class="doctag">@throws</span> UnsupportedOperationException always; &#123;<span class="doctag">@code</span> add&#125;</span></span><br><span class="line"><span class="comment">        *         is not supported by this iterator.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="comment">// 不支持add操作</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">add</span><span class="params">(E e)</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">UnsupportedOperationException</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">forEachRemaining</span><span class="params">(Consumer&lt;? <span class="built_in">super</span> E&gt; action)</span> &#123;</span><br><span class="line">        Objects.requireNonNull(action);</span><br><span class="line">        Object[] elements = snapshot;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> elements.length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> cursor; i &lt; size; i++) &#123;</span><br><span class="line">            <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span> <span class="type">E</span> <span class="variable">e</span> <span class="operator">=</span> (E) elements[i];</span><br><span class="line">            action.accept(e);</span><br><span class="line">        &#125;</span><br><span class="line">        cursor = size;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    @SuppressWarnings(&quot;unchecked&quot;)
-    public E previous() &#123;
-        if (! hasPrevious())
-            throw new NoSuchElementException();
-        return (E) snapshot[--cursor];
-    &#125;
-    
-    // 下一项索引
-    public int nextIndex() &#123;
-        return cursor;
-    &#125;
-    
-    // 上一项索引
-    public int previousIndex() &#123;
-        return cursor-1;
-    &#125;
-
-    /**
-        * Not supported. Always throws UnsupportedOperationException.
-        * @throws UnsupportedOperationException always; &#123;@code remove&#125;
-        *         is not supported by this iterator.
-        */
-    // 不支持remove操作
-    public void remove() &#123;
-        throw new UnsupportedOperationException();
-    &#125;
-
-    /**
-        * Not supported. Always throws UnsupportedOperationException.
-        * @throws UnsupportedOperationException always; &#123;@code set&#125;
-        *         is not supported by this iterator.
-        */
-    // 不支持set操作
-    public void set(E e) &#123;
-        throw new UnsupportedOperationException();
-    &#125;
-
-    /**
-        * Not supported. Always throws UnsupportedOperationException.
-        * @throws UnsupportedOperationException always; &#123;@code add&#125;
-        *         is not supported by this iterator.
-        */
-    // 不支持add操作
-    public void add(E e) &#123;
-        throw new UnsupportedOperationException();
-    &#125;
-
-    @Override
-    public void forEachRemaining(Consumer&lt;? super E&gt; action) &#123;
-        Objects.requireNonNull(action);
-        Object[] elements = snapshot;
-        final int size = elements.length;
-        for (int i = cursor; i &lt; size; i++) &#123;
-            @SuppressWarnings(&quot;unchecked&quot;) E e = (E) elements[i];
-            action.accept(e);
-        &#125;
-        cursor = size;
-    &#125;
-&#125;
-</code></pre>
 <h3 id="类的属性"><a href="#类的属性" class="headerlink" title="类的属性"></a>类的属性</h3><p>属性中有一个可重入锁，用来保证线程安全访问，还有一个Object类型的数组，用来存放具体的元素。当然，也使用到了反射机制和CAS来保证原子性的修改lock域。</p>
-<pre><code class="java">public class CopyOnWriteArrayList&lt;E&gt;
-    implements List&lt;E&gt;, RandomAccess, Cloneable, java.io.Serializable &#123;
-    // 版本序列号
-    private static final long serialVersionUID = 8673264195747942595L;
-    // 可重入锁
-    final transient ReentrantLock lock = new ReentrantLock();
-    // 对象数组，用于存放元素
-    private transient volatile Object[] array;
-    // 反射机制
-    private static final sun.misc.Unsafe UNSAFE;
-    // lock域的内存偏移量
-    private static final long lockOffset;
-    static &#123;
-        try &#123;
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class&lt;?&gt; k = CopyOnWriteArrayList.class;
-            lockOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField(&quot;lock&quot;));
-        &#125; catch (Exception e) &#123;
-            throw new Error(e);
-        &#125;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CopyOnWriteArrayList</span>&lt;E&gt;</span><br><span class="line">    <span class="keyword">implements</span> <span class="title class_">List</span>&lt;E&gt;, RandomAccess, Cloneable, java.io.Serializable &#123;</span><br><span class="line">    <span class="comment">// 版本序列号</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">8673264195747942595L</span>;</span><br><span class="line">    <span class="comment">// 可重入锁</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">transient</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantLock</span>();</span><br><span class="line">    <span class="comment">// 对象数组，用于存放元素</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> <span class="keyword">volatile</span> Object[] array;</span><br><span class="line">    <span class="comment">// 反射机制</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> sun.misc.Unsafe UNSAFE;</span><br><span class="line">    <span class="comment">// lock域的内存偏移量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> lockOffset;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            UNSAFE = sun.misc.Unsafe.getUnsafe();</span><br><span class="line">            Class&lt;?&gt; k = CopyOnWriteArrayList.class;</span><br><span class="line">            lockOffset = UNSAFE.objectFieldOffset</span><br><span class="line">                (k.getDeclaredField(<span class="string">&quot;lock&quot;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="类的构造函数"><a href="#类的构造函数" class="headerlink" title="类的构造函数"></a>类的构造函数</h3><ul>
 <li>默认构造函数</li>
 </ul>
-<pre><code class="java">public CopyOnWriteArrayList() &#123;
-    // 设置数组
-    setArray(new Object[0]);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">CopyOnWriteArrayList</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 设置数组</span></span><br><span class="line">    setArray(<span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><code>CopyOnWriteArrayList(Collection&lt;? extends E&gt;)</code>型构造函数　 该构造函数用于创建一个按 collection 的迭代器返回元素的顺序包含指定 collection 元素的列表。</li>
 </ul>
-<pre><code class="java">public CopyOnWriteArrayList(Collection&lt;? extends E&gt; c) &#123;
-    Object[] elements;
-    if (c.getClass() == CopyOnWriteArrayList.class) // 类型相同
-        // 获取c集合的数组
-        elements = ((CopyOnWriteArrayList&lt;?&gt;)c).getArray();
-    else &#123; // 类型不相同
-        // 将c集合转化为数组并赋值给elements
-        elements = c.toArray();
-        // c.toArray might (incorrectly) not return Object[] (see 6260652)
-        if (elements.getClass() != Object[].class) // elements类型不为Object[]类型
-            // 将elements数组转化为Object[]类型的数组
-            elements = Arrays.copyOf(elements, elements.length, Object[].class);
-    &#125;
-    // 设置数组
-    setArray(elements);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">CopyOnWriteArrayList</span><span class="params">(Collection&lt;? extends E&gt; c)</span> &#123;</span><br><span class="line">    Object[] elements;</span><br><span class="line">    <span class="keyword">if</span> (c.getClass() == CopyOnWriteArrayList.class) <span class="comment">// 类型相同</span></span><br><span class="line">        <span class="comment">// 获取c集合的数组</span></span><br><span class="line">        elements = ((CopyOnWriteArrayList&lt;?&gt;)c).getArray();</span><br><span class="line">    <span class="keyword">else</span> &#123; <span class="comment">// 类型不相同</span></span><br><span class="line">        <span class="comment">// 将c集合转化为数组并赋值给elements</span></span><br><span class="line">        elements = c.toArray();</span><br><span class="line">        <span class="comment">// c.toArray might (incorrectly) not return Object[] (see 6260652)</span></span><br><span class="line">        <span class="keyword">if</span> (elements.getClass() != Object[].class) <span class="comment">// elements类型不为Object[]类型</span></span><br><span class="line">            <span class="comment">// 将elements数组转化为Object[]类型的数组</span></span><br><span class="line">            elements = Arrays.copyOf(elements, elements.length, Object[].class);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 设置数组</span></span><br><span class="line">    setArray(elements);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>该构造函数的处理流程如下</p>
 <ul>
 <li><p>判断传入的集合c的类型是否为CopyOnWriteArrayList类型，若是，则获取该集合类型的底层数组(Object[])，并且设置当前CopyOnWriteArrayList的数组(Object[]数组)，进入步骤③；否则，进入步骤②</p>
@@ -588,49 +461,14 @@ CopyOnWriteArrayList是ArrayList 的一个线程安全的变体，其中所有�
 </li>
 </ul>
 <p>该构造函数用于创建一个保存给定数组的副本的列表。</p>
-<pre><code class="java">public CopyOnWriteArrayList(E[] toCopyIn) &#123;
-    // 将toCopyIn转化为Object[]类型数组，然后设置当前数组
-    setArray(Arrays.copyOf(toCopyIn, toCopyIn.length, Object[].class));
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">CopyOnWriteArrayList</span><span class="params">(E[] toCopyIn)</span> &#123;</span><br><span class="line">    <span class="comment">// 将toCopyIn转化为Object[]类型数组，然后设置当前数组</span></span><br><span class="line">    setArray(Arrays.copyOf(toCopyIn, toCopyIn.length, Object[].class));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="核心函数分析"><a href="#核心函数分析" class="headerlink" title="核心函数分析"></a>核心函数分析</h3><p>对于CopyOnWriteArrayList的函数分析，主要明白Arrays.copyOf方法即可理解CopyOnWriteArrayList其他函数的意义。</p>
 <h4 id="copyOf函数"><a href="#copyOf函数" class="headerlink" title="copyOf函数"></a>copyOf函数</h4><p>该函数用于复制指定的数组，截取或用 null 填充(如有必要)，以使副本具有指定的长度。</p>
-<pre><code class="java">public static &lt;T,U&gt; T[] copyOf(U[] original, int newLength, Class&lt;? extends T[]&gt; newType) &#123;
-    @SuppressWarnings(&quot;unchecked&quot;)
-    // 确定copy的类型(将newType转化为Object类型，将Object[].class转化为Object类型，判断两者是否相等，若相等，则生成指定长度的Object数组
-    // 否则,生成指定长度的新类型的数组)
-    T[] copy = ((Object)newType == (Object)Object[].class)
-        ? (T[]) new Object[newLength]
-        : (T[]) Array.newInstance(newType.getComponentType(), newLength);
-    // 将original数组从下标0开始，复制长度为(original.length和newLength的较小者),复制到copy数组中(也从下标0开始)
-    System.arraycopy(original, 0, copy, 0,
-                        Math.min(original.length, newLength));
-    return copy;
-&#125;
-</code></pre>
-<h4 id="add函数"><a href="#add函数" class="headerlink" title="add函数"></a>add函数</h4><pre><code class="java">public boolean add(E e) &#123;
-    // 可重入锁
-    final ReentrantLock lock = this.lock;
-    // 获取锁
-    lock.lock();
-    try &#123;
-        // 元素数组
-        Object[] elements = getArray();
-        // 数组长度
-        int len = elements.length;
-        // 复制数组
-        Object[] newElements = Arrays.copyOf(elements, len + 1);
-        // 存放元素e
-        newElements[len] = e;
-        // 设置数组
-        setArray(newElements);
-        return true;
-    &#125; finally &#123;
-        // 释放锁
-        lock.unlock();
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T,U&gt; T[] copyOf(U[] original, <span class="type">int</span> newLength, Class&lt;? <span class="keyword">extends</span> <span class="title class_">T</span>[]&gt; newType) &#123;</span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">    <span class="comment">// 确定copy的类型(将newType转化为Object类型，将Object[].class转化为Object类型，判断两者是否相等，若相等，则生成指定长度的Object数组</span></span><br><span class="line">    <span class="comment">// 否则,生成指定长度的新类型的数组)</span></span><br><span class="line">    T[] copy = ((Object)newType == (Object)Object[].class)</span><br><span class="line">        ? (T[]) <span class="keyword">new</span> <span class="title class_">Object</span>[newLength]</span><br><span class="line">        : (T[]) Array.newInstance(newType.getComponentType(), newLength);</span><br><span class="line">    <span class="comment">// 将original数组从下标0开始，复制长度为(original.length和newLength的较小者),复制到copy数组中(也从下标0开始)</span></span><br><span class="line">    System.arraycopy(original, <span class="number">0</span>, copy, <span class="number">0</span>,</span><br><span class="line">                        Math.min(original.length, newLength));</span><br><span class="line">    <span class="keyword">return</span> copy;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="add函数"><a href="#add函数" class="headerlink" title="add函数"></a>add函数</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">add</span><span class="params">(E e)</span> &#123;</span><br><span class="line">    <span class="comment">// 可重入锁</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="built_in">this</span>.lock;</span><br><span class="line">    <span class="comment">// 获取锁</span></span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 元素数组</span></span><br><span class="line">        Object[] elements = getArray();</span><br><span class="line">        <span class="comment">// 数组长度</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> elements.length;</span><br><span class="line">        <span class="comment">// 复制数组</span></span><br><span class="line">        Object[] newElements = Arrays.copyOf(elements, len + <span class="number">1</span>);</span><br><span class="line">        <span class="comment">// 存放元素e</span></span><br><span class="line">        newElements[len] = e;</span><br><span class="line">        <span class="comment">// 设置数组</span></span><br><span class="line">        setArray(newElements);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">// 释放锁</span></span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>此函数用于将指定元素添加到此列表的尾部，处理流程如下</p>
 <ul>
 <li>获取锁(保证多线程的安全访问)，获取当前的Object数组，获取Object数组的长度为length，进入步骤②。</li>
@@ -638,42 +476,8 @@ CopyOnWriteArrayList是ArrayList 的一个线程安全的变体，其中所有�
 <li>将下标为length的数组元素newElements[length]设置为元素e，再设置当前Object[]为newElements，释放锁，返回。这样就完成了元素的添加。</li>
 </ul>
 <h4 id="addIfAbsent方法"><a href="#addIfAbsent方法" class="headerlink" title="addIfAbsent方法"></a>addIfAbsent方法</h4><p>该函数用于添加元素(如果数组中不存在，则添加；否则，不添加，直接返回)，可以保证多线程环境下不会重复添加元素。</p>
-<pre><code class="java">private boolean addIfAbsent(E e, Object[] snapshot) &#123;
-    // 重入锁
-    final ReentrantLock lock = this.lock;
-    // 获取锁
-    lock.lock();
-    try &#123;
-        // 获取数组
-        Object[] current = getArray();
-        // 数组长度
-        int len = current.length;
-        if (snapshot != current) &#123; // 快照不等于当前数组，对数组进行了修改
-            // Optimize for lost race to another addXXX operation
-            // 取较小者
-            int common = Math.min(snapshot.length, len);
-            for (int i = 0; i &lt; common; i++) // 遍历
-                if (current[i] != snapshot[i] &amp;&amp; eq(e, current[i])) // 当前数组的元素与快照的元素不相等并且e与当前元素相等
-                    // 表示在snapshot与current之间修改了数组，并且设置了数组某一元素为e，已经存在
-                    // 返回
-                    return false;
-            if (indexOf(e, current, common, len) &gt;= 0) // 在当前数组中找到e元素
-                    // 返回
-                    return false;
-        &#125;
-        // 复制数组
-        Object[] newElements = Arrays.copyOf(current, len + 1);
-        // 对数组len索引的元素赋值为e
-        newElements[len] = e;
-        // 设置数组
-        setArray(newElements);
-        return true;
-    &#125; finally &#123;
-        // 释放锁
-        lock.unlock();
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">addIfAbsent</span><span class="params">(E e, Object[] snapshot)</span> &#123;</span><br><span class="line">    <span class="comment">// 重入锁</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="built_in">this</span>.lock;</span><br><span class="line">    <span class="comment">// 获取锁</span></span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 获取数组</span></span><br><span class="line">        Object[] current = getArray();</span><br><span class="line">        <span class="comment">// 数组长度</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> current.length;</span><br><span class="line">        <span class="keyword">if</span> (snapshot != current) &#123; <span class="comment">// 快照不等于当前数组，对数组进行了修改</span></span><br><span class="line">            <span class="comment">// Optimize for lost race to another addXXX operation</span></span><br><span class="line">            <span class="comment">// 取较小者</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">common</span> <span class="operator">=</span> Math.min(snapshot.length, len);</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; common; i++) <span class="comment">// 遍历</span></span><br><span class="line">                <span class="keyword">if</span> (current[i] != snapshot[i] &amp;&amp; eq(e, current[i])) <span class="comment">// 当前数组的元素与快照的元素不相等并且e与当前元素相等</span></span><br><span class="line">                    <span class="comment">// 表示在snapshot与current之间修改了数组，并且设置了数组某一元素为e，已经存在</span></span><br><span class="line">                    <span class="comment">// 返回</span></span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">if</span> (indexOf(e, current, common, len) &gt;= <span class="number">0</span>) <span class="comment">// 在当前数组中找到e元素</span></span><br><span class="line">                    <span class="comment">// 返回</span></span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 复制数组</span></span><br><span class="line">        Object[] newElements = Arrays.copyOf(current, len + <span class="number">1</span>);</span><br><span class="line">        <span class="comment">// 对数组len索引的元素赋值为e</span></span><br><span class="line">        newElements[len] = e;</span><br><span class="line">        <span class="comment">// 设置数组</span></span><br><span class="line">        setArray(newElements);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">// 释放锁</span></span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>该函数的流程如下:</p>
 <p>① 获取锁，获取当前数组为current，current长度为len，判断数组之前的快照snapshot是否等于当前数组current，若不相等，则进入步骤②；否则，进入步骤④</p>
 <p>② 不相等，表示在snapshot与current之间，对数组进行了修改(如进行了add、set、remove等操作)，获取长度(snapshot与current之间的较小者)，对current进行遍历操作，若遍历过程发现snapshot与current的元素不相等并且current的元素与指定元素相等(可能进行了set操作)，进入步骤⑤，否则，进入步骤③</p>
@@ -681,133 +485,21 @@ CopyOnWriteArrayList是ArrayList 的一个线程安全的变体，其中所有�
 <p>④ 复制当前数组current为newElements，长度为len+1，此时newElements[len]为null。再设置newElements[len]为指定元素e，再设置数组，进入步骤⑤</p>
 <p>⑤ 释放锁，返回。</p>
 <h4 id="set函数"><a href="#set函数" class="headerlink" title="set函数"></a>set函数</h4><p>此函数用于用指定的元素替代此列表指定位置上的元素，也是基于数组的复制来实现的。</p>
-<pre><code class="java">public E set(int index, E element) &#123;
-    // 可重入锁
-    final ReentrantLock lock = this.lock;
-    // 获取锁
-    lock.lock();
-    try &#123;
-        // 获取数组
-        Object[] elements = getArray();
-        // 获取index索引的元素
-        E oldValue = get(elements, index);
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> E <span class="title function_">set</span><span class="params">(<span class="type">int</span> index, E element)</span> &#123;</span><br><span class="line">    <span class="comment">// 可重入锁</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="built_in">this</span>.lock;</span><br><span class="line">    <span class="comment">// 获取锁</span></span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 获取数组</span></span><br><span class="line">        Object[] elements = getArray();</span><br><span class="line">        <span class="comment">// 获取index索引的元素</span></span><br><span class="line">        <span class="type">E</span> <span class="variable">oldValue</span> <span class="operator">=</span> get(elements, index);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (oldValue != element) &#123; <span class="comment">// 旧值等于element</span></span><br><span class="line">            <span class="comment">// 数组长度</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> elements.length;</span><br><span class="line">            <span class="comment">// 复制数组</span></span><br><span class="line">            Object[] newElements = Arrays.copyOf(elements, len);</span><br><span class="line">            <span class="comment">// 重新赋值index索引的值</span></span><br><span class="line">            newElements[index] = element;</span><br><span class="line">            <span class="comment">// 设置数组</span></span><br><span class="line">            setArray(newElements);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// Not quite a no-op; ensures volatile write semantics</span></span><br><span class="line">            <span class="comment">// 设置数组</span></span><br><span class="line">            setArray(elements);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 返回旧值</span></span><br><span class="line">        <span class="keyword">return</span> oldValue;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">// 释放锁</span></span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-        if (oldValue != element) &#123; // 旧值等于element
-            // 数组长度
-            int len = elements.length;
-            // 复制数组
-            Object[] newElements = Arrays.copyOf(elements, len);
-            // 重新赋值index索引的值
-            newElements[index] = element;
-            // 设置数组
-            setArray(newElements);
-        &#125; else &#123;
-            // Not quite a no-op; ensures volatile write semantics
-            // 设置数组
-            setArray(elements);
-        &#125;
-        // 返回旧值
-        return oldValue;
-    &#125; finally &#123;
-        // 释放锁
-        lock.unlock();
-    &#125;
-&#125;
-</code></pre>
 <h4 id="remove函数"><a href="#remove函数" class="headerlink" title="remove函数"></a>remove函数</h4><p>此函数用于移除此列表指定位置上的元素。</p>
-<pre><code class="java">public E remove(int index) &#123;
-    // 可重入锁
-    final ReentrantLock lock = this.lock;
-    // 获取锁
-    lock.lock();
-    try &#123;
-        // 获取数组
-        Object[] elements = getArray();
-        // 数组长度
-        int len = elements.length;
-        // 获取旧值
-        E oldValue = get(elements, index);
-        // 需要移动的元素个数
-        int numMoved = len - index - 1;
-        if (numMoved == 0) // 移动个数为0
-            // 复制后设置数组
-            setArray(Arrays.copyOf(elements, len - 1));
-        else &#123; // 移动个数不为0
-            // 新生数组
-            Object[] newElements = new Object[len - 1];
-            // 复制index索引之前的元素
-            System.arraycopy(elements, 0, newElements, 0, index);
-            // 复制index索引之后的元素
-            System.arraycopy(elements, index + 1, newElements, index,
-                                numMoved);
-            // 设置索引
-            setArray(newElements);
-        &#125;
-        // 返回旧值
-        return oldValue;
-    &#125; finally &#123;
-        // 释放锁
-        lock.unlock();
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> E <span class="title function_">remove</span><span class="params">(<span class="type">int</span> index)</span> &#123;</span><br><span class="line">    <span class="comment">// 可重入锁</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="built_in">this</span>.lock;</span><br><span class="line">    <span class="comment">// 获取锁</span></span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 获取数组</span></span><br><span class="line">        Object[] elements = getArray();</span><br><span class="line">        <span class="comment">// 数组长度</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> elements.length;</span><br><span class="line">        <span class="comment">// 获取旧值</span></span><br><span class="line">        <span class="type">E</span> <span class="variable">oldValue</span> <span class="operator">=</span> get(elements, index);</span><br><span class="line">        <span class="comment">// 需要移动的元素个数</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">numMoved</span> <span class="operator">=</span> len - index - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (numMoved == <span class="number">0</span>) <span class="comment">// 移动个数为0</span></span><br><span class="line">            <span class="comment">// 复制后设置数组</span></span><br><span class="line">            setArray(Arrays.copyOf(elements, len - <span class="number">1</span>));</span><br><span class="line">        <span class="keyword">else</span> &#123; <span class="comment">// 移动个数不为0</span></span><br><span class="line">            <span class="comment">// 新生数组</span></span><br><span class="line">            Object[] newElements = <span class="keyword">new</span> <span class="title class_">Object</span>[len - <span class="number">1</span>];</span><br><span class="line">            <span class="comment">// 复制index索引之前的元素</span></span><br><span class="line">            System.arraycopy(elements, <span class="number">0</span>, newElements, <span class="number">0</span>, index);</span><br><span class="line">            <span class="comment">// 复制index索引之后的元素</span></span><br><span class="line">            System.arraycopy(elements, index + <span class="number">1</span>, newElements, index,</span><br><span class="line">                                numMoved);</span><br><span class="line">            <span class="comment">// 设置索引</span></span><br><span class="line">            setArray(newElements);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 返回旧值</span></span><br><span class="line">        <span class="keyword">return</span> oldValue;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">// 释放锁</span></span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>处理流程如下</p>
 <p>① 获取锁，获取数组elements，数组长度为length，获取索引的值elements[index]，计算需要移动的元素个数(length - index - 1),若个数为0，则表示移除的是数组的最后一个元素，复制elements数组，复制长度为length-1，然后设置数组，进入步骤③；否则，进入步骤②</p>
 <p>② 先复制index索引前的元素，再复制index索引后的元素，然后设置数组。</p>
 <p>③ 释放锁，返回旧值。</p>
 <h2 id="CopyOnWriteArrayList示例"><a href="#CopyOnWriteArrayList示例" class="headerlink" title="CopyOnWriteArrayList示例"></a>CopyOnWriteArrayList示例</h2><p>下面通过一个示例来了解CopyOnWriteArrayList的使用: 在程序中，有一个PutThread线程会每隔50ms就向CopyOnWriteArrayList中添加一个元素，并且两次使用了迭代器，迭代器输出的内容都是生成迭代器时，CopyOnWriteArrayList的Object数组的快照的内容，在迭代的过程中，往CopyOnWriteArrayList中添加元素也不会抛出异常。</p>
-<pre><code class="java">import java.util.Iterator;
-import java.util.concurrent.CopyOnWriteArrayList;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.Iterator;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.CopyOnWriteArrayList;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">PutThread</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> CopyOnWriteArrayList&lt;Integer&gt; cowal;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">PutThread</span><span class="params">(CopyOnWriteArrayList&lt;Integer&gt; cowal)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.cowal = cowal;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">100</span>; i &lt; <span class="number">110</span>; i++) &#123;</span><br><span class="line">                cowal.add(i);</span><br><span class="line">                Thread.sleep(<span class="number">50</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CopyOnWriteArrayListDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        CopyOnWriteArrayList&lt;Integer&gt; cowal = <span class="keyword">new</span> <span class="title class_">CopyOnWriteArrayList</span>&lt;Integer&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            cowal.add(i);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">PutThread</span> <span class="variable">p1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PutThread</span>(cowal);</span><br><span class="line">        p1.start();</span><br><span class="line">        Iterator&lt;Integer&gt; iterator = cowal.iterator();</span><br><span class="line">        <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">            System.out.print(iterator.next() + <span class="string">&quot; &quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="number">200</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        iterator = cowal.iterator();</span><br><span class="line">        <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">            System.out.print(iterator.next() + <span class="string">&quot; &quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-class PutThread extends Thread &#123;
-    private CopyOnWriteArrayList&lt;Integer&gt; cowal;
-
-    public PutThread(CopyOnWriteArrayList&lt;Integer&gt; cowal) &#123;
-        this.cowal = cowal;
-    &#125;
-
-    public void run() &#123;
-        try &#123;
-            for (int i = 100; i &lt; 110; i++) &#123;
-                cowal.add(i);
-                Thread.sleep(50);
-            &#125;
-        &#125; catch (InterruptedException e) &#123;
-            e.printStackTrace();
-        &#125;
-    &#125;
-&#125;
-
-public class CopyOnWriteArrayListDemo &#123;
-    public static void main(String[] args) &#123;
-        CopyOnWriteArrayList&lt;Integer&gt; cowal = new CopyOnWriteArrayList&lt;Integer&gt;();
-        for (int i = 0; i &lt; 10; i++) &#123;
-            cowal.add(i);
-        &#125;
-        PutThread p1 = new PutThread(cowal);
-        p1.start();
-        Iterator&lt;Integer&gt; iterator = cowal.iterator();
-        while (iterator.hasNext()) &#123;
-            System.out.print(iterator.next() + &quot; &quot;);
-        &#125;
-        System.out.println();
-        try &#123;
-            Thread.sleep(200);
-        &#125; catch (InterruptedException e) &#123;
-            e.printStackTrace();
-        &#125;
-        
-        iterator = cowal.iterator();
-        while (iterator.hasNext()) &#123;
-            System.out.print(iterator.next() + &quot; &quot;);
-        &#125;
-    &#125;
-&#125;
-</code></pre>
 <p>运行结果(某一次)</p>
-<pre><code class="html">0 1 2 3 4 5 6 7 8 9 100 
-0 1 2 3 4 5 6 7 8 9 100 101 102 103 
-</code></pre>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0 1 2 3 4 5 6 7 8 9 100 </span><br><span class="line">0 1 2 3 4 5 6 7 8 9 100 101 102 103 </span><br></pre></td></tr></table></figure>
+
 <h2 id="更深入理解"><a href="#更深入理解" class="headerlink" title="更深入理解"></a>更深入理解</h2><h3 id="CopyOnWriteArrayList的缺陷和使用场景"><a href="#CopyOnWriteArrayList的缺陷和使用场景" class="headerlink" title="CopyOnWriteArrayList的缺陷和使用场景"></a>CopyOnWriteArrayList的缺陷和使用场景</h3><p>CopyOnWriteArrayList 有几个缺点：</p>
 <ul>
 <li>由于写操作的时候，需要拷贝数组，会消耗内存，如果原数组的内容比较多的情况下，可能导致young gc或者full gc</li>

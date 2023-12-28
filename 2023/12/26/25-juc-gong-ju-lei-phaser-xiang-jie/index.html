@@ -452,19 +452,8 @@ Phaser是JDK 7新增的一个同步辅助类，它可以实现CyclicBarrier和Co
 <li><strong>Monitoring(状态监控)</strong> :</li>
 </ul>
 <p>由于同步方法可能只被已注册的parties调用，所以phaser的当前状态也可能被任何调用者监控。在任何时候，可以通过getRegisteredParties获取parties数，其中getArrivedParties方法返回已经到达当前phase的parties数。当剩余的parties(通过方法getUnarrivedParties获取)到达时，phase进入下一代。这些方法返回的值可能只表示短暂的状态，所以一般来说在同步结构里并没有啥卵用。</p>
-<h2 id="Phaser源码详解"><a href="#Phaser源码详解" class="headerlink" title="Phaser源码详解"></a>Phaser源码详解</h2><h3 id="核心参数"><a href="#核心参数" class="headerlink" title="核心参数"></a>核心参数</h3><pre><code class="java">private volatile long state;
-/**
- * The parent of this phaser, or null if none
- */
-private final Phaser parent;
-/**
- * The root of phaser tree. Equals this if not in a tree.
- */
-private final Phaser root;
-//等待线程的栈顶元素，根据phase取模定义为一个奇数header和一个偶数header
-private final AtomicReference&lt;QNode&gt; evenQ;
-private final AtomicReference&lt;QNode&gt; oddQ;
-</code></pre>
+<h2 id="Phaser源码详解"><a href="#Phaser源码详解" class="headerlink" title="Phaser源码详解"></a>Phaser源码详解</h2><h3 id="核心参数"><a href="#核心参数" class="headerlink" title="核心参数"></a>核心参数</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">long</span> state;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The parent of this phaser, or null if none</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Phaser parent;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The root of phaser tree. Equals this if not in a tree.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Phaser root;</span><br><span class="line"><span class="comment">//等待线程的栈顶元素，根据phase取模定义为一个奇数header和一个偶数header</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> AtomicReference&lt;QNode&gt; evenQ;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> AtomicReference&lt;QNode&gt; oddQ;</span><br></pre></td></tr></table></figure>
+
 <p>state状态说明:</p>
 <p>Phaser使用一个long型state值来标识内部状态:</p>
 <ul>
@@ -474,101 +463,10 @@ private final AtomicReference&lt;QNode&gt; oddQ;
 <li>高63位表示当前phaser的终止状态。</li>
 </ul>
 <p>注意: 子Phaser的phase在没有被真正使用之前，允许滞后于它的root节点。这里在后面源码分析的reconcileState方法里会讲解。 Qnode是Phaser定义的内部等待队列，用于在阻塞时记录等待线程及相关信息。实现了ForkJoinPool的一个内部接口ManagedBlocker，上面已经说过，Phaser也可能被ForkJoinPool中的任务使用，这样在其他任务阻塞等待一个phase时可以保证足够的并行度来执行任务(通过内部实现方法isReleasable和block)。</p>
-<h3 id="函数列表"><a href="#函数列表" class="headerlink" title="函数列表"></a>函数列表</h3><pre><code class="java">//构造方法
-public Phaser() &#123;
-    this(null, 0);
-&#125;
-public Phaser(int parties) &#123;
-    this(null, parties);
-&#125;
-public Phaser(Phaser parent) &#123;
-    this(parent, 0);
-&#125;
-public Phaser(Phaser parent, int parties)
-//注册一个新的party
-public int register()
-//批量注册
-public int bulkRegister(int parties)
-//使当前线程到达phaser，不等待其他任务到达。返回arrival phase number
-public int arrive() 
-//使当前线程到达phaser并撤销注册，返回arrival phase number
-public int arriveAndDeregister()
-/*
- * 使当前线程到达phaser并等待其他任务到达，等价于awaitAdvance(arrive())。
- * 如果需要等待中断或超时，可以使用awaitAdvance方法完成一个类似的构造。
- * 如果需要在到达后取消注册，可以使用awaitAdvance(arriveAndDeregister())。
- */
-public int arriveAndAwaitAdvance()
-//等待给定phase数，返回下一个 arrival phase number
-public int awaitAdvance(int phase)
-//阻塞等待，直到phase前进到下一代，返回下一代的phase number
-public int awaitAdvance(int phase) 
-//响应中断版awaitAdvance
-public int awaitAdvanceInterruptibly(int phase) throws InterruptedException
-public int awaitAdvanceInterruptibly(int phase, long timeout, TimeUnit unit)
-    throws InterruptedException, TimeoutException
-//使当前phaser进入终止状态，已注册的parties不受影响，如果是分层结构，则终止所有phaser
-public void forceTermination()
-</code></pre>
-<h3 id="方法-register"><a href="#方法-register" class="headerlink" title="方法 - register()"></a>方法 - register()</h3><pre><code class="java">//注册一个新的party
-public int register() &#123;
-    return doRegister(1);
-&#125;
-private int doRegister(int registrations) &#123;
-    // adjustment to state
-    long adjust = ((long)registrations &lt;&lt; PARTIES_SHIFT) | registrations;
-    final Phaser parent = this.parent;
-    int phase;
-    for (;;) &#123;
-        long s = (parent == null) ? state : reconcileState();
-        int counts = (int)s;
-        int parties = counts &gt;&gt;&gt; PARTIES_SHIFT;//获取已注册parties数
-        int unarrived = counts &amp; UNARRIVED_MASK;//未到达数
-        if (registrations &gt; MAX_PARTIES - parties)
-            throw new IllegalStateException(badRegister(s));
-        phase = (int)(s &gt;&gt;&gt; PHASE_SHIFT);//获取当前代
-        if (phase &lt; 0)
-            break;
-        if (counts != EMPTY) &#123;                  // not 1st registration
-            if (parent == null || reconcileState() == s) &#123;
-                if (unarrived == 0)             // wait out advance
-                    root.internalAwaitAdvance(phase, null);//等待其他任务到达
-                else if (UNSAFE.compareAndSwapLong(this, stateOffset,
-                                                   s, s + adjust))//更新注册的parties数
-                    break;
-            &#125;
-        &#125;
-        else if (parent == null) &#123;              // 1st root registration
-            long next = ((long)phase &lt;&lt; PHASE_SHIFT) | adjust;
-            if (UNSAFE.compareAndSwapLong(this, stateOffset, s, next))//更新phase
-                break;
-        &#125;
-        else &#123;
-            //分层结构，子phaser首次注册用父节点管理
-            synchronized (this) &#123;               // 1st sub registration
-                if (state == s) &#123;               // recheck under lock
-                    phase = parent.doRegister(1);//分层结构，使用父节点注册
-                    if (phase &lt; 0)
-                        break;
-                    // finish registration whenever parent registration
-                    // succeeded, even when racing with termination,
-                    // since these are part of the same &quot;transaction&quot;.
-                    //由于在同一个事务里，即使phaser已终止，也会完成注册
-                    while (!UNSAFE.compareAndSwapLong
-                           (this, stateOffset, s,
-                            ((long)phase &lt;&lt; PHASE_SHIFT) | adjust)) &#123;//更新phase
-                        s = state;
-                        phase = (int)(root.state &gt;&gt;&gt; PHASE_SHIFT);
-                        // assert (int)s == EMPTY;
-                    &#125;
-                    break;
-                &#125;
-            &#125;
-        &#125;
-    &#125;
-    return phase;
-&#125;
-</code></pre>
+<h3 id="函数列表"><a href="#函数列表" class="headerlink" title="函数列表"></a>函数列表</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//构造方法</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">Phaser</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>(<span class="literal">null</span>, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="title function_">Phaser</span><span class="params">(<span class="type">int</span> parties)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>(<span class="literal">null</span>, parties);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="title function_">Phaser</span><span class="params">(Phaser parent)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>(parent, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="title function_">Phaser</span><span class="params">(Phaser parent, <span class="type">int</span> parties)</span></span><br><span class="line"><span class="comment">//注册一个新的party</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">register</span><span class="params">()</span></span><br><span class="line"><span class="comment">//批量注册</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">bulkRegister</span><span class="params">(<span class="type">int</span> parties)</span></span><br><span class="line"><span class="comment">//使当前线程到达phaser，不等待其他任务到达。返回arrival phase number</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">arrive</span><span class="params">()</span> </span><br><span class="line"><span class="comment">//使当前线程到达phaser并撤销注册，返回arrival phase number</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">arriveAndDeregister</span><span class="params">()</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 使当前线程到达phaser并等待其他任务到达，等价于awaitAdvance(arrive())。</span></span><br><span class="line"><span class="comment"> * 如果需要等待中断或超时，可以使用awaitAdvance方法完成一个类似的构造。</span></span><br><span class="line"><span class="comment"> * 如果需要在到达后取消注册，可以使用awaitAdvance(arriveAndDeregister())。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">arriveAndAwaitAdvance</span><span class="params">()</span></span><br><span class="line"><span class="comment">//等待给定phase数，返回下一个 arrival phase number</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">awaitAdvance</span><span class="params">(<span class="type">int</span> phase)</span></span><br><span class="line"><span class="comment">//阻塞等待，直到phase前进到下一代，返回下一代的phase number</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">awaitAdvance</span><span class="params">(<span class="type">int</span> phase)</span> </span><br><span class="line"><span class="comment">//响应中断版awaitAdvance</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">awaitAdvanceInterruptibly</span><span class="params">(<span class="type">int</span> phase)</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">awaitAdvanceInterruptibly</span><span class="params">(<span class="type">int</span> phase, <span class="type">long</span> timeout, TimeUnit unit)</span></span><br><span class="line">    <span class="keyword">throws</span> InterruptedException, TimeoutException</span><br><span class="line"><span class="comment">//使当前phaser进入终止状态，已注册的parties不受影响，如果是分层结构，则终止所有phaser</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">forceTermination</span><span class="params">()</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="方法-register"><a href="#方法-register" class="headerlink" title="方法 - register()"></a>方法 - register()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//注册一个新的party</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">register</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> doRegister(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">doRegister</span><span class="params">(<span class="type">int</span> registrations)</span> &#123;</span><br><span class="line">    <span class="comment">// adjustment to state</span></span><br><span class="line">    <span class="type">long</span> <span class="variable">adjust</span> <span class="operator">=</span> ((<span class="type">long</span>)registrations &lt;&lt; PARTIES_SHIFT) | registrations;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">Phaser</span> <span class="variable">parent</span> <span class="operator">=</span> <span class="built_in">this</span>.parent;</span><br><span class="line">    <span class="type">int</span> phase;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">s</span> <span class="operator">=</span> (parent == <span class="literal">null</span>) ? state : reconcileState();</span><br><span class="line">        <span class="type">int</span> <span class="variable">counts</span> <span class="operator">=</span> (<span class="type">int</span>)s;</span><br><span class="line">        <span class="type">int</span> <span class="variable">parties</span> <span class="operator">=</span> counts &gt;&gt;&gt; PARTIES_SHIFT;<span class="comment">//获取已注册parties数</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">unarrived</span> <span class="operator">=</span> counts &amp; UNARRIVED_MASK;<span class="comment">//未到达数</span></span><br><span class="line">        <span class="keyword">if</span> (registrations &gt; MAX_PARTIES - parties)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalStateException</span>(badRegister(s));</span><br><span class="line">        phase = (<span class="type">int</span>)(s &gt;&gt;&gt; PHASE_SHIFT);<span class="comment">//获取当前代</span></span><br><span class="line">        <span class="keyword">if</span> (phase &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">if</span> (counts != EMPTY) &#123;                  <span class="comment">// not 1st registration</span></span><br><span class="line">            <span class="keyword">if</span> (parent == <span class="literal">null</span> || reconcileState() == s) &#123;</span><br><span class="line">                <span class="keyword">if</span> (unarrived == <span class="number">0</span>)             <span class="comment">// wait out advance</span></span><br><span class="line">                    root.internalAwaitAdvance(phase, <span class="literal">null</span>);<span class="comment">//等待其他任务到达</span></span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (UNSAFE.compareAndSwapLong(<span class="built_in">this</span>, stateOffset,</span><br><span class="line">                                                   s, s + adjust))<span class="comment">//更新注册的parties数</span></span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (parent == <span class="literal">null</span>) &#123;              <span class="comment">// 1st root registration</span></span><br><span class="line">            <span class="type">long</span> <span class="variable">next</span> <span class="operator">=</span> ((<span class="type">long</span>)phase &lt;&lt; PHASE_SHIFT) | adjust;</span><br><span class="line">            <span class="keyword">if</span> (UNSAFE.compareAndSwapLong(<span class="built_in">this</span>, stateOffset, s, next))<span class="comment">//更新phase</span></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">//分层结构，子phaser首次注册用父节点管理</span></span><br><span class="line">            <span class="keyword">synchronized</span> (<span class="built_in">this</span>) &#123;               <span class="comment">// 1st sub registration</span></span><br><span class="line">                <span class="keyword">if</span> (state == s) &#123;               <span class="comment">// recheck under lock</span></span><br><span class="line">                    phase = parent.doRegister(<span class="number">1</span>);<span class="comment">//分层结构，使用父节点注册</span></span><br><span class="line">                    <span class="keyword">if</span> (phase &lt; <span class="number">0</span>)</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    <span class="comment">// finish registration whenever parent registration</span></span><br><span class="line">                    <span class="comment">// succeeded, even when racing with termination,</span></span><br><span class="line">                    <span class="comment">// since these are part of the same &quot;transaction&quot;.</span></span><br><span class="line">                    <span class="comment">//由于在同一个事务里，即使phaser已终止，也会完成注册</span></span><br><span class="line">                    <span class="keyword">while</span> (!UNSAFE.compareAndSwapLong</span><br><span class="line">                           (<span class="built_in">this</span>, stateOffset, s,</span><br><span class="line">                            ((<span class="type">long</span>)phase &lt;&lt; PHASE_SHIFT) | adjust)) &#123;<span class="comment">//更新phase</span></span><br><span class="line">                        s = state;</span><br><span class="line">                        phase = (<span class="type">int</span>)(root.state &gt;&gt;&gt; PHASE_SHIFT);</span><br><span class="line">                        <span class="comment">// assert (int)s == EMPTY;</span></span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> phase;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: register方法为phaser添加一个新的party，如果onAdvance正在运行，那么这个方法会等待它运行结束再返回结果。如果当前phaser有父节点，并且当前phaser上没有已注册的party，那么就会交给父节点注册。</p>
 <p>register和bulkRegister都由doRegister实现，大概流程如下:</p>
 <ul>
@@ -577,79 +475,12 @@ private int doRegister(int registrations) &#123;
 <li>如果当前操作是首次注册，并且当前phaser由父节点，则注册操作交由父节点，并更新当前phaser的phase</li>
 <li>上面说过，子Phaser的phase在没有被真正使用之前，允许滞后于它的root节点。非首次注册时，如果Phaser有父节点，则调用reconcileState()方法解决root节点的phase延迟传递问题， 源码如下:</li>
 </ul>
-<pre><code class="java">private long reconcileState() &#123;
-    final Phaser root = this.root;
-    long s = state;
-    if (root != this) &#123;
-        int phase, p;
-        // CAS to root phase with current parties, tripping unarrived
-        while ((phase = (int)(root.state &gt;&gt;&gt; PHASE_SHIFT)) !=
-               (int)(s &gt;&gt;&gt; PHASE_SHIFT) &amp;&amp;
-               !UNSAFE.compareAndSwapLong
-               (this, stateOffset, s,
-                s = (((long)phase &lt;&lt; PHASE_SHIFT) |
-                     ((phase &lt; 0) ? (s &amp; COUNTS_MASK) :
-                      (((p = (int)s &gt;&gt;&gt; PARTIES_SHIFT) == 0) ? EMPTY :
-                       ((s &amp; PARTIES_MASK) | p))))))
-            s = state;
-    &#125;
-    return s;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">long</span> <span class="title function_">reconcileState</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">Phaser</span> <span class="variable">root</span> <span class="operator">=</span> <span class="built_in">this</span>.root;</span><br><span class="line">    <span class="type">long</span> <span class="variable">s</span> <span class="operator">=</span> state;</span><br><span class="line">    <span class="keyword">if</span> (root != <span class="built_in">this</span>) &#123;</span><br><span class="line">        <span class="type">int</span> phase, p;</span><br><span class="line">        <span class="comment">// CAS to root phase with current parties, tripping unarrived</span></span><br><span class="line">        <span class="keyword">while</span> ((phase = (<span class="type">int</span>)(root.state &gt;&gt;&gt; PHASE_SHIFT)) !=</span><br><span class="line">               (<span class="type">int</span>)(s &gt;&gt;&gt; PHASE_SHIFT) &amp;&amp;</span><br><span class="line">               !UNSAFE.compareAndSwapLong</span><br><span class="line">               (<span class="built_in">this</span>, stateOffset, s,</span><br><span class="line">                s = (((<span class="type">long</span>)phase &lt;&lt; PHASE_SHIFT) |</span><br><span class="line">                     ((phase &lt; <span class="number">0</span>) ? (s &amp; COUNTS_MASK) :</span><br><span class="line">                      (((p = (<span class="type">int</span>)s &gt;&gt;&gt; PARTIES_SHIFT) == <span class="number">0</span>) ? EMPTY :</span><br><span class="line">                       ((s &amp; PARTIES_MASK) | p))))))</span><br><span class="line">            s = state;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> s;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>当root节点的phase已经advance到下一代，但是子节点phaser还没有，这种情况下它们必须通过更新未到达parties数 完成它们自己的advance操作(如果parties为0，重置为EMPTY状态)。</p>
 <p>回到register方法的第一步，如果当前未到达数为0，说明上一代phase正在进行到达操作，此时调用internalAwaitAdvance()方法等待其他任务完成到达操作，源码如下:</p>
-<pre><code class="java">//阻塞等待phase到下一代
-private int internalAwaitAdvance(int phase, QNode node) &#123;
-    // assert root == this;
-    releaseWaiters(phase-1);          // ensure old queue clean
-    boolean queued = false;           // true when node is enqueued
-    int lastUnarrived = 0;            // to increase spins upon change
-    int spins = SPINS_PER_ARRIVAL;
-    long s;
-    int p;
-    while ((p = (int)((s = state) &gt;&gt;&gt; PHASE_SHIFT)) == phase) &#123;
-        if (node == null) &#123;           // spinning in noninterruptible mode
-            int unarrived = (int)s &amp; UNARRIVED_MASK;//未到达数
-            if (unarrived != lastUnarrived &amp;&amp;
-                (lastUnarrived = unarrived) &lt; NCPU)
-                spins += SPINS_PER_ARRIVAL;
-            boolean interrupted = Thread.interrupted();
-            if (interrupted || --spins &lt; 0) &#123; // need node to record intr
-                //使用node记录中断状态
-                node = new QNode(this, phase, false, false, 0L);
-                node.wasInterrupted = interrupted;
-            &#125;
-        &#125;
-        else if (node.isReleasable()) // done or aborted
-            break;
-        else if (!queued) &#123;           // push onto queue
-            AtomicReference&lt;QNode&gt; head = (phase &amp; 1) == 0 ? evenQ : oddQ;
-            QNode q = node.next = head.get();
-            if ((q == null || q.phase == phase) &amp;&amp;
-                (int)(state &gt;&gt;&gt; PHASE_SHIFT) == phase) // avoid stale enq
-                queued = head.compareAndSet(q, node);
-        &#125;
-        else &#123;
-            try &#123;
-                ForkJoinPool.managedBlock(node);//阻塞给定node
-            &#125; catch (InterruptedException ie) &#123;
-                node.wasInterrupted = true;
-            &#125;
-        &#125;
-    &#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//阻塞等待phase到下一代</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">internalAwaitAdvance</span><span class="params">(<span class="type">int</span> phase, QNode node)</span> &#123;</span><br><span class="line">    <span class="comment">// assert root == this;</span></span><br><span class="line">    releaseWaiters(phase-<span class="number">1</span>);          <span class="comment">// ensure old queue clean</span></span><br><span class="line">    <span class="type">boolean</span> <span class="variable">queued</span> <span class="operator">=</span> <span class="literal">false</span>;           <span class="comment">// true when node is enqueued</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">lastUnarrived</span> <span class="operator">=</span> <span class="number">0</span>;            <span class="comment">// to increase spins upon change</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">spins</span> <span class="operator">=</span> SPINS_PER_ARRIVAL;</span><br><span class="line">    <span class="type">long</span> s;</span><br><span class="line">    <span class="type">int</span> p;</span><br><span class="line">    <span class="keyword">while</span> ((p = (<span class="type">int</span>)((s = state) &gt;&gt;&gt; PHASE_SHIFT)) == phase) &#123;</span><br><span class="line">        <span class="keyword">if</span> (node == <span class="literal">null</span>) &#123;           <span class="comment">// spinning in noninterruptible mode</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">unarrived</span> <span class="operator">=</span> (<span class="type">int</span>)s &amp; UNARRIVED_MASK;<span class="comment">//未到达数</span></span><br><span class="line">            <span class="keyword">if</span> (unarrived != lastUnarrived &amp;&amp;</span><br><span class="line">                (lastUnarrived = unarrived) &lt; NCPU)</span><br><span class="line">                spins += SPINS_PER_ARRIVAL;</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">interrupted</span> <span class="operator">=</span> Thread.interrupted();</span><br><span class="line">            <span class="keyword">if</span> (interrupted || --spins &lt; <span class="number">0</span>) &#123; <span class="comment">// need node to record intr</span></span><br><span class="line">                <span class="comment">//使用node记录中断状态</span></span><br><span class="line">                node = <span class="keyword">new</span> <span class="title class_">QNode</span>(<span class="built_in">this</span>, phase, <span class="literal">false</span>, <span class="literal">false</span>, <span class="number">0L</span>);</span><br><span class="line">                node.wasInterrupted = interrupted;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (node.isReleasable()) <span class="comment">// done or aborted</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (!queued) &#123;           <span class="comment">// push onto queue</span></span><br><span class="line">            AtomicReference&lt;QNode&gt; head = (phase &amp; <span class="number">1</span>) == <span class="number">0</span> ? evenQ : oddQ;</span><br><span class="line">            <span class="type">QNode</span> <span class="variable">q</span> <span class="operator">=</span> node.next = head.get();</span><br><span class="line">            <span class="keyword">if</span> ((q == <span class="literal">null</span> || q.phase == phase) &amp;&amp;</span><br><span class="line">                (<span class="type">int</span>)(state &gt;&gt;&gt; PHASE_SHIFT) == phase) <span class="comment">// avoid stale enq</span></span><br><span class="line">                queued = head.compareAndSet(q, node);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ForkJoinPool.managedBlock(node);<span class="comment">//阻塞给定node</span></span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123;</span><br><span class="line">                node.wasInterrupted = <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (node != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (node.thread != <span class="literal">null</span>)</span><br><span class="line">            node.thread = <span class="literal">null</span>;       <span class="comment">// avoid need for unpark()</span></span><br><span class="line">        <span class="keyword">if</span> (node.wasInterrupted &amp;&amp; !node.interruptible)</span><br><span class="line">            Thread.currentThread().interrupt();</span><br><span class="line">        <span class="keyword">if</span> (p == phase &amp;&amp; (p = (<span class="type">int</span>)(state &gt;&gt;&gt; PHASE_SHIFT)) == phase)</span><br><span class="line">            <span class="keyword">return</span> abortWait(phase); <span class="comment">// possibly clean up on abort</span></span><br><span class="line">    &#125;</span><br><span class="line">    releaseWaiters(phase);</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    if (node != null) &#123;
-        if (node.thread != null)
-            node.thread = null;       // avoid need for unpark()
-        if (node.wasInterrupted &amp;&amp; !node.interruptible)
-            Thread.currentThread().interrupt();
-        if (p == phase &amp;&amp; (p = (int)(state &gt;&gt;&gt; PHASE_SHIFT)) == phase)
-            return abortWait(phase); // possibly clean up on abort
-    &#125;
-    releaseWaiters(phase);
-    return p;
-&#125;
-</code></pre>
 <p>简单介绍下第二个参数node，如果不为空，则说明等待线程需要追踪中断状态或超时状态。以doRegister中的调用为例，不考虑线程争用，internalAwaitAdvance大概流程如下:</p>
 <ul>
 <li>首先调用releaseWaiters唤醒上一代所有等待线程，确保旧队列中没有遗留的等待线程。</li>
@@ -658,53 +489,8 @@ private int internalAwaitAdvance(int phase, QNode node) &#123;
 <li>继续循环，阻塞任务运行成功被释放，跳出循环</li>
 <li>最后唤醒当前phase的线程</li>
 </ul>
-<h3 id="方法-arrive"><a href="#方法-arrive" class="headerlink" title="方法 - arrive()"></a>方法 - arrive()</h3><pre><code class="java">//使当前线程到达phaser，不等待其他任务到达。返回arrival phase number
-public int arrive() &#123;
-    return doArrive(ONE_ARRIVAL);
-&#125;
+<h3 id="方法-arrive"><a href="#方法-arrive" class="headerlink" title="方法 - arrive()"></a>方法 - arrive()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//使当前线程到达phaser，不等待其他任务到达。返回arrival phase number</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">arrive</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> doArrive(ONE_ARRIVAL);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">doArrive</span><span class="params">(<span class="type">int</span> adjust)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">Phaser</span> <span class="variable">root</span> <span class="operator">=</span> <span class="built_in">this</span>.root;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">s</span> <span class="operator">=</span> (root == <span class="built_in">this</span>) ? state : reconcileState();</span><br><span class="line">        <span class="type">int</span> <span class="variable">phase</span> <span class="operator">=</span> (<span class="type">int</span>)(s &gt;&gt;&gt; PHASE_SHIFT);</span><br><span class="line">        <span class="keyword">if</span> (phase &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> phase;</span><br><span class="line">        <span class="type">int</span> <span class="variable">counts</span> <span class="operator">=</span> (<span class="type">int</span>)s;</span><br><span class="line">        <span class="comment">//获取未到达数</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">unarrived</span> <span class="operator">=</span> (counts == EMPTY) ? <span class="number">0</span> : (counts &amp; UNARRIVED_MASK);</span><br><span class="line">        <span class="keyword">if</span> (unarrived &lt;= <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalStateException</span>(badArrive(s));</span><br><span class="line">        <span class="keyword">if</span> (UNSAFE.compareAndSwapLong(<span class="built_in">this</span>, stateOffset, s, s-=adjust)) &#123;<span class="comment">//更新state</span></span><br><span class="line">            <span class="keyword">if</span> (unarrived == <span class="number">1</span>) &#123;<span class="comment">//当前为最后一个未到达的任务</span></span><br><span class="line">                <span class="type">long</span> <span class="variable">n</span> <span class="operator">=</span> s &amp; PARTIES_MASK;  <span class="comment">// base of next state</span></span><br><span class="line">                <span class="type">int</span> <span class="variable">nextUnarrived</span> <span class="operator">=</span> (<span class="type">int</span>)n &gt;&gt;&gt; PARTIES_SHIFT;</span><br><span class="line">                <span class="keyword">if</span> (root == <span class="built_in">this</span>) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (onAdvance(phase, nextUnarrived))<span class="comment">//检查是否需要终止phaser</span></span><br><span class="line">                        n |= TERMINATION_BIT;</span><br><span class="line">                    <span class="keyword">else</span> <span class="keyword">if</span> (nextUnarrived == <span class="number">0</span>)</span><br><span class="line">                        n |= EMPTY;</span><br><span class="line">                    <span class="keyword">else</span></span><br><span class="line">                        n |= nextUnarrived;</span><br><span class="line">                    <span class="type">int</span> <span class="variable">nextPhase</span> <span class="operator">=</span> (phase + <span class="number">1</span>) &amp; MAX_PHASE;</span><br><span class="line">                    n |= (<span class="type">long</span>)nextPhase &lt;&lt; PHASE_SHIFT;</span><br><span class="line">                    UNSAFE.compareAndSwapLong(<span class="built_in">this</span>, stateOffset, s, n);</span><br><span class="line">                    releaseWaiters(phase);<span class="comment">//释放等待phase的线程</span></span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//分层结构，使用父节点管理arrive</span></span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (nextUnarrived == <span class="number">0</span>) &#123; <span class="comment">//propagate deregistration</span></span><br><span class="line">                    phase = parent.doArrive(ONE_DEREGISTER);</span><br><span class="line">                    UNSAFE.compareAndSwapLong(<span class="built_in">this</span>, stateOffset,</span><br><span class="line">                                              s, s | EMPTY);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    phase = parent.doArrive(ONE_ARRIVAL);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> phase;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-private int doArrive(int adjust) &#123;
-    final Phaser root = this.root;
-    for (;;) &#123;
-        long s = (root == this) ? state : reconcileState();
-        int phase = (int)(s &gt;&gt;&gt; PHASE_SHIFT);
-        if (phase &lt; 0)
-            return phase;
-        int counts = (int)s;
-        //获取未到达数
-        int unarrived = (counts == EMPTY) ? 0 : (counts &amp; UNARRIVED_MASK);
-        if (unarrived &lt;= 0)
-            throw new IllegalStateException(badArrive(s));
-        if (UNSAFE.compareAndSwapLong(this, stateOffset, s, s-=adjust)) &#123;//更新state
-            if (unarrived == 1) &#123;//当前为最后一个未到达的任务
-                long n = s &amp; PARTIES_MASK;  // base of next state
-                int nextUnarrived = (int)n &gt;&gt;&gt; PARTIES_SHIFT;
-                if (root == this) &#123;
-                    if (onAdvance(phase, nextUnarrived))//检查是否需要终止phaser
-                        n |= TERMINATION_BIT;
-                    else if (nextUnarrived == 0)
-                        n |= EMPTY;
-                    else
-                        n |= nextUnarrived;
-                    int nextPhase = (phase + 1) &amp; MAX_PHASE;
-                    n |= (long)nextPhase &lt;&lt; PHASE_SHIFT;
-                    UNSAFE.compareAndSwapLong(this, stateOffset, s, n);
-                    releaseWaiters(phase);//释放等待phase的线程
-                &#125;
-                //分层结构，使用父节点管理arrive
-                else if (nextUnarrived == 0) &#123; //propagate deregistration
-                    phase = parent.doArrive(ONE_DEREGISTER);
-                    UNSAFE.compareAndSwapLong(this, stateOffset,
-                                              s, s | EMPTY);
-                &#125;
-                else
-                    phase = parent.doArrive(ONE_ARRIVAL);
-            &#125;
-            return phase;
-        &#125;
-    &#125;
-&#125;
-</code></pre>
 <p>说明: arrive方法手动调整到达数，使当前线程到达phaser。arrive和arriveAndDeregister都调用了doArrive实现，大概流程如下:</p>
 <ul>
 <li>首先更新state(state - adjust)；</li>
@@ -715,42 +501,8 @@ private int doArrive(int adjust) &#123;
 </ul>
 </li>
 </ul>
-<h3 id="方法-arriveAndAwaitAdvance"><a href="#方法-arriveAndAwaitAdvance" class="headerlink" title="方法 - arriveAndAwaitAdvance()"></a>方法 - arriveAndAwaitAdvance()</h3><pre><code class="java">public int arriveAndAwaitAdvance() &#123;
-    // Specialization of doArrive+awaitAdvance eliminating some reads/paths
-    final Phaser root = this.root;
-    for (;;) &#123;
-        long s = (root == this) ? state : reconcileState();
-        int phase = (int)(s &gt;&gt;&gt; PHASE_SHIFT);
-        if (phase &lt; 0)
-            return phase;
-        int counts = (int)s;
-        int unarrived = (counts == EMPTY) ? 0 : (counts &amp; UNARRIVED_MASK);//获取未到达数
-        if (unarrived &lt;= 0)
-            throw new IllegalStateException(badArrive(s));
-        if (UNSAFE.compareAndSwapLong(this, stateOffset, s,
-                                      s -= ONE_ARRIVAL)) &#123;//更新state
-            if (unarrived &gt; 1)
-                return root.internalAwaitAdvance(phase, null);//阻塞等待其他任务
-            if (root != this)
-                return parent.arriveAndAwaitAdvance();//子Phaser交给父节点处理
-            long n = s &amp; PARTIES_MASK;  // base of next state
-            int nextUnarrived = (int)n &gt;&gt;&gt; PARTIES_SHIFT;
-            if (onAdvance(phase, nextUnarrived))//全部到达，检查是否可销毁
-                n |= TERMINATION_BIT;
-            else if (nextUnarrived == 0)
-                n |= EMPTY;
-            else
-                n |= nextUnarrived;
-            int nextPhase = (phase + 1) &amp; MAX_PHASE;//计算下一代phase
-            n |= (long)nextPhase &lt;&lt; PHASE_SHIFT;
-            if (!UNSAFE.compareAndSwapLong(this, stateOffset, s, n))//更新state
-                return (int)(state &gt;&gt;&gt; PHASE_SHIFT); // terminated
-            releaseWaiters(phase);//释放等待phase的线程
-            return nextPhase;
-        &#125;
-    &#125;
-&#125;
-</code></pre>
+<h3 id="方法-arriveAndAwaitAdvance"><a href="#方法-arriveAndAwaitAdvance" class="headerlink" title="方法 - arriveAndAwaitAdvance()"></a>方法 - arriveAndAwaitAdvance()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">arriveAndAwaitAdvance</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// Specialization of doArrive+awaitAdvance eliminating some reads/paths</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">Phaser</span> <span class="variable">root</span> <span class="operator">=</span> <span class="built_in">this</span>.root;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">s</span> <span class="operator">=</span> (root == <span class="built_in">this</span>) ? state : reconcileState();</span><br><span class="line">        <span class="type">int</span> <span class="variable">phase</span> <span class="operator">=</span> (<span class="type">int</span>)(s &gt;&gt;&gt; PHASE_SHIFT);</span><br><span class="line">        <span class="keyword">if</span> (phase &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> phase;</span><br><span class="line">        <span class="type">int</span> <span class="variable">counts</span> <span class="operator">=</span> (<span class="type">int</span>)s;</span><br><span class="line">        <span class="type">int</span> <span class="variable">unarrived</span> <span class="operator">=</span> (counts == EMPTY) ? <span class="number">0</span> : (counts &amp; UNARRIVED_MASK);<span class="comment">//获取未到达数</span></span><br><span class="line">        <span class="keyword">if</span> (unarrived &lt;= <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalStateException</span>(badArrive(s));</span><br><span class="line">        <span class="keyword">if</span> (UNSAFE.compareAndSwapLong(<span class="built_in">this</span>, stateOffset, s,</span><br><span class="line">                                      s -= ONE_ARRIVAL)) &#123;<span class="comment">//更新state</span></span><br><span class="line">            <span class="keyword">if</span> (unarrived &gt; <span class="number">1</span>)</span><br><span class="line">                <span class="keyword">return</span> root.internalAwaitAdvance(phase, <span class="literal">null</span>);<span class="comment">//阻塞等待其他任务</span></span><br><span class="line">            <span class="keyword">if</span> (root != <span class="built_in">this</span>)</span><br><span class="line">                <span class="keyword">return</span> parent.arriveAndAwaitAdvance();<span class="comment">//子Phaser交给父节点处理</span></span><br><span class="line">            <span class="type">long</span> <span class="variable">n</span> <span class="operator">=</span> s &amp; PARTIES_MASK;  <span class="comment">// base of next state</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">nextUnarrived</span> <span class="operator">=</span> (<span class="type">int</span>)n &gt;&gt;&gt; PARTIES_SHIFT;</span><br><span class="line">            <span class="keyword">if</span> (onAdvance(phase, nextUnarrived))<span class="comment">//全部到达，检查是否可销毁</span></span><br><span class="line">                n |= TERMINATION_BIT;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (nextUnarrived == <span class="number">0</span>)</span><br><span class="line">                n |= EMPTY;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                n |= nextUnarrived;</span><br><span class="line">            <span class="type">int</span> <span class="variable">nextPhase</span> <span class="operator">=</span> (phase + <span class="number">1</span>) &amp; MAX_PHASE;<span class="comment">//计算下一代phase</span></span><br><span class="line">            n |= (<span class="type">long</span>)nextPhase &lt;&lt; PHASE_SHIFT;</span><br><span class="line">            <span class="keyword">if</span> (!UNSAFE.compareAndSwapLong(<span class="built_in">this</span>, stateOffset, s, n))<span class="comment">//更新state</span></span><br><span class="line">                <span class="keyword">return</span> (<span class="type">int</span>)(state &gt;&gt;&gt; PHASE_SHIFT); <span class="comment">// terminated</span></span><br><span class="line">            releaseWaiters(phase);<span class="comment">//释放等待phase的线程</span></span><br><span class="line">            <span class="keyword">return</span> nextPhase;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 使当前线程到达phaser并等待其他任务到达，等价于awaitAdvance(arrive())。如果需要等待中断或超时，可以使用awaitAdvance方法完成一个类似的构造。如果需要在到达后取消注册，可以使用awaitAdvance(arriveAndDeregister())。效果类似于CyclicBarrier.await。大概流程如下:</p>
 <ul>
 <li>更新state(state - 1)；</li>
@@ -758,33 +510,8 @@ private int doArrive(int adjust) &#123;
 <li>如果为分层结构，则交由父节点处理arriveAndAwaitAdvance逻辑</li>
 <li>如果未到达数&lt;&#x3D;1，判断phaser终止状态，CAS更新phase到下一代，最后释放等待当前phase的线程，并返回下一代phase。</li>
 </ul>
-<h3 id="方法-awaitAdvance-int-phase"><a href="#方法-awaitAdvance-int-phase" class="headerlink" title="方法 - awaitAdvance(int phase)"></a>方法 - awaitAdvance(int phase)</h3><pre><code class="java">public int awaitAdvance(int phase) &#123;
-    final Phaser root = this.root;
-    long s = (root == this) ? state : reconcileState();
-    int p = (int)(s &gt;&gt;&gt; PHASE_SHIFT);
-    if (phase &lt; 0)
-        return phase;
-    if (p == phase)
-        return root.internalAwaitAdvance(phase, null);
-    return p;
-&#125;
-//响应中断版awaitAdvance
-public int awaitAdvanceInterruptibly(int phase)
-    throws InterruptedException &#123;
-    final Phaser root = this.root;
-    long s = (root == this) ? state : reconcileState();
-    int p = (int)(s &gt;&gt;&gt; PHASE_SHIFT);
-    if (phase &lt; 0)
-        return phase;
-    if (p == phase) &#123;
-        QNode node = new QNode(this, phase, true, false, 0L);
-        p = root.internalAwaitAdvance(phase, node);
-        if (node.wasInterrupted)
-            throw new InterruptedException();
-    &#125;
-    return p;
-&#125;
-</code></pre>
+<h3 id="方法-awaitAdvance-int-phase"><a href="#方法-awaitAdvance-int-phase" class="headerlink" title="方法 - awaitAdvance(int phase)"></a>方法 - awaitAdvance(int phase)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">awaitAdvance</span><span class="params">(<span class="type">int</span> phase)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">Phaser</span> <span class="variable">root</span> <span class="operator">=</span> <span class="built_in">this</span>.root;</span><br><span class="line">    <span class="type">long</span> <span class="variable">s</span> <span class="operator">=</span> (root == <span class="built_in">this</span>) ? state : reconcileState();</span><br><span class="line">    <span class="type">int</span> <span class="variable">p</span> <span class="operator">=</span> (<span class="type">int</span>)(s &gt;&gt;&gt; PHASE_SHIFT);</span><br><span class="line">    <span class="keyword">if</span> (phase &lt; <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> phase;</span><br><span class="line">    <span class="keyword">if</span> (p == phase)</span><br><span class="line">        <span class="keyword">return</span> root.internalAwaitAdvance(phase, <span class="literal">null</span>);</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//响应中断版awaitAdvance</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">awaitAdvanceInterruptibly</span><span class="params">(<span class="type">int</span> phase)</span></span><br><span class="line">    <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">Phaser</span> <span class="variable">root</span> <span class="operator">=</span> <span class="built_in">this</span>.root;</span><br><span class="line">    <span class="type">long</span> <span class="variable">s</span> <span class="operator">=</span> (root == <span class="built_in">this</span>) ? state : reconcileState();</span><br><span class="line">    <span class="type">int</span> <span class="variable">p</span> <span class="operator">=</span> (<span class="type">int</span>)(s &gt;&gt;&gt; PHASE_SHIFT);</span><br><span class="line">    <span class="keyword">if</span> (phase &lt; <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> phase;</span><br><span class="line">    <span class="keyword">if</span> (p == phase) &#123;</span><br><span class="line">        <span class="type">QNode</span> <span class="variable">node</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">QNode</span>(<span class="built_in">this</span>, phase, <span class="literal">true</span>, <span class="literal">false</span>, <span class="number">0L</span>);</span><br><span class="line">        p = root.internalAwaitAdvance(phase, node);</span><br><span class="line">        <span class="keyword">if</span> (node.wasInterrupted)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InterruptedException</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: awaitAdvance用于阻塞等待线程到达，直到phase前进到下一代，返回下一代的phase number。方法很简单，不多赘述。awaitAdvanceInterruptibly方法是响应中断版的awaitAdvance，不同之处在于，调用阻塞时会记录线程的中断状态。</p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
 <li>本文主要参考自泰迪的bagwell的<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/e5794645ca8d%EF%BC%8C%E5%9C%A8%E6%AD%A4%E5%9F%BA%E7%A1%80%E4%B8%8A%E8%BF%9B%E8%A1%8C%E4%BA%86%E5%A2%9E%E6%94%B9%E3%80%82">https://www.jianshu.com/p/e5794645ca8d，在此基础上进行了增改。</a></li>

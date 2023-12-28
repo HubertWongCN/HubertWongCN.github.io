@@ -428,219 +428,60 @@ Semaphore底层是基于AbstractQueuedSynchronizer来实现的。Semaphore称为
 <li>Semaphore初始化有1个令牌，1个线程调用一次acquire方法，然后调用两次release方法，之后另外一个线程调用acquire(2)方法，此线程能够获取到足够的令牌并继续运行吗?</li>
 <li>Semaphore初始化有2个令牌，一个线程调用1次release方法，然后一次性获取3个令牌，会获取到吗?</li>
 </ul>
-<h2 id="Semaphore源码分析"><a href="#Semaphore源码分析" class="headerlink" title="Semaphore源码分析"></a>Semaphore源码分析</h2><h3 id="类的继承关系"><a href="#类的继承关系" class="headerlink" title="类的继承关系"></a>类的继承关系</h3><pre><code class="java">public class Semaphore implements java.io.Serializable &#123;&#125;
-</code></pre>
+<h2 id="Semaphore源码分析"><a href="#Semaphore源码分析" class="headerlink" title="Semaphore源码分析"></a>Semaphore源码分析</h2><h3 id="类的继承关系"><a href="#类的继承关系" class="headerlink" title="类的继承关系"></a>类的继承关系</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Semaphore</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: Semaphore实现了Serializable接口，即可以进行序列化。</p>
 <h3 id="类的内部类"><a href="#类的内部类" class="headerlink" title="类的内部类"></a>类的内部类</h3><p>Semaphore总共有三个内部类，并且三个内部类是紧密相关的，下面先看三个类的关系。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261333178.png" alt="img"></p>
 <p>说明: Semaphore与ReentrantLock的内部类的结构相同，类内部总共存在Sync、NonfairSync、FairSync三个类，NonfairSync与FairSync类继承自Sync类，Sync类继承自AbstractQueuedSynchronizer抽象类。下面逐个进行分析。</p>
 <h3 id="类的内部类-Sync类"><a href="#类的内部类-Sync类" class="headerlink" title="类的内部类 - Sync类"></a>类的内部类 - Sync类</h3><p>Sync类的源码如下</p>
-<pre><code class="java">// 内部类，继承自AQS
-abstract static class Sync extends AbstractQueuedSynchronizer &#123;
-    // 版本号
-    private static final long serialVersionUID = 1192457210091910933L;
-    
-    // 构造函数
-    Sync(int permits) &#123;
-        // 设置状态数
-        setState(permits);
-    &#125;
-    
-    // 获取许可
-    final int getPermits() &#123;
-        return getState();
-    &#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 内部类，继承自AQS</span></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Sync</span> <span class="keyword">extends</span> <span class="title class_">AbstractQueuedSynchronizer</span> &#123;</span><br><span class="line">    <span class="comment">// 版本号</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">1192457210091910933L</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构造函数</span></span><br><span class="line">    Sync(<span class="type">int</span> <span class="keyword">permits</span>) &#123;</span><br><span class="line">        <span class="comment">// 设置状态数</span></span><br><span class="line">        setState(<span class="keyword">permits</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 获取许可</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getPermits</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> getState();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 共享模式下非公平策略获取</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">nonfairTryAcquireShared</span><span class="params">(<span class="type">int</span> acquires)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (;;) &#123; <span class="comment">// 无限循环</span></span><br><span class="line">            <span class="comment">// 获取许可数</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">available</span> <span class="operator">=</span> getState();</span><br><span class="line">            <span class="comment">// 剩余的许可</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">remaining</span> <span class="operator">=</span> available - acquires;</span><br><span class="line">            <span class="keyword">if</span> (remaining &lt; <span class="number">0</span> ||</span><br><span class="line">                compareAndSetState(available, remaining)) <span class="comment">// 许可小于0或者比较并且设置状态成功</span></span><br><span class="line">                <span class="keyword">return</span> remaining;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 共享模式下进行释放</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">tryReleaseShared</span><span class="params">(<span class="type">int</span> releases)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (;;) &#123; <span class="comment">// 无限循环</span></span><br><span class="line">            <span class="comment">// 获取许可</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">current</span> <span class="operator">=</span> getState();</span><br><span class="line">            <span class="comment">// 可用的许可</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">next</span> <span class="operator">=</span> current + releases;</span><br><span class="line">            <span class="keyword">if</span> (next &lt; current) <span class="comment">// overflow</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;Maximum permit count exceeded&quot;</span>);</span><br><span class="line">            <span class="keyword">if</span> (compareAndSetState(current, next)) <span class="comment">// 比较并进行设置成功</span></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据指定的缩减量减小可用许可的数目</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">reducePermits</span><span class="params">(<span class="type">int</span> reductions)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (;;) &#123; <span class="comment">// 无限循环</span></span><br><span class="line">            <span class="comment">// 获取许可</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">current</span> <span class="operator">=</span> getState();</span><br><span class="line">            <span class="comment">// 可用的许可</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">next</span> <span class="operator">=</span> current - reductions;</span><br><span class="line">            <span class="keyword">if</span> (next &gt; current) <span class="comment">// underflow</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;Permit count underflow&quot;</span>);</span><br><span class="line">            <span class="keyword">if</span> (compareAndSetState(current, next)) <span class="comment">// 比较并进行设置成功</span></span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取并返回立即可用的所有许可</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">drainPermits</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (;;) &#123; <span class="comment">// 无限循环</span></span><br><span class="line">            <span class="comment">// 获取许可</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">current</span> <span class="operator">=</span> getState();</span><br><span class="line">            <span class="keyword">if</span> (current == <span class="number">0</span> || compareAndSetState(current, <span class="number">0</span>)) <span class="comment">// 许可为0或者比较并设置成功</span></span><br><span class="line">                <span class="keyword">return</span> current;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    // 共享模式下非公平策略获取
-    final int nonfairTryAcquireShared(int acquires) &#123;
-        for (;;) &#123; // 无限循环
-            // 获取许可数
-            int available = getState();
-            // 剩余的许可
-            int remaining = available - acquires;
-            if (remaining &lt; 0 ||
-                compareAndSetState(available, remaining)) // 许可小于0或者比较并且设置状态成功
-                return remaining;
-        &#125;
-    &#125;
-    
-    // 共享模式下进行释放
-    protected final boolean tryReleaseShared(int releases) &#123;
-        for (;;) &#123; // 无限循环
-            // 获取许可
-            int current = getState();
-            // 可用的许可
-            int next = current + releases;
-            if (next &lt; current) // overflow
-                throw new Error(&quot;Maximum permit count exceeded&quot;);
-            if (compareAndSetState(current, next)) // 比较并进行设置成功
-                return true;
-        &#125;
-    &#125;
-
-    // 根据指定的缩减量减小可用许可的数目
-    final void reducePermits(int reductions) &#123;
-        for (;;) &#123; // 无限循环
-            // 获取许可
-            int current = getState();
-            // 可用的许可
-            int next = current - reductions;
-            if (next &gt; current) // underflow
-                throw new Error(&quot;Permit count underflow&quot;);
-            if (compareAndSetState(current, next)) // 比较并进行设置成功
-                return;
-        &#125;
-    &#125;
-
-    // 获取并返回立即可用的所有许可
-    final int drainPermits() &#123;
-        for (;;) &#123; // 无限循环
-            // 获取许可
-            int current = getState();
-            if (current == 0 || compareAndSetState(current, 0)) // 许可为0或者比较并设置成功
-                return current;
-        &#125;
-    &#125;
-&#125;
-</code></pre>
 <p>说明: Sync类的属性相对简单，只有一个版本号，Sync类存在如下方法和作用如下。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261334270.png" alt="img"></p>
 <h3 id="类的内部类-NonfairSync类"><a href="#类的内部类-NonfairSync类" class="headerlink" title="类的内部类 - NonfairSync类"></a>类的内部类 - NonfairSync类</h3><p>NonfairSync类继承了Sync类，表示采用非公平策略获取资源，其只有一个tryAcquireShared方法，重写了AQS的该方法，其源码如下:</p>
-<pre><code class="java">static final class NonfairSync extends Sync &#123;
-    // 版本号
-    private static final long serialVersionUID = -2694183684443567898L;
-    
-    // 构造函数
-    NonfairSync(int permits) &#123;
-        super(permits);
-    &#125;
-    // 共享模式下获取
-    protected int tryAcquireShared(int acquires) &#123;
-        return nonfairTryAcquireShared(acquires);
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">NonfairSync</span> <span class="keyword">extends</span> <span class="title class_">Sync</span> &#123;</span><br><span class="line">    <span class="comment">// 版本号</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> -<span class="number">2694183684443567898L</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构造函数</span></span><br><span class="line">    NonfairSync(<span class="type">int</span> <span class="keyword">permits</span>) &#123;</span><br><span class="line">        <span class="built_in">super</span>(<span class="keyword">permits</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 共享模式下获取</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span> acquires)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> nonfairTryAcquireShared(acquires);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 从tryAcquireShared方法的源码可知，其会调用父类Sync的nonfairTryAcquireShared方法，表示按照非公平策略进行资源的获取。</p>
 <h3 id="类的内部类-FairSync类"><a href="#类的内部类-FairSync类" class="headerlink" title="类的内部类 - FairSync类"></a>类的内部类 - FairSync类</h3><p>FairSync类继承了Sync类，表示采用公平策略获取资源，其只有一个tryAcquireShared方法，重写了AQS的该方法，其源码如下。</p>
-<pre><code class="java">protected int tryAcquireShared(int acquires) &#123;
-    for (;;) &#123; // 无限循环
-        if (hasQueuedPredecessors()) // 同步队列中存在其他节点
-            return -1;
-        // 获取许可
-        int available = getState();
-        // 剩余的许可
-        int remaining = available - acquires;
-        if (remaining &lt; 0 ||
-            compareAndSetState(available, remaining)) // 剩余的许可小于0或者比较设置成功
-            return remaining;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span> acquires)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123; <span class="comment">// 无限循环</span></span><br><span class="line">        <span class="keyword">if</span> (hasQueuedPredecessors()) <span class="comment">// 同步队列中存在其他节点</span></span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        <span class="comment">// 获取许可</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">available</span> <span class="operator">=</span> getState();</span><br><span class="line">        <span class="comment">// 剩余的许可</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">remaining</span> <span class="operator">=</span> available - acquires;</span><br><span class="line">        <span class="keyword">if</span> (remaining &lt; <span class="number">0</span> ||</span><br><span class="line">            compareAndSetState(available, remaining)) <span class="comment">// 剩余的许可小于0或者比较设置成功</span></span><br><span class="line">            <span class="keyword">return</span> remaining;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 从tryAcquireShared方法的源码可知，它使用公平策略来获取资源，它会判断同步队列中是否存在其他的等待节点。</p>
-<h3 id="类的属性"><a href="#类的属性" class="headerlink" title="类的属性"></a>类的属性</h3><pre><code class="java">public class Semaphore implements java.io.Serializable &#123;
-    // 版本号
-    private static final long serialVersionUID = -3222578661600680210L;
-    // 属性
-    private final Sync sync;
-&#125;
-</code></pre>
+<h3 id="类的属性"><a href="#类的属性" class="headerlink" title="类的属性"></a>类的属性</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Semaphore</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;</span><br><span class="line">    <span class="comment">// 版本号</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> -<span class="number">3222578661600680210L</span>;</span><br><span class="line">    <span class="comment">// 属性</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Sync sync;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: Semaphore自身只有两个属性，最重要的是sync属性，基于Semaphore对象的操作绝大多数都转移到了对sync的操作。</p>
 <h3 id="类的构造函数"><a href="#类的构造函数" class="headerlink" title="类的构造函数"></a>类的构造函数</h3><ul>
 <li>Semaphore(int)型构造函数</li>
 </ul>
-<pre><code class="java">public Semaphore(int permits) &#123;
-    sync = new NonfairSync(permits);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">Semaphore</span><span class="params">(<span class="type">int</span> <span class="keyword">permits</span>)</span> &#123;</span><br><span class="line">    sync = <span class="keyword">new</span> <span class="title class_">NonfairSync</span>(<span class="keyword">permits</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 该构造函数会创建具有给定的许可数和非公平的公平设置的Semaphore。</p>
 <ul>
 <li>Semaphore(int, boolean)型构造函数</li>
 </ul>
-<pre><code class="java">public Semaphore(int permits, boolean fair) &#123;
-    sync = fair ? new FairSync(permits) : new NonfairSync(permits);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">Semaphore</span><span class="params">(<span class="type">int</span> <span class="keyword">permits</span>, <span class="type">boolean</span> fair)</span> &#123;</span><br><span class="line">    sync = fair ? <span class="keyword">new</span> <span class="title class_">FairSync</span>(<span class="keyword">permits</span>) : <span class="keyword">new</span> <span class="title class_">NonfairSync</span>(<span class="keyword">permits</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 该构造函数会创建具有给定的许可数和给定的公平设置的Semaphore。</p>
 <h3 id="核心函数分析-acquire函数"><a href="#核心函数分析-acquire函数" class="headerlink" title="核心函数分析 - acquire函数"></a>核心函数分析 - acquire函数</h3><p>此方法从信号量获取一个(多个)许可，在提供一个许可前一直将线程阻塞，或者线程被中断，其源码如下</p>
-<pre><code class="java">public void acquire() throws InterruptedException &#123;
-    sync.acquireSharedInterruptibly(1);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">acquire</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">    sync.acquireSharedInterruptibly(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 该方法中将会调用Sync对象的acquireSharedInterruptibly(从AQS继承而来的方法)方法，而acquireSharedInterruptibly方法在上一篇CountDownLatch中已经进行了分析，在此不再累赘。</p>
 <p>最终可以获取大致的方法调用序列(假设使用非公平策略)。如下图所示。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261334252.png" alt="img"></p>
 <p>说明: 上图只是给出了大体会调用到的方法，和具体的示例可能会有些差别，之后会根据具体的示例进行分析。</p>
 <h3 id="核心函数分析-release函数"><a href="#核心函数分析-release函数" class="headerlink" title="核心函数分析 - release函数"></a>核心函数分析 - release函数</h3><p>此方法释放一个(多个)许可，将其返回给信号量，源码如下。</p>
-<pre><code class="java">public void release() &#123;
-    sync.releaseShared(1);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">release</span><span class="params">()</span> &#123;</span><br><span class="line">    sync.releaseShared(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 该方法中将会调用Sync对象的releaseShared(从AQS继承而来的方法)方法，而releaseShared方法在上一篇CountDownLatch中已经进行了分析，在此不再累赘。</p>
 <p>最终可以获取大致的方法调用序列(假设使用非公平策略)。如下图所示:</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335971.png" alt="img"></p>
 <p>说明: 上图只是给出了大体会调用到的方法，和具体的示例可能会有些差别，之后会根据具体的示例进行分析。</p>
 <h2 id="Semaphore示例"><a href="#Semaphore示例" class="headerlink" title="Semaphore示例"></a>Semaphore示例</h2><p>下面给出了一个使用Semaphore的示例。</p>
-<pre><code class="java">import java.util.concurrent.Semaphore;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.Semaphore;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyThread</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Semaphore semaphore;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MyThread</span><span class="params">(String name, Semaphore semaphore)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(name);</span><br><span class="line">        <span class="built_in">this</span>.semaphore = semaphore;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;        </span><br><span class="line">        <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">3</span>;</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; trying to acquire&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            semaphore.acquire(count);</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; acquire successfully&quot;</span>);</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            semaphore.release(count);</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; release successfully&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SemaphoreDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">SEM_SIZE</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Semaphore</span> <span class="variable">semaphore</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Semaphore</span>(SEM_SIZE);</span><br><span class="line">        <span class="type">MyThread</span> <span class="variable">t1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyThread</span>(<span class="string">&quot;t1&quot;</span>, semaphore);</span><br><span class="line">        <span class="type">MyThread</span> <span class="variable">t2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyThread</span>(<span class="string">&quot;t2&quot;</span>, semaphore);</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        <span class="type">int</span> <span class="variable">permits</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; trying to acquire&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            semaphore.acquire(<span class="keyword">permits</span>);</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; acquire successfully&quot;</span>);</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            semaphore.release();</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; release successfully&quot;</span>);</span><br><span class="line">        &#125;      </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-class MyThread extends Thread &#123;
-    private Semaphore semaphore;
-    
-    public MyThread(String name, Semaphore semaphore) &#123;
-        super(name);
-        this.semaphore = semaphore;
-    &#125;
-    
-    public void run() &#123;        
-        int count = 3;
-        System.out.println(Thread.currentThread().getName() + &quot; trying to acquire&quot;);
-        try &#123;
-            semaphore.acquire(count);
-            System.out.println(Thread.currentThread().getName() + &quot; acquire successfully&quot;);
-            Thread.sleep(1000);
-        &#125; catch (InterruptedException e) &#123;
-            e.printStackTrace();
-        &#125; finally &#123;
-            semaphore.release(count);
-            System.out.println(Thread.currentThread().getName() + &quot; release successfully&quot;);
-        &#125;
-    &#125;
-&#125;
-
-public class SemaphoreDemo &#123;
-    public final static int SEM_SIZE = 10;
-    
-    public static void main(String[] args) &#123;
-        Semaphore semaphore = new Semaphore(SEM_SIZE);
-        MyThread t1 = new MyThread(&quot;t1&quot;, semaphore);
-        MyThread t2 = new MyThread(&quot;t2&quot;, semaphore);
-        t1.start();
-        t2.start();
-        int permits = 5;
-        System.out.println(Thread.currentThread().getName() + &quot; trying to acquire&quot;);
-        try &#123;
-            semaphore.acquire(permits);
-            System.out.println(Thread.currentThread().getName() + &quot; acquire successfully&quot;);
-            Thread.sleep(1000);
-        &#125; catch (InterruptedException e) &#123;
-            e.printStackTrace();
-        &#125; finally &#123;
-            semaphore.release();
-            System.out.println(Thread.currentThread().getName() + &quot; release successfully&quot;);
-        &#125;      
-    &#125;
-&#125;
-</code></pre>
 <p>运行结果(某一次):</p>
-<pre><code class="html">main trying to acquire
-main acquire successfully
-t1 trying to acquire
-t1 acquire successfully
-t2 trying to acquire
-t1 release successfully
-main release successfully
-t2 acquire successfully
-t2 release successfully
-</code></pre>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">main trying to acquire</span><br><span class="line">main acquire successfully</span><br><span class="line">t1 trying to acquire</span><br><span class="line">t1 acquire successfully</span><br><span class="line">t2 trying to acquire</span><br><span class="line">t1 release successfully</span><br><span class="line">main release successfully</span><br><span class="line">t2 acquire successfully</span><br><span class="line">t2 release successfully</span><br></pre></td></tr></table></figure>
+
 <p>说明: 首先，生成一个信号量，信号量有10个许可，然后，main，t1，t2三个线程获取许可运行，根据结果，可能存在如下的一种时序。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335888.png" alt="img"></p>
 <p>说明: 如上图所示，首先，main线程执行acquire操作，并且成功获得许可，之后t1线程执行acquire操作，成功获得许可，之后t2执行acquire操作，由于此时许可数量不够，t2线程将会阻塞，直到许可可用。之后t1线程释放许可，main线程释放许可，此时的许可数量可以满足t2线程的要求，所以，此时t2线程会成功获得许可运行，t2运行完成后释放许可。下面进行详细分析。</p>
@@ -685,20 +526,8 @@ t2 release successfully
 <h4 id="semaphore初始化有1个令牌，1个线程调用一次acquire方法，然后调用两次release方法，之后另外一个线程调用acquire-2-方法，此线程能够获取到足够的令牌并继续运行吗"><a href="#semaphore初始化有1个令牌，1个线程调用一次acquire方法，然后调用两次release方法，之后另外一个线程调用acquire-2-方法，此线程能够获取到足够的令牌并继续运行吗" class="headerlink" title="semaphore初始化有1个令牌，1个线程调用一次acquire方法，然后调用两次release方法，之后另外一个线程调用acquire(2)方法，此线程能够获取到足够的令牌并继续运行吗?"></a>semaphore初始化有1个令牌，1个线程调用一次acquire方法，然后调用两次release方法，之后另外一个线程调用acquire(2)方法，此线程能够获取到足够的令牌并继续运行吗?</h4><p>答案：能，原因是release方法会添加令牌，并不会以初始化的大小为准。</p>
 <h4 id="semaphore初始化有2个令牌，一个线程调用1次release方法，然后一次性获取3个令牌，会获取到吗"><a href="#semaphore初始化有2个令牌，一个线程调用1次release方法，然后一次性获取3个令牌，会获取到吗" class="headerlink" title="semaphore初始化有2个令牌，一个线程调用1次release方法，然后一次性获取3个令牌，会获取到吗?"></a>semaphore初始化有2个令牌，一个线程调用1次release方法，然后一次性获取3个令牌，会获取到吗?</h4><p>答案：能，原因是release会添加令牌，并不会以初始化的大小为准。Semaphore中release方法的调用并没有限制要在acquire后调用。</p>
 <p>具体示例如下，如果不相信的话，可以运行一下下面的demo，在做实验之前，笔者也认为应该是不允许的。。</p>
-<pre><code class="java">public class TestSemaphore2 &#123;
-    public static void main(String[] args) &#123;
-        int permitsNum = 2;
-        final Semaphore semaphore = new Semaphore(permitsNum);
-        try &#123;
-            System.out.println(&quot;availablePermits:&quot;+semaphore.availablePermits()+&quot;,semaphore.tryAcquire(3,1, TimeUnit.SECONDS):&quot;+semaphore.tryAcquire(3,1, TimeUnit.SECONDS));
-            semaphore.release();
-            System.out.println(&quot;availablePermits:&quot;+semaphore.availablePermits()+&quot;,semaphore.tryAcquire(3,1, TimeUnit.SECONDS):&quot;+semaphore.tryAcquire(3,1, TimeUnit.SECONDS));
-        &#125;catch (Exception e) &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestSemaphore2</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">permitsNum</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">Semaphore</span> <span class="variable">semaphore</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Semaphore</span>(permitsNum);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;availablePermits:&quot;</span>+semaphore.availablePermits()+<span class="string">&quot;,semaphore.tryAcquire(3,1, TimeUnit.SECONDS):&quot;</span>+semaphore.tryAcquire(<span class="number">3</span>,<span class="number">1</span>, TimeUnit.SECONDS));</span><br><span class="line">            semaphore.release();</span><br><span class="line">            System.out.println(<span class="string">&quot;availablePermits:&quot;</span>+semaphore.availablePermits()+<span class="string">&quot;,semaphore.tryAcquire(3,1, TimeUnit.SECONDS):&quot;</span>+semaphore.tryAcquire(<span class="number">3</span>,<span class="number">1</span>, TimeUnit.SECONDS));</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-        &#125;
-    &#125;
-&#125;
-</code></pre>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
 <li>文章主要参考自leesf的<a target="_blank" rel="noopener" href="https://www.cnblogs.com/leesf456/p/5414778.html%EF%BC%8C%E5%9C%A8%E6%AD%A4%E5%9F%BA%E7%A1%80%E4%B8%8A%E5%81%9A%E4%BA%86%E5%A2%9E%E6%94%B9%E3%80%82">https://www.cnblogs.com/leesf456/p/5414778.html，在此基础上做了增改。</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u010412719/article/details/94986327">https://blog.csdn.net/u010412719/article/details/94986327</a></li>

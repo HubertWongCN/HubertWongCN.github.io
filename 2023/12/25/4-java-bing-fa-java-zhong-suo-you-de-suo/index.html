@@ -421,23 +421,8 @@ Java提供了种类丰富的锁，每种锁因其特性的不同，在适当的�
 <li><strong>乐观锁适合读操作多的场景</strong>，不加锁的特点能够使其读操作的性能大幅提升。</li>
 </ul>
 <p>光说概念有些抽象，我们来看下乐观锁和悲观锁的调用方式示例：</p>
-<pre><code class="java">// ------------------------- 悲观锁的调用方式 -------------------------
-// synchronized
-public synchronized void testMethod() &#123;
-    // 操作同步资源
-&#125;
-// ReentrantLock
-private ReentrantLock lock = new ReentrantLock(); // 需要保证多个线程使用的是同一个锁
-public void modifyPublicResources() &#123;
-    lock.lock();
-    // 操作同步资源
-    lock.unlock();
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ------------------------- 悲观锁的调用方式 -------------------------</span></span><br><span class="line"><span class="comment">// synchronized</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">testMethod</span><span class="params">()</span> &#123;</span><br><span class="line">	<span class="comment">// 操作同步资源</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// ReentrantLock</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantLock</span>(); <span class="comment">// 需要保证多个线程使用的是同一个锁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">modifyPublicResources</span><span class="params">()</span> &#123;</span><br><span class="line">	lock.lock();</span><br><span class="line">	<span class="comment">// 操作同步资源</span></span><br><span class="line">	lock.unlock();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ------------------------- 乐观锁的调用方式 -------------------------</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">AtomicInteger</span> <span class="variable">atomicInteger</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();  <span class="comment">// 需要保证多个线程使用的是同一个AtomicInteger</span></span><br><span class="line">atomicInteger.incrementAndGet(); <span class="comment">//执行自增1</span></span><br></pre></td></tr></table></figure>
 
-// ------------------------- 乐观锁的调用方式 -------------------------
-private AtomicInteger atomicInteger = new AtomicInteger();  // 需要保证多个线程使用的是同一个AtomicInteger
-atomicInteger.incrementAndGet(); //执行自增1
-</code></pre>
 <p>通过调用方式示例，我们可以发现悲观锁基本都是在显式的锁定之后再操作同步资源，而乐观锁则直接去操作同步资源。那么，为何乐观锁能够做到不锁定同步资源也可以正确的实现线程同步呢？具体可以参看 <a href="/2023/12/25/9-juc-yuan-zi-lei-cas-unsafe-he-yuan-zi-lei-xiang-jie/" title="9.JUC原子类: CAS, Unsafe和原子类详解">JUC原子类: CAS, Unsafe和原子类详解</a>。</p>
 <h2 id="2-自旋锁-VS-适应性自旋锁"><a href="#2-自旋锁-VS-适应性自旋锁" class="headerlink" title="2. 自旋锁 VS 适应性自旋锁"></a>2. 自旋锁 VS 适应性自旋锁</h2><blockquote>
 <p>在介绍自旋锁前，我们需要介绍一些前提知识来帮助大家明白自旋锁的概念。</p>
@@ -464,17 +449,8 @@ atomicInteger.incrementAndGet(); //执行自增1
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261922905.png"></p>
 <p>更多请参看<a href="/2023/12/25/12-juc-suo-reentrantlock-xiang-jie/" title="12.JUC锁: ReentrantLock详解">JUC - ReentrantLock详解</a>。</p>
 <h2 id="5-可重入锁-VS-非可重入锁"><a href="#5-可重入锁-VS-非可重入锁" class="headerlink" title="5. 可重入锁 VS 非可重入锁"></a>5. 可重入锁 VS 非可重入锁</h2><p>可重入锁又名递归锁，是指在同一个线程在外层方法获取锁的时候，再进入该线程的内层方法会自动获取锁（前提锁对象得是同一个对象或者class），不会因为之前已经获取过还没释放而阻塞。Java中ReentrantLock和synchronized都是可重入锁，可重入锁的一个优点是可一定程度避免死锁。下面用示例代码来进行分析：</p>
-<pre><code class="java">public class Widget &#123;
-    public synchronized void doSomething() &#123;
-        System.out.println(&quot;方法1执行...&quot;);
-        doOthers();
-    &#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Widget</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">doSomething</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;方法1执行...&quot;</span>);</span><br><span class="line">        doOthers();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">doOthers</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;方法2执行...&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    public synchronized void doOthers() &#123;
-        System.out.println(&quot;方法2执行...&quot;);
-    &#125;
-&#125;
-</code></pre>
 <p>在上面的代码中，类中的两个方法都是被内置锁synchronized修饰的，doSomething()方法中调用doOthers()方法。因为内置锁是可重入的，所以同一个线程在调用doOthers()时可以直接获得当前对象的锁，进入doOthers()进行操作。</p>
 <p>如果是一个不可重入锁，那么当前线程在调用doOthers()之前需要将执行doSomething()时获取当前对象的锁释放掉，实际上该对象锁已被当前线程所持有，且无法释放。所以此时会出现死锁。</p>
 <p>而为什么可重入锁就可以在嵌套调用时可以自动获得锁呢？我们通过图示和源码来分别解析一下。</p>

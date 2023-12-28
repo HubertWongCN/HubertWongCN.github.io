@@ -429,301 +429,57 @@ CyclicBarrier底层是基于ReentrantLock和AbstractQueuedSynchronizer来实现�
 <li>对于CyclicBarrier，假设有一家公司要全体员工进行团建活动，活动内容为翻越三个障碍物，每一个人翻越障碍物所用的时间是不一样的。但是公司要求所有人在翻越当前障碍物之后再开始翻越下一个障碍物，也就是所有人翻越第一个障碍物之后，才开始翻越第二个，以此类推。类比地，每一个员工都是一个“其他线程”。当所有人都翻越的所有的障碍物之后，程序才结束。而主线程可能早就结束了，这里我们不用管主线程。</li>
 </ul>
 <h2 id="CyclicBarrier源码分析"><a href="#CyclicBarrier源码分析" class="headerlink" title="CyclicBarrier源码分析"></a>CyclicBarrier源码分析</h2><h3 id="类的继承关系"><a href="#类的继承关系" class="headerlink" title="类的继承关系"></a>类的继承关系</h3><p>CyclicBarrier没有显示继承哪个父类或者实现哪个父接口, 所有AQS和重入锁不是通过继承实现的，而是通过组合实现的。</p>
-<pre><code class="java">public class CyclicBarrier &#123;&#125;
-```　　
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CyclicBarrier</span> &#123;&#125;</span><br><span class="line">```　　</span><br><span class="line"></span><br><span class="line">### 类的内部类</span><br><span class="line"></span><br><span class="line">CyclicBarrier类存在一个内部类Generation，每一次使用的CycBarrier可以当成Generation的实例，其源代码如下</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Generation</span> &#123;</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">broken</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-### 类的内部类
-
-CyclicBarrier类存在一个内部类Generation，每一次使用的CycBarrier可以当成Generation的实例，其源代码如下
-
-```java
-private static class Generation &#123;
-    boolean broken = false;
-&#125;
-</code></pre>
 <p>说明: Generation类有一个属性broken，用来表示当前屏障是否被损坏。</p>
-<h3 id="类的属性"><a href="#类的属性" class="headerlink" title="类的属性"></a>类的属性</h3><pre><code class="java">public class CyclicBarrier &#123;
-    
-    /** The lock for guarding barrier entry */
-    // 可重入锁
-    private final ReentrantLock lock = new ReentrantLock();
-    /** Condition to wait on until tripped */
-    // 条件队列
-    private final Condition trip = lock.newCondition();
-    /** The number of parties */
-    // 参与的线程数量
-    private final int parties;
-    /* The command to run when tripped */
-    // 由最后一个进入 barrier 的线程执行的操作
-    private final Runnable barrierCommand;
-    /** The current generation */
-    // 当前代
-    private Generation generation = new Generation();
-    // 正在等待进入屏障的线程数量
-    private int count;
-&#125;
-</code></pre>
+<h3 id="类的属性"><a href="#类的属性" class="headerlink" title="类的属性"></a>类的属性</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CyclicBarrier</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/** The lock for guarding barrier entry */</span></span><br><span class="line">    <span class="comment">// 可重入锁</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantLock</span>();</span><br><span class="line">    <span class="comment">/** Condition to wait on until tripped */</span></span><br><span class="line">    <span class="comment">// 条件队列</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Condition</span> <span class="variable">trip</span> <span class="operator">=</span> lock.newCondition();</span><br><span class="line">    <span class="comment">/** The number of parties */</span></span><br><span class="line">    <span class="comment">// 参与的线程数量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> parties;</span><br><span class="line">    <span class="comment">/* The command to run when tripped */</span></span><br><span class="line">    <span class="comment">// 由最后一个进入 barrier 的线程执行的操作</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Runnable barrierCommand;</span><br><span class="line">    <span class="comment">/** The current generation */</span></span><br><span class="line">    <span class="comment">// 当前代</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">Generation</span> <span class="variable">generation</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Generation</span>();</span><br><span class="line">    <span class="comment">// 正在等待进入屏障的线程数量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> count;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 该属性有一个为ReentrantLock对象，有一个为Condition对象，而Condition对象又是基于AQS的，所以，归根到底，底层还是由AQS提供支持。</p>
 <h3 id="类的构造函数"><a href="#类的构造函数" class="headerlink" title="类的构造函数"></a>类的构造函数</h3><ul>
 <li>CyclicBarrier(int, Runnable)型构造函数</li>
 </ul>
-<pre><code class="java">public CyclicBarrier(int parties, Runnable barrierAction) &#123;
-    // 参与的线程数量小于等于0，抛出异常
-    if (parties &lt;= 0) throw new IllegalArgumentException();
-    // 设置parties
-    this.parties = parties;
-    // 设置count
-    this.count = parties;
-    // 设置barrierCommand
-    this.barrierCommand = barrierAction;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">CyclicBarrier</span><span class="params">(<span class="type">int</span> parties, Runnable barrierAction)</span> &#123;</span><br><span class="line">    <span class="comment">// 参与的线程数量小于等于0，抛出异常</span></span><br><span class="line">    <span class="keyword">if</span> (parties &lt;= <span class="number">0</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>();</span><br><span class="line">    <span class="comment">// 设置parties</span></span><br><span class="line">    <span class="built_in">this</span>.parties = parties;</span><br><span class="line">    <span class="comment">// 设置count</span></span><br><span class="line">    <span class="built_in">this</span>.count = parties;</span><br><span class="line">    <span class="comment">// 设置barrierCommand</span></span><br><span class="line">    <span class="built_in">this</span>.barrierCommand = barrierAction;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 该构造函数可以指定关联该CyclicBarrier的线程数量，并且可以指定在所有线程都进入屏障后的执行动作，该执行动作由最后一个进行屏障的线程执行。</p>
 <ul>
 <li>CyclicBarrier(int)型构造函数</li>
 </ul>
-<pre><code class="java">public CyclicBarrier(int parties) &#123;
-    // 调用含有两个参数的构造函数
-    this(parties, null);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">CyclicBarrier</span><span class="params">(<span class="type">int</span> parties)</span> &#123;</span><br><span class="line">    <span class="comment">// 调用含有两个参数的构造函数</span></span><br><span class="line">    <span class="built_in">this</span>(parties, <span class="literal">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 该构造函数仅仅执行了关联该CyclicBarrier的线程数量，没有设置执行动作。</p>
 <h3 id="核心函数-dowait函数"><a href="#核心函数-dowait函数" class="headerlink" title="核心函数 - dowait函数"></a>核心函数 - dowait函数</h3><p>此函数为CyclicBarrier类的核心函数，CyclicBarrier类对外提供的await函数在底层都是调用该了doawait函数，其源代码如下。</p>
-<pre><code class="java">private int dowait(boolean timed, long nanos)
-    throws InterruptedException, BrokenBarrierException,
-            TimeoutException &#123;
-    // 保存当前锁
-    final ReentrantLock lock = this.lock;
-    // 锁定
-    lock.lock();
-    try &#123;
-        // 保存当前代
-        final Generation g = generation;
-        
-        if (g.broken) // 屏障被破坏，抛出异常
-            throw new BrokenBarrierException();
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">dowait</span><span class="params">(<span class="type">boolean</span> timed, <span class="type">long</span> nanos)</span></span><br><span class="line">    <span class="keyword">throws</span> InterruptedException, BrokenBarrierException,</span><br><span class="line">            TimeoutException &#123;</span><br><span class="line">    <span class="comment">// 保存当前锁</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="built_in">this</span>.lock;</span><br><span class="line">    <span class="comment">// 锁定</span></span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 保存当前代</span></span><br><span class="line">        <span class="keyword">final</span> <span class="type">Generation</span> <span class="variable">g</span> <span class="operator">=</span> generation;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (g.broken) <span class="comment">// 屏障被破坏，抛出异常</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BrokenBarrierException</span>();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Thread.interrupted()) &#123; <span class="comment">// 线程被中断</span></span><br><span class="line">            <span class="comment">// 损坏当前屏障，并且唤醒所有的线程，只有拥有锁的时候才会调用</span></span><br><span class="line">            breakBarrier();</span><br><span class="line">            <span class="comment">// 抛出异常</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InterruptedException</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 减少正在等待进入屏障的线程数量</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> --count;</span><br><span class="line">        <span class="keyword">if</span> (index == <span class="number">0</span>) &#123;  <span class="comment">// 正在等待进入屏障的线程数量为0，所有线程都已经进入</span></span><br><span class="line">            <span class="comment">// 运行的动作标识</span></span><br><span class="line">            <span class="type">boolean</span> <span class="variable">ranAction</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// 保存运行动作</span></span><br><span class="line">                <span class="keyword">final</span> <span class="type">Runnable</span> <span class="variable">command</span> <span class="operator">=</span> barrierCommand;</span><br><span class="line">                <span class="keyword">if</span> (command != <span class="literal">null</span>) <span class="comment">// 动作不为空</span></span><br><span class="line">                    <span class="comment">// 运行</span></span><br><span class="line">                    command.run();</span><br><span class="line">                <span class="comment">// 设置ranAction状态</span></span><br><span class="line">                ranAction = <span class="literal">true</span>;</span><br><span class="line">                <span class="comment">// 进入下一代</span></span><br><span class="line">                nextGeneration();</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!ranAction) <span class="comment">// 没有运行的动作</span></span><br><span class="line">                    <span class="comment">// 损坏当前屏障</span></span><br><span class="line">                    breakBarrier();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// loop until tripped, broken, interrupted, or timed out</span></span><br><span class="line">        <span class="comment">// 无限循环</span></span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!timed) <span class="comment">// 没有设置等待时间</span></span><br><span class="line">                    <span class="comment">// 等待</span></span><br><span class="line">                    trip.await(); </span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (nanos &gt; <span class="number">0L</span>) <span class="comment">// 设置了等待时间，并且等待时间大于0</span></span><br><span class="line">                    <span class="comment">// 等待指定时长</span></span><br><span class="line">                    nanos = trip.awaitNanos(nanos);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException ie) &#123; </span><br><span class="line">                <span class="keyword">if</span> (g == generation &amp;&amp; ! g.broken) &#123; <span class="comment">// 等于当前代并且屏障没有被损坏</span></span><br><span class="line">                    <span class="comment">// 损坏当前屏障</span></span><br><span class="line">                    breakBarrier();</span><br><span class="line">                    <span class="comment">// 抛出异常</span></span><br><span class="line">                    <span class="keyword">throw</span> ie;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123; <span class="comment">// 不等于当前带后者是屏障被损坏</span></span><br><span class="line">                    <span class="comment">// We&#x27;re about to finish waiting even if we had not</span></span><br><span class="line">                    <span class="comment">// been interrupted, so this interrupt is deemed to</span></span><br><span class="line">                    <span class="comment">// &quot;belong&quot; to subsequent execution.</span></span><br><span class="line">                    <span class="comment">// 中断当前线程</span></span><br><span class="line">                    Thread.currentThread().interrupt();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g.broken) <span class="comment">// 屏障被损坏，抛出异常</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BrokenBarrierException</span>();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (g != generation) <span class="comment">// 不等于当前代</span></span><br><span class="line">                <span class="comment">// 返回索引</span></span><br><span class="line">                <span class="keyword">return</span> index;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (timed &amp;&amp; nanos &lt;= <span class="number">0L</span>) &#123; <span class="comment">// 设置了等待时间，并且等待时间小于0</span></span><br><span class="line">                <span class="comment">// 损坏屏障</span></span><br><span class="line">                breakBarrier();</span><br><span class="line">                <span class="comment">// 抛出异常</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TimeoutException</span>();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">// 释放锁</span></span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-        if (Thread.interrupted()) &#123; // 线程被中断
-            // 损坏当前屏障，并且唤醒所有的线程，只有拥有锁的时候才会调用
-            breakBarrier();
-            // 抛出异常
-            throw new InterruptedException();
-        &#125;
-        
-        // 减少正在等待进入屏障的线程数量
-        int index = --count;
-        if (index == 0) &#123;  // 正在等待进入屏障的线程数量为0，所有线程都已经进入
-            // 运行的动作标识
-            boolean ranAction = false;
-            try &#123;
-                // 保存运行动作
-                final Runnable command = barrierCommand;
-                if (command != null) // 动作不为空
-                    // 运行
-                    command.run();
-                // 设置ranAction状态
-                ranAction = true;
-                // 进入下一代
-                nextGeneration();
-                return 0;
-            &#125; finally &#123;
-                if (!ranAction) // 没有运行的动作
-                    // 损坏当前屏障
-                    breakBarrier();
-            &#125;
-        &#125;
-
-        // loop until tripped, broken, interrupted, or timed out
-        // 无限循环
-        for (;;) &#123;
-            try &#123;
-                if (!timed) // 没有设置等待时间
-                    // 等待
-                    trip.await(); 
-                else if (nanos &gt; 0L) // 设置了等待时间，并且等待时间大于0
-                    // 等待指定时长
-                    nanos = trip.awaitNanos(nanos);
-            &#125; catch (InterruptedException ie) &#123; 
-                if (g == generation &amp;&amp; ! g.broken) &#123; // 等于当前代并且屏障没有被损坏
-                    // 损坏当前屏障
-                    breakBarrier();
-                    // 抛出异常
-                    throw ie;
-                &#125; else &#123; // 不等于当前带后者是屏障被损坏
-                    // We&#39;re about to finish waiting even if we had not
-                    // been interrupted, so this interrupt is deemed to
-                    // &quot;belong&quot; to subsequent execution.
-                    // 中断当前线程
-                    Thread.currentThread().interrupt();
-                &#125;
-            &#125;
-
-            if (g.broken) // 屏障被损坏，抛出异常
-                throw new BrokenBarrierException();
-
-            if (g != generation) // 不等于当前代
-                // 返回索引
-                return index;
-
-            if (timed &amp;&amp; nanos &lt;= 0L) &#123; // 设置了等待时间，并且等待时间小于0
-                // 损坏屏障
-                breakBarrier();
-                // 抛出异常
-                throw new TimeoutException();
-            &#125;
-        &#125;
-    &#125; finally &#123;
-        // 释放锁
-        lock.unlock();
-    &#125;
-&#125;
-</code></pre>
 <p>说明: dowait方法的逻辑会进行一系列的判断，大致流程如下:</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261330727.png" alt="img"></p>
 <h3 id="核心函数-nextGeneration函数"><a href="#核心函数-nextGeneration函数" class="headerlink" title="核心函数 - nextGeneration函数"></a>核心函数 - nextGeneration函数</h3><p>此函数在所有线程进入屏障后会被调用，即生成下一个版本，所有线程又可以重新进入到屏障中，其源代码如下</p>
-<pre><code class="java">private void nextGeneration() &#123;
-    // signal completion of last generation
-    // 唤醒所有线程
-    trip.signalAll();
-    // set up next generation
-    // 恢复正在等待进入屏障的线程数量
-    count = parties;
-    // 新生一代
-    generation = new Generation();
-&#125;
-</code></pre>
-<p>在此函数中会调用AQS的signalAll方法，即唤醒所有等待线程。如果所有的线程都在等待此条件，则唤醒所有线程。其源代码如下</p>
-<pre><code class="java">public final void signalAll() &#123;
-    if (!isHeldExclusively()) // 不被当前线程独占，抛出异常
-        throw new IllegalMonitorStateException();
-    // 保存condition队列头节点
-    Node first = firstWaiter;
-    if (first != null) // 头节点不为空
-        // 唤醒所有等待线程
-        doSignalAll(first);
-&#125;
-</code></pre>
-<p>说明: 此函数判断头节点是否为空，即条件队列是否为空，然后会调用doSignalAll函数，doSignalAll函数源码如下</p>
-<pre><code class="java">private void doSignalAll(Node first) &#123;
-    // condition队列的头节点尾结点都设置为空
-    lastWaiter = firstWaiter = null;
-    // 循环
-    do &#123;
-        // 获取first结点的nextWaiter域结点
-        Node next = first.nextWaiter;
-        // 设置first结点的nextWaiter域为空
-        first.nextWaiter = null;
-        // 将first结点从condition队列转移到sync队列
-        transferForSignal(first);
-        // 重新设置first
-        first = next;
-    &#125; while (first != null);
-&#125;
-</code></pre>
-<p>说明: 此函数会依次将条件队列中的节点转移到同步队列中，会调用到transferForSignal函数，其源码如下</p>
-<pre><code class="java">final boolean transferForSignal(Node node) &#123;
-    /*
-        * If cannot change waitStatus, the node has been cancelled.
-        */
-    if (!compareAndSetWaitStatus(node, Node.CONDITION, 0))
-        return false;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">nextGeneration</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// signal completion of last generation</span></span><br><span class="line">    <span class="comment">// 唤醒所有线程</span></span><br><span class="line">    trip.signalAll();</span><br><span class="line">    <span class="comment">// set up next generation</span></span><br><span class="line">    <span class="comment">// 恢复正在等待进入屏障的线程数量</span></span><br><span class="line">    count = parties;</span><br><span class="line">    <span class="comment">// 新生一代</span></span><br><span class="line">    generation = <span class="keyword">new</span> <span class="title class_">Generation</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    /*
-        * Splice onto queue and try to set waitStatus of predecessor to
-        * indicate that thread is (probably) waiting. If cancelled or
-        * attempt to set waitStatus fails, wake up to resync (in which
-        * case the waitStatus can be transiently and harmlessly wrong).
-        */
-    Node p = enq(node);
-    int ws = p.waitStatus;
-    if (ws &gt; 0 || !compareAndSetWaitStatus(p, ws, Node.SIGNAL))
-        LockSupport.unpark(node.thread);
-    return true;
-&#125;
-</code></pre>
+<p>在此函数中会调用AQS的signalAll方法，即唤醒所有等待线程。如果所有的线程都在等待此条件，则唤醒所有线程。其源代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">signalAll</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!isHeldExclusively()) <span class="comment">// 不被当前线程独占，抛出异常</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalMonitorStateException</span>();</span><br><span class="line">    <span class="comment">// 保存condition队列头节点</span></span><br><span class="line">    <span class="type">Node</span> <span class="variable">first</span> <span class="operator">=</span> firstWaiter;</span><br><span class="line">    <span class="keyword">if</span> (first != <span class="literal">null</span>) <span class="comment">// 头节点不为空</span></span><br><span class="line">        <span class="comment">// 唤醒所有等待线程</span></span><br><span class="line">        doSignalAll(first);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>说明: 此函数判断头节点是否为空，即条件队列是否为空，然后会调用doSignalAll函数，doSignalAll函数源码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">doSignalAll</span><span class="params">(Node first)</span> &#123;</span><br><span class="line">    <span class="comment">// condition队列的头节点尾结点都设置为空</span></span><br><span class="line">    lastWaiter = firstWaiter = <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">// 循环</span></span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="comment">// 获取first结点的nextWaiter域结点</span></span><br><span class="line">        <span class="type">Node</span> <span class="variable">next</span> <span class="operator">=</span> first.nextWaiter;</span><br><span class="line">        <span class="comment">// 设置first结点的nextWaiter域为空</span></span><br><span class="line">        first.nextWaiter = <span class="literal">null</span>;</span><br><span class="line">        <span class="comment">// 将first结点从condition队列转移到sync队列</span></span><br><span class="line">        transferForSignal(first);</span><br><span class="line">        <span class="comment">// 重新设置first</span></span><br><span class="line">        first = next;</span><br><span class="line">    &#125; <span class="keyword">while</span> (first != <span class="literal">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>说明: 此函数会依次将条件队列中的节点转移到同步队列中，会调用到transferForSignal函数，其源码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">transferForSignal</span><span class="params">(Node node)</span> &#123;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">        * If cannot change waitStatus, the node has been cancelled.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="keyword">if</span> (!compareAndSetWaitStatus(node, Node.CONDITION, <span class="number">0</span>))</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">        * Splice onto queue and try to set waitStatus of predecessor to</span></span><br><span class="line"><span class="comment">        * indicate that thread is (probably) waiting. If cancelled or</span></span><br><span class="line"><span class="comment">        * attempt to set waitStatus fails, wake up to resync (in which</span></span><br><span class="line"><span class="comment">        * case the waitStatus can be transiently and harmlessly wrong).</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="type">Node</span> <span class="variable">p</span> <span class="operator">=</span> enq(node);</span><br><span class="line">    <span class="type">int</span> <span class="variable">ws</span> <span class="operator">=</span> p.waitStatus;</span><br><span class="line">    <span class="keyword">if</span> (ws &gt; <span class="number">0</span> || !compareAndSetWaitStatus(p, ws, Node.SIGNAL))</span><br><span class="line">        LockSupport.unpark(node.thread);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 此函数的作用就是将处于条件队列中的节点转移到同步队列中，并设置结点的状态信息，其中会调用到enq函数，其源代码如下。</p>
-<pre><code class="java">private Node enq(final Node node) &#123;
-    for (;;) &#123; // 无限循环，确保结点能够成功入队列
-        // 保存尾结点
-        Node t = tail;
-        if (t == null) &#123; // 尾结点为空，即还没被初始化
-            if (compareAndSetHead(new Node())) // 头节点为空，并设置头节点为新生成的结点
-                tail = head; // 头节点与尾结点都指向同一个新生结点
-        &#125; else &#123; // 尾结点不为空，即已经被初始化过
-            // 将node结点的prev域连接到尾结点
-            node.prev = t; 
-            if (compareAndSetTail(t, node)) &#123; // 比较结点t是否为尾结点，若是则将尾结点设置为node
-                // 设置尾结点的next域为node
-                t.next = node; 
-                return t; // 返回尾结点
-            &#125;
-        &#125;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Node <span class="title function_">enq</span><span class="params">(<span class="keyword">final</span> Node node)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123; <span class="comment">// 无限循环，确保结点能够成功入队列</span></span><br><span class="line">        <span class="comment">// 保存尾结点</span></span><br><span class="line">        <span class="type">Node</span> <span class="variable">t</span> <span class="operator">=</span> tail;</span><br><span class="line">        <span class="keyword">if</span> (t == <span class="literal">null</span>) &#123; <span class="comment">// 尾结点为空，即还没被初始化</span></span><br><span class="line">            <span class="keyword">if</span> (compareAndSetHead(<span class="keyword">new</span> <span class="title class_">Node</span>())) <span class="comment">// 头节点为空，并设置头节点为新生成的结点</span></span><br><span class="line">                tail = head; <span class="comment">// 头节点与尾结点都指向同一个新生结点</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// 尾结点不为空，即已经被初始化过</span></span><br><span class="line">            <span class="comment">// 将node结点的prev域连接到尾结点</span></span><br><span class="line">            node.prev = t; </span><br><span class="line">            <span class="keyword">if</span> (compareAndSetTail(t, node)) &#123; <span class="comment">// 比较结点t是否为尾结点，若是则将尾结点设置为node</span></span><br><span class="line">                <span class="comment">// 设置尾结点的next域为node</span></span><br><span class="line">                t.next = node; </span><br><span class="line">                <span class="keyword">return</span> t; <span class="comment">// 返回尾结点</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 此函数完成了结点插入同步队列的过程，也很好理解。</p>
 <p>综合上面的分析可知，newGeneration函数的主要方法的调用如下，之后会通过一个例子详细讲解:</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261330176.png" alt="img"></p>
 <h3 id="breakBarrier函数"><a href="#breakBarrier函数" class="headerlink" title="breakBarrier函数"></a>breakBarrier函数</h3><p>此函数的作用是损坏当前屏障，会唤醒所有在屏障中的线程。源代码如下:</p>
-<pre><code class="java">private void breakBarrier() &#123;
-    // 设置状态
-    generation.broken = true;
-    // 恢复正在等待进入屏障的线程数量
-    count = parties;
-    // 唤醒所有线程
-    trip.signalAll();
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">breakBarrier</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 设置状态</span></span><br><span class="line">    generation.broken = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">// 恢复正在等待进入屏障的线程数量</span></span><br><span class="line">    count = parties;</span><br><span class="line">    <span class="comment">// 唤醒所有线程</span></span><br><span class="line">    trip.signalAll();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 可以看到，此函数也调用了AQS的signalAll函数，由signal函数提供支持。</p>
 <h2 id="CyclicBarrier示例"><a href="#CyclicBarrier示例" class="headerlink" title="CyclicBarrier示例"></a>CyclicBarrier示例</h2><p>下面通过一个例子来详解CyclicBarrier的使用和内部工作机制，源代码如下</p>
-<pre><code class="java">import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.BrokenBarrierException;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.CyclicBarrier;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyThread</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> CyclicBarrier cb;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MyThread</span><span class="params">(String name, CyclicBarrier cb)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(name);</span><br><span class="line">        <span class="built_in">this</span>.cb = cb;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; going to await&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            cb.await();</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; continue&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CyclicBarrierDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException, BrokenBarrierException &#123;</span><br><span class="line">        <span class="type">CyclicBarrier</span> <span class="variable">cb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CyclicBarrier</span>(<span class="number">3</span>, <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="string">&quot;barrierAction&quot;</span>) &#123;</span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">&quot; barrier action&quot;</span>);</span><br><span class="line">                </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="type">MyThread</span> <span class="variable">t1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyThread</span>(<span class="string">&quot;t1&quot;</span>, cb);</span><br><span class="line">        <span class="type">MyThread</span> <span class="variable">t2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyThread</span>(<span class="string">&quot;t2&quot;</span>, cb);</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; going to await&quot;</span>);</span><br><span class="line">        cb.await();</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; continue&quot;</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-class MyThread extends Thread &#123;
-    private CyclicBarrier cb;
-    public MyThread(String name, CyclicBarrier cb) &#123;
-        super(name);
-        this.cb = cb;
-    &#125;
-    
-    public void run() &#123;
-        System.out.println(Thread.currentThread().getName() + &quot; going to await&quot;);
-        try &#123;
-            cb.await();
-            System.out.println(Thread.currentThread().getName() + &quot; continue&quot;);
-        &#125; catch (Exception e) &#123;
-            e.printStackTrace();
-        &#125;
-    &#125;
-&#125;
-public class CyclicBarrierDemo &#123;
-    public static void main(String[] args) throws InterruptedException, BrokenBarrierException &#123;
-        CyclicBarrier cb = new CyclicBarrier(3, new Thread(&quot;barrierAction&quot;) &#123;
-            public void run() &#123;
-                System.out.println(Thread.currentThread().getName() + &quot; barrier action&quot;);
-                
-            &#125;
-        &#125;);
-        MyThread t1 = new MyThread(&quot;t1&quot;, cb);
-        MyThread t2 = new MyThread(&quot;t2&quot;, cb);
-        t1.start();
-        t2.start();
-        System.out.println(Thread.currentThread().getName() + &quot; going to await&quot;);
-        cb.await();
-        System.out.println(Thread.currentThread().getName() + &quot; continue&quot;);
-
-    &#125;
-&#125;
-</code></pre>
 <p>运行结果(某一次):</p>
-<pre><code class="html">t1 going to await
-main going to await
-t2 going to await
-t2 barrier action
-t2 continue
-t1 continue
-main continue
-</code></pre>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">t1 going to await</span><br><span class="line">main going to await</span><br><span class="line">t2 going to await</span><br><span class="line">t2 barrier action</span><br><span class="line">t2 continue</span><br><span class="line">t1 continue</span><br><span class="line">main continue</span><br></pre></td></tr></table></figure>
+
 <p>说明: 根据结果可知，可能会存在如下的调用时序。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261331199.png" alt="img"></p>
 <p>说明: 由上图可知，假设t1线程的cb.await是在main线程的cb.barrierAction动作是由最后一个进入屏障的线程执行的。根据时序图，进一步分析出其内部工作流程。</p>

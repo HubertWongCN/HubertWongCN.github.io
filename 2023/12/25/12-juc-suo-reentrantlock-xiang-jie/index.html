@@ -429,8 +429,8 @@
 <li>ReentrantLock和Synchronized的对比?</li>
 </ul>
 <h2 id="ReentrantLock源码分析"><a href="#ReentrantLock源码分析" class="headerlink" title="ReentrantLock源码分析"></a>ReentrantLock源码分析</h2><h3 id="类的继承关系"><a href="#类的继承关系" class="headerlink" title="类的继承关系"></a>类的继承关系</h3><p>ReentrantLock实现了Lock接口，Lock接口中定义了lock与unlock相关操作，并且还存在newCondition方法，表示生成一个条件。</p>
-<pre><code class="java">public class ReentrantLock implements Lock, java.io.Serializable
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReentrantLock</span> <span class="keyword">implements</span> <span class="title class_">Lock</span>, java.io.Serializable</span><br></pre></td></tr></table></figure>
+
 <h3 id="类的内部类"><a href="#类的内部类" class="headerlink" title="类的内部类"></a>类的内部类</h3><p>ReentrantLock总共有三个内部类，并且三个内部类是紧密相关的，下面先看三个类的关系。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261959468.png" alt="image"></p>
 <p>说明: ReentrantLock类内部总共存在Sync、NonfairSync、FairSync三个类，NonfairSync与FairSync类继承自Sync类，Sync类继承自AbstractQueuedSynchronizer抽象类。下面逐个进行分析。</p>
@@ -438,239 +438,48 @@
 <li>Sync类</li>
 </ul>
 <p>Sync类的源码如下:</p>
-<pre><code class="java">abstract static class Sync extends AbstractQueuedSynchronizer &#123;
-    // 序列号
-    private static final long serialVersionUID = -5179523762034025860L;
-    
-    // 获取锁
-    abstract void lock();
-    
-    // 非公平方式获取
-    final boolean nonfairTryAcquire(int acquires) &#123;
-        // 当前线程
-        final Thread current = Thread.currentThread();
-        // 获取状态
-        int c = getState();
-        if (c == 0) &#123; // 表示没有线程正在竞争该锁
-            if (compareAndSetState(0, acquires)) &#123; // 比较并设置状态成功，状态0表示锁没有被占用
-                // 设置当前线程独占
-                setExclusiveOwnerThread(current); 
-                return true; // 成功
-            &#125;
-        &#125;
-        else if (current == getExclusiveOwnerThread()) &#123; // 当前线程拥有该锁
-            int nextc = c + acquires; // 增加重入次数
-            if (nextc &lt; 0) // overflow
-                throw new Error(&quot;Maximum lock count exceeded&quot;);
-            // 设置状态
-            setState(nextc); 
-            // 成功
-            return true; 
-        &#125;
-        // 失败
-        return false;
-    &#125;
-    
-    // 试图在共享模式下获取对象状态，此方法应该查询是否允许它在共享模式下获取对象状态，如果允许，则获取它
-    protected final boolean tryRelease(int releases) &#123;
-        int c = getState() - releases;
-        if (Thread.currentThread() != getExclusiveOwnerThread()) // 当前线程不为独占线程
-            throw new IllegalMonitorStateException(); // 抛出异常
-        // 释放标识
-        boolean free = false; 
-        if (c == 0) &#123;
-            free = true;
-            // 已经释放，清空独占
-            setExclusiveOwnerThread(null); 
-        &#125;
-        // 设置标识
-        setState(c); 
-        return free; 
-    &#125;
-    
-    // 判断资源是否被当前线程占有
-    protected final boolean isHeldExclusively() &#123;
-        // While we must in general read state before owner,
-        // we don&#39;t need to do so to check if current thread is owner
-        return getExclusiveOwnerThread() == Thread.currentThread();
-    &#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Sync</span> <span class="keyword">extends</span> <span class="title class_">AbstractQueuedSynchronizer</span> &#123;</span><br><span class="line">    <span class="comment">// 序列号</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> -<span class="number">5179523762034025860L</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 获取锁</span></span><br><span class="line">    <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">lock</span><span class="params">()</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 非公平方式获取</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">nonfairTryAcquire</span><span class="params">(<span class="type">int</span> acquires)</span> &#123;</span><br><span class="line">        <span class="comment">// 当前线程</span></span><br><span class="line">        <span class="keyword">final</span> <span class="type">Thread</span> <span class="variable">current</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">        <span class="comment">// 获取状态</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> getState();</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="number">0</span>) &#123; <span class="comment">// 表示没有线程正在竞争该锁</span></span><br><span class="line">            <span class="keyword">if</span> (compareAndSetState(<span class="number">0</span>, acquires)) &#123; <span class="comment">// 比较并设置状态成功，状态0表示锁没有被占用</span></span><br><span class="line">                <span class="comment">// 设置当前线程独占</span></span><br><span class="line">                setExclusiveOwnerThread(current); </span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>; <span class="comment">// 成功</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (current == getExclusiveOwnerThread()) &#123; <span class="comment">// 当前线程拥有该锁</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">nextc</span> <span class="operator">=</span> c + acquires; <span class="comment">// 增加重入次数</span></span><br><span class="line">            <span class="keyword">if</span> (nextc &lt; <span class="number">0</span>) <span class="comment">// overflow</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;Maximum lock count exceeded&quot;</span>);</span><br><span class="line">            <span class="comment">// 设置状态</span></span><br><span class="line">            setState(nextc); </span><br><span class="line">            <span class="comment">// 成功</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>; </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 失败</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 试图在共享模式下获取对象状态，此方法应该查询是否允许它在共享模式下获取对象状态，如果允许，则获取它</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span> releases)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> getState() - releases;</span><br><span class="line">        <span class="keyword">if</span> (Thread.currentThread() != getExclusiveOwnerThread()) <span class="comment">// 当前线程不为独占线程</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalMonitorStateException</span>(); <span class="comment">// 抛出异常</span></span><br><span class="line">        <span class="comment">// 释放标识</span></span><br><span class="line">        <span class="type">boolean</span> <span class="variable">free</span> <span class="operator">=</span> <span class="literal">false</span>; </span><br><span class="line">        <span class="keyword">if</span> (c == <span class="number">0</span>) &#123;</span><br><span class="line">            free = <span class="literal">true</span>;</span><br><span class="line">            <span class="comment">// 已经释放，清空独占</span></span><br><span class="line">            setExclusiveOwnerThread(<span class="literal">null</span>); </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 设置标识</span></span><br><span class="line">        setState(c); </span><br><span class="line">        <span class="keyword">return</span> free; </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 判断资源是否被当前线程占有</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">isHeldExclusively</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// While we must in general read state before owner,</span></span><br><span class="line">        <span class="comment">// we don&#x27;t need to do so to check if current thread is owner</span></span><br><span class="line">        <span class="keyword">return</span> getExclusiveOwnerThread() == Thread.currentThread();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 新生一个条件</span></span><br><span class="line">    <span class="keyword">final</span> ConditionObject <span class="title function_">newCondition</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ConditionObject</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Methods relayed from outer class</span></span><br><span class="line">    <span class="comment">// 返回资源的占用线程</span></span><br><span class="line">    <span class="keyword">final</span> Thread <span class="title function_">getOwner</span><span class="params">()</span> &#123;        </span><br><span class="line">        <span class="keyword">return</span> getState() == <span class="number">0</span> ? <span class="literal">null</span> : getExclusiveOwnerThread();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 返回状态</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getHoldCount</span><span class="params">()</span> &#123;            </span><br><span class="line">        <span class="keyword">return</span> isHeldExclusively() ? getState() : <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 资源是否被占用</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">isLocked</span><span class="params">()</span> &#123;        </span><br><span class="line">        <span class="keyword">return</span> getState() != <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">        * Reconstitutes the instance from a stream (that is, deserializes it).</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="comment">// 自定义反序列化逻辑</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">readObject</span><span class="params">(java.io.ObjectInputStream s)</span></span><br><span class="line">        <span class="keyword">throws</span> java.io.IOException, ClassNotFoundException &#123;</span><br><span class="line">        s.defaultReadObject();</span><br><span class="line">        setState(<span class="number">0</span>); <span class="comment">// reset to unlocked state</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;　　</span><br></pre></td></tr></table></figure>
 
-    // 新生一个条件
-    final ConditionObject newCondition() &#123;
-        return new ConditionObject();
-    &#125;
-
-    // Methods relayed from outer class
-    // 返回资源的占用线程
-    final Thread getOwner() &#123;        
-        return getState() == 0 ? null : getExclusiveOwnerThread();
-    &#125;
-    // 返回状态
-    final int getHoldCount() &#123;            
-        return isHeldExclusively() ? getState() : 0;
-    &#125;
-
-    // 资源是否被占用
-    final boolean isLocked() &#123;        
-        return getState() != 0;
-    &#125;
-
-    /**
-        * Reconstitutes the instance from a stream (that is, deserializes it).
-        */
-    // 自定义反序列化逻辑
-    private void readObject(java.io.ObjectInputStream s)
-        throws java.io.IOException, ClassNotFoundException &#123;
-        s.defaultReadObject();
-        setState(0); // reset to unlocked state
-    &#125;
-&#125;　　
-</code></pre>
 <p>Sync类存在如下方法和作用如下。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261959622.png" alt="image"></p>
 <ul>
 <li>NonfairSync类</li>
 </ul>
 <p>NonfairSync类继承了Sync类，表示采用非公平策略获取锁，其实现了Sync类中抽象的lock方法，源码如下:</p>
-<pre><code class="java">// 非公平锁
-static final class NonfairSync extends Sync &#123;
-    // 版本号
-    private static final long serialVersionUID = 7316153563782823691L;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 非公平锁</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">NonfairSync</span> <span class="keyword">extends</span> <span class="title class_">Sync</span> &#123;</span><br><span class="line">    <span class="comment">// 版本号</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">7316153563782823691L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获得锁</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">lock</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (compareAndSetState(<span class="number">0</span>, <span class="number">1</span>)) <span class="comment">// 比较并设置状态成功，状态0表示锁没有被占用</span></span><br><span class="line">            <span class="comment">// 把当前线程设置独占了锁</span></span><br><span class="line">            setExclusiveOwnerThread(Thread.currentThread());</span><br><span class="line">        <span class="keyword">else</span> <span class="comment">// 锁已经被占用，或者set失败</span></span><br><span class="line">            <span class="comment">// 以独占模式获取对象，忽略中断</span></span><br><span class="line">            acquire(<span class="number">1</span>); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span> acquires)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> nonfairTryAcquire(acquires);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    // 获得锁
-    final void lock() &#123;
-        if (compareAndSetState(0, 1)) // 比较并设置状态成功，状态0表示锁没有被占用
-            // 把当前线程设置独占了锁
-            setExclusiveOwnerThread(Thread.currentThread());
-        else // 锁已经被占用，或者set失败
-            // 以独占模式获取对象，忽略中断
-            acquire(1); 
-    &#125;
-
-    protected final boolean tryAcquire(int acquires) &#123;
-        return nonfairTryAcquire(acquires);
-    &#125;
-&#125;
-</code></pre>
 <p>说明: 从lock方法的源码可知，每一次都尝试获取锁，而并不会按照公平等待的原则进行等待，让等待时间最久的线程获得锁。</p>
 <ul>
 <li>FairSyn类</li>
 </ul>
 <p>FairSync类也继承了Sync类，表示采用公平策略获取锁，其实现了Sync类中的抽象lock方法，源码如下:</p>
-<pre><code class="java">// 公平锁
-static final class FairSync extends Sync &#123;
-    // 版本序列化
-    private static final long serialVersionUID = -3000897897090466540L;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 公平锁</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">FairSync</span> <span class="keyword">extends</span> <span class="title class_">Sync</span> &#123;</span><br><span class="line">    <span class="comment">// 版本序列化</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> -<span class="number">3000897897090466540L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">lock</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 以独占模式获取对象，忽略中断</span></span><br><span class="line">        acquire(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">        * Fair version of tryAcquire.  Don&#x27;t grant access unless</span></span><br><span class="line"><span class="comment">        * recursive call or no waiters or is first.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="comment">// 尝试公平获取锁</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span> acquires)</span> &#123;</span><br><span class="line">        <span class="comment">// 获取当前线程</span></span><br><span class="line">        <span class="keyword">final</span> <span class="type">Thread</span> <span class="variable">current</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">        <span class="comment">// 获取状态</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> getState();</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="number">0</span>) &#123; <span class="comment">// 状态为0</span></span><br><span class="line">            <span class="keyword">if</span> (!hasQueuedPredecessors() &amp;&amp;</span><br><span class="line">                compareAndSetState(<span class="number">0</span>, acquires)) &#123; <span class="comment">// 不存在已经等待更久的线程并且比较并且设置状态成功</span></span><br><span class="line">                <span class="comment">// 设置当前线程独占</span></span><br><span class="line">                setExclusiveOwnerThread(current);</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (current == getExclusiveOwnerThread()) &#123; <span class="comment">// 状态不为0，即资源已经被线程占据</span></span><br><span class="line">            <span class="comment">// 下一个状态</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">nextc</span> <span class="operator">=</span> c + acquires;</span><br><span class="line">            <span class="keyword">if</span> (nextc &lt; <span class="number">0</span>) <span class="comment">// 超过了int的表示范围</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;Maximum lock count exceeded&quot;</span>);</span><br><span class="line">            <span class="comment">// 设置状态</span></span><br><span class="line">            setState(nextc);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    final void lock() &#123;
-        // 以独占模式获取对象，忽略中断
-        acquire(1);
-    &#125;
-
-    /**
-        * Fair version of tryAcquire.  Don&#39;t grant access unless
-        * recursive call or no waiters or is first.
-        */
-    // 尝试公平获取锁
-    protected final boolean tryAcquire(int acquires) &#123;
-        // 获取当前线程
-        final Thread current = Thread.currentThread();
-        // 获取状态
-        int c = getState();
-        if (c == 0) &#123; // 状态为0
-            if (!hasQueuedPredecessors() &amp;&amp;
-                compareAndSetState(0, acquires)) &#123; // 不存在已经等待更久的线程并且比较并且设置状态成功
-                // 设置当前线程独占
-                setExclusiveOwnerThread(current);
-                return true;
-            &#125;
-        &#125;
-        else if (current == getExclusiveOwnerThread()) &#123; // 状态不为0，即资源已经被线程占据
-            // 下一个状态
-            int nextc = c + acquires;
-            if (nextc &lt; 0) // 超过了int的表示范围
-                throw new Error(&quot;Maximum lock count exceeded&quot;);
-            // 设置状态
-            setState(nextc);
-            return true;
-        &#125;
-        return false;
-    &#125;
-&#125;
-</code></pre>
 <p>说明: 跟踪lock方法的源码可知，当资源空闲时，它总是会先判断sync队列(AbstractQueuedSynchronizer中的数据结构)是否有等待时间更长的线程，如果存在，则将该线程加入到等待队列的尾部，实现了公平获取原则。其中，FairSync类的lock的方法调用如下，只给出了主要的方法。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262000174.png" alt="image"></p>
 <p>说明: 可以看出只要资源被其他线程占用，该线程就会添加到sync queue中的尾部，而不会先尝试获取资源。这也是和Nonfair最大的区别，Nonfair每一次都会尝试去获取资源，如果此时该资源恰好被释放，则会被当前线程获取，这就造成了不公平的现象，当获取不成功，再加入队列尾部。</p>
 <h3 id="类的属性"><a href="#类的属性" class="headerlink" title="类的属性"></a>类的属性</h3><p>ReentrantLock类的sync非常重要，对ReentrantLock类的操作大部分都直接转化为对Sync和AbstractQueuedSynchronizer类的操作。</p>
-<pre><code class="java">public class ReentrantLock implements Lock, java.io.Serializable &#123;
-    // 序列号
-    private static final long serialVersionUID = 7373984872572414699L;    
-    // 同步队列
-    private final Sync sync;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReentrantLock</span> <span class="keyword">implements</span> <span class="title class_">Lock</span>, java.io.Serializable &#123;</span><br><span class="line">    <span class="comment">// 序列号</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">7373984872572414699L</span>;    </span><br><span class="line">    <span class="comment">// 同步队列</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Sync sync;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="类的构造函数"><a href="#类的构造函数" class="headerlink" title="类的构造函数"></a>类的构造函数</h3><ul>
 <li>ReentrantLock()型构造函数</li>
 </ul>
 <p>默认是采用的非公平策略获取锁</p>
-<pre><code class="java">public ReentrantLock() &#123;
-    // 默认非公平策略
-    sync = new NonfairSync();
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">ReentrantLock</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 默认非公平策略</span></span><br><span class="line">    sync = <span class="keyword">new</span> <span class="title class_">NonfairSync</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li>ReentrantLock(boolean)型构造函数</li>
 </ul>
 <p>可以传递参数确定采用公平策略或者是非公平策略，参数为true表示公平策略，否则，采用非公平策略:</p>
-<pre><code class="java">public ReentrantLock(boolean fair) &#123;
-    sync = fair ? new FairSync() : new NonfairSync();
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">ReentrantLock</span><span class="params">(<span class="type">boolean</span> fair)</span> &#123;</span><br><span class="line">    sync = fair ? <span class="keyword">new</span> <span class="title class_">FairSync</span>() : <span class="keyword">new</span> <span class="title class_">NonfairSync</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="核心函数分析"><a href="#核心函数分析" class="headerlink" title="核心函数分析"></a>核心函数分析</h3><p>通过分析ReentrantLock的源码，可知对其操作都转化为对Sync对象的操作，由于Sync继承了AQS，所以基本上都可以转化为对AQS的操作。如将ReentrantLock的lock函数转化为对Sync的lock函数的调用，而具体会根据采用的策略(如公平策略或者非公平策略)的不同而调用到Sync的不同子类。</p>
 <p>所以可知，在ReentrantLock的背后，是AQS对其服务提供了支持，由于之前我们分析AQS的核心源码，遂不再累赘。下面还是通过例子来更进一步分析源码。</p>
-<h2 id="示例分析"><a href="#示例分析" class="headerlink" title="示例分析"></a>示例分析</h2><h3 id="公平锁"><a href="#公平锁" class="headerlink" title="公平锁"></a>公平锁</h3><pre><code class="java">import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+<h2 id="示例分析"><a href="#示例分析" class="headerlink" title="示例分析"></a>示例分析</h2><h3 id="公平锁"><a href="#公平锁" class="headerlink" title="公平锁"></a>公平锁</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.locks.Lock;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.locks.ReentrantLock;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyThread</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Lock lock;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MyThread</span><span class="params">(String name, Lock lock)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(name);</span><br><span class="line">        <span class="built_in">this</span>.lock = lock;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span> <span class="params">()</span> &#123;</span><br><span class="line">        lock.lock();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(Thread.currentThread() + <span class="string">&quot; running&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(<span class="number">500</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AbstractQueuedSynchronizerDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="type">Lock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantLock</span>(<span class="literal">true</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="type">MyThread</span> <span class="variable">t1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyThread</span>(<span class="string">&quot;t1&quot;</span>, lock);        </span><br><span class="line">        <span class="type">MyThread</span> <span class="variable">t2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyThread</span>(<span class="string">&quot;t2&quot;</span>, lock);</span><br><span class="line">        <span class="type">MyThread</span> <span class="variable">t3</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyThread</span>(<span class="string">&quot;t3&quot;</span>, lock);</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();    </span><br><span class="line">        t3.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-class MyThread extends Thread &#123;
-    private Lock lock;
-    public MyThread(String name, Lock lock) &#123;
-        super(name);
-        this.lock = lock;
-    &#125;
-    
-    public void run () &#123;
-        lock.lock();
-        try &#123;
-            System.out.println(Thread.currentThread() + &quot; running&quot;);
-            try &#123;
-                Thread.sleep(500);
-            &#125; catch (InterruptedException e) &#123;
-                e.printStackTrace();
-            &#125;
-        &#125; finally &#123;
-            lock.unlock();
-        &#125;
-    &#125;
-&#125;
-
-public class AbstractQueuedSynchronizerDemo &#123;
-    public static void main(String[] args) throws InterruptedException &#123;
-        Lock lock = new ReentrantLock(true);
-        
-        MyThread t1 = new MyThread(&quot;t1&quot;, lock);        
-        MyThread t2 = new MyThread(&quot;t2&quot;, lock);
-        MyThread t3 = new MyThread(&quot;t3&quot;, lock);
-        t1.start();
-        t2.start();    
-        t3.start();
-    &#125;
-&#125;
-</code></pre>
 <p>运行结果(某一次):</p>
-<pre><code class="html">Thread[t1,5,main] running
-Thread[t2,5,main] running
-Thread[t3,5,main] running
-</code></pre>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Thread[t1,5,main] running</span><br><span class="line">Thread[t2,5,main] running</span><br><span class="line">Thread[t3,5,main] running</span><br></pre></td></tr></table></figure>
+
 <p>说明: 该示例使用的是公平策略，由结果可知，可能会存在如下一种时序。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262000813.png" alt="image"></p>
 <p>说明: 首先，t1线程的lock操作 -&gt; t2线程的lock操作 -&gt; t3线程的lock操作 -&gt; t1线程的unlock操作 -&gt; t2线程的unlock操作 -&gt; t3线程的unlock操作。根据这个时序图来进一步分析源码的工作流程。</p>

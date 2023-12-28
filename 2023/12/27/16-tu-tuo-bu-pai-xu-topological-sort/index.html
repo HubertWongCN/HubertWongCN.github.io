@@ -447,44 +447,8 @@
 <li>如果无法遍历完所有的结点，则意味着当前的图不是有向无环图。不存在拓扑排序。</li>
 </ul>
 <h2 id="拓扑排序代码实现"><a href="#拓扑排序代码实现" class="headerlink" title="拓扑排序代码实现"></a>拓扑排序代码实现</h2><p>广度优先遍历拓扑排序的Java代码如下:</p>
-<pre><code class="java">public class TopologicalSort &#123;
-    /**
-     * Get topological ordering of the input directed graph 
-     * @param n number of nodes in the graph
-     * @param adjacencyList adjacency list representation of the input directed graph
-     * @return topological ordering of the graph stored in an List&lt;Integer&gt;. 
-     */
-    public List&lt;Integer&gt; topologicalSort(int n, int[][] adjacencyList) &#123;
-        List&lt;Integer&gt; topoRes = new ArrayList&lt;&gt;();
-        int[] inDegree = new int[n];
-        for (int[] parent : adjacencyList) &#123;
-            for (int child : parent) &#123;
-                inDegree[child]++;
-            &#125;
-        &#125;
-        
-        Deque&lt;Integer&gt; deque = new ArrayDeque&lt;&gt;();
-        
-        // start from nodes whose indegree are 0
-        for (int i = 0; i &lt; n; i++) &#123;
-            if (inDegree[i] == 0) deque.offer(i);
-        &#125;
-        
-        while (!deque.isEmpty()) &#123;
-            int curr = deque.poll();
-            topoRes.add(curr);
-            for (int child : adjacencyList[curr]) &#123;
-                inDegree[child]--;
-                if (inDegree[child] == 0) &#123;
-                    deque.offer(child);
-                &#125;
-            &#125;
-        &#125;
-    
-        return topoRes.size() == n ? topoRes : new ArrayList&lt;&gt;();
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TopologicalSort</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Get topological ordering of the input directed graph </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> n number of nodes in the graph</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> adjacencyList adjacency list representation of the input directed graph</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> topological ordering of the graph stored in an List&lt;Integer&gt;. </span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;Integer&gt; <span class="title function_">topologicalSort</span><span class="params">(<span class="type">int</span> n, <span class="type">int</span>[][] adjacencyList)</span> &#123;</span><br><span class="line">        List&lt;Integer&gt; topoRes = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="type">int</span>[] inDegree = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] parent : adjacencyList) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> child : parent) &#123;</span><br><span class="line">                inDegree[child]++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        Deque&lt;Integer&gt; deque = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// start from nodes whose indegree are 0</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (inDegree[i] == <span class="number">0</span>) deque.offer(i);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">while</span> (!deque.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">curr</span> <span class="operator">=</span> deque.poll();</span><br><span class="line">            topoRes.add(curr);</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> child : adjacencyList[curr]) &#123;</span><br><span class="line">                inDegree[child]--;</span><br><span class="line">                <span class="keyword">if</span> (inDegree[child] == <span class="number">0</span>) &#123;</span><br><span class="line">                    deque.offer(child);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    </span><br><span class="line">        <span class="keyword">return</span> topoRes.size() == n ? topoRes : <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h2 id="复杂度"><a href="#复杂度" class="headerlink" title="复杂度"></a>复杂度</h2><p>时间复杂度: O(n + e)，其中n为图中的结点数目，e为图中的边的数目</p>
 <p>空间复杂度: O(n)</p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>

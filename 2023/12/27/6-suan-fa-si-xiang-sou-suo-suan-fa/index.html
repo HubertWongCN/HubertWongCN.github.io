@@ -436,181 +436,27 @@ BFS
 <li>队列: 用来存储每一轮遍历得到的节点；</li>
 <li>标记: 对于遍历过的节点，应该将它标记，防止重复遍历。</li>
 </ul>
-<h4 id="计算在网格中从原点到特定点的最短路径长度"><a href="#计算在网格中从原点到特定点的最短路径长度" class="headerlink" title="计算在网格中从原点到特定点的最短路径长度"></a>计算在网格中从原点到特定点的最短路径长度</h4><pre><code class="text">[[1,1,0,1],
- [1,0,1,0],
- [1,1,1,1],
- [1,0,1,1]]
-</code></pre>
-<p>1 表示可以经过某个位置，求解从 (0, 0) 位置到 (tr, tc) 位置的最短路径长度。</p>
-<pre><code class="java">public int minPathLength(int[][] grids, int tr, int tc) &#123;
-    final int[][] direction = &#123;&#123;1, 0&#125;, &#123;-1, 0&#125;, &#123;0, 1&#125;, &#123;0, -1&#125;&#125;;
-    final int m = grids.length, n = grids[0].length;
-    Queue&lt;Pair&lt;Integer, Integer&gt;&gt; queue = new LinkedList&lt;&gt;();
-    queue.add(new Pair&lt;&gt;(0, 0));
-    int pathLength = 0;
-    while (!queue.isEmpty()) &#123;
-        int size = queue.size();
-        pathLength++;
-        while (size-- &gt; 0) &#123;
-            Pair&lt;Integer, Integer&gt; cur = queue.poll();
-            for (int[] d : direction) &#123;
-                int nr = cur.getKey() + d[0], nc = cur.getValue() + d[1];
-                Pair&lt;Integer, Integer&gt; next = new Pair&lt;&gt;(nr, nc);
-                if (next.getKey() &lt; 0 || next.getValue() &gt;= m
-                        || next.getKey() &lt; 0 || next.getValue() &gt;= n) &#123;
+<h4 id="计算在网格中从原点到特定点的最短路径长度"><a href="#计算在网格中从原点到特定点的最短路径长度" class="headerlink" title="计算在网格中从原点到特定点的最短路径长度"></a>计算在网格中从原点到特定点的最短路径长度</h4><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[[1,1,0,1],</span><br><span class="line"> [1,0,1,0],</span><br><span class="line"> [1,1,1,1],</span><br><span class="line"> [1,0,1,1]]</span><br></pre></td></tr></table></figure>
 
-                    continue;
-                &#125;
-                grids[next.getKey()][next.getValue()] = 0; // 标记
-                if (next.getKey() == tr &amp;&amp; next.getValue() == tc) &#123;
-                    return pathLength;
-                &#125;
-                queue.add(next);
-            &#125;
-        &#125;
-    &#125;
-    return -1;
-&#125;
-</code></pre>
+<p>1 表示可以经过某个位置，求解从 (0, 0) 位置到 (tr, tc) 位置的最短路径长度。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">minPathLength</span><span class="params">(<span class="type">int</span>[][] grids, <span class="type">int</span> tr, <span class="type">int</span> tc)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span>[][] direction = &#123;&#123;<span class="number">1</span>, <span class="number">0</span>&#125;, &#123;-<span class="number">1</span>, <span class="number">0</span>&#125;, &#123;<span class="number">0</span>, <span class="number">1</span>&#125;, &#123;<span class="number">0</span>, -<span class="number">1</span>&#125;&#125;;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> grids.length, n = grids[<span class="number">0</span>].length;</span><br><span class="line">    Queue&lt;Pair&lt;Integer, Integer&gt;&gt; queue = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">    queue.add(<span class="keyword">new</span> <span class="title class_">Pair</span>&lt;&gt;(<span class="number">0</span>, <span class="number">0</span>));</span><br><span class="line">    <span class="type">int</span> <span class="variable">pathLength</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (!queue.isEmpty()) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> queue.size();</span><br><span class="line">        pathLength++;</span><br><span class="line">        <span class="keyword">while</span> (size-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            Pair&lt;Integer, Integer&gt; cur = queue.poll();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span>[] d : direction) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">nr</span> <span class="operator">=</span> cur.getKey() + d[<span class="number">0</span>], nc = cur.getValue() + d[<span class="number">1</span>];</span><br><span class="line">                Pair&lt;Integer, Integer&gt; next = <span class="keyword">new</span> <span class="title class_">Pair</span>&lt;&gt;(nr, nc);</span><br><span class="line">                <span class="keyword">if</span> (next.getKey() &lt; <span class="number">0</span> || next.getValue() &gt;= m</span><br><span class="line">                        || next.getKey() &lt; <span class="number">0</span> || next.getValue() &gt;= n) &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                grids[next.getKey()][next.getValue()] = <span class="number">0</span>; <span class="comment">// 标记</span></span><br><span class="line">                <span class="keyword">if</span> (next.getKey() == tr &amp;&amp; next.getValue() == tc) &#123;</span><br><span class="line">                    <span class="keyword">return</span> pathLength;</span><br><span class="line">                &#125;</span><br><span class="line">                queue.add(next);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h4 id="组成整数的最小平方数数量"><a href="#组成整数的最小平方数数量" class="headerlink" title="组成整数的最小平方数数量"></a>组成整数的最小平方数数量</h4><p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/perfect-squares/description/">279. Perfect Squares (Medium)</a></p>
-<pre><code class="html">For example, given n = 12, return 3 because 12 = 4 + 4 + 4; given n = 13, return 2 because 13 = 4 + 9.
-</code></pre>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">For example, given n = 12, return 3 because 12 = 4 + 4 + 4; given n = 13, return 2 because 13 = 4 + 9.</span><br></pre></td></tr></table></figure>
+
 <p>可以将每个整数看成图中的一个节点，如果两个整数之差为一个平方数，那么这两个整数所在的节点就有一条边。</p>
 <p>要求解最小的平方数数量，就是求解从节点 n 到节点 0 的最短路径。</p>
 <p>本题也可以用动态规划求解，在之后动态规划部分中会再次出现。</p>
-<pre><code class="java">public int numSquares(int n) &#123;
-    List&lt;Integer&gt; squares = generateSquares(n);
-    Queue&lt;Integer&gt; queue = new LinkedList&lt;&gt;();
-    boolean[] marked = new boolean[n + 1];
-    queue.add(n);
-    marked[n] = true;
-    int level = 0;
-    while (!queue.isEmpty()) &#123;
-        int size = queue.size();
-        level++;
-        while (size-- &gt; 0) &#123;
-            int cur = queue.poll();
-            for (int s : squares) &#123;
-                int next = cur - s;
-                if (next &lt; 0) &#123;
-                    break;
-                &#125;
-                if (next == 0) &#123;
-                    return level;
-                &#125;
-                if (marked[next]) &#123;
-                    continue;
-                &#125;
-                marked[next] = true;
-                queue.add(cur - s);
-            &#125;
-        &#125;
-    &#125;
-    return n;
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">numSquares</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">    List&lt;Integer&gt; squares = generateSquares(n);</span><br><span class="line">    Queue&lt;Integer&gt; queue = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">    <span class="type">boolean</span>[] marked = <span class="keyword">new</span> <span class="title class_">boolean</span>[n + <span class="number">1</span>];</span><br><span class="line">    queue.add(n);</span><br><span class="line">    marked[n] = <span class="literal">true</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">level</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (!queue.isEmpty()) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> queue.size();</span><br><span class="line">        level++;</span><br><span class="line">        <span class="keyword">while</span> (size-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">cur</span> <span class="operator">=</span> queue.poll();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> s : squares) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">next</span> <span class="operator">=</span> cur - s;</span><br><span class="line">                <span class="keyword">if</span> (next &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (next == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> level;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (marked[next]) &#123;</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                marked[next] = <span class="literal">true</span>;</span><br><span class="line">                queue.add(cur - s);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 生成小于 n 的平方数序列</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> 1,4,9,...</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> List&lt;Integer&gt; <span class="title function_">generateSquares</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">    List&lt;Integer&gt; squares = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    <span class="type">int</span> <span class="variable">square</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">diff</span> <span class="operator">=</span> <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">while</span> (square &lt;= n) &#123;</span><br><span class="line">        squares.add(square);</span><br><span class="line">        square += diff;</span><br><span class="line">        diff += <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> squares;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-/**
- * 生成小于 n 的平方数序列
- * @return 1,4,9,...
- */
-private List&lt;Integer&gt; generateSquares(int n) &#123;
-    List&lt;Integer&gt; squares = new ArrayList&lt;&gt;();
-    int square = 1;
-    int diff = 3;
-    while (square &lt;= n) &#123;
-        squares.add(square);
-        square += diff;
-        diff += 2;
-    &#125;
-    return squares;
-&#125;
-</code></pre>
 <h4 id="最短单词路径"><a href="#最短单词路径" class="headerlink" title="最短单词路径"></a>最短单词路径</h4><p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/word-ladder/description/">127. Word Ladder (Medium)</a></p>
-<pre><code class="text">Input:
-beginWord = &quot;hit&quot;,
-endWord = &quot;cog&quot;,
-wordList = [&quot;hot&quot;,&quot;dot&quot;,&quot;dog&quot;,&quot;lot&quot;,&quot;log&quot;,&quot;cog&quot;]
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Input:</span><br><span class="line">beginWord = &quot;hit&quot;,</span><br><span class="line">endWord = &quot;cog&quot;,</span><br><span class="line">wordList = [&quot;hot&quot;,&quot;dot&quot;,&quot;dog&quot;,&quot;lot&quot;,&quot;log&quot;,&quot;cog&quot;]</span><br><span class="line"></span><br><span class="line">Output: 5</span><br><span class="line"></span><br><span class="line">Explanation: As one shortest transformation is &quot;hit&quot; -&gt; &quot;hot&quot; -&gt; &quot;dot&quot; -&gt; &quot;dog&quot; -&gt; &quot;cog&quot;,</span><br><span class="line">return its length 5.</span><br></pre></td></tr></table></figure>
 
-Output: 5
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Input:</span><br><span class="line">beginWord = &quot;hit&quot;</span><br><span class="line">endWord = &quot;cog&quot;</span><br><span class="line">wordList = [&quot;hot&quot;,&quot;dot&quot;,&quot;dog&quot;,&quot;lot&quot;,&quot;log&quot;]</span><br><span class="line"></span><br><span class="line">Output: 0</span><br><span class="line"></span><br><span class="line">Explanation: The endWord &quot;cog&quot; is not in wordList, therefore no possible transformation.</span><br></pre></td></tr></table></figure>
 
-Explanation: As one shortest transformation is &quot;hit&quot; -&gt; &quot;hot&quot; -&gt; &quot;dot&quot; -&gt; &quot;dog&quot; -&gt; &quot;cog&quot;,
-return its length 5.
-</code></pre>
-<pre><code class="text">Input:
-beginWord = &quot;hit&quot;
-endWord = &quot;cog&quot;
-wordList = [&quot;hot&quot;,&quot;dot&quot;,&quot;dog&quot;,&quot;lot&quot;,&quot;log&quot;]
-
-Output: 0
-
-Explanation: The endWord &quot;cog&quot; is not in wordList, therefore no possible transformation.
-</code></pre>
 <p>找出一条从 beginWord 到 endWord 的最短路径，每次移动规定为改变一个字符，并且改变之后的字符串必须在 wordList 中。</p>
-<pre><code class="java">public int ladderLength(String beginWord, String endWord, List&lt;String&gt; wordList) &#123;
-    wordList.add(beginWord);
-    int N = wordList.size();
-    int start = N - 1;
-    int end = 0;
-    while (end &lt; N &amp;&amp; !wordList.get(end).equals(endWord)) &#123;
-        end++;
-    &#125;
-    if (end == N) &#123;
-        return 0;
-    &#125;
-    List&lt;Integer&gt;[] graphic = buildGraphic(wordList);
-    return getShortestPath(graphic, start, end);
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">ladderLength</span><span class="params">(String beginWord, String endWord, List&lt;String&gt; wordList)</span> &#123;</span><br><span class="line">    wordList.add(beginWord);</span><br><span class="line">    <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> wordList.size();</span><br><span class="line">    <span class="type">int</span> <span class="variable">start</span> <span class="operator">=</span> N - <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">end</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (end &lt; N &amp;&amp; !wordList.get(end).equals(endWord)) &#123;</span><br><span class="line">        end++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (end == N) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    List&lt;Integer&gt;[] graphic = buildGraphic(wordList);</span><br><span class="line">    <span class="keyword">return</span> getShortestPath(graphic, start, end);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> List&lt;Integer&gt;[] buildGraphic(List&lt;String&gt; wordList) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> wordList.size();</span><br><span class="line">    List&lt;Integer&gt;[] graphic = <span class="keyword">new</span> <span class="title class_">List</span>[N];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        graphic[i] = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; N; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (isConnect(wordList.get(i), wordList.get(j))) &#123;</span><br><span class="line">                graphic[i].add(j);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> graphic;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isConnect</span><span class="params">(String s1, String s2)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">diffCnt</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; s1.length() &amp;&amp; diffCnt &lt;= <span class="number">1</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (s1.charAt(i) != s2.charAt(i)) &#123;</span><br><span class="line">            diffCnt++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> diffCnt == <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">getShortestPath</span><span class="params">(List&lt;Integer&gt;[] graphic, <span class="type">int</span> start, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">    Queue&lt;Integer&gt; queue = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">    <span class="type">boolean</span>[] marked = <span class="keyword">new</span> <span class="title class_">boolean</span>[graphic.length];</span><br><span class="line">    queue.add(start);</span><br><span class="line">    marked[start] = <span class="literal">true</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">path</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (!queue.isEmpty()) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> queue.size();</span><br><span class="line">        path++;</span><br><span class="line">        <span class="keyword">while</span> (size-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">cur</span> <span class="operator">=</span> queue.poll();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> next : graphic[cur]) &#123;</span><br><span class="line">                <span class="keyword">if</span> (next == end) &#123;</span><br><span class="line">                    <span class="keyword">return</span> path;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (marked[next]) &#123;</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                marked[next] = <span class="literal">true</span>;</span><br><span class="line">                queue.add(next);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-private List&lt;Integer&gt;[] buildGraphic(List&lt;String&gt; wordList) &#123;
-    int N = wordList.size();
-    List&lt;Integer&gt;[] graphic = new List[N];
-    for (int i = 0; i &lt; N; i++) &#123;
-        graphic[i] = new ArrayList&lt;&gt;();
-        for (int j = 0; j &lt; N; j++) &#123;
-            if (isConnect(wordList.get(i), wordList.get(j))) &#123;
-                graphic[i].add(j);
-            &#125;
-        &#125;
-    &#125;
-    return graphic;
-&#125;
-
-private boolean isConnect(String s1, String s2) &#123;
-    int diffCnt = 0;
-    for (int i = 0; i &lt; s1.length() &amp;&amp; diffCnt &lt;= 1; i++) &#123;
-        if (s1.charAt(i) != s2.charAt(i)) &#123;
-            diffCnt++;
-        &#125;
-    &#125;
-    return diffCnt == 1;
-&#125;
-
-private int getShortestPath(List&lt;Integer&gt;[] graphic, int start, int end) &#123;
-    Queue&lt;Integer&gt; queue = new LinkedList&lt;&gt;();
-    boolean[] marked = new boolean[graphic.length];
-    queue.add(start);
-    marked[start] = true;
-    int path = 1;
-    while (!queue.isEmpty()) &#123;
-        int size = queue.size();
-        path++;
-        while (size-- &gt; 0) &#123;
-            int cur = queue.poll();
-            for (int next : graphic[cur]) &#123;
-                if (next == end) &#123;
-                    return path;
-                &#125;
-                if (marked[next]) &#123;
-                    continue;
-                &#125;
-                marked[next] = true;
-                queue.add(next);
-            &#125;
-        &#125;
-    &#125;
-    return 0;
-&#125;
-</code></pre>
 <h3 id="DFS"><a href="#DFS" class="headerlink" title="DFS"></a>DFS</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272056997.png" alt="image"></p>
 <p>广度优先搜索一层一层遍历，每一层得到的所有新节点，要用队列存储起来以备下一层遍历的时候再遍历。</p>
 <p>而深度优先搜索在得到一个新节点时立马对新节点进行遍历: 从节点 0 出发开始遍历，得到到新节点 6 时，立马对新节点 6 进行遍历，得到新节点 4；如此反复以这种方式遍历新节点，直到没有新节点了，此时返回。返回到根节点 0 的情况是，继续对根节点 0 进行遍历，得到新节点 2，然后继续以上步骤。</p>
@@ -621,244 +467,34 @@ private int getShortestPath(List&lt;Integer&gt;[] graphic, int start, int end) &
 <li>标记: 和 BFS 一样同样需要对已经遍历过的节点进行标记。</li>
 </ul>
 <h4 id="查找最大的连通面积"><a href="#查找最大的连通面积" class="headerlink" title="查找最大的连通面积"></a>查找最大的连通面积</h4><p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/max-area-of-island/description/">695. Max Area of Island (Easy)</a></p>
-<pre><code class="text">[[0,0,1,0,0,0,0,1,0,0,0,0,0],
- [0,0,0,0,0,0,0,1,1,1,0,0,0],
- [0,1,1,0,1,0,0,0,0,0,0,0,0],
- [0,1,0,0,1,1,0,0,1,0,1,0,0],
- [0,1,0,0,1,1,0,0,1,1,1,0,0],
- [0,0,0,0,0,0,0,0,0,0,1,0,0],
- [0,0,0,0,0,0,0,1,1,1,0,0,0],
- [0,0,0,0,0,0,0,1,1,0,0,0,0]]
-</code></pre>
-<pre><code class="java">private int m, n;
-private int[][] direction = &#123;&#123;0, 1&#125;, &#123;0, -1&#125;, &#123;1, 0&#125;, &#123;-1, 0&#125;&#125;;
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[[0,0,1,0,0,0,0,1,0,0,0,0,0],</span><br><span class="line"> [0,0,0,0,0,0,0,1,1,1,0,0,0],</span><br><span class="line"> [0,1,1,0,1,0,0,0,0,0,0,0,0],</span><br><span class="line"> [0,1,0,0,1,1,0,0,1,0,1,0,0],</span><br><span class="line"> [0,1,0,0,1,1,0,0,1,1,1,0,0],</span><br><span class="line"> [0,0,0,0,0,0,0,0,0,0,1,0,0],</span><br><span class="line"> [0,0,0,0,0,0,0,1,1,1,0,0,0],</span><br><span class="line"> [0,0,0,0,0,0,0,1,1,0,0,0,0]]</span><br></pre></td></tr></table></figure>
 
-public int maxAreaOfIsland(int[][] grid) &#123;
-    if (grid == null || grid.length == 0) &#123;
-        return 0;
-    &#125;
-    m = grid.length;
-    n = grid[0].length;
-    int maxArea = 0;
-    for (int i = 0; i &lt; m; i++) &#123;
-        for (int j = 0; j &lt; n; j++) &#123;
-            maxArea = Math.max(maxArea, dfs(grid, i, j));
-        &#125;
-    &#125;
-    return maxArea;
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> m, n;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span>[][] direction = &#123;&#123;<span class="number">0</span>, <span class="number">1</span>&#125;, &#123;<span class="number">0</span>, -<span class="number">1</span>&#125;, &#123;<span class="number">1</span>, <span class="number">0</span>&#125;, &#123;-<span class="number">1</span>, <span class="number">0</span>&#125;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">maxAreaOfIsland</span><span class="params">(<span class="type">int</span>[][] grid)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (grid == <span class="literal">null</span> || grid.length == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    m = grid.length;</span><br><span class="line">    n = grid[<span class="number">0</span>].length;</span><br><span class="line">    <span class="type">int</span> <span class="variable">maxArea</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">            maxArea = Math.max(maxArea, dfs(grid, i, j));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> maxArea;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="title function_">dfs</span><span class="params">(<span class="type">int</span>[][] grid, <span class="type">int</span> r, <span class="type">int</span> c)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (r &lt; <span class="number">0</span> || r &gt;= m || c &lt; <span class="number">0</span> || c &gt;= n || grid[r][c] == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    grid[r][c] = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">area</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>[] d : direction) &#123;</span><br><span class="line">        area += dfs(grid, r + d[<span class="number">0</span>], c + d[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> area;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-private int dfs(int[][] grid, int r, int c) &#123;
-    if (r &lt; 0 || r &gt;= m || c &lt; 0 || c &gt;= n || grid[r][c] == 0) &#123;
-        return 0;
-    &#125;
-    grid[r][c] = 0;
-    int area = 1;
-    for (int[] d : direction) &#123;
-        area += dfs(grid, r + d[0], c + d[1]);
-    &#125;
-    return area;
-&#125;
-</code></pre>
 <h4 id="矩阵中的连通分量数目"><a href="#矩阵中的连通分量数目" class="headerlink" title="矩阵中的连通分量数目"></a>矩阵中的连通分量数目</h4><p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/number-of-islands/description/">200. Number of Islands (Medium)</a></p>
-<pre><code class="html">Input:
-11000
-11000
-00100
-00011
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Input:</span><br><span class="line">11000</span><br><span class="line">11000</span><br><span class="line">00100</span><br><span class="line">00011</span><br><span class="line"></span><br><span class="line">Output: 3</span><br></pre></td></tr></table></figure>
 
-Output: 3
-</code></pre>
 <p>可以将矩阵表示看成一张有向图。</p>
-<pre><code class="java">private int m, n;
-private int[][] direction = &#123;&#123;0, 1&#125;, &#123;0, -1&#125;, &#123;1, 0&#125;, &#123;-1, 0&#125;&#125;;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> m, n;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span>[][] direction = &#123;&#123;<span class="number">0</span>, <span class="number">1</span>&#125;, &#123;<span class="number">0</span>, -<span class="number">1</span>&#125;, &#123;<span class="number">1</span>, <span class="number">0</span>&#125;, &#123;-<span class="number">1</span>, <span class="number">0</span>&#125;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">numIslands</span><span class="params">(<span class="type">char</span>[][] grid)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (grid == <span class="literal">null</span> || grid.length == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    m = grid.length;</span><br><span class="line">    n = grid[<span class="number">0</span>].length;</span><br><span class="line">    <span class="type">int</span> <span class="variable">islandsNum</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (grid[i][j] != <span class="string">&#x27;0&#x27;</span>) &#123;</span><br><span class="line">                dfs(grid, i, j);</span><br><span class="line">                islandsNum++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> islandsNum;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">dfs</span><span class="params">(<span class="type">char</span>[][] grid, <span class="type">int</span> i, <span class="type">int</span> j)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (i &lt; <span class="number">0</span> || i &gt;= m || j &lt; <span class="number">0</span> || j &gt;= n || grid[i][j] == <span class="string">&#x27;0&#x27;</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    grid[i][j] = <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>[] d : direction) &#123;</span><br><span class="line">        dfs(grid, i + d[<span class="number">0</span>], j + d[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-public int numIslands(char[][] grid) &#123;
-    if (grid == null || grid.length == 0) &#123;
-        return 0;
-    &#125;
-    m = grid.length;
-    n = grid[0].length;
-    int islandsNum = 0;
-    for (int i = 0; i &lt; m; i++) &#123;
-        for (int j = 0; j &lt; n; j++) &#123;
-            if (grid[i][j] != &#39;0&#39;) &#123;
-                dfs(grid, i, j);
-                islandsNum++;
-            &#125;
-        &#125;
-    &#125;
-    return islandsNum;
-&#125;
-
-private void dfs(char[][] grid, int i, int j) &#123;
-    if (i &lt; 0 || i &gt;= m || j &lt; 0 || j &gt;= n || grid[i][j] == &#39;0&#39;) &#123;
-        return;
-    &#125;
-    grid[i][j] = &#39;0&#39;;
-    for (int[] d : direction) &#123;
-        dfs(grid, i + d[0], j + d[1]);
-    &#125;
-&#125;
-</code></pre>
 <h4 id="好友关系的连通分量数目"><a href="#好友关系的连通分量数目" class="headerlink" title="好友关系的连通分量数目"></a>好友关系的连通分量数目</h4><p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/friend-circles/description/">547. Friend Circles (Medium)</a></p>
-<pre><code class="html">Input:
-[[1,1,0],
- [1,1,0],
- [0,0,1]]
-Output: 2
-Explanation:The 0th and 1st students are direct friends, so they are in a friend circle.
-The 2nd student himself is in a friend circle. So return 2.
-</code></pre>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Input:</span><br><span class="line">[[1,1,0],</span><br><span class="line"> [1,1,0],</span><br><span class="line"> [0,0,1]]</span><br><span class="line">Output: 2</span><br><span class="line">Explanation:The 0th and 1st students are direct friends, so they are in a friend circle.</span><br><span class="line">The 2nd student himself is in a friend circle. So return 2.</span><br></pre></td></tr></table></figure>
+
 <p>好友关系可以看成是一个无向图，例如第 0 个人与第 1 个人是好友，那么 M[0][1] 和 M[1][0] 的值都为 1。</p>
-<pre><code class="java">private int n;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> n;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">findCircleNum</span><span class="params">(<span class="type">int</span>[][] M)</span> &#123;</span><br><span class="line">    n = M.length;</span><br><span class="line">    <span class="type">int</span> <span class="variable">circleNum</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">boolean</span>[] hasVisited = <span class="keyword">new</span> <span class="title class_">boolean</span>[n];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!hasVisited[i]) &#123;</span><br><span class="line">            dfs(M, i, hasVisited);</span><br><span class="line">            circleNum++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> circleNum;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">dfs</span><span class="params">(<span class="type">int</span>[][] M, <span class="type">int</span> i, <span class="type">boolean</span>[] hasVisited)</span> &#123;</span><br><span class="line">    hasVisited[i] = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> <span class="number">0</span>; k &lt; n; k++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (M[i][k] == <span class="number">1</span> &amp;&amp; !hasVisited[k]) &#123;</span><br><span class="line">            dfs(M, k, hasVisited);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-public int findCircleNum(int[][] M) &#123;
-    n = M.length;
-    int circleNum = 0;
-    boolean[] hasVisited = new boolean[n];
-    for (int i = 0; i &lt; n; i++) &#123;
-        if (!hasVisited[i]) &#123;
-            dfs(M, i, hasVisited);
-            circleNum++;
-        &#125;
-    &#125;
-    return circleNum;
-&#125;
-
-private void dfs(int[][] M, int i, boolean[] hasVisited) &#123;
-    hasVisited[i] = true;
-    for (int k = 0; k &lt; n; k++) &#123;
-        if (M[i][k] == 1 &amp;&amp; !hasVisited[k]) &#123;
-            dfs(M, k, hasVisited);
-        &#125;
-    &#125;
-&#125;
-</code></pre>
 <h4 id="填充封闭区域"><a href="#填充封闭区域" class="headerlink" title="填充封闭区域"></a>填充封闭区域</h4><p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/surrounded-regions/description/">130. Surrounded Regions (Medium)</a></p>
-<pre><code class="html">For example,
-X X X X
-X O O X
-X X O X
-X O X X
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">For example,</span><br><span class="line">X X X X</span><br><span class="line">X O O X</span><br><span class="line">X X O X</span><br><span class="line">X O X X</span><br><span class="line"></span><br><span class="line">After running your function, the board should be:</span><br><span class="line">X X X X</span><br><span class="line">X X X X</span><br><span class="line">X X X X</span><br><span class="line">X O X X</span><br></pre></td></tr></table></figure>
 
-After running your function, the board should be:
-X X X X
-X X X X
-X X X X
-X O X X
-</code></pre>
 <p>使被 ‘X’ 包围的 ‘O’ 转换为 ‘X’。</p>
 <p>先填充最外侧，剩下的就是里侧了。</p>
-<pre><code class="java">private int[][] direction = &#123;&#123;0, 1&#125;, &#123;0, -1&#125;, &#123;1, 0&#125;, &#123;-1, 0&#125;&#125;;
-private int m, n;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span>[][] direction = &#123;&#123;<span class="number">0</span>, <span class="number">1</span>&#125;, &#123;<span class="number">0</span>, -<span class="number">1</span>&#125;, &#123;<span class="number">1</span>, <span class="number">0</span>&#125;, &#123;-<span class="number">1</span>, <span class="number">0</span>&#125;&#125;;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> m, n;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">solve</span><span class="params">(<span class="type">char</span>[][] board)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (board == <span class="literal">null</span> || board.length == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    m = board.length;</span><br><span class="line">    n = board[<span class="number">0</span>].length;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">        dfs(board, i, <span class="number">0</span>);</span><br><span class="line">        dfs(board, i, n - <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        dfs(board, <span class="number">0</span>, i);</span><br><span class="line">        dfs(board, m - <span class="number">1</span>, i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (board[i][j] == <span class="string">&#x27;T&#x27;</span>) &#123;</span><br><span class="line">                board[i][j] = <span class="string">&#x27;O&#x27;</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (board[i][j] == <span class="string">&#x27;O&#x27;</span>) &#123;</span><br><span class="line">                board[i][j] = <span class="string">&#x27;X&#x27;</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">dfs</span><span class="params">(<span class="type">char</span>[][] board, <span class="type">int</span> r, <span class="type">int</span> c)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (r &lt; <span class="number">0</span> || r &gt;= m || c &lt; <span class="number">0</span> || c &gt;= n || board[r][c] != <span class="string">&#x27;O&#x27;</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    board[r][c] = <span class="string">&#x27;T&#x27;</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>[] d : direction) &#123;</span><br><span class="line">        dfs(board, r + d[<span class="number">0</span>], c + d[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-public void solve(char[][] board) &#123;
-    if (board == null || board.length == 0) &#123;
-        return;
-    &#125;
-
-    m = board.length;
-    n = board[0].length;
-
-    for (int i = 0; i &lt; m; i++) &#123;
-        dfs(board, i, 0);
-        dfs(board, i, n - 1);
-    &#125;
-    for (int i = 0; i &lt; n; i++) &#123;
-        dfs(board, 0, i);
-        dfs(board, m - 1, i);
-    &#125;
-
-    for (int i = 0; i &lt; m; i++) &#123;
-        for (int j = 0; j &lt; n; j++) &#123;
-            if (board[i][j] == &#39;T&#39;) &#123;
-                board[i][j] = &#39;O&#39;;
-            &#125; else if (board[i][j] == &#39;O&#39;) &#123;
-                board[i][j] = &#39;X&#39;;
-            &#125;
-        &#125;
-    &#125;
-&#125;
-
-private void dfs(char[][] board, int r, int c) &#123;
-    if (r &lt; 0 || r &gt;= m || c &lt; 0 || c &gt;= n || board[r][c] != &#39;O&#39;) &#123;
-        return;
-    &#125;
-    board[r][c] = &#39;T&#39;;
-    for (int[] d : direction) &#123;
-        dfs(board, r + d[0], c + d[1]);
-    &#125;
-&#125;
-</code></pre>
 <h4 id="能到达的太平洋和大西洋的区域"><a href="#能到达的太平洋和大西洋的区域" class="headerlink" title="能到达的太平洋和大西洋的区域"></a>能到达的太平洋和大西洋的区域</h4><p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/pacific-atlantic-water-flow/description/">417. Pacific Atlantic Water Flow (Medium)</a></p>
-<pre><code class="html">Given the following 5x5 matrix:
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Given the following 5x5 matrix:</span><br><span class="line"></span><br><span class="line">  Pacific ~   ~   ~   ~   ~</span><br><span class="line">       ~  1   2   2   3  (5) *</span><br><span class="line">       ~  3   2   3  (4) (4) *</span><br><span class="line">       ~  2   4  (5)  3   1  *</span><br><span class="line">       ~ (6) (7)  1   4   5  *</span><br><span class="line">       ~ (5)  1   1   2   4  *</span><br><span class="line">          *   *   *   *   * Atlantic</span><br><span class="line"></span><br><span class="line">Return:</span><br><span class="line">[[0, 4], [1, 3], [1, 4], [2, 2], [3, 0], [3, 1], [4, 0]] (positions with parentheses in above matrix).</span><br></pre></td></tr></table></figure>
 
-  Pacific ~   ~   ~   ~   ~
-       ~  1   2   2   3  (5) *
-       ~  3   2   3  (4) (4) *
-       ~  2   4  (5)  3   1  *
-       ~ (6) (7)  1   4   5  *
-       ~ (5)  1   1   2   4  *
-          *   *   *   *   * Atlantic
-
-Return:
-[[0, 4], [1, 3], [1, 4], [2, 2], [3, 0], [3, 1], [4, 0]] (positions with parentheses in above matrix).
-</code></pre>
 <p>左边和上边是太平洋，右边和下边是大西洋，内部的数字代表海拔，海拔高的地方的水能够流到低的地方，求解水能够流到太平洋和大西洋的所有位置。</p>
-<pre><code class="java">private int m, n;
-private int[][] matrix;
-private int[][] direction = &#123;&#123;0, 1&#125;, &#123;0, -1&#125;, &#123;1, 0&#125;, &#123;-1, 0&#125;&#125;;
-
-public List&lt;int[]&gt; pacificAtlantic(int[][] matrix) &#123;
-    List&lt;int[]&gt; ret = new ArrayList&lt;&gt;();
-    if (matrix == null || matrix.length == 0) &#123;
-        return ret;
-    &#125;
-
-    m = matrix.length;
-    n = matrix[0].length;
-    this.matrix = matrix;
-    boolean[][] canReachP = new boolean[m][n];
-    boolean[][] canReachA = new boolean[m][n];
-
-    for (int i = 0; i &lt; m; i++) &#123;
-        dfs(i, 0, canReachP);
-        dfs(i, n - 1, canReachA);
-    &#125;
-    for (int i = 0; i &lt; n; i++) &#123;
-        dfs(0, i, canReachP);
-        dfs(m - 1, i, canReachA);
-    &#125;
-
-    for (int i = 0; i &lt; m; i++) &#123;
-        for (int j = 0; j &lt; n; j++) &#123;
-            if (canReachP[i][j] &amp;&amp; canReachA[i][j]) &#123;
-                ret.add(new int[]&#123;i, j&#125;);
-            &#125;
-        &#125;
-    &#125;
-
-    return ret;
-&#125;
-
-private void dfs(int r, int c, boolean[][] canReach) &#123;
-    if (canReach[r][c]) &#123;
-        return;
-    &#125;
-    canReach[r][c] = true;
-    for (int[] d : direction) &#123;
-        int nextR = d[0] + r;
-        int nextC = d[1] + c;
-        if (nextR &lt; 0 || nextR &gt;= m || nextC &lt; 0 || nextC &gt;= n
-                || matrix[r][c] &gt; matrix[nextR][nextC]) &#123;
-
-            continue;
-        &#125;
-        dfs(nextR, nextC, canReach);
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> m, n;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span>[][] matrix;</span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span>[][] direction = &#123;&#123;<span class="number">0</span>, <span class="number">1</span>&#125;, &#123;<span class="number">0</span>, -<span class="number">1</span>&#125;, &#123;<span class="number">1</span>, <span class="number">0</span>&#125;, &#123;-<span class="number">1</span>, <span class="number">0</span>&#125;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> List&lt;<span class="type">int</span>[]&gt; pacificAtlantic(<span class="type">int</span>[][] matrix) &#123;</span><br><span class="line">    List&lt;<span class="type">int</span>[]&gt; ret = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">if</span> (matrix == <span class="literal">null</span> || matrix.length == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    m = matrix.length;</span><br><span class="line">    n = matrix[<span class="number">0</span>].length;</span><br><span class="line">    <span class="built_in">this</span>.matrix = matrix;</span><br><span class="line">    <span class="type">boolean</span>[][] canReachP = <span class="keyword">new</span> <span class="title class_">boolean</span>[m][n];</span><br><span class="line">    <span class="type">boolean</span>[][] canReachA = <span class="keyword">new</span> <span class="title class_">boolean</span>[m][n];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">        dfs(i, <span class="number">0</span>, canReachP);</span><br><span class="line">        dfs(i, n - <span class="number">1</span>, canReachA);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        dfs(<span class="number">0</span>, i, canReachP);</span><br><span class="line">        dfs(m - <span class="number">1</span>, i, canReachA);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (canReachP[i][j] &amp;&amp; canReachA[i][j]) &#123;</span><br><span class="line">                ret.add(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;i, j&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">dfs</span><span class="params">(<span class="type">int</span> r, <span class="type">int</span> c, <span class="type">boolean</span>[][] canReach)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (canReach[r][c]) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    canReach[r][c] = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>[] d : direction) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">nextR</span> <span class="operator">=</span> d[<span class="number">0</span>] + r;</span><br><span class="line">        <span class="type">int</span> <span class="variable">nextC</span> <span class="operator">=</span> d[<span class="number">1</span>] + c;</span><br><span class="line">        <span class="keyword">if</span> (nextR &lt; <span class="number">0</span> || nextR &gt;= m || nextC &lt; <span class="number">0</span> || nextC &gt;= n</span><br><span class="line">                || matrix[r][c] &gt; matrix[nextR][nextC]) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        dfs(nextR, nextC, canReach);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
                 
             </div>

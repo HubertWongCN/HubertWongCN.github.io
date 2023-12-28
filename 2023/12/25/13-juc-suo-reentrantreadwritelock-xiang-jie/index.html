@@ -431,8 +431,8 @@ ReentrantReadWriteLock表示可重入读写锁，ReentrantReadWriteLock中包含
 <li>什么是锁的升降级? RentrantReadWriteLock为什么不支持锁升级?</li>
 </ul>
 <h2 id="ReentrantReadWriteLock数据结构"><a href="#ReentrantReadWriteLock数据结构" class="headerlink" title="ReentrantReadWriteLock数据结构"></a>ReentrantReadWriteLock数据结构</h2><p>ReentrantReadWriteLock底层是基于ReentrantLock和AbstractQueuedSynchronizer来实现的，所以，ReentrantReadWriteLock的数据结构也依托于AQS的数据结构。</p>
-<h2 id="ReentrantReadWriteLock源码分析"><a href="#ReentrantReadWriteLock源码分析" class="headerlink" title="ReentrantReadWriteLock源码分析"></a>ReentrantReadWriteLock源码分析</h2><h3 id="类的继承关系"><a href="#类的继承关系" class="headerlink" title="类的继承关系"></a>类的继承关系</h3><pre><code class="java">public class ReentrantReadWriteLock implements ReadWriteLock, java.io.Serializable &#123;&#125;
-</code></pre>
+<h2 id="ReentrantReadWriteLock源码分析"><a href="#ReentrantReadWriteLock源码分析" class="headerlink" title="ReentrantReadWriteLock源码分析"></a>ReentrantReadWriteLock源码分析</h2><h3 id="类的继承关系"><a href="#类的继承关系" class="headerlink" title="类的继承关系"></a>类的继承关系</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReentrantReadWriteLock</span> <span class="keyword">implements</span> <span class="title class_">ReadWriteLock</span>, java.io.Serializable &#123;&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 可以看到，ReentrantReadWriteLock实现了ReadWriteLock接口，ReadWriteLock接口定义了获取读锁和写锁的规范，具体需要实现类去实现；同时其还实现了Serializable接口，表示可以进行序列化，在源代码中可以看到ReentrantReadWriteLock实现了自己的序列化逻辑。</p>
 <h3 id="类的内部类"><a href="#类的内部类" class="headerlink" title="类的内部类"></a>类的内部类</h3><p>ReentrantReadWriteLock有五个内部类，五个内部类之间也是相互关联的。内部类的关系如下图所示。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312252346344.png" alt="img"></p>
@@ -440,442 +440,103 @@ ReentrantReadWriteLock表示可重入读写锁，ReentrantReadWriteLock中包含
 <h3 id="内部类-Sync类"><a href="#内部类-Sync类" class="headerlink" title="内部类 - Sync类"></a>内部类 - Sync类</h3><ul>
 <li>类的继承关系</li>
 </ul>
-<pre><code class="java">abstract static class Sync extends AbstractQueuedSynchronizer &#123;&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Sync</span> <span class="keyword">extends</span> <span class="title class_">AbstractQueuedSynchronizer</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: Sync抽象类继承自AQS抽象类，Sync类提供了对ReentrantReadWriteLock的支持。</p>
 <ul>
 <li>类的内部类</li>
 </ul>
 <p>Sync类内部存在两个内部类，分别为HoldCounter和ThreadLocalHoldCounter，其中HoldCounter主要与读锁配套使用，其中，HoldCounter源码如下。</p>
-<pre><code class="java">// 计数器
-static final class HoldCounter &#123;
-    // 计数
-    int count = 0;
-    // Use id, not reference, to avoid garbage retention
-    // 获取当前线程的TID属性的值
-    final long tid = getThreadId(Thread.currentThread());
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 计数器</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">HoldCounter</span> &#123;</span><br><span class="line">    <span class="comment">// 计数</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// Use id, not reference, to avoid garbage retention</span></span><br><span class="line">    <span class="comment">// 获取当前线程的TID属性的值</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">tid</span> <span class="operator">=</span> getThreadId(Thread.currentThread());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: HoldCounter主要有两个属性，count和tid，其中count表示某个读线程重入的次数，tid表示该线程的tid字段的值，该字段可以用来唯一标识一个线程。ThreadLocalHoldCounter的源码如下</p>
-<pre><code class="java">// 本地线程计数器
-static final class ThreadLocalHoldCounter
-    extends ThreadLocal&lt;HoldCounter&gt; &#123;
-    // 重写初始化方法，在没有进行set的情况下，获取的都是该HoldCounter值
-    public HoldCounter initialValue() &#123;
-        return new HoldCounter();
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 本地线程计数器</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">ThreadLocalHoldCounter</span></span><br><span class="line">    <span class="keyword">extends</span> <span class="title class_">ThreadLocal</span>&lt;HoldCounter&gt; &#123;</span><br><span class="line">    <span class="comment">// 重写初始化方法，在没有进行set的情况下，获取的都是该HoldCounter值</span></span><br><span class="line">    <span class="keyword">public</span> HoldCounter <span class="title function_">initialValue</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">HoldCounter</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: ThreadLocalHoldCounter重写了ThreadLocal的initialValue方法，ThreadLocal类可以将线程与对象相关联。在没有进行set的情况下，get到的均是initialValue方法里面生成的那个HolderCounter对象。</p>
 <ul>
 <li>类的属性</li>
 </ul>
-<pre><code class="java">abstract static class Sync extends AbstractQueuedSynchronizer &#123;
-    // 版本序列号
-    private static final long serialVersionUID = 6317671515068378041L;        
-    // 高16位为读锁，低16位为写锁
-    static final int SHARED_SHIFT   = 16;
-    // 读锁单位
-    static final int SHARED_UNIT    = (1 &lt;&lt; SHARED_SHIFT);
-    // 读锁最大数量
-    static final int MAX_COUNT      = (1 &lt;&lt; SHARED_SHIFT) - 1;
-    // 写锁最大数量
-    static final int EXCLUSIVE_MASK = (1 &lt;&lt; SHARED_SHIFT) - 1;
-    // 本地线程计数器
-    private transient ThreadLocalHoldCounter readHolds;
-    // 缓存的计数器
-    private transient HoldCounter cachedHoldCounter;
-    // 第一个读线程
-    private transient Thread firstReader = null;
-    // 第一个读线程的计数
-    private transient int firstReaderHoldCount;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Sync</span> <span class="keyword">extends</span> <span class="title class_">AbstractQueuedSynchronizer</span> &#123;</span><br><span class="line">    <span class="comment">// 版本序列号</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">6317671515068378041L</span>;        </span><br><span class="line">    <span class="comment">// 高16位为读锁，低16位为写锁</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">SHARED_SHIFT</span>   <span class="operator">=</span> <span class="number">16</span>;</span><br><span class="line">    <span class="comment">// 读锁单位</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">SHARED_UNIT</span>    <span class="operator">=</span> (<span class="number">1</span> &lt;&lt; SHARED_SHIFT);</span><br><span class="line">    <span class="comment">// 读锁最大数量</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MAX_COUNT</span>      <span class="operator">=</span> (<span class="number">1</span> &lt;&lt; SHARED_SHIFT) - <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// 写锁最大数量</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">EXCLUSIVE_MASK</span> <span class="operator">=</span> (<span class="number">1</span> &lt;&lt; SHARED_SHIFT) - <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// 本地线程计数器</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> ThreadLocalHoldCounter readHolds;</span><br><span class="line">    <span class="comment">// 缓存的计数器</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> HoldCounter cachedHoldCounter;</span><br><span class="line">    <span class="comment">// 第一个读线程</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> <span class="type">Thread</span> <span class="variable">firstReader</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">// 第一个读线程的计数</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">transient</span> <span class="type">int</span> firstReaderHoldCount;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 该属性中包括了读锁、写锁线程的最大量。本地线程计数器等。</p>
 <ul>
 <li>类的构造函数</li>
 </ul>
-<pre><code class="java">// 构造函数
-Sync() &#123;
-    // 本地线程计数器
-    readHolds = new ThreadLocalHoldCounter();
-    // 设置AQS的状态
-    setState(getState()); // ensures visibility of readHolds
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 构造函数</span></span><br><span class="line">Sync() &#123;</span><br><span class="line">    <span class="comment">// 本地线程计数器</span></span><br><span class="line">    readHolds = <span class="keyword">new</span> <span class="title class_">ThreadLocalHoldCounter</span>();</span><br><span class="line">    <span class="comment">// 设置AQS的状态</span></span><br><span class="line">    setState(getState()); <span class="comment">// ensures visibility of readHolds</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 在Sync的构造函数中设置了本地线程计数器和AQS的状态state。</p>
 <h3 id="内部类-Sync核心函数分析"><a href="#内部类-Sync核心函数分析" class="headerlink" title="内部类 - Sync核心函数分析"></a>内部类 - Sync核心函数分析</h3><p>对ReentrantReadWriteLock对象的操作绝大多数都转发至Sync对象进行处理。下面对Sync类中的重点函数进行分析</p>
 <ul>
 <li>sharedCount函数</li>
 </ul>
 <p>表示占有读锁的线程数量，源码如下</p>
-<pre><code class="java">static int sharedCount(int c)    &#123; return c &gt;&gt;&gt; SHARED_SHIFT; &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">int</span> <span class="title function_">sharedCount</span><span class="params">(<span class="type">int</span> c)</span>    &#123; <span class="keyword">return</span> c &gt;&gt;&gt; SHARED_SHIFT; &#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 直接将state右移16位，就可以得到读锁的线程数量，因为state的高16位表示读锁，对应的低十六位表示写锁数量。</p>
 <ul>
 <li>exclusiveCount函数</li>
 </ul>
 <p>表示占有写锁的线程数量，源码如下</p>
-<pre><code class="java">static int exclusiveCount(int c) &#123; return c &amp; EXCLUSIVE_MASK; &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">int</span> <span class="title function_">exclusiveCount</span><span class="params">(<span class="type">int</span> c)</span> &#123; <span class="keyword">return</span> c &amp; EXCLUSIVE_MASK; &#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 直接将状态state和(2^16 - 1)做与运算，其等效于将state模上2^16。写锁数量由state的低十六位表示。</p>
 <ul>
 <li>tryRelease函数</li>
 </ul>
-<pre><code class="java">/*
-* Note that tryRelease and tryAcquire can be called by
-* Conditions. So it is possible that their arguments contain
-* both read and write holds that are all released during a
-* condition wait and re-established in tryAcquire.
-*/
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">* Note that tryRelease and tryAcquire can be called by</span></span><br><span class="line"><span class="comment">* Conditions. So it is possible that their arguments contain</span></span><br><span class="line"><span class="comment">* both read and write holds that are all released during a</span></span><br><span class="line"><span class="comment">* condition wait and re-established in tryAcquire.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">tryRelease</span><span class="params">(<span class="type">int</span> releases)</span> &#123;</span><br><span class="line">    <span class="comment">// 判断是否伪独占线程</span></span><br><span class="line">    <span class="keyword">if</span> (!isHeldExclusively())</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalMonitorStateException</span>();</span><br><span class="line">    <span class="comment">// 计算释放资源后的写锁的数量</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">nextc</span> <span class="operator">=</span> getState() - releases;</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">free</span> <span class="operator">=</span> exclusiveCount(nextc) == <span class="number">0</span>; <span class="comment">// 是否释放成功</span></span><br><span class="line">    <span class="keyword">if</span> (free)</span><br><span class="line">        setExclusiveOwnerThread(<span class="literal">null</span>); <span class="comment">// 设置独占线程为空</span></span><br><span class="line">    setState(nextc); <span class="comment">// 设置状态</span></span><br><span class="line">    <span class="keyword">return</span> free;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-protected final boolean tryRelease(int releases) &#123;
-    // 判断是否伪独占线程
-    if (!isHeldExclusively())
-        throw new IllegalMonitorStateException();
-    // 计算释放资源后的写锁的数量
-    int nextc = getState() - releases;
-    boolean free = exclusiveCount(nextc) == 0; // 是否释放成功
-    if (free)
-        setExclusiveOwnerThread(null); // 设置独占线程为空
-    setState(nextc); // 设置状态
-    return free;
-&#125;
-</code></pre>
 <p>说明: 此函数用于释放写锁资源，首先会判断该线程是否为独占线程，若不为独占线程，则抛出异常，否则，计算释放资源后的写锁的数量，若为0，表示成功释放，资源不将被占用，否则，表示资源还被占用。其函数流程图如下。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312252347112.png" alt="img"></p>
 <ul>
 <li>tryAcquire函数</li>
 </ul>
-<pre><code class="java">protected final boolean tryAcquire(int acquires) &#123;
-    /*
-        * Walkthrough:
-        * 1. If read count nonzero or write count nonzero
-        *    and owner is a different thread, fail.
-        * 2. If count would saturate, fail. (This can only
-        *    happen if count is already nonzero.)
-        * 3. Otherwise, this thread is eligible for lock if
-        *    it is either a reentrant acquire or
-        *    queue policy allows it. If so, update state
-        *    and set owner.
-        */
-    // 获取当前线程
-    Thread current = Thread.currentThread();
-    // 获取状态
-    int c = getState();
-    // 写线程数量
-    int w = exclusiveCount(c);
-    if (c != 0) &#123; // 状态不为0
-        // (Note: if c != 0 and w == 0 then shared count != 0)
-        if (w == 0 || current != getExclusiveOwnerThread()) // 写线程数量为0或者当前线程没有占有独占资源
-            return false;
-        if (w + exclusiveCount(acquires) &gt; MAX_COUNT) // 判断是否超过最高写线程数量
-            throw new Error(&quot;Maximum lock count exceeded&quot;);
-        // Reentrant acquire
-        // 设置AQS状态
-        setState(c + acquires);
-        return true;
-    &#125;
-    if (writerShouldBlock() ||
-        !compareAndSetState(c, c + acquires)) // 写线程是否应该被阻塞
-        return false;
-    // 设置独占线程
-    setExclusiveOwnerThread(current);
-    return true;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">tryAcquire</span><span class="params">(<span class="type">int</span> acquires)</span> &#123;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">        * Walkthrough:</span></span><br><span class="line"><span class="comment">        * 1. If read count nonzero or write count nonzero</span></span><br><span class="line"><span class="comment">        *    and owner is a different thread, fail.</span></span><br><span class="line"><span class="comment">        * 2. If count would saturate, fail. (This can only</span></span><br><span class="line"><span class="comment">        *    happen if count is already nonzero.)</span></span><br><span class="line"><span class="comment">        * 3. Otherwise, this thread is eligible for lock if</span></span><br><span class="line"><span class="comment">        *    it is either a reentrant acquire or</span></span><br><span class="line"><span class="comment">        *    queue policy allows it. If so, update state</span></span><br><span class="line"><span class="comment">        *    and set owner.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="comment">// 获取当前线程</span></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">current</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">    <span class="comment">// 获取状态</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> getState();</span><br><span class="line">    <span class="comment">// 写线程数量</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">w</span> <span class="operator">=</span> exclusiveCount(c);</span><br><span class="line">    <span class="keyword">if</span> (c != <span class="number">0</span>) &#123; <span class="comment">// 状态不为0</span></span><br><span class="line">        <span class="comment">// (Note: if c != 0 and w == 0 then shared count != 0)</span></span><br><span class="line">        <span class="keyword">if</span> (w == <span class="number">0</span> || current != getExclusiveOwnerThread()) <span class="comment">// 写线程数量为0或者当前线程没有占有独占资源</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (w + exclusiveCount(acquires) &gt; MAX_COUNT) <span class="comment">// 判断是否超过最高写线程数量</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;Maximum lock count exceeded&quot;</span>);</span><br><span class="line">        <span class="comment">// Reentrant acquire</span></span><br><span class="line">        <span class="comment">// 设置AQS状态</span></span><br><span class="line">        setState(c + acquires);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (writerShouldBlock() ||</span><br><span class="line">        !compareAndSetState(c, c + acquires)) <span class="comment">// 写线程是否应该被阻塞</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// 设置独占线程</span></span><br><span class="line">    setExclusiveOwnerThread(current);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 此函数用于获取写锁，首先会获取state，判断是否为0，若为0，表示此时没有读锁线程，再判断写线程是否应该被阻塞，而在非公平策略下总是不会被阻塞，在公平策略下会进行判断(判断同步队列中是否有等待时间更长的线程，若存在，则需要被阻塞，否则，无需阻塞)，之后在设置状态state，然后返回true。若state不为0，则表示此时存在读锁或写锁线程，若写锁线程数量为0或者当前线程为独占锁线程，则返回false，表示不成功，否则，判断写锁线程的重入次数是否大于了最大值，若是，则抛出异常，否则，设置状态state，返回true，表示成功。其函数流程图如下</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312252347004.png" alt="img"></p>
 <ul>
 <li>tryReleaseShared函数</li>
 </ul>
-<pre><code class="java">protected final boolean tryReleaseShared(int unused) &#123;
-    // 获取当前线程
-    Thread current = Thread.currentThread();
-    if (firstReader == current) &#123; // 当前线程为第一个读线程
-        // assert firstReaderHoldCount &gt; 0;
-        if (firstReaderHoldCount == 1) // 读线程占用的资源数为1
-            firstReader = null;
-        else // 减少占用的资源
-            firstReaderHoldCount--;
-    &#125; else &#123; // 当前线程不为第一个读线程
-        // 获取缓存的计数器
-        HoldCounter rh = cachedHoldCounter;
-        if (rh == null || rh.tid != getThreadId(current)) // 计数器为空或者计数器的tid不为当前正在运行的线程的tid
-            // 获取当前线程对应的计数器
-            rh = readHolds.get();
-        // 获取计数
-        int count = rh.count;
-        if (count &lt;= 1) &#123; // 计数小于等于1
-            // 移除
-            readHolds.remove();
-            if (count &lt;= 0) // 计数小于等于0，抛出异常
-                throw unmatchedUnlockException();
-        &#125;
-        // 减少计数
-        --rh.count;
-    &#125;
-    for (;;) &#123; // 无限循环
-        // 获取状态
-        int c = getState();
-        // 获取状态
-        int nextc = c - SHARED_UNIT;
-        if (compareAndSetState(c, nextc)) // 比较并进行设置
-            // Releasing the read lock has no effect on readers,
-            // but it may allow waiting writers to proceed if
-            // both read and write locks are now free.
-            return nextc == 0;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">tryReleaseShared</span><span class="params">(<span class="type">int</span> unused)</span> &#123;</span><br><span class="line">    <span class="comment">// 获取当前线程</span></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">current</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">    <span class="keyword">if</span> (firstReader == current) &#123; <span class="comment">// 当前线程为第一个读线程</span></span><br><span class="line">        <span class="comment">// assert firstReaderHoldCount &gt; 0;</span></span><br><span class="line">        <span class="keyword">if</span> (firstReaderHoldCount == <span class="number">1</span>) <span class="comment">// 读线程占用的资源数为1</span></span><br><span class="line">            firstReader = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="comment">// 减少占用的资源</span></span><br><span class="line">            firstReaderHoldCount--;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123; <span class="comment">// 当前线程不为第一个读线程</span></span><br><span class="line">        <span class="comment">// 获取缓存的计数器</span></span><br><span class="line">        <span class="type">HoldCounter</span> <span class="variable">rh</span> <span class="operator">=</span> cachedHoldCounter;</span><br><span class="line">        <span class="keyword">if</span> (rh == <span class="literal">null</span> || rh.tid != getThreadId(current)) <span class="comment">// 计数器为空或者计数器的tid不为当前正在运行的线程的tid</span></span><br><span class="line">            <span class="comment">// 获取当前线程对应的计数器</span></span><br><span class="line">            rh = readHolds.get();</span><br><span class="line">        <span class="comment">// 获取计数</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> rh.count;</span><br><span class="line">        <span class="keyword">if</span> (count &lt;= <span class="number">1</span>) &#123; <span class="comment">// 计数小于等于1</span></span><br><span class="line">            <span class="comment">// 移除</span></span><br><span class="line">            readHolds.remove();</span><br><span class="line">            <span class="keyword">if</span> (count &lt;= <span class="number">0</span>) <span class="comment">// 计数小于等于0，抛出异常</span></span><br><span class="line">                <span class="keyword">throw</span> unmatchedUnlockException();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 减少计数</span></span><br><span class="line">        --rh.count;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123; <span class="comment">// 无限循环</span></span><br><span class="line">        <span class="comment">// 获取状态</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> getState();</span><br><span class="line">        <span class="comment">// 获取状态</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">nextc</span> <span class="operator">=</span> c - SHARED_UNIT;</span><br><span class="line">        <span class="keyword">if</span> (compareAndSetState(c, nextc)) <span class="comment">// 比较并进行设置</span></span><br><span class="line">            <span class="comment">// Releasing the read lock has no effect on readers,</span></span><br><span class="line">            <span class="comment">// but it may allow waiting writers to proceed if</span></span><br><span class="line">            <span class="comment">// both read and write locks are now free.</span></span><br><span class="line">            <span class="keyword">return</span> nextc == <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 此函数表示读锁线程释放锁。首先判断当前线程是否为第一个读线程firstReader，若是，则判断第一个读线程占有的资源数firstReaderHoldCount是否为1，若是，则设置第一个读线程firstReader为空，否则，将第一个读线程占有的资源数firstReaderHoldCount减1；若当前线程不是第一个读线程，那么首先会获取缓存计数器(上一个读锁线程对应的计数器 )，若计数器为空或者tid不等于当前线程的tid值，则获取当前线程的计数器，如果计数器的计数count小于等于1，则移除当前线程对应的计数器，如果计数器的计数count小于等于0，则抛出异常，之后再减少计数即可。无论何种情况，都会进入无限循环，该循环可以确保成功设置状态state。其流程图如下</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312252347195.png" alt="img"></p>
 <ul>
 <li>tryAcquireShared函数</li>
 </ul>
-<pre><code class="java">private IllegalMonitorStateException unmatchedUnlockException() &#123;
-    return new IllegalMonitorStateException(
-        &quot;attempt to unlock read lock, not locked by current thread&quot;);
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> IllegalMonitorStateException <span class="title function_">unmatchedUnlockException</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">IllegalMonitorStateException</span>(</span><br><span class="line">        <span class="string">&quot;attempt to unlock read lock, not locked by current thread&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 共享模式下获取资源</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">tryAcquireShared</span><span class="params">(<span class="type">int</span> unused)</span> &#123;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">        * Walkthrough:</span></span><br><span class="line"><span class="comment">        * 1. If write lock held by another thread, fail.</span></span><br><span class="line"><span class="comment">        * 2. Otherwise, this thread is eligible for</span></span><br><span class="line"><span class="comment">        *    lock wrt state, so ask if it should block</span></span><br><span class="line"><span class="comment">        *    because of queue policy. If not, try</span></span><br><span class="line"><span class="comment">        *    to grant by CASing state and updating count.</span></span><br><span class="line"><span class="comment">        *    Note that step does not check for reentrant</span></span><br><span class="line"><span class="comment">        *    acquires, which is postponed to full version</span></span><br><span class="line"><span class="comment">        *    to avoid having to check hold count in</span></span><br><span class="line"><span class="comment">        *    the more typical non-reentrant case.</span></span><br><span class="line"><span class="comment">        * 3. If step 2 fails either because thread</span></span><br><span class="line"><span class="comment">        *    apparently not eligible or CAS fails or count</span></span><br><span class="line"><span class="comment">        *    saturated, chain to version with full retry loop.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="comment">// 获取当前线程</span></span><br><span class="line">    <span class="type">Thread</span> <span class="variable">current</span> <span class="operator">=</span> Thread.currentThread();</span><br><span class="line">    <span class="comment">// 获取状态</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> getState();</span><br><span class="line">    <span class="keyword">if</span> (exclusiveCount(c) != <span class="number">0</span> &amp;&amp;</span><br><span class="line">        getExclusiveOwnerThread() != current) <span class="comment">// 写线程数不为0并且占有资源的不是当前线程</span></span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    <span class="comment">// 读锁数量</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">r</span> <span class="operator">=</span> sharedCount(c);</span><br><span class="line">    <span class="keyword">if</span> (!readerShouldBlock() &amp;&amp;</span><br><span class="line">        r &lt; MAX_COUNT &amp;&amp;</span><br><span class="line">        compareAndSetState(c, c + SHARED_UNIT)) &#123; <span class="comment">// 读线程是否应该被阻塞、并且小于最大值、并且比较设置成功</span></span><br><span class="line">        <span class="keyword">if</span> (r == <span class="number">0</span>) &#123; <span class="comment">// 读锁数量为0</span></span><br><span class="line">            <span class="comment">// 设置第一个读线程</span></span><br><span class="line">            firstReader = current;</span><br><span class="line">            <span class="comment">// 读线程占用的资源数为1</span></span><br><span class="line">            firstReaderHoldCount = <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (firstReader == current) &#123; <span class="comment">// 当前线程为第一个读线程</span></span><br><span class="line">            <span class="comment">// 占用资源数加1</span></span><br><span class="line">            firstReaderHoldCount++;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// 读锁数量不为0并且不为当前线程</span></span><br><span class="line">            <span class="comment">// 获取计数器</span></span><br><span class="line">            <span class="type">HoldCounter</span> <span class="variable">rh</span> <span class="operator">=</span> cachedHoldCounter;</span><br><span class="line">            <span class="keyword">if</span> (rh == <span class="literal">null</span> || rh.tid != getThreadId(current)) <span class="comment">// 计数器为空或者计数器的tid不为当前正在运行的线程的tid</span></span><br><span class="line">                <span class="comment">// 获取当前线程对应的计数器</span></span><br><span class="line">                cachedHoldCounter = rh = readHolds.get();</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (rh.count == <span class="number">0</span>) <span class="comment">// 计数为0</span></span><br><span class="line">                <span class="comment">// 设置</span></span><br><span class="line">                readHolds.set(rh);</span><br><span class="line">            rh.count++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> fullTryAcquireShared(current);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-// 共享模式下获取资源
-protected final int tryAcquireShared(int unused) &#123;
-    /*
-        * Walkthrough:
-        * 1. If write lock held by another thread, fail.
-        * 2. Otherwise, this thread is eligible for
-        *    lock wrt state, so ask if it should block
-        *    because of queue policy. If not, try
-        *    to grant by CASing state and updating count.
-        *    Note that step does not check for reentrant
-        *    acquires, which is postponed to full version
-        *    to avoid having to check hold count in
-        *    the more typical non-reentrant case.
-        * 3. If step 2 fails either because thread
-        *    apparently not eligible or CAS fails or count
-        *    saturated, chain to version with full retry loop.
-        */
-    // 获取当前线程
-    Thread current = Thread.currentThread();
-    // 获取状态
-    int c = getState();
-    if (exclusiveCount(c) != 0 &amp;&amp;
-        getExclusiveOwnerThread() != current) // 写线程数不为0并且占有资源的不是当前线程
-        return -1;
-    // 读锁数量
-    int r = sharedCount(c);
-    if (!readerShouldBlock() &amp;&amp;
-        r &lt; MAX_COUNT &amp;&amp;
-        compareAndSetState(c, c + SHARED_UNIT)) &#123; // 读线程是否应该被阻塞、并且小于最大值、并且比较设置成功
-        if (r == 0) &#123; // 读锁数量为0
-            // 设置第一个读线程
-            firstReader = current;
-            // 读线程占用的资源数为1
-            firstReaderHoldCount = 1;
-        &#125; else if (firstReader == current) &#123; // 当前线程为第一个读线程
-            // 占用资源数加1
-            firstReaderHoldCount++;
-        &#125; else &#123; // 读锁数量不为0并且不为当前线程
-            // 获取计数器
-            HoldCounter rh = cachedHoldCounter;
-            if (rh == null || rh.tid != getThreadId(current)) // 计数器为空或者计数器的tid不为当前正在运行的线程的tid
-                // 获取当前线程对应的计数器
-                cachedHoldCounter = rh = readHolds.get();
-            else if (rh.count == 0) // 计数为0
-                // 设置
-                readHolds.set(rh);
-            rh.count++;
-        &#125;
-        return 1;
-    &#125;
-    return fullTryAcquireShared(current);
-&#125;
-</code></pre>
 <p>说明: 此函数表示读锁线程获取读锁。首先判断写锁是否为0并且当前线程不占有独占锁，直接返回；否则，判断读线程是否需要被阻塞并且读锁数量是否小于最大值并且比较设置状态成功，若当前没有读锁，则设置第一个读线程firstReader和firstReaderHoldCount；若当前线程线程为第一个读线程，则增加firstReaderHoldCount；否则，将设置当前线程对应的HoldCounter对象的值。流程图如下。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312252348329.png" alt="img"></p>
 <ul>
 <li>fullTryAcquireShared函数</li>
 </ul>
-<pre><code class="java">final int fullTryAcquireShared(Thread current) &#123;
-    /*
-        * This code is in part redundant with that in
-        * tryAcquireShared but is simpler overall by not
-        * complicating tryAcquireShared with interactions between
-        * retries and lazily reading hold counts.
-        */
-    HoldCounter rh = null;
-    for (;;) &#123; // 无限循环
-        // 获取状态
-        int c = getState();
-        if (exclusiveCount(c) != 0) &#123; // 写线程数量不为0
-            if (getExclusiveOwnerThread() != current) // 不为当前线程
-                return -1;
-            // else we hold the exclusive lock; blocking here
-            // would cause deadlock.
-        &#125; else if (readerShouldBlock()) &#123; // 写线程数量为0并且读线程被阻塞
-            // Make sure we&#39;re not acquiring read lock reentrantly
-            if (firstReader == current) &#123; // 当前线程为第一个读线程
-                // assert firstReaderHoldCount &gt; 0;
-            &#125; else &#123; // 当前线程不为第一个读线程
-                if (rh == null) &#123; // 计数器不为空
-                    // 
-                    rh = cachedHoldCounter;
-                    if (rh == null || rh.tid != getThreadId(current)) &#123; // 计数器为空或者计数器的tid不为当前正在运行的线程的tid
-                        rh = readHolds.get();
-                        if (rh.count == 0)
-                            readHolds.remove();
-                    &#125;
-                &#125;
-                if (rh.count == 0)
-                    return -1;
-            &#125;
-        &#125;
-        if (sharedCount(c) == MAX_COUNT) // 读锁数量为最大值，抛出异常
-            throw new Error(&quot;Maximum lock count exceeded&quot;);
-        if (compareAndSetState(c, c + SHARED_UNIT)) &#123; // 比较并且设置成功
-            if (sharedCount(c) == 0) &#123; // 读线程数量为0
-                // 设置第一个读线程
-                firstReader = current;
-                // 
-                firstReaderHoldCount = 1;
-            &#125; else if (firstReader == current) &#123;
-                firstReaderHoldCount++;
-            &#125; else &#123;
-                if (rh == null)
-                    rh = cachedHoldCounter;
-                if (rh == null || rh.tid != getThreadId(current))
-                    rh = readHolds.get();
-                else if (rh.count == 0)
-                    readHolds.set(rh);
-                rh.count++;
-                cachedHoldCounter = rh; // cache for release
-            &#125;
-            return 1;
-        &#125;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">int</span> <span class="title function_">fullTryAcquireShared</span><span class="params">(Thread current)</span> &#123;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">        * This code is in part redundant with that in</span></span><br><span class="line"><span class="comment">        * tryAcquireShared but is simpler overall by not</span></span><br><span class="line"><span class="comment">        * complicating tryAcquireShared with interactions between</span></span><br><span class="line"><span class="comment">        * retries and lazily reading hold counts.</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="type">HoldCounter</span> <span class="variable">rh</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123; <span class="comment">// 无限循环</span></span><br><span class="line">        <span class="comment">// 获取状态</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> getState();</span><br><span class="line">        <span class="keyword">if</span> (exclusiveCount(c) != <span class="number">0</span>) &#123; <span class="comment">// 写线程数量不为0</span></span><br><span class="line">            <span class="keyword">if</span> (getExclusiveOwnerThread() != current) <span class="comment">// 不为当前线程</span></span><br><span class="line">                <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">            <span class="comment">// else we hold the exclusive lock; blocking here</span></span><br><span class="line">            <span class="comment">// would cause deadlock.</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (readerShouldBlock()) &#123; <span class="comment">// 写线程数量为0并且读线程被阻塞</span></span><br><span class="line">            <span class="comment">// Make sure we&#x27;re not acquiring read lock reentrantly</span></span><br><span class="line">            <span class="keyword">if</span> (firstReader == current) &#123; <span class="comment">// 当前线程为第一个读线程</span></span><br><span class="line">                <span class="comment">// assert firstReaderHoldCount &gt; 0;</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// 当前线程不为第一个读线程</span></span><br><span class="line">                <span class="keyword">if</span> (rh == <span class="literal">null</span>) &#123; <span class="comment">// 计数器不为空</span></span><br><span class="line">                    <span class="comment">// </span></span><br><span class="line">                    rh = cachedHoldCounter;</span><br><span class="line">                    <span class="keyword">if</span> (rh == <span class="literal">null</span> || rh.tid != getThreadId(current)) &#123; <span class="comment">// 计数器为空或者计数器的tid不为当前正在运行的线程的tid</span></span><br><span class="line">                        rh = readHolds.get();</span><br><span class="line">                        <span class="keyword">if</span> (rh.count == <span class="number">0</span>)</span><br><span class="line">                            readHolds.remove();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (rh.count == <span class="number">0</span>)</span><br><span class="line">                    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (sharedCount(c) == MAX_COUNT) <span class="comment">// 读锁数量为最大值，抛出异常</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;Maximum lock count exceeded&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (compareAndSetState(c, c + SHARED_UNIT)) &#123; <span class="comment">// 比较并且设置成功</span></span><br><span class="line">            <span class="keyword">if</span> (sharedCount(c) == <span class="number">0</span>) &#123; <span class="comment">// 读线程数量为0</span></span><br><span class="line">                <span class="comment">// 设置第一个读线程</span></span><br><span class="line">                firstReader = current;</span><br><span class="line">                <span class="comment">// </span></span><br><span class="line">                firstReaderHoldCount = <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (firstReader == current) &#123;</span><br><span class="line">                firstReaderHoldCount++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (rh == <span class="literal">null</span>)</span><br><span class="line">                    rh = cachedHoldCounter;</span><br><span class="line">                <span class="keyword">if</span> (rh == <span class="literal">null</span> || rh.tid != getThreadId(current))</span><br><span class="line">                    rh = readHolds.get();</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (rh.count == <span class="number">0</span>)</span><br><span class="line">                    readHolds.set(rh);</span><br><span class="line">                rh.count++;</span><br><span class="line">                cachedHoldCounter = rh; <span class="comment">// cache for release</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 在tryAcquireShared函数中，如果下列三个条件不满足(读线程是否应该被阻塞、小于最大值、比较设置成功)则会进行fullTryAcquireShared函数中，它用来保证相关操作可以成功。其逻辑与tryAcquireShared逻辑类似，不再累赘。</p>
 <p>而其他内部类的操作基本上都是转化到了对Sync对象的操作，在此不再累赘。</p>
-<h3 id="类的属性"><a href="#类的属性" class="headerlink" title="类的属性"></a>类的属性</h3><pre><code class="java">public class ReentrantReadWriteLock
-        implements ReadWriteLock, java.io.Serializable &#123;
-    // 版本序列号    
-    private static final long serialVersionUID = -6992448646407690164L;    
-    // 读锁
-    private final ReentrantReadWriteLock.ReadLock readerLock;
-    // 写锁
-    private final ReentrantReadWriteLock.WriteLock writerLock;
-    // 同步队列
-    final Sync sync;
-    
-    private static final sun.misc.Unsafe UNSAFE;
-    // 线程ID的偏移地址
-    private static final long TID_OFFSET;
-    static &#123;
-        try &#123;
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class&lt;?&gt; tk = Thread.class;
-            // 获取线程的tid字段的内存地址
-            TID_OFFSET = UNSAFE.objectFieldOffset
-                (tk.getDeclaredField(&quot;tid&quot;));
-        &#125; catch (Exception e) &#123;
-            throw new Error(e);
-        &#125;
-    &#125;
-&#125;
-</code></pre>
+<h3 id="类的属性"><a href="#类的属性" class="headerlink" title="类的属性"></a>类的属性</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReentrantReadWriteLock</span></span><br><span class="line">        <span class="keyword">implements</span> <span class="title class_">ReadWriteLock</span>, java.io.Serializable &#123;</span><br><span class="line">    <span class="comment">// 版本序列号    </span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> -<span class="number">6992448646407690164L</span>;    </span><br><span class="line">    <span class="comment">// 读锁</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ReentrantReadWriteLock.ReadLock readerLock;</span><br><span class="line">    <span class="comment">// 写锁</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ReentrantReadWriteLock.WriteLock writerLock;</span><br><span class="line">    <span class="comment">// 同步队列</span></span><br><span class="line">    <span class="keyword">final</span> Sync sync;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> sun.misc.Unsafe UNSAFE;</span><br><span class="line">    <span class="comment">// 线程ID的偏移地址</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> TID_OFFSET;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            UNSAFE = sun.misc.Unsafe.getUnsafe();</span><br><span class="line">            Class&lt;?&gt; tk = Thread.class;</span><br><span class="line">            <span class="comment">// 获取线程的tid字段的内存地址</span></span><br><span class="line">            TID_OFFSET = UNSAFE.objectFieldOffset</span><br><span class="line">                (tk.getDeclaredField(<span class="string">&quot;tid&quot;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 可以看到ReentrantReadWriteLock属性包括了一个ReentrantReadWriteLock.ReadLock对象，表示读锁；一个ReentrantReadWriteLock.WriteLock对象，表示写锁；一个Sync对象，表示同步队列。</p>
 <h3 id="类的构造函数"><a href="#类的构造函数" class="headerlink" title="类的构造函数"></a>类的构造函数</h3><ul>
 <li>ReentrantReadWriteLock()型构造函数</li>
 </ul>
-<pre><code class="java">public ReentrantReadWriteLock() &#123;
-    this(false);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">ReentrantReadWriteLock</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>(<span class="literal">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 此构造函数会调用另外一个有参构造函数。</p>
 <ul>
 <li>ReentrantReadWriteLock(boolean)型构造函数</li>
 </ul>
-<pre><code class="java">public ReentrantReadWriteLock(boolean fair) &#123;
-    // 公平策略或者是非公平策略
-    sync = fair ? new FairSync() : new NonfairSync();
-    // 读锁
-    readerLock = new ReadLock(this);
-    // 写锁
-    writerLock = new WriteLock(this);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">ReentrantReadWriteLock</span><span class="params">(<span class="type">boolean</span> fair)</span> &#123;</span><br><span class="line">    <span class="comment">// 公平策略或者是非公平策略</span></span><br><span class="line">    sync = fair ? <span class="keyword">new</span> <span class="title class_">FairSync</span>() : <span class="keyword">new</span> <span class="title class_">NonfairSync</span>();</span><br><span class="line">    <span class="comment">// 读锁</span></span><br><span class="line">    readerLock = <span class="keyword">new</span> <span class="title class_">ReadLock</span>(<span class="built_in">this</span>);</span><br><span class="line">    <span class="comment">// 写锁</span></span><br><span class="line">    writerLock = <span class="keyword">new</span> <span class="title class_">WriteLock</span>(<span class="built_in">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>说明: 可以指定设置公平策略或者非公平策略，并且该构造函数中生成了读锁与写锁两个对象。</p>
 <h3 id="核心函数分析"><a href="#核心函数分析" class="headerlink" title="核心函数分析"></a>核心函数分析</h3><p>对ReentrantReadWriteLock的操作基本上都转化为了对Sync对象的操作，而Sync的函数已经分析过，不再累赘。</p>
 <h2 id="ReentrantReadWriteLock示例"><a href="#ReentrantReadWriteLock示例" class="headerlink" title="ReentrantReadWriteLock示例"></a>ReentrantReadWriteLock示例</h2><p>下面给出了一个使用ReentrantReadWriteLock的示例，源代码如下。</p>
-<pre><code class="java">import java.util.concurrent.locks.ReentrantReadWriteLock;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.locks.ReentrantReadWriteLock;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ReadThread</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> ReentrantReadWriteLock rrwLock;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ReadThread</span><span class="params">(String name, ReentrantReadWriteLock rrwLock)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(name);</span><br><span class="line">        <span class="built_in">this</span>.rrwLock = rrwLock;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; trying to lock&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            rrwLock.readLock().lock();</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; lock successfully&quot;</span>);</span><br><span class="line">            Thread.sleep(<span class="number">5000</span>);        </span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            rrwLock.readLock().unlock();</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; unlock successfully&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">WriteThread</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> ReentrantReadWriteLock rrwLock;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">WriteThread</span><span class="params">(String name, ReentrantReadWriteLock rrwLock)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(name);</span><br><span class="line">        <span class="built_in">this</span>.rrwLock = rrwLock;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot; trying to lock&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            rrwLock.writeLock().lock();</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; lock successfully&quot;</span>);    </span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            rrwLock.writeLock().unlock();</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; unlock successfully&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReentrantReadWriteLockDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ReentrantReadWriteLock</span> <span class="variable">rrwLock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantReadWriteLock</span>();</span><br><span class="line">        <span class="type">ReadThread</span> <span class="variable">rt1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReadThread</span>(<span class="string">&quot;rt1&quot;</span>, rrwLock);</span><br><span class="line">        <span class="type">ReadThread</span> <span class="variable">rt2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReadThread</span>(<span class="string">&quot;rt2&quot;</span>, rrwLock);</span><br><span class="line">        <span class="type">WriteThread</span> <span class="variable">wt1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">WriteThread</span>(<span class="string">&quot;wt1&quot;</span>, rrwLock);</span><br><span class="line">        rt1.start();</span><br><span class="line">        rt2.start();</span><br><span class="line">        wt1.start();</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-class ReadThread extends Thread &#123;
-    private ReentrantReadWriteLock rrwLock;
-    
-    public ReadThread(String name, ReentrantReadWriteLock rrwLock) &#123;
-        super(name);
-        this.rrwLock = rrwLock;
-    &#125;
-    
-    public void run() &#123;
-        System.out.println(Thread.currentThread().getName() + &quot; trying to lock&quot;);
-        try &#123;
-            rrwLock.readLock().lock();
-            System.out.println(Thread.currentThread().getName() + &quot; lock successfully&quot;);
-            Thread.sleep(5000);        
-        &#125; catch (InterruptedException e) &#123;
-            e.printStackTrace();
-        &#125; finally &#123;
-            rrwLock.readLock().unlock();
-            System.out.println(Thread.currentThread().getName() + &quot; unlock successfully&quot;);
-        &#125;
-    &#125;
-&#125;
-
-class WriteThread extends Thread &#123;
-    private ReentrantReadWriteLock rrwLock;
-    
-    public WriteThread(String name, ReentrantReadWriteLock rrwLock) &#123;
-        super(name);
-        this.rrwLock = rrwLock;
-    &#125;
-    
-    public void run() &#123;
-        System.out.println(Thread.currentThread().getName() + &quot; trying to lock&quot;);
-        try &#123;
-            rrwLock.writeLock().lock();
-            System.out.println(Thread.currentThread().getName() + &quot; lock successfully&quot;);    
-        &#125; finally &#123;
-            rrwLock.writeLock().unlock();
-            System.out.println(Thread.currentThread().getName() + &quot; unlock successfully&quot;);
-        &#125;
-    &#125;
-&#125;
-
-public class ReentrantReadWriteLockDemo &#123;
-    public static void main(String[] args) &#123;
-        ReentrantReadWriteLock rrwLock = new ReentrantReadWriteLock();
-        ReadThread rt1 = new ReadThread(&quot;rt1&quot;, rrwLock);
-        ReadThread rt2 = new ReadThread(&quot;rt2&quot;, rrwLock);
-        WriteThread wt1 = new WriteThread(&quot;wt1&quot;, rrwLock);
-        rt1.start();
-        rt2.start();
-        wt1.start();
-    &#125; 
-&#125;
-</code></pre>
 <p>运行结果(某一次):</p>
-<pre><code class="html">rt1 trying to lock
-rt2 trying to lock
-wt1 trying to lock
-rt1 lock successfully
-rt2 lock successfully
-rt1 unlock successfully
-rt2 unlock successfully
-wt1 lock successfully
-wt1 unlock successfully
-</code></pre>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">rt1 trying to lock</span><br><span class="line">rt2 trying to lock</span><br><span class="line">wt1 trying to lock</span><br><span class="line">rt1 lock successfully</span><br><span class="line">rt2 lock successfully</span><br><span class="line">rt1 unlock successfully</span><br><span class="line">rt2 unlock successfully</span><br><span class="line">wt1 lock successfully</span><br><span class="line">wt1 unlock successfully</span><br></pre></td></tr></table></figure>
+
 <p>说明: 程序中生成了一个ReentrantReadWriteLock对象，并且设置了两个读线程，一个写线程。根据结果，可能存在如下的时序图。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312252348290.png" alt="img"></p>
 <ul>
@@ -915,31 +576,8 @@ wt1 unlock successfully
 <p>说明: 此时，AQS的state为0，表示没有任何读线程或者写线程了。并且Sync queue结构与上一个状态的结构相同，没有变化。</p>
 <h2 id="更深入理解"><a href="#更深入理解" class="headerlink" title="更深入理解"></a>更深入理解</h2><h3 id="什么是锁升降级"><a href="#什么是锁升降级" class="headerlink" title="什么是锁升降级?"></a>什么是锁升降级?</h3><p>锁降级指的是写锁降级成为读锁。如果当前线程拥有写锁，然后将其释放，最后再获取读锁，这种分段完成的过程不能称之为锁降级。锁降级是指把持住(当前拥有的)写锁，再获取到读锁，随后释放(先前拥有的)写锁的过程。</p>
 <p>接下来看一个锁降级的示例。因为数据不常变化，所以多个线程可以并发地进行数据处理，当数据变更后，如果当前线程感知到数据变化，则进行数据的准备工作，同时其他处理线程被阻塞，直到当前线程完成数据的准备工作，如代码如下所示：</p>
-<pre><code class="java">public void processData() &#123;
-    readLock.lock();
-    if (!update) &#123;
-        // 必须先释放读锁
-        readLock.unlock();
-        // 锁降级从写锁获取到开始
-        writeLock.lock();
-        try &#123;
-            if (!update) &#123;
-                // 准备数据的流程(略)
-                update = true;
-            &#125;
-            readLock.lock();
-        &#125; finally &#123;
-            writeLock.unlock();
-        &#125;
-        // 锁降级完成，写锁降级为读锁
-    &#125;
-    try &#123;
-        // 使用数据的流程(略)
-    &#125; finally &#123;
-        readLock.unlock();
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">processData</span><span class="params">()</span> &#123;</span><br><span class="line">    readLock.lock();</span><br><span class="line">    <span class="keyword">if</span> (!update) &#123;</span><br><span class="line">        <span class="comment">// 必须先释放读锁</span></span><br><span class="line">        readLock.unlock();</span><br><span class="line">        <span class="comment">// 锁降级从写锁获取到开始</span></span><br><span class="line">        writeLock.lock();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!update) &#123;</span><br><span class="line">                <span class="comment">// 准备数据的流程(略)</span></span><br><span class="line">                update = <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            readLock.lock();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            writeLock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 锁降级完成，写锁降级为读锁</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 使用数据的流程(略)</span></span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        readLock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>上述示例中，当数据发生变更后，update变量(布尔类型且volatile修饰)被设置为false，此时所有访问processData()方法的线程都能够感知到变化，但只有一个线程能够获取到写锁，其他线程会被阻塞在读锁和写锁的lock()方法上。当前线程获取写锁完成数据准备之后，再获取读锁，随后释放写锁，完成锁降级。</p>
 <p>锁降级中读锁的获取是否必要呢? 答案是必要的。主要是为了保证数据的可见性，如果当前线程不获取读锁而是直接释放写锁，假设此刻另一个线程(记作线程T)获取了写锁并修改了数据，那么当前线程无法感知线程T的数据更新。如果当前线程获取读锁，即遵循锁降级的步骤，则线程T将会被阻塞，直到当前线程使用数据并释放读锁之后，线程T才能获取写锁进行数据更新。</p>
 <p>RentrantReadWriteLock不支持锁升级(把持读锁、获取写锁，最后释放读锁的过程)。目的也是保证数据可见性，如果读锁已被多个线程获取，其中任意线程成功获取了写锁并更新了数据，则其更新对其他获取到读锁的线程是不可见的。</p>

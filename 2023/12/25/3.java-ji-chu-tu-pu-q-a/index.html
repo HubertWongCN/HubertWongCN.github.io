@@ -421,11 +421,8 @@ Thinking">
 <h3 id="哪个类包含-clone-方法-是-Cloneable-还是-Object"><a href="#哪个类包含-clone-方法-是-Cloneable-还是-Object" class="headerlink" title="哪个类包含 clone 方法? 是 Cloneable 还是 Object?"></a>哪个类包含 <code>clone</code> 方法? 是 <code>Cloneable</code> 还是 <code>Object</code>?</h3><p>java.lang.Cloneable 是一个标示性接口，不包含任何方法，<code>clone</code> 方法在 <code>object</code> 类中定义。并且需要知道 <code>clone()</code> 方法是一个本地方法，这意味着它是由 c 或 c++ 或 其他本地语言实现的。</p>
 <h3 id="Java-中-操作符是线程安全的吗"><a href="#Java-中-操作符是线程安全的吗" class="headerlink" title="Java 中 ++ 操作符是线程安全的吗?"></a>Java 中 ++ 操作符是线程安全的吗?</h3><p>不是线程安全的操作。它涉及到多个指令，如读取变量值，增加，然后存储回内存，这个过程可能会出现多个线程交差。还会存在竞态条件(读取-修改-写入)。</p>
 <h3 id="a-a-b-与-a-b-的区别"><a href="#a-a-b-与-a-b-的区别" class="headerlink" title="a &#x3D; a + b 与 a +&#x3D; b 的区别"></a>a &#x3D; a + b 与 a +&#x3D; b 的区别</h3><p><code>+=</code> 隐式的将加操作的结果类型强制转换为持有结果的类型。如果两个整型相加，如 <code>byte</code>、<code>short</code> 或者 <code>int</code>，首先会将它们提升到 <code>int</code> 类型，然后在执行加法操作。</p>
-<pre><code class="java">byte a = 127;
-byte b = 127;
-b = a + b; // error : cannot convert from int to byte
-b += a; // ok
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">byte</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">127</span>;</span><br><span class="line"><span class="type">byte</span> <span class="variable">b</span> <span class="operator">=</span> <span class="number">127</span>;</span><br><span class="line">b = a + b; <span class="comment">// error : cannot convert from int to byte</span></span><br><span class="line">b += a; <span class="comment">// ok</span></span><br></pre></td></tr></table></figure>
+
 <p>(因为 a+b 操作会将 a、b 提升为 int 类型，所以将 int 类型赋值给 byte 就会编译出错)</p>
 <h3 id="我能在不进行强制转换的情况下将一个-double-值赋值给-long-类型的变量吗"><a href="#我能在不进行强制转换的情况下将一个-double-值赋值给-long-类型的变量吗" class="headerlink" title="我能在不进行强制转换的情况下将一个 double 值赋值给 long 类型的变量吗?"></a>我能在不进行强制转换的情况下将一个 <code>double</code> 值赋值给 <code>long</code> 类型的变量吗?</h3><p>不行，你不能在没有强制类型转换的前提下将一个 <code>double</code> 值赋值给 <code>long</code> 类型的变量，因为 <code>double</code> 类型的范围比 <code>long</code> 类型更广，所以必须要进行强制转换。</p>
 <h3 id="3-0-1-0-3-将会返回什么-true-还是-false"><a href="#3-0-1-0-3-将会返回什么-true-还是-false" class="headerlink" title="3*0.1 &#x3D;&#x3D; 0.3 将会返回什么? true 还是 false?"></a>3*0.1 &#x3D;&#x3D; 0.3 将会返回什么? <code>true</code> 还是 <code>false</code>?</h3><p><code>false</code>，因为有些浮点数不能完全精确的表示出来。</p>
@@ -538,20 +535,8 @@ b += a; // ok
 <li><code>this()</code>、<code>super()</code>都指的对象,不可以在static环境中使用</li>
 <li>本质<code>this</code>指向本对象的指针。<code>super</code>是一个关键字</li>
 </ul>
-<h3 id="构造内部类和静态内部类对象"><a href="#构造内部类和静态内部类对象" class="headerlink" title="构造内部类和静态内部类对象"></a>构造内部类和静态内部类对象</h3><pre><code class="java">public class Enclosingone &#123;
-    public class Insideone &#123;&#125;
-    public static class Insideone&#123;&#125;
-&#125;
+<h3 id="构造内部类和静态内部类对象"><a href="#构造内部类和静态内部类对象" class="headerlink" title="构造内部类和静态内部类对象"></a>构造内部类和静态内部类对象</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Enclosingone</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Insideone</span> &#123;&#125;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Insideone</span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">	<span class="comment">// 构造内部类对象需要外部类的引用</span></span><br><span class="line">	Enclosingone.<span class="type">Insideone</span> <span class="variable">obj1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Enclosingone</span>().<span class="keyword">new</span> <span class="title class_">Insideone</span>();</span><br><span class="line">	<span class="comment">// 构造静态内部类的对象</span></span><br><span class="line">	Enclosingone.<span class="type">Insideone</span> <span class="variable">obj2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Enclosingone</span>.Insideone();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-public class Test &#123;
-    public static void main(String[] args) &#123;
-    // 构造内部类对象需要外部类的引用
-    Enclosingone.Insideone obj1 = new Enclosingone().new Insideone();
-    // 构造静态内部类的对象
-    Enclosingone.Insideone obj2 = new Enclosingone.Insideone();
-    &#125;
-&#125;
-</code></pre>
 <p>静态内部类不需要有指向外部类的引用。但非静态内部类需要持有对外部类的引用。非静态内部类能够访问外部类的静态和非静态成员。静态内部类不能访问外部类的非静态成员，只能访问外部类的静态成员。</p>
 <h3 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h3><p>声明为<code>static</code>和<code>transient</code>类型的数据不能被序列化， 反序列化需要一个无参构造函数</p>
 <h3 id="Java移位运算符"><a href="#Java移位运算符" class="headerlink" title="Java移位运算符"></a>Java移位运算符</h3><p>java中有三种移位运算符</p>

@@ -416,51 +416,28 @@ SPI（Service Provider Interface），是JDK内置的一种 服务提供发现�
 <ul>
 <li>先定义好接口</li>
 </ul>
-<pre><code class="java">public interface Search &#123;
-    public List&lt;String&gt; searchDoc(String keyword);   
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Search</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> List&lt;String&gt; <span class="title function_">searchDoc</span><span class="params">(String keyword)</span>;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li>文件搜索实现</li>
 </ul>
-<pre><code class="java">public class FileSearch implements Search&#123;
-    @Override
-    public List&lt;String&gt; searchDoc(String keyword) &#123;
-        System.out.println(&quot;文件搜索 &quot;+keyword);
-        return null;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FileSearch</span> <span class="keyword">implements</span> <span class="title class_">Search</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;String&gt; <span class="title function_">searchDoc</span><span class="params">(String keyword)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;文件搜索 &quot;</span>+keyword);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li>数据库搜索实现</li>
 </ul>
-<pre><code class="java">public class DatabaseSearch implements Search&#123;
-    @Override
-    public List&lt;String&gt; searchDoc(String keyword) &#123;
-        System.out.println(&quot;数据搜索 &quot;+keyword);
-        return null;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DatabaseSearch</span> <span class="keyword">implements</span> <span class="title class_">Search</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;String&gt; <span class="title function_">searchDoc</span><span class="params">(String keyword)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;数据搜索 &quot;</span>+keyword);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><code>resources</code> 接下来可以在<code>resources</code>下新建META-INF&#x2F;services&#x2F;目录，然后新建接口全限定名的文件：<code>com.cainiao.ys.spi.learn.Search</code>，里面加上我们需要用到的实现类</li>
 </ul>
-<pre><code class="xml">com.cainiao.ys.spi.learn.FileSearch
-</code></pre>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">com.cainiao.ys.spi.learn.FileSearch</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li>测试方法</li>
 </ul>
-<pre><code class="java">public class TestCase &#123;
-    public static void main(String[] args) &#123;
-        ServiceLoader&lt;Search&gt; s = ServiceLoader.load(Search.class);
-        Iterator&lt;Search&gt; iterator = s.iterator();
-        while (iterator.hasNext()) &#123;
-           Search search =  iterator.next();
-           search.searchDoc(&quot;hello world&quot;);
-        &#125;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestCase</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        ServiceLoader&lt;Search&gt; s = ServiceLoader.load(Search.class);</span><br><span class="line">        Iterator&lt;Search&gt; iterator = s.iterator();</span><br><span class="line">        <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">           <span class="type">Search</span> <span class="variable">search</span> <span class="operator">=</span>  iterator.next();</span><br><span class="line">           search.searchDoc(<span class="string">&quot;hello world&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>可以看到输出结果：文件搜索 hello world</p>
 <p>如果在<code>com.cainiao.ys.spi.learn.Search</code>文件里写上两个实现类，那最后的输出结果就是两行了。</p>
 <p>这就是因为<code>ServiceLoader.load(Search.class)</code>在加载某接口时，会去<code>META-INF/services</code>下找接口的全限定名文件，再根据里面的内容加载相应的实现类。</p>
@@ -472,65 +449,16 @@ SPI（Service Provider Interface），是JDK内置的一种 服务提供发现�
 <h4 id="mysql实现"><a href="#mysql实现" class="headerlink" title="mysql实现"></a>mysql实现</h4><p>在mysql的jar包<code>mysql-connector-java-6.0.6.jar</code>中，可以找到<code>META-INF/services</code>目录，该目录下会有一个名字为<code>java.sql.Driver</code>的文件，文件内容是<code>com.mysql.cj.jdbc.Driver</code>，这里面的内容就是针对Java中定义的接口的实现。</p>
 <h4 id="postgresql实现"><a href="#postgresql实现" class="headerlink" title="postgresql实现"></a>postgresql实现</h4><p>同样在postgresql的jar包<code>postgresql-42.0.0.jar</code>中，也可以找到同样的配置文件，文件内容是<code>org.postgresql.Driver</code>，这是postgresql对Java的<code>java.sql.Driver</code>的实现。</p>
 <h4 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h4><p>上面说了，现在使用SPI扩展来加载具体的驱动，我们在Java中写连接数据库的代码的时候，不需要再使用<code>Class.forName(&quot;com.mysql.jdbc.Driver&quot;)</code>来加载驱动了，而是直接使用如下代码：</p>
-<pre><code class="java">String url = &quot;jdbc:xxxx://xxxx:xxxx/xxxx&quot;;
-Connection conn = DriverManager.getConnection(url,username,password);
-.....
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> <span class="string">&quot;jdbc:xxxx://xxxx:xxxx/xxxx&quot;</span>;</span><br><span class="line"><span class="type">Connection</span> <span class="variable">conn</span> <span class="operator">=</span> DriverManager.getConnection(url,username,password);</span><br><span class="line">.....</span><br></pre></td></tr></table></figure>
+
 <p>这里并没有涉及到spi的使用，接着看下面的解析。</p>
 <h4 id="源码实现"><a href="#源码实现" class="headerlink" title="源码实现"></a>源码实现</h4><p>上面的使用方法，就是我们普通的连接数据库的代码，并没有涉及到SPI的东西，但是有一点我们可以确定的是，我们没有写有关具体驱动的硬编码<code>Class.forName(&quot;com.mysql.jdbc.Driver&quot;)</code>！</p>
 <p>上面的代码可以直接获取数据库连接进行操作，但是跟SPI有啥关系呢？上面代码没有了加载驱动的代码，我们怎么去确定使用哪个数据库连接的驱动呢？这里就涉及到使用Java的SPI扩展机制来查找相关驱动的东西了，关于驱动的查找其实都在<code>DriverManager</code>中，<code>DriverManager</code>是Java中的实现，用来获取数据库连接，在<code>DriverManager</code>中有一个静态代码块如下：</p>
-<pre><code class="java">static &#123;
-    loadInitialDrivers();
-    println(&quot;JDBC DriverManager initialized&quot;);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    loadInitialDrivers();</span><br><span class="line">    println(<span class="string">&quot;JDBC DriverManager initialized&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>可以看到是加载实例化驱动的，接着看<code>loadInitialDrivers</code>方法：</p>
-<pre><code class="java">private static void loadInitialDrivers() &#123;
-    String drivers;
-    try &#123;
-        drivers = AccessController.doPrivileged(new PrivilegedAction&lt;String&gt;() &#123;
-            public String run() &#123;
-                return System.getProperty(&quot;jdbc.drivers&quot;);
-            &#125;
-        &#125;);
-    &#125; catch (Exception ex) &#123;
-        drivers = null;
-    &#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">loadInitialDrivers</span><span class="params">()</span> &#123;</span><br><span class="line">    String drivers;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        drivers = AccessController.doPrivileged(<span class="keyword">new</span> <span class="title class_">PrivilegedAction</span>&lt;String&gt;() &#123;</span><br><span class="line">            <span class="keyword">public</span> String <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> System.getProperty(<span class="string">&quot;jdbc.drivers&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">        drivers = <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    AccessController.doPrivileged(<span class="keyword">new</span> <span class="title class_">PrivilegedAction</span>&lt;Void&gt;() &#123;</span><br><span class="line">        <span class="keyword">public</span> Void <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">			<span class="comment">//使用SPI的ServiceLoader来加载接口的实现</span></span><br><span class="line">            ServiceLoader&lt;Driver&gt; loadedDrivers = ServiceLoader.load(Driver.class);</span><br><span class="line">            Iterator&lt;Driver&gt; driversIterator = loadedDrivers.iterator();</span><br><span class="line">            <span class="keyword">try</span>&#123;</span><br><span class="line">                <span class="keyword">while</span>(driversIterator.hasNext()) &#123;</span><br><span class="line">                    driversIterator.next();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span>(Throwable t) &#123;</span><br><span class="line">            <span class="comment">// Do nothing</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    println(<span class="string">&quot;DriverManager.initialize: jdbc.drivers = &quot;</span> + drivers);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (drivers == <span class="literal">null</span> || drivers.equals(<span class="string">&quot;&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    String[] driversList = drivers.split(<span class="string">&quot;:&quot;</span>);</span><br><span class="line">    println(<span class="string">&quot;number of Drivers:&quot;</span> + driversList.length);</span><br><span class="line">    <span class="keyword">for</span> (String aDriver : driversList) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            println(<span class="string">&quot;DriverManager.Initialize: loading &quot;</span> + aDriver);</span><br><span class="line">            Class.forName(aDriver, <span class="literal">true</span>,</span><br><span class="line">                    ClassLoader.getSystemClassLoader());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">            println(<span class="string">&quot;DriverManager.Initialize: load failed: &quot;</span> + ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    AccessController.doPrivileged(new PrivilegedAction&lt;Void&gt;() &#123;
-        public Void run() &#123;
-            //使用SPI的ServiceLoader来加载接口的实现
-            ServiceLoader&lt;Driver&gt; loadedDrivers = ServiceLoader.load(Driver.class);
-            Iterator&lt;Driver&gt; driversIterator = loadedDrivers.iterator();
-            try&#123;
-                while(driversIterator.hasNext()) &#123;
-                    driversIterator.next();
-                &#125;
-            &#125; catch(Throwable t) &#123;
-            // Do nothing
-            &#125;
-            return null;
-        &#125;
-    &#125;);
-
-    println(&quot;DriverManager.initialize: jdbc.drivers = &quot; + drivers);
-
-    if (drivers == null || drivers.equals(&quot;&quot;)) &#123;
-        return;
-    &#125;
-    String[] driversList = drivers.split(&quot;:&quot;);
-    println(&quot;number of Drivers:&quot; + driversList.length);
-    for (String aDriver : driversList) &#123;
-        try &#123;
-            println(&quot;DriverManager.Initialize: loading &quot; + aDriver);
-            Class.forName(aDriver, true,
-                    ClassLoader.getSystemClassLoader());
-        &#125; catch (Exception ex) &#123;
-            println(&quot;DriverManager.Initialize: load failed: &quot; + ex);
-        &#125;
-    &#125;
-&#125;
-</code></pre>
 <p>上面的代码主要步骤是：</p>
 <ul>
 <li>从系统变量中获取有关驱动的定义。</li>
@@ -539,17 +467,12 @@ Connection conn = DriverManager.getConnection(url,username,password);
 <li>根据第一步获取到的驱动列表来实例化具体实现类。</li>
 </ul>
 <p>我们主要关注2,3步，这两步是SPI的用法，首先看第二步，使用SPI来获取驱动的实现，对应的代码是：</p>
-<pre><code class="java">ServiceLoader&lt;Driver&gt; loadedDrivers = ServiceLoader.load(Driver.class);
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ServiceLoader&lt;Driver&gt; loadedDrivers = ServiceLoader.load(Driver.class);</span><br></pre></td></tr></table></figure>
+
 <p>这里没有去<code>META-INF/services</code>目录下查找配置文件，也没有加载具体实现类，做的事情就是封装了我们的接口类型和类加载器，并初始化了一个迭代器。</p>
 <p>接着看第三步，遍历使用SPI获取到的具体实现，实例化各个实现类，对应的代码如下：</p>
-<pre><code class="java">//获取迭代器
-Iterator&lt;Driver&gt; driversIterator = loadedDrivers.iterator();
-//遍历所有的驱动实现
-while(driversIterator.hasNext()) &#123;
-    driversIterator.next();
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//获取迭代器</span></span><br><span class="line">Iterator&lt;Driver&gt; driversIterator = loadedDrivers.iterator();</span><br><span class="line"><span class="comment">//遍历所有的驱动实现</span></span><br><span class="line"><span class="keyword">while</span>(driversIterator.hasNext()) &#123;</span><br><span class="line">    driversIterator.next();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>在遍历的时候，首先调用<code>driversIterator.hasNext()</code>方法，这里会搜索<code>classpath</code>下以及jar包中所有的<code>META-INF/services</code>目录下的<code>java.sql.Driver</code>文件，并找到文件中的实现类的名字，此时并没有实例化具体的实现类（<code>ServiceLoader</code>具体的源码实现在下面）。</p>
 <p>然后是调用<code>driversIterator.next();</code>方法，此时就会根据驱动名字具体实例化各个实现类了。现在驱动就被找到并实例化了。</p>
 <p>可以看下截图，我在测试项目中添加了两个jar包，<code>mysql-connector-java-6.0.6.jar</code>和<code>postgresql-42.0.0.0.jar</code>，跟踪到<code>DriverManager</code>中之后：</p>
@@ -559,247 +482,11 @@ while(driversIterator.hasNext()) &#123;
 <p>common-logging（也称Jakarta Commons Logging，缩写 JCL）是常用的日志库门面，具体日志库相关可以看这篇<a href="/2023/12/26/6-chang-yong-kai-fa-ku-ri-zhi-lei-ku-xiang-jie/" title="6.常用开发库 - 日志类库详解">常用开发库 - 日志类库详解</a>。我们看下它是怎么解耦的。</p>
 </blockquote>
 <p>首先，日志实例是通过<code>LogFactory</code>的<code>getLog(String)</code>方法创建的：</p>
-<pre><code class="java">public static getLog(Class clazz) throws LogConfigurationException &#123;
-    return getFactory().getInstance(clazz);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title function_">getLog</span><span class="params">(Class clazz)</span> <span class="keyword">throws</span> LogConfigurationException &#123;</span><br><span class="line">    <span class="keyword">return</span> getFactory().getInstance(clazz);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><code>LogFatory</code>是一个抽象类，它负责加载具体的日志实现，分析其<code>Factory.getFactory()</code>方法：</p>
-<pre><code class="java">public static org.apache.commons.logging.LogFactory getFactory() throws LogConfigurationException &#123;
-    // Identify the class loader we will be using
-    ClassLoader contextClassLoader = getContextClassLoaderInternal();
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> org.apache.commons.logging.LogFactory <span class="title function_">getFactory</span><span class="params">()</span> <span class="keyword">throws</span> LogConfigurationException &#123;</span><br><span class="line">    <span class="comment">// Identify the class loader we will be using</span></span><br><span class="line">    <span class="type">ClassLoader</span> <span class="variable">contextClassLoader</span> <span class="operator">=</span> getContextClassLoaderInternal();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (contextClassLoader == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// This is an odd enough situation to report about. This</span></span><br><span class="line">        <span class="comment">// output will be a nuisance on JDK1.1, as the system</span></span><br><span class="line">        <span class="comment">// classloader is null in that environment.</span></span><br><span class="line">        <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">            logDiagnostic(<span class="string">&quot;Context classloader is null.&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Return any previously registered factory for this class loader</span></span><br><span class="line">    org.apache.commons.logging.<span class="type">LogFactory</span> <span class="variable">factory</span> <span class="operator">=</span> getCachedFactory(contextClassLoader);</span><br><span class="line">    <span class="keyword">if</span> (factory != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> factory;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">        logDiagnostic(</span><br><span class="line">                <span class="string">&quot;[LOOKUP] LogFactory implementation requested for the first time for context classloader &quot;</span> +</span><br><span class="line">                        objectId(contextClassLoader));</span><br><span class="line">        logHierarchy(<span class="string">&quot;[LOOKUP] &quot;</span>, contextClassLoader);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Load properties file.</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">// If the properties file exists, then its contents are used as</span></span><br><span class="line">    <span class="comment">// &quot;attributes&quot; on the LogFactory implementation class. One particular</span></span><br><span class="line">    <span class="comment">// property may also control which LogFactory concrete subclass is</span></span><br><span class="line">    <span class="comment">// used, but only if other discovery mechanisms fail..</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">// As the properties file (if it exists) will be used one way or</span></span><br><span class="line">    <span class="comment">// another in the end we may as well look for it first.</span></span><br><span class="line">    <span class="comment">// classpath根目录下寻找commons-logging.properties</span></span><br><span class="line">    <span class="type">Properties</span> <span class="variable">props</span> <span class="operator">=</span> getConfigurationFile(contextClassLoader, FACTORY_PROPERTIES);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Determine whether we will be using the thread context class loader to</span></span><br><span class="line">    <span class="comment">// load logging classes or not by checking the loaded properties file (if any).</span></span><br><span class="line">    <span class="comment">// classpath根目录下commons-logging.properties是否配置use_tccl</span></span><br><span class="line">    <span class="type">ClassLoader</span> <span class="variable">baseClassLoader</span> <span class="operator">=</span> contextClassLoader;</span><br><span class="line">    <span class="keyword">if</span> (props != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">useTCCLStr</span> <span class="operator">=</span> props.getProperty(TCCL_KEY);</span><br><span class="line">        <span class="keyword">if</span> (useTCCLStr != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// The Boolean.valueOf(useTCCLStr).booleanValue() formulation</span></span><br><span class="line">            <span class="comment">// is required for Java 1.2 compatibility.</span></span><br><span class="line">            <span class="keyword">if</span> (Boolean.valueOf(useTCCLStr).booleanValue() == <span class="literal">false</span>) &#123;</span><br><span class="line">                <span class="comment">// Don&#x27;t use current context classloader when locating any</span></span><br><span class="line">                <span class="comment">// LogFactory or Log classes, just use the class that loaded</span></span><br><span class="line">                <span class="comment">// this abstract class. When this class is deployed in a shared</span></span><br><span class="line">                <span class="comment">// classpath of a container, it means webapps cannot deploy their</span></span><br><span class="line">                <span class="comment">// own logging implementations. It also means that it is up to the</span></span><br><span class="line">                <span class="comment">// implementation whether to load library-specific config files</span></span><br><span class="line">                <span class="comment">// from the TCCL or not.</span></span><br><span class="line">                baseClassLoader = thisClassLoader;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 这里真正开始决定使用哪个factory</span></span><br><span class="line">    <span class="comment">// 首先，尝试查找vm系统属性org.apache.commons.logging.LogFactory，其是否指定factory</span></span><br><span class="line">    <span class="comment">// Determine which concrete LogFactory subclass to use.</span></span><br><span class="line">    <span class="comment">// First, try a global system property</span></span><br><span class="line">    <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">        logDiagnostic(<span class="string">&quot;[LOOKUP] Looking for system property [&quot;</span> + FACTORY_PROPERTY +</span><br><span class="line">                <span class="string">&quot;] to define the LogFactory subclass to use...&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">factoryClass</span> <span class="operator">=</span> getSystemProperty(FACTORY_PROPERTY, <span class="literal">null</span>);</span><br><span class="line">        <span class="keyword">if</span> (factoryClass != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">                logDiagnostic(<span class="string">&quot;[LOOKUP] Creating an instance of LogFactory class &#x27;&quot;</span> + factoryClass +</span><br><span class="line">                        <span class="string">&quot;&#x27; as specified by system property &quot;</span> + FACTORY_PROPERTY);</span><br><span class="line">            &#125;</span><br><span class="line">            factory = newFactory(factoryClass, baseClassLoader, contextClassLoader);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">                logDiagnostic(<span class="string">&quot;[LOOKUP] No system property [&quot;</span> + FACTORY_PROPERTY + <span class="string">&quot;] defined.&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (SecurityException e) &#123;</span><br><span class="line">        <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">            logDiagnostic(<span class="string">&quot;[LOOKUP] A security exception occurred while trying to create an&quot;</span> +</span><br><span class="line">                    <span class="string">&quot; instance of the custom factory class&quot;</span> + <span class="string">&quot;: [&quot;</span> + trim(e.getMessage()) +</span><br><span class="line">                    <span class="string">&quot;]. Trying alternative implementations...&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// ignore</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (RuntimeException e) &#123;</span><br><span class="line">        <span class="comment">// This is not consistent with the behaviour when a bad LogFactory class is</span></span><br><span class="line">        <span class="comment">// specified in a services file.</span></span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        <span class="comment">// One possible exception that can occur here is a ClassCastException when</span></span><br><span class="line">        <span class="comment">// the specified class wasn&#x27;t castable to this LogFactory type.</span></span><br><span class="line">        <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">            logDiagnostic(<span class="string">&quot;[LOOKUP] An exception occurred while trying to create an&quot;</span> +</span><br><span class="line">                    <span class="string">&quot; instance of the custom factory class&quot;</span> + <span class="string">&quot;: [&quot;</span> +</span><br><span class="line">                    trim(e.getMessage()) +</span><br><span class="line">                    <span class="string">&quot;] as specified by a system property.&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> e;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 第二，尝试使用java spi服务发现机制，载META-INF/services下寻找org.apache.commons.logging.LogFactory实现</span></span><br><span class="line">    <span class="comment">// Second, try to find a service by using the JDK1.3 class</span></span><br><span class="line">    <span class="comment">// discovery mechanism, which involves putting a file with the name</span></span><br><span class="line">    <span class="comment">// of an interface class in the META-INF/services directory, where the</span></span><br><span class="line">    <span class="comment">// contents of the file is a single line specifying a concrete class</span></span><br><span class="line">    <span class="comment">// that implements the desired interface.</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (factory == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">            logDiagnostic(<span class="string">&quot;[LOOKUP] Looking for a resource file of name [&quot;</span> + SERVICE_ID +</span><br><span class="line">                    <span class="string">&quot;] to define the LogFactory subclass to use...&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// META-INF/services/org.apache.commons.logging.LogFactory, SERVICE_ID</span></span><br><span class="line">            <span class="keyword">final</span> <span class="type">InputStream</span> <span class="variable">is</span> <span class="operator">=</span> getResourceAsStream(contextClassLoader, SERVICE_ID);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (is != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="comment">// This code is needed by EBCDIC and other strange systems.</span></span><br><span class="line">                <span class="comment">// It&#x27;s a fix for bugs reported in xerces</span></span><br><span class="line">                BufferedReader rd;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    rd = <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(is, <span class="string">&quot;UTF-8&quot;</span>));</span><br><span class="line">                &#125; <span class="keyword">catch</span> (java.io.UnsupportedEncodingException e) &#123;</span><br><span class="line">                    rd = <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(is));</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="type">String</span> <span class="variable">factoryClassName</span> <span class="operator">=</span> rd.readLine();</span><br><span class="line">                rd.close();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (factoryClassName != <span class="literal">null</span> &amp;&amp; !<span class="string">&quot;&quot;</span>.equals(factoryClassName)) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">                        logDiagnostic(<span class="string">&quot;[LOOKUP]  Creating an instance of LogFactory class &quot;</span> +</span><br><span class="line">                                factoryClassName +</span><br><span class="line">                                <span class="string">&quot; as specified by file &#x27;&quot;</span> + SERVICE_ID +</span><br><span class="line">                                <span class="string">&quot;&#x27; which was present in the path of the context classloader.&quot;</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                    factory = newFactory(factoryClassName, baseClassLoader, contextClassLoader);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// is == null</span></span><br><span class="line">                <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">                    logDiagnostic(<span class="string">&quot;[LOOKUP] No resource file with name &#x27;&quot;</span> + SERVICE_ID + <span class="string">&quot;&#x27; found.&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">            <span class="comment">// note: if the specified LogFactory class wasn&#x27;t compatible with LogFactory</span></span><br><span class="line">            <span class="comment">// for some reason, a ClassCastException will be caught here, and attempts will</span></span><br><span class="line">            <span class="comment">// continue to find a compatible class.</span></span><br><span class="line">            <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">                logDiagnostic(</span><br><span class="line">                        <span class="string">&quot;[LOOKUP] A security exception occurred while trying to create an&quot;</span> +</span><br><span class="line">                                <span class="string">&quot; instance of the custom factory class&quot;</span> +</span><br><span class="line">                                <span class="string">&quot;: [&quot;</span> + trim(ex.getMessage()) +</span><br><span class="line">                                <span class="string">&quot;]. Trying alternative implementations...&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// ignore</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 第三，尝试从classpath根目录下的commons-logging.properties中查找org.apache.commons.logging.LogFactory属性指定的factory</span></span><br><span class="line">    <span class="comment">// Third try looking into the properties file read earlier (if found)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (factory == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (props != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">                logDiagnostic(</span><br><span class="line">                        <span class="string">&quot;[LOOKUP] Looking in properties file for entry with key &#x27;&quot;</span> + FACTORY_PROPERTY +</span><br><span class="line">                                <span class="string">&quot;&#x27; to define the LogFactory subclass to use...&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">String</span> <span class="variable">factoryClass</span> <span class="operator">=</span> props.getProperty(FACTORY_PROPERTY);</span><br><span class="line">            <span class="keyword">if</span> (factoryClass != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">                    logDiagnostic(</span><br><span class="line">                            <span class="string">&quot;[LOOKUP] Properties file specifies LogFactory subclass &#x27;&quot;</span> + factoryClass + <span class="string">&quot;&#x27;&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                factory = newFactory(factoryClass, baseClassLoader, contextClassLoader);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// <span class="doctag">TODO:</span> think about whether we need to handle exceptions from newFactory</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">                    logDiagnostic(<span class="string">&quot;[LOOKUP] Properties file has no entry specifying LogFactory subclass.&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">                logDiagnostic(<span class="string">&quot;[LOOKUP] No properties file available to determine&quot;</span> + <span class="string">&quot; LogFactory subclass from..&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 最后，使用后备factory实现，org.apache.commons.logging.impl.LogFactoryImpl</span></span><br><span class="line">    <span class="comment">// Fourth, try the fallback implementation class</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (factory == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (isDiagnosticsEnabled()) &#123;</span><br><span class="line">            logDiagnostic(</span><br><span class="line">                    <span class="string">&quot;[LOOKUP] Loading the default LogFactory implementation &#x27;&quot;</span> + FACTORY_DEFAULT +</span><br><span class="line">                            <span class="string">&quot;&#x27; via the same classloader that loaded this LogFactory&quot;</span> +</span><br><span class="line">                            <span class="string">&quot; class (ie not looking in the context classloader).&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Note: unlike the above code which can try to load custom LogFactory</span></span><br><span class="line">        <span class="comment">// implementations via the TCCL, we don&#x27;t try to load the default LogFactory</span></span><br><span class="line">        <span class="comment">// implementation via the context classloader because:</span></span><br><span class="line">        <span class="comment">// * that can cause problems (see comments in newFactory method)</span></span><br><span class="line">        <span class="comment">// * no-one should be customising the code of the default class</span></span><br><span class="line">        <span class="comment">// Yes, we do give up the ability for the child to ship a newer</span></span><br><span class="line">        <span class="comment">// version of the LogFactoryImpl class and have it used dynamically</span></span><br><span class="line">        <span class="comment">// by an old LogFactory class in the parent, but that isn&#x27;t</span></span><br><span class="line">        <span class="comment">// necessarily a good idea anyway.</span></span><br><span class="line">        factory = newFactory(FACTORY_DEFAULT, thisClassLoader, contextClassLoader);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (factory != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">            * Always cache using context class loader.</span></span><br><span class="line"><span class="comment">            */</span></span><br><span class="line">        cacheFactory(contextClassLoader, factory);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (props != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="type">Enumeration</span> <span class="variable">names</span> <span class="operator">=</span> props.propertyNames();</span><br><span class="line">            <span class="keyword">while</span> (names.hasMoreElements()) &#123;</span><br><span class="line">                <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> (String) names.nextElement();</span><br><span class="line">                <span class="type">String</span> <span class="variable">value</span> <span class="operator">=</span> props.getProperty(name);</span><br><span class="line">                factory.setAttribute(name, value);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> factory;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    if (contextClassLoader == null) &#123;
-        // This is an odd enough situation to report about. This
-        // output will be a nuisance on JDK1.1, as the system
-        // classloader is null in that environment.
-        if (isDiagnosticsEnabled()) &#123;
-            logDiagnostic(&quot;Context classloader is null.&quot;);
-        &#125;
-    &#125;
-
-    // Return any previously registered factory for this class loader
-    org.apache.commons.logging.LogFactory factory = getCachedFactory(contextClassLoader);
-    if (factory != null) &#123;
-        return factory;
-    &#125;
-
-    if (isDiagnosticsEnabled()) &#123;
-        logDiagnostic(
-                &quot;[LOOKUP] LogFactory implementation requested for the first time for context classloader &quot; +
-                        objectId(contextClassLoader));
-        logHierarchy(&quot;[LOOKUP] &quot;, contextClassLoader);
-    &#125;
-
-    // Load properties file.
-    //
-    // If the properties file exists, then its contents are used as
-    // &quot;attributes&quot; on the LogFactory implementation class. One particular
-    // property may also control which LogFactory concrete subclass is
-    // used, but only if other discovery mechanisms fail..
-    //
-    // As the properties file (if it exists) will be used one way or
-    // another in the end we may as well look for it first.
-    // classpath根目录下寻找commons-logging.properties
-    Properties props = getConfigurationFile(contextClassLoader, FACTORY_PROPERTIES);
-
-    // Determine whether we will be using the thread context class loader to
-    // load logging classes or not by checking the loaded properties file (if any).
-    // classpath根目录下commons-logging.properties是否配置use_tccl
-    ClassLoader baseClassLoader = contextClassLoader;
-    if (props != null) &#123;
-        String useTCCLStr = props.getProperty(TCCL_KEY);
-        if (useTCCLStr != null) &#123;
-            // The Boolean.valueOf(useTCCLStr).booleanValue() formulation
-            // is required for Java 1.2 compatibility.
-            if (Boolean.valueOf(useTCCLStr).booleanValue() == false) &#123;
-                // Don&#39;t use current context classloader when locating any
-                // LogFactory or Log classes, just use the class that loaded
-                // this abstract class. When this class is deployed in a shared
-                // classpath of a container, it means webapps cannot deploy their
-                // own logging implementations. It also means that it is up to the
-                // implementation whether to load library-specific config files
-                // from the TCCL or not.
-                baseClassLoader = thisClassLoader;
-            &#125;
-        &#125;
-    &#125;
-
-    // 这里真正开始决定使用哪个factory
-    // 首先，尝试查找vm系统属性org.apache.commons.logging.LogFactory，其是否指定factory
-    // Determine which concrete LogFactory subclass to use.
-    // First, try a global system property
-    if (isDiagnosticsEnabled()) &#123;
-        logDiagnostic(&quot;[LOOKUP] Looking for system property [&quot; + FACTORY_PROPERTY +
-                &quot;] to define the LogFactory subclass to use...&quot;);
-    &#125;
-
-    try &#123;
-        String factoryClass = getSystemProperty(FACTORY_PROPERTY, null);
-        if (factoryClass != null) &#123;
-            if (isDiagnosticsEnabled()) &#123;
-                logDiagnostic(&quot;[LOOKUP] Creating an instance of LogFactory class &#39;&quot; + factoryClass +
-                        &quot;&#39; as specified by system property &quot; + FACTORY_PROPERTY);
-            &#125;
-            factory = newFactory(factoryClass, baseClassLoader, contextClassLoader);
-        &#125; else &#123;
-            if (isDiagnosticsEnabled()) &#123;
-                logDiagnostic(&quot;[LOOKUP] No system property [&quot; + FACTORY_PROPERTY + &quot;] defined.&quot;);
-            &#125;
-        &#125;
-    &#125; catch (SecurityException e) &#123;
-        if (isDiagnosticsEnabled()) &#123;
-            logDiagnostic(&quot;[LOOKUP] A security exception occurred while trying to create an&quot; +
-                    &quot; instance of the custom factory class&quot; + &quot;: [&quot; + trim(e.getMessage()) +
-                    &quot;]. Trying alternative implementations...&quot;);
-        &#125;
-        // ignore
-    &#125; catch (RuntimeException e) &#123;
-        // This is not consistent with the behaviour when a bad LogFactory class is
-        // specified in a services file.
-        //
-        // One possible exception that can occur here is a ClassCastException when
-        // the specified class wasn&#39;t castable to this LogFactory type.
-        if (isDiagnosticsEnabled()) &#123;
-            logDiagnostic(&quot;[LOOKUP] An exception occurred while trying to create an&quot; +
-                    &quot; instance of the custom factory class&quot; + &quot;: [&quot; +
-                    trim(e.getMessage()) +
-                    &quot;] as specified by a system property.&quot;);
-        &#125;
-        throw e;
-    &#125;
-
-    // 第二，尝试使用java spi服务发现机制，载META-INF/services下寻找org.apache.commons.logging.LogFactory实现
-    // Second, try to find a service by using the JDK1.3 class
-    // discovery mechanism, which involves putting a file with the name
-    // of an interface class in the META-INF/services directory, where the
-    // contents of the file is a single line specifying a concrete class
-    // that implements the desired interface.
-
-    if (factory == null) &#123;
-        if (isDiagnosticsEnabled()) &#123;
-            logDiagnostic(&quot;[LOOKUP] Looking for a resource file of name [&quot; + SERVICE_ID +
-                    &quot;] to define the LogFactory subclass to use...&quot;);
-        &#125;
-        try &#123;
-            // META-INF/services/org.apache.commons.logging.LogFactory, SERVICE_ID
-            final InputStream is = getResourceAsStream(contextClassLoader, SERVICE_ID);
-
-            if (is != null) &#123;
-                // This code is needed by EBCDIC and other strange systems.
-                // It&#39;s a fix for bugs reported in xerces
-                BufferedReader rd;
-                try &#123;
-                    rd = new BufferedReader(new InputStreamReader(is, &quot;UTF-8&quot;));
-                &#125; catch (java.io.UnsupportedEncodingException e) &#123;
-                    rd = new BufferedReader(new InputStreamReader(is));
-                &#125;
-
-                String factoryClassName = rd.readLine();
-                rd.close();
-
-                if (factoryClassName != null &amp;&amp; !&quot;&quot;.equals(factoryClassName)) &#123;
-                    if (isDiagnosticsEnabled()) &#123;
-                        logDiagnostic(&quot;[LOOKUP]  Creating an instance of LogFactory class &quot; +
-                                factoryClassName +
-                                &quot; as specified by file &#39;&quot; + SERVICE_ID +
-                                &quot;&#39; which was present in the path of the context classloader.&quot;);
-                    &#125;
-                    factory = newFactory(factoryClassName, baseClassLoader, contextClassLoader);
-                &#125;
-            &#125; else &#123;
-                // is == null
-                if (isDiagnosticsEnabled()) &#123;
-                    logDiagnostic(&quot;[LOOKUP] No resource file with name &#39;&quot; + SERVICE_ID + &quot;&#39; found.&quot;);
-                &#125;
-            &#125;
-        &#125; catch (Exception ex) &#123;
-            // note: if the specified LogFactory class wasn&#39;t compatible with LogFactory
-            // for some reason, a ClassCastException will be caught here, and attempts will
-            // continue to find a compatible class.
-            if (isDiagnosticsEnabled()) &#123;
-                logDiagnostic(
-                        &quot;[LOOKUP] A security exception occurred while trying to create an&quot; +
-                                &quot; instance of the custom factory class&quot; +
-                                &quot;: [&quot; + trim(ex.getMessage()) +
-                                &quot;]. Trying alternative implementations...&quot;);
-            &#125;
-            // ignore
-        &#125;
-    &#125;
-
-    // 第三，尝试从classpath根目录下的commons-logging.properties中查找org.apache.commons.logging.LogFactory属性指定的factory
-    // Third try looking into the properties file read earlier (if found)
-
-    if (factory == null) &#123;
-        if (props != null) &#123;
-            if (isDiagnosticsEnabled()) &#123;
-                logDiagnostic(
-                        &quot;[LOOKUP] Looking in properties file for entry with key &#39;&quot; + FACTORY_PROPERTY +
-                                &quot;&#39; to define the LogFactory subclass to use...&quot;);
-            &#125;
-            String factoryClass = props.getProperty(FACTORY_PROPERTY);
-            if (factoryClass != null) &#123;
-                if (isDiagnosticsEnabled()) &#123;
-                    logDiagnostic(
-                            &quot;[LOOKUP] Properties file specifies LogFactory subclass &#39;&quot; + factoryClass + &quot;&#39;&quot;);
-                &#125;
-                factory = newFactory(factoryClass, baseClassLoader, contextClassLoader);
-
-                // TODO: think about whether we need to handle exceptions from newFactory
-            &#125; else &#123;
-                if (isDiagnosticsEnabled()) &#123;
-                    logDiagnostic(&quot;[LOOKUP] Properties file has no entry specifying LogFactory subclass.&quot;);
-                &#125;
-            &#125;
-        &#125; else &#123;
-            if (isDiagnosticsEnabled()) &#123;
-                logDiagnostic(&quot;[LOOKUP] No properties file available to determine&quot; + &quot; LogFactory subclass from..&quot;);
-            &#125;
-        &#125;
-    &#125;
-
-    // 最后，使用后备factory实现，org.apache.commons.logging.impl.LogFactoryImpl
-    // Fourth, try the fallback implementation class
-
-    if (factory == null) &#123;
-        if (isDiagnosticsEnabled()) &#123;
-            logDiagnostic(
-                    &quot;[LOOKUP] Loading the default LogFactory implementation &#39;&quot; + FACTORY_DEFAULT +
-                            &quot;&#39; via the same classloader that loaded this LogFactory&quot; +
-                            &quot; class (ie not looking in the context classloader).&quot;);
-        &#125;
-
-        // Note: unlike the above code which can try to load custom LogFactory
-        // implementations via the TCCL, we don&#39;t try to load the default LogFactory
-        // implementation via the context classloader because:
-        // * that can cause problems (see comments in newFactory method)
-        // * no-one should be customising the code of the default class
-        // Yes, we do give up the ability for the child to ship a newer
-        // version of the LogFactoryImpl class and have it used dynamically
-        // by an old LogFactory class in the parent, but that isn&#39;t
-        // necessarily a good idea anyway.
-        factory = newFactory(FACTORY_DEFAULT, thisClassLoader, contextClassLoader);
-    &#125;
-
-    if (factory != null) &#123;
-        /**
-            * Always cache using context class loader.
-            */
-        cacheFactory(contextClassLoader, factory);
-
-        if (props != null) &#123;
-            Enumeration names = props.propertyNames();
-            while (names.hasMoreElements()) &#123;
-                String name = (String) names.nextElement();
-                String value = props.getProperty(name);
-                factory.setAttribute(name, value);
-            &#125;
-        &#125;
-    &#125;
-
-    return factory;
-&#125;
-</code></pre>
 <p>可以看出，抽象类<code>LogFactory</code>加载具体实现的步骤如下：</p>
 <ul>
 <li>从vm系统属性<code>org.apache.commons.logging.LogFactory</code></li>
@@ -823,27 +510,8 @@ while(driversIterator.hasNext()) &#123;
 <p>当eclipse启动时，会遍历plugins文件夹中的目录，扫描每个插件的清单文件<code>MANIFEST.MF</code>，并建立一个内部模型来记录它所找到的每个插件的信息，就实现了动态添加新的插件。</p>
 <p>这也意味着是eclipse制定了一系列的规则，像是文件结构、类型、参数等。插件开发者遵循这些规则去开发自己的插件，eclipse并不需要知道插件具体是怎样开发的，只需要在启动的时候根据配置文件解析、加载到系统里就好了，是spi思想的一种体现。</p>
 <h3 id="SPI机制-Spring中SPI机制"><a href="#SPI机制-Spring中SPI机制" class="headerlink" title="SPI机制 - Spring中SPI机制"></a>SPI机制 - Spring中SPI机制</h3><p>在springboot的自动装配过程中，最终会加载<code>META-INF/spring.factories</code>文件，而加载的过程是由<code>SpringFactoriesLoader</code>加载的。从CLASSPATH下的每个Jar包中搜寻所有<code>META-INF/spring.factories</code>配置文件，然后将解析<code>properties</code>文件，找到指定名称的配置后返回。需要注意的是，其实这里不仅仅是会去ClassPath路径下查找，会扫描所有路径下的Jar包，只不过这个文件只会在Classpath下的jar包中。</p>
-<pre><code class="java">public static final String FACTORIES_RESOURCE_LOCATION = &quot;META-INF/spring.factories&quot;;
-// spring.factories文件的格式为：key=value1,value2,value3
-// 从所有的jar包中找到META-INF/spring.factories文件
-// 然后从文件中解析出key=factoryClass类名称的所有value值
-public static List&lt;String&gt; loadFactoryNames(Class&lt;?&gt; factoryClass, ClassLoader classLoader) &#123;
-    String factoryClassName = factoryClass.getName();
-    // 取得资源文件的URL
-    Enumeration&lt;URL&gt; urls = (classLoader != null ? classLoader.getResources(FACTORIES_RESOURCE_LOCATION) : ClassLoader.getSystemResources(FACTORIES_RESOURCE_LOCATION));
-    List&lt;String&gt; result = new ArrayList&lt;String&gt;();
-    // 遍历所有的URL
-    while (urls.hasMoreElements()) &#123;
-        URL url = urls.nextElement();
-        // 根据资源文件URL解析properties文件，得到对应的一组@Configuration类
-        Properties properties = PropertiesLoaderUtils.loadProperties(new UrlResource(url));
-        String factoryClassNames = properties.getProperty(factoryClassName);
-        // 组装数据，并返回
-        result.addAll(Arrays.asList(StringUtils.commaDelimitedListToStringArray(factoryClassNames)));
-    &#125;
-    return result;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">FACTORIES_RESOURCE_LOCATION</span> <span class="operator">=</span> <span class="string">&quot;META-INF/spring.factories&quot;</span>;</span><br><span class="line"><span class="comment">// spring.factories文件的格式为：key=value1,value2,value3</span></span><br><span class="line"><span class="comment">// 从所有的jar包中找到META-INF/spring.factories文件</span></span><br><span class="line"><span class="comment">// 然后从文件中解析出key=factoryClass类名称的所有value值</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> List&lt;String&gt; <span class="title function_">loadFactoryNames</span><span class="params">(Class&lt;?&gt; factoryClass, ClassLoader classLoader)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">factoryClassName</span> <span class="operator">=</span> factoryClass.getName();</span><br><span class="line">    <span class="comment">// 取得资源文件的URL</span></span><br><span class="line">    Enumeration&lt;URL&gt; urls = (classLoader != <span class="literal">null</span> ? classLoader.getResources(FACTORIES_RESOURCE_LOCATION) : ClassLoader.getSystemResources(FACTORIES_RESOURCE_LOCATION));</span><br><span class="line">    List&lt;String&gt; result = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;();</span><br><span class="line">    <span class="comment">// 遍历所有的URL</span></span><br><span class="line">    <span class="keyword">while</span> (urls.hasMoreElements()) &#123;</span><br><span class="line">        <span class="type">URL</span> <span class="variable">url</span> <span class="operator">=</span> urls.nextElement();</span><br><span class="line">        <span class="comment">// 根据资源文件URL解析properties文件，得到对应的一组@Configuration类</span></span><br><span class="line">        <span class="type">Properties</span> <span class="variable">properties</span> <span class="operator">=</span> PropertiesLoaderUtils.loadProperties(<span class="keyword">new</span> <span class="title class_">UrlResource</span>(url));</span><br><span class="line">        <span class="type">String</span> <span class="variable">factoryClassNames</span> <span class="operator">=</span> properties.getProperty(factoryClassName);</span><br><span class="line">        <span class="comment">// 组装数据，并返回</span></span><br><span class="line">        result.addAll(Arrays.asList(StringUtils.commaDelimitedListToStringArray(factoryClassNames)));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h2 id="SPI机制深入理解"><a href="#SPI机制深入理解" class="headerlink" title="SPI机制深入理解"></a>SPI机制深入理解</h2><blockquote>
 <p>提示</p>
 <p>接下来，我们深入理解下SPI相关内容</p>
@@ -859,15 +527,8 @@ public static List&lt;String&gt; loadFactoryNames(Class&lt;?&gt; factoryClass, C
 <p>在<code>META-INF/services</code>目录下定义一个名字为接口全限定名的文件，比如<code>java.sql.Driver</code>文件，文件内容是具体的实现名字，比如<code>me.cxis.sql.MyDriver</code>。</p>
 <p>写具体的实现<code>me.cxis.sql.MyDriver</code>，都是对接口Driver的实现。</p>
 <h4 id="程序猿使用"><a href="#程序猿使用" class="headerlink" title="程序猿使用"></a>程序猿使用</h4><p>我们会引用具体厂商的jar包来实现我们的功能：</p>
-<pre><code class="java">ServiceLoader&lt;Driver&gt; loadedDrivers = ServiceLoader.load(Driver.class);
-//获取迭代器
-Iterator&lt;Driver&gt; driversIterator = loadedDrivers.iterator();
-//遍历
-while(driversIterator.hasNext()) &#123;
-    driversIterator.next();
-    //可以做具体的业务逻辑
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ServiceLoader&lt;Driver&gt; loadedDrivers = ServiceLoader.load(Driver.class);</span><br><span class="line"><span class="comment">//获取迭代器</span></span><br><span class="line">Iterator&lt;Driver&gt; driversIterator = loadedDrivers.iterator();</span><br><span class="line"><span class="comment">//遍历</span></span><br><span class="line"><span class="keyword">while</span>(driversIterator.hasNext()) &#123;</span><br><span class="line">    driversIterator.next();</span><br><span class="line">    <span class="comment">//可以做具体的业务逻辑</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h4 id="使用规范"><a href="#使用规范" class="headerlink" title="使用规范"></a>使用规范</h4><p>最后总结一下jdk spi需要遵循的规范</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261813798.jpg" alt="img"></p>
 <h3 id="SPI和API的区别是什么"><a href="#SPI和API的区别是什么" class="headerlink" title="SPI和API的区别是什么"></a>SPI和API的区别是什么</h3><blockquote>
@@ -898,266 +559,8 @@ while(driversIterator.hasNext()) &#123;
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261813860.jpg"></p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261813221.png" alt="img"></p>
 <h3 id="SPI机制实现原理"><a href="#SPI机制实现原理" class="headerlink" title="SPI机制实现原理"></a>SPI机制实现原理</h3><p>不妨看下JDK中<code>ServiceLoader&lt;S&gt;</code>方法的具体实现：</p>
-<pre><code class="java">//ServiceLoader实现了Iterable接口，可以遍历所有的服务实现者
-public final class ServiceLoader&lt;S&gt;
-    implements Iterable&lt;S&gt;
-&#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ServiceLoader实现了Iterable接口，可以遍历所有的服务实现者</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">ServiceLoader</span>&lt;S&gt;</span><br><span class="line">    <span class="keyword">implements</span> <span class="title class_">Iterable</span>&lt;S&gt;</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//查找配置文件的目录</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">PREFIX</span> <span class="operator">=</span> <span class="string">&quot;META-INF/services/&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//表示要被加载的服务的类或接口</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Class&lt;S&gt; service;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//这个ClassLoader用来定位，加载，实例化服务提供者</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ClassLoader loader;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 访问控制上下文</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AccessControlContext acc;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 缓存已经被实例化的服务提供者，按照实例化的顺序存储</span></span><br><span class="line">    <span class="keyword">private</span> LinkedHashMap&lt;String,S&gt; providers = <span class="keyword">new</span> <span class="title class_">LinkedHashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 迭代器</span></span><br><span class="line">    <span class="keyword">private</span> LazyIterator lookupIterator;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//重新加载，就相当于重新创建ServiceLoader了，用于新的服务提供者安装到正在运行的Java虚拟机中的情况。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">reload</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">//清空缓存中所有已实例化的服务提供者</span></span><br><span class="line">        providers.clear();</span><br><span class="line">        <span class="comment">//新建一个迭代器，该迭代器会从头查找和实例化服务提供者</span></span><br><span class="line">        lookupIterator = <span class="keyword">new</span> <span class="title class_">LazyIterator</span>(service, loader);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//私有构造器</span></span><br><span class="line">    <span class="comment">//使用指定的类加载器和服务创建服务加载器</span></span><br><span class="line">    <span class="comment">//如果没有指定类加载器，使用系统类加载器，就是应用类加载器。</span></span><br><span class="line">    <span class="keyword">private</span> <span class="title function_">ServiceLoader</span><span class="params">(Class&lt;S&gt; svc, ClassLoader cl)</span> &#123;</span><br><span class="line">        service = Objects.requireNonNull(svc, <span class="string">&quot;Service interface cannot be null&quot;</span>);</span><br><span class="line">        loader = (cl == <span class="literal">null</span>) ? ClassLoader.getSystemClassLoader() : cl;</span><br><span class="line">        acc = (System.getSecurityManager() != <span class="literal">null</span>) ? AccessController.getContext() : <span class="literal">null</span>;</span><br><span class="line">        reload();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//解析失败处理的方法</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">fail</span><span class="params">(Class&lt;?&gt; service, String msg, Throwable cause)</span></span><br><span class="line">        <span class="keyword">throws</span> ServiceConfigurationError</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ServiceConfigurationError</span>(service.getName() + <span class="string">&quot;: &quot;</span> + msg,</span><br><span class="line">                                            cause);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">fail</span><span class="params">(Class&lt;?&gt; service, String msg)</span></span><br><span class="line">        <span class="keyword">throws</span> ServiceConfigurationError</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ServiceConfigurationError</span>(service.getName() + <span class="string">&quot;: &quot;</span> + msg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">fail</span><span class="params">(Class&lt;?&gt; service, URL u, <span class="type">int</span> line, String msg)</span></span><br><span class="line">        <span class="keyword">throws</span> ServiceConfigurationError</span><br><span class="line">    &#123;</span><br><span class="line">        fail(service, u + <span class="string">&quot;:&quot;</span> + line + <span class="string">&quot;: &quot;</span> + msg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//解析服务提供者配置文件中的一行</span></span><br><span class="line">    <span class="comment">//首先去掉注释校验，然后保存</span></span><br><span class="line">    <span class="comment">//返回下一行行号</span></span><br><span class="line">    <span class="comment">//重复的配置项和已经被实例化的配置项不会被保存</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">parseLine</span><span class="params">(Class&lt;?&gt; service, URL u, BufferedReader r, <span class="type">int</span> lc,</span></span><br><span class="line"><span class="params">                          List&lt;String&gt; names)</span></span><br><span class="line">        <span class="keyword">throws</span> IOException, ServiceConfigurationError</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//读取一行</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">ln</span> <span class="operator">=</span> r.readLine();</span><br><span class="line">        <span class="keyword">if</span> (ln == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//#号代表注释行</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">ci</span> <span class="operator">=</span> ln.indexOf(<span class="string">&#x27;#&#x27;</span>);</span><br><span class="line">        <span class="keyword">if</span> (ci &gt;= <span class="number">0</span>) ln = ln.substring(<span class="number">0</span>, ci);</span><br><span class="line">        ln = ln.trim();</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> ln.length();</span><br><span class="line">        <span class="keyword">if</span> (n != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((ln.indexOf(<span class="string">&#x27; &#x27;</span>) &gt;= <span class="number">0</span>) || (ln.indexOf(<span class="string">&#x27;\t&#x27;</span>) &gt;= <span class="number">0</span>))</span><br><span class="line">                fail(service, u, lc, <span class="string">&quot;Illegal configuration-file syntax&quot;</span>);</span><br><span class="line">            <span class="type">int</span> <span class="variable">cp</span> <span class="operator">=</span> ln.codePointAt(<span class="number">0</span>);</span><br><span class="line">            <span class="keyword">if</span> (!Character.isJavaIdentifierStart(cp))</span><br><span class="line">                fail(service, u, lc, <span class="string">&quot;Illegal provider-class name: &quot;</span> + ln);</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> Character.charCount(cp); i &lt; n; i += Character.charCount(cp)) &#123;</span><br><span class="line">                cp = ln.codePointAt(i);</span><br><span class="line">                <span class="keyword">if</span> (!Character.isJavaIdentifierPart(cp) &amp;&amp; (cp != <span class="string">&#x27;.&#x27;</span>))</span><br><span class="line">                    fail(service, u, lc, <span class="string">&quot;Illegal provider-class name: &quot;</span> + ln);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!providers.containsKey(ln) &amp;&amp; !names.contains(ln))</span><br><span class="line">                names.add(ln);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> lc + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//解析配置文件，解析指定的url配置文件</span></span><br><span class="line">    <span class="comment">//使用parseLine方法进行解析，未被实例化的服务提供者会被保存到缓存中去</span></span><br><span class="line">    <span class="keyword">private</span> Iterator&lt;String&gt; <span class="title function_">parse</span><span class="params">(Class&lt;?&gt; service, URL u)</span></span><br><span class="line">        <span class="keyword">throws</span> ServiceConfigurationError</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">InputStream</span> <span class="variable">in</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">BufferedReader</span> <span class="variable">r</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        ArrayList&lt;String&gt; names = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            in = u.openStream();</span><br><span class="line">            r = <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(in, <span class="string">&quot;utf-8&quot;</span>));</span><br><span class="line">            <span class="type">int</span> <span class="variable">lc</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">while</span> ((lc = parseLine(service, u, r, lc, names)) &gt;= <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> names.iterator();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//服务提供者查找的迭代器</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">LazyIterator</span></span><br><span class="line">        <span class="keyword">implements</span> <span class="title class_">Iterator</span>&lt;S&gt;</span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        Class&lt;S&gt; service;<span class="comment">//服务提供者接口</span></span><br><span class="line">        ClassLoader loader;<span class="comment">//类加载器</span></span><br><span class="line">        Enumeration&lt;URL&gt; configs = <span class="literal">null</span>;<span class="comment">//保存实现类的url</span></span><br><span class="line">        Iterator&lt;String&gt; pending = <span class="literal">null</span>;<span class="comment">//保存实现类的全名</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">nextName</span> <span class="operator">=</span> <span class="literal">null</span>;<span class="comment">//迭代器中下一个实现类的全名</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="title function_">LazyIterator</span><span class="params">(Class&lt;S&gt; service, ClassLoader loader)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.service = service;</span><br><span class="line">            <span class="built_in">this</span>.loader = loader;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">hasNextService</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (nextName != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (configs == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="type">String</span> <span class="variable">fullName</span> <span class="operator">=</span> PREFIX + service.getName();</span><br><span class="line">                    <span class="keyword">if</span> (loader == <span class="literal">null</span>)</span><br><span class="line">                        configs = ClassLoader.getSystemResources(fullName);</span><br><span class="line">                    <span class="keyword">else</span></span><br><span class="line">                        configs = loader.getResources(fullName);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span> ((pending == <span class="literal">null</span>) || !pending.hasNext()) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!configs.hasMoreElements()) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                pending = parse(service, configs.nextElement());</span><br><span class="line">            &#125;</span><br><span class="line">            nextName = pending.next();</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> S <span class="title function_">nextService</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!hasNextService())</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NoSuchElementException</span>();</span><br><span class="line">            <span class="type">String</span> <span class="variable">cn</span> <span class="operator">=</span> nextName;</span><br><span class="line">            nextName = <span class="literal">null</span>;</span><br><span class="line">            Class&lt;?&gt; c = <span class="literal">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                c = Class.forName(cn, <span class="literal">false</span>, loader);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!service.isAssignableFrom(c)) &#123;</span><br><span class="line">                fail(service, <span class="string">&quot;Provider &quot;</span> + cn  + <span class="string">&quot; not a subtype&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="type">S</span> <span class="variable">p</span> <span class="operator">=</span> service.cast(c.newInstance());</span><br><span class="line">                providers.put(cn, p);</span><br><span class="line">                <span class="keyword">return</span> p;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasNext</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (acc == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> hasNextService();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                PrivilegedAction&lt;Boolean&gt; action = <span class="keyword">new</span> <span class="title class_">PrivilegedAction</span>&lt;Boolean&gt;() &#123;</span><br><span class="line">                    <span class="keyword">public</span> Boolean <span class="title function_">run</span><span class="params">()</span> &#123; <span class="keyword">return</span> hasNextService(); &#125;</span><br><span class="line">                &#125;;</span><br><span class="line">                <span class="keyword">return</span> AccessController.doPrivileged(action, acc);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> S <span class="title function_">next</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (acc == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> nextService();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                PrivilegedAction&lt;S&gt; action = <span class="keyword">new</span> <span class="title class_">PrivilegedAction</span>&lt;S&gt;() &#123;</span><br><span class="line">                    <span class="keyword">public</span> S <span class="title function_">run</span><span class="params">()</span> &#123; <span class="keyword">return</span> nextService(); &#125;</span><br><span class="line">                &#125;;</span><br><span class="line">                <span class="keyword">return</span> AccessController.doPrivileged(action, acc);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">remove</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">UnsupportedOperationException</span>();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//获取迭代器</span></span><br><span class="line">    <span class="comment">//返回遍历服务提供者的迭代器</span></span><br><span class="line">    <span class="comment">//以懒加载的方式加载可用的服务提供者</span></span><br><span class="line">    <span class="comment">//懒加载的实现是：解析配置文件和实例化服务提供者的工作由迭代器本身完成</span></span><br><span class="line">    <span class="keyword">public</span> Iterator&lt;S&gt; <span class="title function_">iterator</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Iterator</span>&lt;S&gt;() &#123;</span><br><span class="line">            <span class="comment">//按照实例化顺序返回已经缓存的服务提供者实例</span></span><br><span class="line">            Iterator&lt;Map.Entry&lt;String,S&gt;&gt; knownProviders</span><br><span class="line">                = providers.entrySet().iterator();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">hasNext</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (knownProviders.hasNext())</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                <span class="keyword">return</span> lookupIterator.hasNext();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">public</span> S <span class="title function_">next</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (knownProviders.hasNext())</span><br><span class="line">                    <span class="keyword">return</span> knownProviders.next().getValue();</span><br><span class="line">                <span class="keyword">return</span> lookupIterator.next();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">remove</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">UnsupportedOperationException</span>();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//为指定的服务使用指定的类加载器来创建一个ServiceLoader</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;S&gt; ServiceLoader&lt;S&gt; <span class="title function_">load</span><span class="params">(Class&lt;S&gt; service,</span></span><br><span class="line"><span class="params">                                            ClassLoader loader)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ServiceLoader</span>&lt;&gt;(service, loader);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//使用线程上下文的类加载器来创建ServiceLoader</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;S&gt; ServiceLoader&lt;S&gt; <span class="title function_">load</span><span class="params">(Class&lt;S&gt; service)</span> &#123;</span><br><span class="line">        <span class="type">ClassLoader</span> <span class="variable">cl</span> <span class="operator">=</span> Thread.currentThread().getContextClassLoader();</span><br><span class="line">        <span class="keyword">return</span> ServiceLoader.load(service, cl);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//使用扩展类加载器为指定的服务创建ServiceLoader</span></span><br><span class="line">    <span class="comment">//只能找到并加载已经安装到当前Java虚拟机中的服务提供者，应用程序类路径中的服务提供者将被忽略</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;S&gt; ServiceLoader&lt;S&gt; <span class="title function_">loadInstalled</span><span class="params">(Class&lt;S&gt; service)</span> &#123;</span><br><span class="line">        <span class="type">ClassLoader</span> <span class="variable">cl</span> <span class="operator">=</span> ClassLoader.getSystemClassLoader();</span><br><span class="line">        <span class="type">ClassLoader</span> <span class="variable">prev</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">while</span> (cl != <span class="literal">null</span>) &#123;</span><br><span class="line">            prev = cl;</span><br><span class="line">            cl = cl.getParent();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ServiceLoader.load(service, prev);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;java.util.ServiceLoader[&quot;</span> + service.getName() + <span class="string">&quot;]&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    //查找配置文件的目录
-    private static final String PREFIX = &quot;META-INF/services/&quot;;
-
-    //表示要被加载的服务的类或接口
-    private final Class&lt;S&gt; service;
-
-    //这个ClassLoader用来定位，加载，实例化服务提供者
-    private final ClassLoader loader;
-
-    // 访问控制上下文
-    private final AccessControlContext acc;
-
-    // 缓存已经被实例化的服务提供者，按照实例化的顺序存储
-    private LinkedHashMap&lt;String,S&gt; providers = new LinkedHashMap&lt;&gt;();
-
-    // 迭代器
-    private LazyIterator lookupIterator;
-
-
-    //重新加载，就相当于重新创建ServiceLoader了，用于新的服务提供者安装到正在运行的Java虚拟机中的情况。
-    public void reload() &#123;
-        //清空缓存中所有已实例化的服务提供者
-        providers.clear();
-        //新建一个迭代器，该迭代器会从头查找和实例化服务提供者
-        lookupIterator = new LazyIterator(service, loader);
-    &#125;
-
-    //私有构造器
-    //使用指定的类加载器和服务创建服务加载器
-    //如果没有指定类加载器，使用系统类加载器，就是应用类加载器。
-    private ServiceLoader(Class&lt;S&gt; svc, ClassLoader cl) &#123;
-        service = Objects.requireNonNull(svc, &quot;Service interface cannot be null&quot;);
-        loader = (cl == null) ? ClassLoader.getSystemClassLoader() : cl;
-        acc = (System.getSecurityManager() != null) ? AccessController.getContext() : null;
-        reload();
-    &#125;
-
-    //解析失败处理的方法
-    private static void fail(Class&lt;?&gt; service, String msg, Throwable cause)
-        throws ServiceConfigurationError
-    &#123;
-        throw new ServiceConfigurationError(service.getName() + &quot;: &quot; + msg,
-                                            cause);
-    &#125;
-
-    private static void fail(Class&lt;?&gt; service, String msg)
-        throws ServiceConfigurationError
-    &#123;
-        throw new ServiceConfigurationError(service.getName() + &quot;: &quot; + msg);
-    &#125;
-
-    private static void fail(Class&lt;?&gt; service, URL u, int line, String msg)
-        throws ServiceConfigurationError
-    &#123;
-        fail(service, u + &quot;:&quot; + line + &quot;: &quot; + msg);
-    &#125;
-
-    //解析服务提供者配置文件中的一行
-    //首先去掉注释校验，然后保存
-    //返回下一行行号
-    //重复的配置项和已经被实例化的配置项不会被保存
-    private int parseLine(Class&lt;?&gt; service, URL u, BufferedReader r, int lc,
-                          List&lt;String&gt; names)
-        throws IOException, ServiceConfigurationError
-    &#123;
-        //读取一行
-        String ln = r.readLine();
-        if (ln == null) &#123;
-            return -1;
-        &#125;
-        //#号代表注释行
-        int ci = ln.indexOf(&#39;#&#39;);
-        if (ci &gt;= 0) ln = ln.substring(0, ci);
-        ln = ln.trim();
-        int n = ln.length();
-        if (n != 0) &#123;
-            if ((ln.indexOf(&#39; &#39;) &gt;= 0) || (ln.indexOf(&#39;\t&#39;) &gt;= 0))
-                fail(service, u, lc, &quot;Illegal configuration-file syntax&quot;);
-            int cp = ln.codePointAt(0);
-            if (!Character.isJavaIdentifierStart(cp))
-                fail(service, u, lc, &quot;Illegal provider-class name: &quot; + ln);
-            for (int i = Character.charCount(cp); i &lt; n; i += Character.charCount(cp)) &#123;
-                cp = ln.codePointAt(i);
-                if (!Character.isJavaIdentifierPart(cp) &amp;&amp; (cp != &#39;.&#39;))
-                    fail(service, u, lc, &quot;Illegal provider-class name: &quot; + ln);
-            &#125;
-            if (!providers.containsKey(ln) &amp;&amp; !names.contains(ln))
-                names.add(ln);
-        &#125;
-        return lc + 1;
-    &#125;
-
-    //解析配置文件，解析指定的url配置文件
-    //使用parseLine方法进行解析，未被实例化的服务提供者会被保存到缓存中去
-    private Iterator&lt;String&gt; parse(Class&lt;?&gt; service, URL u)
-        throws ServiceConfigurationError
-    &#123;
-        InputStream in = null;
-        BufferedReader r = null;
-        ArrayList&lt;String&gt; names = new ArrayList&lt;&gt;();
-        try &#123;
-            in = u.openStream();
-            r = new BufferedReader(new InputStreamReader(in, &quot;utf-8&quot;));
-            int lc = 1;
-            while ((lc = parseLine(service, u, r, lc, names)) &gt;= 0);
-        &#125;
-        return names.iterator();
-    &#125;
-
-    //服务提供者查找的迭代器
-    private class LazyIterator
-        implements Iterator&lt;S&gt;
-    &#123;
-
-        Class&lt;S&gt; service;//服务提供者接口
-        ClassLoader loader;//类加载器
-        Enumeration&lt;URL&gt; configs = null;//保存实现类的url
-        Iterator&lt;String&gt; pending = null;//保存实现类的全名
-        String nextName = null;//迭代器中下一个实现类的全名
-
-        private LazyIterator(Class&lt;S&gt; service, ClassLoader loader) &#123;
-            this.service = service;
-            this.loader = loader;
-        &#125;
-
-        private boolean hasNextService() &#123;
-            if (nextName != null) &#123;
-                return true;
-            &#125;
-            if (configs == null) &#123;
-                try &#123;
-                    String fullName = PREFIX + service.getName();
-                    if (loader == null)
-                        configs = ClassLoader.getSystemResources(fullName);
-                    else
-                        configs = loader.getResources(fullName);
-                &#125;
-            &#125;
-            while ((pending == null) || !pending.hasNext()) &#123;
-                if (!configs.hasMoreElements()) &#123;
-                    return false;
-                &#125;
-                pending = parse(service, configs.nextElement());
-            &#125;
-            nextName = pending.next();
-            return true;
-        &#125;
-
-        private S nextService() &#123;
-            if (!hasNextService())
-                throw new NoSuchElementException();
-            String cn = nextName;
-            nextName = null;
-            Class&lt;?&gt; c = null;
-            try &#123;
-                c = Class.forName(cn, false, loader);
-            &#125;
-            if (!service.isAssignableFrom(c)) &#123;
-                fail(service, &quot;Provider &quot; + cn  + &quot; not a subtype&quot;);
-            &#125;
-            try &#123;
-                S p = service.cast(c.newInstance());
-                providers.put(cn, p);
-                return p;
-            &#125;
-        &#125;
-
-        public boolean hasNext() &#123;
-            if (acc == null) &#123;
-                return hasNextService();
-            &#125; else &#123;
-                PrivilegedAction&lt;Boolean&gt; action = new PrivilegedAction&lt;Boolean&gt;() &#123;
-                    public Boolean run() &#123; return hasNextService(); &#125;
-                &#125;;
-                return AccessController.doPrivileged(action, acc);
-            &#125;
-        &#125;
-
-        public S next() &#123;
-            if (acc == null) &#123;
-                return nextService();
-            &#125; else &#123;
-                PrivilegedAction&lt;S&gt; action = new PrivilegedAction&lt;S&gt;() &#123;
-                    public S run() &#123; return nextService(); &#125;
-                &#125;;
-                return AccessController.doPrivileged(action, acc);
-            &#125;
-        &#125;
-
-        public void remove() &#123;
-            throw new UnsupportedOperationException();
-        &#125;
-
-    &#125;
-
-    //获取迭代器
-    //返回遍历服务提供者的迭代器
-    //以懒加载的方式加载可用的服务提供者
-    //懒加载的实现是：解析配置文件和实例化服务提供者的工作由迭代器本身完成
-    public Iterator&lt;S&gt; iterator() &#123;
-        return new Iterator&lt;S&gt;() &#123;
-            //按照实例化顺序返回已经缓存的服务提供者实例
-            Iterator&lt;Map.Entry&lt;String,S&gt;&gt; knownProviders
-                = providers.entrySet().iterator();
-
-            public boolean hasNext() &#123;
-                if (knownProviders.hasNext())
-                    return true;
-                return lookupIterator.hasNext();
-            &#125;
-
-            public S next() &#123;
-                if (knownProviders.hasNext())
-                    return knownProviders.next().getValue();
-                return lookupIterator.next();
-            &#125;
-
-            public void remove() &#123;
-                throw new UnsupportedOperationException();
-            &#125;
-
-        &#125;;
-    &#125;
-
-    //为指定的服务使用指定的类加载器来创建一个ServiceLoader
-    public static &lt;S&gt; ServiceLoader&lt;S&gt; load(Class&lt;S&gt; service,
-                                            ClassLoader loader)
-    &#123;
-        return new ServiceLoader&lt;&gt;(service, loader);
-    &#125;
-
-    //使用线程上下文的类加载器来创建ServiceLoader
-    public static &lt;S&gt; ServiceLoader&lt;S&gt; load(Class&lt;S&gt; service) &#123;
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return ServiceLoader.load(service, cl);
-    &#125;
-
-    //使用扩展类加载器为指定的服务创建ServiceLoader
-    //只能找到并加载已经安装到当前Java虚拟机中的服务提供者，应用程序类路径中的服务提供者将被忽略
-    public static &lt;S&gt; ServiceLoader&lt;S&gt; loadInstalled(Class&lt;S&gt; service) &#123;
-        ClassLoader cl = ClassLoader.getSystemClassLoader();
-        ClassLoader prev = null;
-        while (cl != null) &#123;
-            prev = cl;
-            cl = cl.getParent();
-        &#125;
-        return ServiceLoader.load(service, prev);
-    &#125;
-
-    public String toString() &#123;
-        return &quot;java.util.ServiceLoader[&quot; + service.getName() + &quot;]&quot;;
-    &#125;
-
-&#125;
-</code></pre>
 <p><strong>首先</strong>，ServiceLoader实现了<code>Iterable</code>接口，所以它有迭代器的属性，这里主要都是实现了迭代器的<code>hasNext</code>和<code>next</code>方法。这里主要都是调用的<code>lookupIterator</code>的相应<code>hasNext</code>和<code>next</code>方法，<code>lookupIterator</code>是懒加载迭代器。</p>
 <p><strong>其次</strong>，<code>LazyIterator</code>中的<code>hasNext</code>方法，静态变量PREFIX就是<code>”META-INF/services/”</code>目录，这也就是为什么需要在<code>classpath</code>下的<code>META-INF/services/</code>目录里创建一个以服务接口命名的文件。</p>
 <p><strong>最后</strong>，通过反射方法<code>Class.forName()</code>加载类对象，并用<code>newInstance</code>方法将类实例化，并把实例化后的类缓存到<code>providers</code>对象中，(<code>LinkedHashMap&lt;String,S&gt;</code>类型）然后返回实例对象。</p>

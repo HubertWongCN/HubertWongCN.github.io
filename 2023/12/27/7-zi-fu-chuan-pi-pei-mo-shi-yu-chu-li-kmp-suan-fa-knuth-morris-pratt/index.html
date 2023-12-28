@@ -436,8 +436,8 @@ Knuth-Morris-Pratt算法（简称KMP）是最常用的字符串匹配算法之�
 <p>已知模式 P[1..q] 与文本 T[s+1..s+q] 匹配，那么满足 P[1..k] &#x3D; T[s’+1..s’+k] 其中 s’+k &#x3D; s+q 的最小位移 s’ &gt; s 是多少？这样的位移 s’ 是大于 s 的但未必非法的第一个位移，因为已知 T[s+1..s+q] 。在最好的情况下有 s’ &#x3D; s+q，因此立刻能排除掉位移 s+1, s+2 .. s+q-1。在任何情况下，对于新的位移 s’，无需把 P 的前 k 个字符与 T 中相应的字符进行比较，因为它们肯定匹配。</p>
 <p>可以用模式 P 与其自身进行比较，以预先计算出这些必要的信息。例如上图（c）中所示，由于 T[s’+1..s’+k] 是文本中已经知道的部分，所以它是字符串 Pq 的一个后缀。</p>
 <p>此处我们引入模式的前缀函数 π（Pai），π 包含有模式与其自身的位移进行匹配的信息。这些信息可用于避免在朴素的字符串匹配算法中，对无用位移进行测试。</p>
-<pre><code class="java">π[q] = max &#123;k : k &lt; q and Pk ⊐ Pq&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">π[q] = max &#123;k : k &lt; q and Pk ⊐ Pq&#125;</span><br></pre></td></tr></table></figure>
+
 <p>π[q] 代表当前字符之前的字符串中，最长的共同前缀后缀的长度。（π[q] is the length of the longest prefix of P that is a proper suffix of Pq.）</p>
 <p>下图给出了关于模式 P &#x3D; ababababca 的完整前缀函数 π，可称为部分匹配表（Partial Match Table）。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272254274.jpg" alt="img"></p>
@@ -455,66 +455,21 @@ Knuth-Morris-Pratt算法（简称KMP）是最常用的字符串匹配算法之�
 <li>π[10] &#x3D; 1，ababababca，前缀 .. a ..，后缀 .. a ..，共有元素最大长度为 1；</li>
 </ul>
 <p>KMP 算法 KMP-MATCHER 中通过调用 COMPUTE-PREFIX-FUNCTION 函数来计算部分匹配表。</p>
-<pre><code class="java">KMP-MATCHER(T, P)
-n ← length[T]
-m ← length[P]
-π ← COMPUTE-PREFIX-FUNCTION(P)
-q ← 0                          //Number of characters matched.
-for i ← 1 to n                 //Scan the text from left to right.
-    do while q &gt; 0 and P[q + 1] ≠ T[i]
-            do q ← π[q]        //Next character does not match.
-        if P[q + 1] = T[i]
-            then q ← q + 1     //Next character matches.
-        if q = m               //Is all of P matched?
-            then print &quot;Pattern occurs with shift&quot; i - m
-            q ← π[q]           //Look for the next match.
-</code></pre>
-<pre><code class="java">COMPUTE-PREFIX-FUNCTION(P)
-m ← length[P]
-π[1] ← 0
-k ← 0
-for q ← 2 to m
-     do while k &gt; 0 and P[k + 1] ≠ P[q]
-            do k ← π[k]
-        if P[k + 1] = P[q]
-           then k ← k + 1
-        π[q] ← k
-return π
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">KMP-MATCHER(T, P)</span><br><span class="line">n ← length[T]</span><br><span class="line">m ← length[P]</span><br><span class="line">π ← COMPUTE-PREFIX-FUNCTION(P)</span><br><span class="line">q ← <span class="number">0</span>                          <span class="comment">//Number of characters matched.</span></span><br><span class="line"><span class="keyword">for</span> i ← <span class="number">1</span> to n                 <span class="comment">//Scan the text from left to right.</span></span><br><span class="line">    <span class="keyword">do</span> <span class="keyword">while</span> q &gt; <span class="number">0</span> and P[q + <span class="number">1</span>] ≠ T[i]</span><br><span class="line">            <span class="keyword">do</span> q ← π[q]        <span class="comment">//Next character does not match.</span></span><br><span class="line">        <span class="keyword">if</span> P[q + <span class="number">1</span>] = T[i]</span><br><span class="line">            then q ← q + <span class="number">1</span>     <span class="comment">//Next character matches.</span></span><br><span class="line">        <span class="type">if</span> <span class="variable">q</span> <span class="operator">=</span> m               <span class="comment">//Is all of P matched?</span></span><br><span class="line">            then print <span class="string">&quot;Pattern occurs with shift&quot;</span> i - m</span><br><span class="line">            q ← π[q]           <span class="comment">//Look for the next match.</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">COMPUTE-PREFIX-FUNCTION(P)</span><br><span class="line">m ← length[P]</span><br><span class="line">π[<span class="number">1</span>] ← <span class="number">0</span></span><br><span class="line">k ← <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> q ← <span class="number">2</span> to m</span><br><span class="line">     <span class="keyword">do</span> <span class="keyword">while</span> k &gt; <span class="number">0</span> and P[k + <span class="number">1</span>] ≠ P[q]</span><br><span class="line">            <span class="keyword">do</span> k ← π[k]</span><br><span class="line">        <span class="keyword">if</span> P[k + <span class="number">1</span>] = P[q]</span><br><span class="line">           then k ← k + <span class="number">1</span></span><br><span class="line">        π[q] ← k</span><br><span class="line"><span class="keyword">return</span> π</span><br></pre></td></tr></table></figure>
+
 <p>预处理过程 COMPUTE-PREFIX-FUNCTION 的运行时间为 Θ(m)，KMP-MATCHER 的匹配时间为 Θ(n)。</p>
 <p>相比较于 NAIVE-STRING-MATCHER，KMP-MATCHER 的主要优化点就是在当确定字符不匹配时对于 pattern 的位移。</p>
 <p>NAIVE-STRING-MATCHER 的位移效果是：文本向后移一位，模式从头开始。</p>
-<pre><code class="java">    s = s - j + 1;
-    j = 0;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s = s - j + <span class="number">1</span>;</span><br><span class="line">j = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
 <p>KMP-MATCHER 首先对模式做了获取共同前缀后缀最大长度的预处理操作，位移过程是先将模式向后移 partial_match_length - table[partial_match_length - 1]，然后再判断是否匹配。这样通过对已匹配字符串的已知信息的利用，可以有效节省比较数量。</p>
-<pre><code class="java">    if (j != 0)
-        j = lps[j - 1];
-    else
-        s++;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (j != <span class="number">0</span>)</span><br><span class="line">    j = lps[j - <span class="number">1</span>];</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    s++;</span><br></pre></td></tr></table></figure>
+
 <p>下面描述了当发现字符 j 与 c 不匹配时的位移效果。</p>
-<pre><code class="java">    // partial_match_length - table[partial_match_length - 1]
-    rrababababjjjjjiiooorababababcauuu
-      ||||||||-
-      ababababca
-    // 8-6=2
-    rrababababjjjjjiiooorababababcauuu
-      xx||||||-
-        ababababca
-    // 6-4=2
-    rrababababjjjjjiiooorababababcauuu
-        xx||||-
-          ababababca
-    // 4-2=2
-    rrababababjjjjjiiooorababababcauuu
-          xx||-
-            ababababca
-    // 2-0=2
-    rrababababjjjjjiiooorababababcauuu
-            xx-
-              ababababca
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// partial_match_length - table[partial_match_length - 1]</span></span><br><span class="line">rrababababjjjjjiiooorababababcauuu</span><br><span class="line">  ||||||||-</span><br><span class="line">  ababababca</span><br><span class="line"><span class="comment">// 8-6=2</span></span><br><span class="line">rrababababjjjjjiiooorababababcauuu</span><br><span class="line">  xx||||||-</span><br><span class="line">    ababababca</span><br><span class="line"><span class="comment">// 6-4=2</span></span><br><span class="line">rrababababjjjjjiiooorababababcauuu</span><br><span class="line">    xx||||-</span><br><span class="line">      ababababca</span><br><span class="line"><span class="comment">// 4-2=2</span></span><br><span class="line">rrababababjjjjjiiooorababababcauuu</span><br><span class="line">      xx||-</span><br><span class="line">        ababababca</span><br><span class="line"><span class="comment">// 2-0=2</span></span><br><span class="line">rrababababjjjjjiiooorababababcauuu</span><br><span class="line">        xx-</span><br><span class="line">          ababababca</span><br></pre></td></tr></table></figure>
+
 <p>综上可知，<strong>KMP 算法的主要特点</strong>是：</p>
 <ul>
 <li>需要对模式字符串做预处理；</li>
@@ -575,20 +530,8 @@ return π
 <p>15. </p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272301949.png" alt="img"></p>
 <p>“部分匹配值”就是”前缀”和”后缀”的最长的共有元素的长度。以”ABCDABD”为例，</p>
-<pre><code class="java">　　－　&quot;A&quot;的前缀和后缀都为空集，共有元素的长度为0；
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">　　－　<span class="string">&quot;A&quot;</span>的前缀和后缀都为空集，共有元素的长度为<span class="number">0</span>；</span><br><span class="line"></span><br><span class="line">　　－　<span class="string">&quot;AB&quot;</span>的前缀为[A]，后缀为[B]，共有元素的长度为<span class="number">0</span>；</span><br><span class="line"></span><br><span class="line">　　－　<span class="string">&quot;ABC&quot;</span>的前缀为[A, AB]，后缀为[BC, C]，共有元素的长度<span class="number">0</span>；</span><br><span class="line"></span><br><span class="line">　　－　<span class="string">&quot;ABCD&quot;</span>的前缀为[A, AB, ABC]，后缀为[BCD, CD, D]，共有元素的长度为<span class="number">0</span>；</span><br><span class="line"></span><br><span class="line">　　－　<span class="string">&quot;ABCDA&quot;</span>的前缀为[A, AB, ABC, ABCD]，后缀为[BCDA, CDA, DA, A]，共有元素为<span class="string">&quot;A&quot;</span>，长度为<span class="number">1</span>；</span><br><span class="line"></span><br><span class="line">　　－　<span class="string">&quot;ABCDAB&quot;</span>的前缀为[A, AB, ABC, ABCD, ABCDA]，后缀为[BCDAB, CDAB, DAB, AB, B]，共有元素为<span class="string">&quot;AB&quot;</span>，长度为<span class="number">2</span>；</span><br><span class="line"></span><br><span class="line">　　－　<span class="string">&quot;ABCDABD&quot;</span>的前缀为[A, AB, ABC, ABCD, ABCDA, ABCDAB]，后缀为[BCDABD, CDABD, DABD, ABD, BD, D]，共有元素的长度为<span class="number">0</span>。</span><br></pre></td></tr></table></figure>
 
-　　－　&quot;AB&quot;的前缀为[A]，后缀为[B]，共有元素的长度为0；
-
-　　－　&quot;ABC&quot;的前缀为[A, AB]，后缀为[BC, C]，共有元素的长度0；
-
-　　－　&quot;ABCD&quot;的前缀为[A, AB, ABC]，后缀为[BCD, CD, D]，共有元素的长度为0；
-
-　　－　&quot;ABCDA&quot;的前缀为[A, AB, ABC, ABCD]，后缀为[BCDA, CDA, DA, A]，共有元素为&quot;A&quot;，长度为1；
-
-　　－　&quot;ABCDAB&quot;的前缀为[A, AB, ABC, ABCD, ABCDA]，后缀为[BCDAB, CDAB, DAB, AB, B]，共有元素为&quot;AB&quot;，长度为2；
-
-　　－　&quot;ABCDABD&quot;的前缀为[A, AB, ABC, ABCD, ABCDA, ABCDAB]，后缀为[BCDABD, CDABD, DABD, ABD, BD, D]，共有元素的长度为0。
-</code></pre>
 <p>16. </p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272301658.png" alt="img"></p>
 <p>“部分匹配”的实质是，有时候，字符串头部和尾部会有重复。比如，”ABCDAB”之中有两个”AB”，那么它的”部分匹配值”就是2（”AB”的长度）。搜索词移动的时候，第一个”AB”向后移动4位（字符串长度-部分匹配值），就可以来到第二个”AB”的位置。</p>

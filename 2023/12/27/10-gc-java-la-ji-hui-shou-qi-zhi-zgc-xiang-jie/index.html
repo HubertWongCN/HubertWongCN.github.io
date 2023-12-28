@@ -480,12 +480,8 @@ ZGC（The Z Garbage Collector）是JDK 11中推出的一款低延迟垃圾回收
 <p>读屏障是JVM向应用代码插入一小段代码的技术。当应用线程从堆中读取对象引用时，就会执行这段代码。需要注意的是，仅“从堆中读取对象引用”才会触发这段代码。</p>
 </blockquote>
 <p>读屏障示例：</p>
-<pre><code class="java">Object o = obj.FieldA   // 从堆中读取引用，需要加入屏障
-&lt;Load barrier&gt;
-Object p = o  // 无需加入屏障，因为不是从堆中读取引用
-o.dosomething() // 无需加入屏障，因为不是从堆中读取引用
-int i =  obj.FieldB  //无需加入屏障，因为不是对象引用
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> obj.FieldA   <span class="comment">// 从堆中读取引用，需要加入屏障</span></span><br><span class="line">&lt;Load barrier&gt;</span><br><span class="line"><span class="type">Object</span> <span class="variable">p</span> <span class="operator">=</span> o  <span class="comment">// 无需加入屏障，因为不是从堆中读取引用</span></span><br><span class="line">o.dosomething() <span class="comment">// 无需加入屏障，因为不是从堆中读取引用</span></span><br><span class="line"><span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span>  obj.FieldB  <span class="comment">//无需加入屏障，因为不是对象引用</span></span><br></pre></td></tr></table></figure>
+
 <p>ZGC中读屏障的代码作用：在对象标记和转移过程中，用于确定对象的引用地址是否满足条件，并作出相应动作。</p>
 <h3 id="ZGC并发处理演示"><a href="#ZGC并发处理演示" class="headerlink" title="ZGC并发处理演示"></a>ZGC并发处理演示</h3><p>接下来详细介绍ZGC一次垃圾回收周期中地址视图的切换过程：</p>
 <ul>
@@ -503,14 +499,8 @@ int i =  obj.FieldB  //无需加入屏障，因为不是对象引用
 <p>以我们服务在生产环境中ZGC参数配置为例，说明各个参数的作用：</p>
 </blockquote>
 <p>重要参数配置样例：</p>
-<pre><code class="java">-Xms10G -Xmx10G 
--XX:ReservedCodeCacheSize=256m -XX:InitialCodeCacheSize=256m 
--XX:+UnlockExperimentalVMOptions -XX:+UseZGC 
--XX:ConcGCThreads=2 -XX:ParallelGCThreads=6 
--XX:ZCollectionInterval=120 -XX:ZAllocationSpikeTolerance=5 
--XX:+UnlockDiagnosticVMOptions -XX:-ZProactive 
--Xlog:safepoint,classhisto*=trace,age*,gc*=info:file=/opt/logs/logs/gc-%t.log:time,tid,tags:filecount=5,filesize=50m 
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-Xms10G -Xmx10G </span><br><span class="line">-XX:ReservedCodeCacheSize=256m -XX:InitialCodeCacheSize=256m </span><br><span class="line">-XX:+UnlockExperimentalVMOptions -XX:+UseZGC </span><br><span class="line">-XX:ConcGCThreads=<span class="number">2</span> -XX:ParallelGCThreads=<span class="number">6</span> </span><br><span class="line">-XX:ZCollectionInterval=<span class="number">120</span> -XX:ZAllocationSpikeTolerance=<span class="number">5</span> </span><br><span class="line">-XX:+UnlockDiagnosticVMOptions -XX:-ZProactive </span><br><span class="line">-Xlog:safepoint,classhisto*=trace,age*,gc*=info:file=/opt/logs/logs/gc-%t.log:time,tid,tags:filecount=<span class="number">5</span>,filesize=50m </span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><code>-Xms -Xmx</code>：堆的最大内存和最小内存，这里都设置为10G，程序的堆内存将保持10G不变。</li>
 <li><code>-XX:ReservedCodeCacheSize -XX:InitialCodeCacheSize</code>：设置CodeCache的大小， JIT编译的代码都放在CodeCache中，一般服务64m或128m就已经足够。我们的服务因为有一定特殊性，所以设置的较大，后面会详细介绍。</li>

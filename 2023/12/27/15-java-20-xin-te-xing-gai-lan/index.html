@@ -426,84 +426,32 @@ JEP 429：Scoped Value">
 <li><a target="_blank" rel="noopener" href="https://openjdk.org/jeps/438">JEP 432:向量 API（</a>第五次孵化）</li>
 </ul>
 <h2 id="JEP-429：作用域值（第一次孵化）"><a href="#JEP-429：作用域值（第一次孵化）" class="headerlink" title="JEP 429：作用域值（第一次孵化）"></a>JEP 429：作用域值（第一次孵化）</h2><p>作用域值（Scoped Values）它可以在线程内和线程间共享不可变的数据，优于线程局部变量，尤其是在使用大量虚拟线程时。</p>
-<pre><code class="java">final static ScopedValue&lt;...&gt; V = new ScopedValue&lt;&gt;();
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="keyword">static</span> ScopedValue&lt;...&gt; V = <span class="keyword">new</span> <span class="title class_">ScopedValue</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line"><span class="comment">// In some method</span></span><br><span class="line">ScopedValue.where(V, &lt;value&gt;)</span><br><span class="line">           .run(() -&gt; &#123; ... V.get() ... call methods ... &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// In a method called directly or indirectly from the lambda expression</span></span><br><span class="line">... V.get() ...</span><br></pre></td></tr></table></figure>
 
-// In some method
-ScopedValue.where(V, &lt;value&gt;)
-           .run(() -&gt; &#123; ... V.get() ... call methods ... &#125;);
-
-// In a method called directly or indirectly from the lambda expression
-... V.get() ...
-</code></pre>
 <p>作用域值允许在大型程序中的组件之间安全有效地共享数据，而无需求助于方法参数。</p>
 <p>关于作用域值的详细介绍，推荐阅读<a target="_blank" rel="noopener" href="https://www.happycoders.eu/java/scoped-values/">作用域值常见问题解答</a>这篇文章。</p>
 <h2 id="JEP-432：记录模式（第二次预览）"><a href="#JEP-432：记录模式（第二次预览）" class="headerlink" title="JEP 432：记录模式（第二次预览）"></a>JEP 432：记录模式（第二次预览）</h2><p>记录模式（Record Patterns） 可对 record 的值进行解构，也就是更方便地从记录类（Record Class）中提取数据。并且，还可以嵌套记录模式和类型模式结合使用，以实现强大的、声明性的和可组合的数据导航和处理形式。</p>
 <p>记录模式不能单独使用，而是要与 instanceof 或 switch 模式匹配一同使用。</p>
 <p>先以 instanceof 为例简单演示一下。</p>
 <p>简单定义一个记录类：</p>
-<pre><code class="java">record Shape(String type, long unit)&#123;&#125;
-</code></pre>
-<p>没有记录模式之前：</p>
-<pre><code class="java">Shape circle = new Shape(&quot;Circle&quot;, 10);
-if (circle instanceof Shape shape) &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">record</span> <span class="title class_">Shape</span><span class="params">(String type, <span class="type">long</span> unit)</span>&#123;&#125;</span><br></pre></td></tr></table></figure>
 
-  System.out.println(&quot;Area of &quot; + shape.type() + &quot; is : &quot; + Math.PI * Math.pow(shape.unit(), 2));
-&#125;
-</code></pre>
+<p>没有记录模式之前：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Shape</span> <span class="variable">circle</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Shape</span>(<span class="string">&quot;Circle&quot;</span>, <span class="number">10</span>);</span><br><span class="line"><span class="keyword">if</span> (circle <span class="keyword">instanceof</span> Shape shape) &#123;</span><br><span class="line"></span><br><span class="line">  System.out.println(<span class="string">&quot;Area of &quot;</span> + shape.type() + <span class="string">&quot; is : &quot;</span> + Math.PI * Math.pow(shape.unit(), <span class="number">2</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>有了记录模式之后：</p>
-<pre><code class="java">Shape circle = new Shape(&quot;Circle&quot;, 10);
-if (circle instanceof Shape(String type, long unit)) &#123;
-  System.out.println(&quot;Area of &quot; + type + &quot; is : &quot; + Math.PI * Math.pow(unit, 2));
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Shape</span> <span class="variable">circle</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Shape</span>(<span class="string">&quot;Circle&quot;</span>, <span class="number">10</span>);</span><br><span class="line"><span class="keyword">if</span> (circle <span class="keyword">instanceof</span> <span class="title function_">Shape</span><span class="params">(String type, <span class="type">long</span> unit)</span>) &#123;</span><br><span class="line">  System.out.println(<span class="string">&quot;Area of &quot;</span> + type + <span class="string">&quot; is : &quot;</span> + Math.PI * Math.pow(unit, <span class="number">2</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>再看看记录模式与 switch 的配合使用。</p>
 <p>定义一些类：</p>
-<pre><code class="java">interface Shape &#123;&#125;
-record Circle(double radius) implements Shape &#123; &#125;
-record Square(double side) implements Shape &#123; &#125;
-record Rectangle(double length, double width) implements Shape &#123; &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Shape</span> &#123;&#125;</span><br><span class="line"><span class="keyword">record</span> <span class="title class_">Circle</span><span class="params">(<span class="type">double</span> radius)</span> <span class="keyword">implements</span> <span class="title class_">Shape</span> &#123; &#125;</span><br><span class="line"><span class="keyword">record</span> <span class="title class_">Square</span><span class="params">(<span class="type">double</span> side)</span> <span class="keyword">implements</span> <span class="title class_">Shape</span> &#123; &#125;</span><br><span class="line"><span class="keyword">record</span> <span class="title class_">Rectangle</span><span class="params">(<span class="type">double</span> length, <span class="type">double</span> width)</span> <span class="keyword">implements</span> <span class="title class_">Shape</span> &#123; &#125;</span><br></pre></td></tr></table></figure>
+
 <p>没有记录模式之前：</p>
-<pre><code class="java">Shape shape = new Circle(10);
-switch (shape) &#123;
-    case Circle c:
-        System.out.println(&quot;The shape is Circle with area: &quot; + Math.PI * c.radius() * c.radius());
-        break;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Shape</span> <span class="variable">shape</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Circle</span>(<span class="number">10</span>);</span><br><span class="line"><span class="keyword">switch</span> (shape) &#123;</span><br><span class="line">    <span class="keyword">case</span> Circle c:</span><br><span class="line">        System.out.println(<span class="string">&quot;The shape is Circle with area: &quot;</span> + Math.PI * c.radius() * c.radius());</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> Square s:</span><br><span class="line">        System.out.println(<span class="string">&quot;The shape is Square with area: &quot;</span> + s.side() * s.side());</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> Rectangle r:</span><br><span class="line">        System.out.println(<span class="string">&quot;The shape is Rectangle with area: + &quot;</span> + r.length() * r.width());</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        System.out.println(<span class="string">&quot;Unknown Shape&quot;</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    case Square s:
-        System.out.println(&quot;The shape is Square with area: &quot; + s.side() * s.side());
-        break;
-
-    case Rectangle r:
-        System.out.println(&quot;The shape is Rectangle with area: + &quot; + r.length() * r.width());
-        break;
-
-    default:
-        System.out.println(&quot;Unknown Shape&quot;);
-        break;
-&#125;
-</code></pre>
 <p>有了记录模式之后：</p>
-<pre><code class="java">Shape shape = new Circle(10);
-switch(shape) &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Shape</span> <span class="variable">shape</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Circle</span>(<span class="number">10</span>);</span><br><span class="line"><span class="keyword">switch</span>(shape) &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">case</span> <span class="title function_">Circle</span><span class="params">(<span class="type">double</span> radius)</span>:</span><br><span class="line">    System.out.println(<span class="string">&quot;The shape is Circle with area: &quot;</span> + Math.PI * radius * radius);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">case</span> <span class="title function_">Square</span><span class="params">(<span class="type">double</span> side)</span>:</span><br><span class="line">    System.out.println(<span class="string">&quot;The shape is Square with area: &quot;</span> + side * side);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">case</span> <span class="title function_">Rectangle</span><span class="params">(<span class="type">double</span> length, <span class="type">double</span> width)</span>:</span><br><span class="line">    System.out.println(<span class="string">&quot;The shape is Rectangle with area: + &quot;</span> + length * width);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    System.out.println(<span class="string">&quot;Unknown Shape&quot;</span>);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-  case Circle(double radius):
-    System.out.println(&quot;The shape is Circle with area: &quot; + Math.PI * radius * radius);
-    break;
-
-  case Square(double side):
-    System.out.println(&quot;The shape is Square with area: &quot; + side * side);
-    break;
-
-  case Rectangle(double length, double width):
-    System.out.println(&quot;The shape is Rectangle with area: + &quot; + length * width);
-    break;
-
-  default:
-    System.out.println(&quot;Unknown Shape&quot;);
-    break;
-&#125;
-</code></pre>
 <p>记录模式可以避免不必要的转换，使得代码更建简洁易读。而且，用了记录模式后不必再担心 null 或者 NullPointerException，代码更安全可靠。</p>
 <p>记录模式在 Java 19 进行了第一次预览， 由 <a target="_blank" rel="noopener" href="https://openjdk.org/jeps/405">JEP 405</a> 提出。JDK 20 中是第二次预览，由 <a target="_blank" rel="noopener" href="https://openjdk.org/jeps/432">JEP 432</a> 提出。这次的改进包括：</p>
 <ul>
@@ -514,44 +462,11 @@ switch(shape) &#123;
 <p><strong>注意</strong>：不要把记录模式和 <a href="">JDK16</a> 正式引入的记录类搞混了。</p>
 <h2 id="JEP-433：switch-模式匹配（第四次预览）"><a href="#JEP-433：switch-模式匹配（第四次预览）" class="headerlink" title="JEP 433：switch 模式匹配（第四次预览）"></a>JEP 433：switch 模式匹配（第四次预览）</h2><p>正如 instanceof 一样， switch 也紧跟着增加了类型匹配自动转换功能。</p>
 <p>instanceof 代码示例：</p>
-<pre><code class="java">// Old code
-if (o instanceof String) &#123;
-    String s = (String)o;
-    ... use s ...
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Old code</span></span><br><span class="line"><span class="keyword">if</span> (o <span class="keyword">instanceof</span> String) &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> (String)o;</span><br><span class="line">    ... use s ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// New code</span></span><br><span class="line"><span class="keyword">if</span> (o <span class="keyword">instanceof</span> String s) &#123;</span><br><span class="line">    ... use s ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-// New code
-if (o instanceof String s) &#123;
-    ... use s ...
-&#125;
-</code></pre>
 <p>switch 代码示例：</p>
-<pre><code class="java">// Old code
-static String formatter(Object o) &#123;
-    String formatted = &quot;unknown&quot;;
-    if (o instanceof Integer i) &#123;
-        formatted = String.format(&quot;int %d&quot;, i);
-    &#125; else if (o instanceof Long l) &#123;
-        formatted = String.format(&quot;long %d&quot;, l);
-    &#125; else if (o instanceof Double d) &#123;
-        formatted = String.format(&quot;double %f&quot;, d);
-    &#125; else if (o instanceof String s) &#123;
-        formatted = String.format(&quot;String %s&quot;, s);
-    &#125;
-    return formatted;
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Old code</span></span><br><span class="line"><span class="keyword">static</span> String <span class="title function_">formatter</span><span class="params">(Object o)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">formatted</span> <span class="operator">=</span> <span class="string">&quot;unknown&quot;</span>;</span><br><span class="line">    <span class="keyword">if</span> (o <span class="keyword">instanceof</span> Integer i) &#123;</span><br><span class="line">        formatted = String.format(<span class="string">&quot;int %d&quot;</span>, i);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (o <span class="keyword">instanceof</span> Long l) &#123;</span><br><span class="line">        formatted = String.format(<span class="string">&quot;long %d&quot;</span>, l);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (o <span class="keyword">instanceof</span> Double d) &#123;</span><br><span class="line">        formatted = String.format(<span class="string">&quot;double %f&quot;</span>, d);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (o <span class="keyword">instanceof</span> String s) &#123;</span><br><span class="line">        formatted = String.format(<span class="string">&quot;String %s&quot;</span>, s);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> formatted;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// New code</span></span><br><span class="line"><span class="keyword">static</span> String <span class="title function_">formatterPatternSwitch</span><span class="params">(Object o)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">switch</span> (o) &#123;</span><br><span class="line">        <span class="keyword">case</span> Integer i -&gt; String.format(<span class="string">&quot;int %d&quot;</span>, i);</span><br><span class="line">        <span class="keyword">case</span> Long l    -&gt; String.format(<span class="string">&quot;long %d&quot;</span>, l);</span><br><span class="line">        <span class="keyword">case</span> Double d  -&gt; String.format(<span class="string">&quot;double %f&quot;</span>, d);</span><br><span class="line">        <span class="keyword">case</span> String s  -&gt; String.format(<span class="string">&quot;String %s&quot;</span>, s);</span><br><span class="line">        <span class="keyword">default</span>        -&gt; o.toString();</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-// New code
-static String formatterPatternSwitch(Object o) &#123;
-    return switch (o) &#123;
-        case Integer i -&gt; String.format(&quot;int %d&quot;, i);
-        case Long l    -&gt; String.format(&quot;long %d&quot;, l);
-        case Double d  -&gt; String.format(&quot;double %f&quot;, d);
-        case String s  -&gt; String.format(&quot;String %s&quot;, s);
-        default        -&gt; o.toString();
-    &#125;;
-&#125;
-</code></pre>
 <p>switch 模式匹配分别在 Java17、Java18、Java19 中进行了预览，Java20 是第四次预览了。每一次的预览基本都会有一些小改进，这里就不细提了。</p>
 <h2 id="JEP-434-外部函数和内存-API（第二次预览）"><a href="#JEP-434-外部函数和内存-API（第二次预览）" class="headerlink" title="JEP 434: 外部函数和内存 API（第二次预览）"></a>JEP 434: 外部函数和内存 API（第二次预览）</h2><p>Java 程序可以通过该 API 与 Java 运行时之外的代码和数据进行互操作。通过高效地调用外部函数（即 JVM 之外的代码）和安全地访问外部内存（即不受 JVM 管理的内存），该 API 使 Java 程序能够调用本机库并处理本机数据，而不会像 JNI 那样危险和脆弱。</p>
 <p>外部函数和内存 API 在 Java 17 中进行了第一轮孵化，由 <a target="_blank" rel="noopener" href="https://openjdk.java.net/jeps/412">JEP 412</a> 提出。Java 18 中进行了第二次孵化，由<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/419">JEP 419</a> 提出。Java 19 中是第一次预览，由 <a target="_blank" rel="noopener" href="https://openjdk.org/jeps/424">JEP 424</a> 提出。</p>
@@ -577,57 +492,15 @@ static String formatterPatternSwitch(Object o) &#123;
 </ul>
 <p>虚拟线程在 Java 19 中进行了第一次预览，由<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/425">JEP 425</a>提出。JDK 20 中是第二次预览，做了一些细微变化，这里就不细提了。</p>
 <p>最后，我们来看一下四种创建虚拟线程的方法：</p>
-<pre><code class="java">// 1、通过 Thread.ofVirtual() 创建
-Runnable fn = () -&gt; &#123;
-  // your code here
-&#125;;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1、通过 Thread.ofVirtual() 创建</span></span><br><span class="line"><span class="type">Runnable</span> <span class="variable">fn</span> <span class="operator">=</span> () -&gt; &#123;</span><br><span class="line">  <span class="comment">// your code here</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">Thread</span> <span class="variable">thread</span> <span class="operator">=</span> Thread.ofVirtual(fn)</span><br><span class="line">                      .start();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2、通过 Thread.startVirtualThread() 、创建</span></span><br><span class="line"><span class="type">Thread</span> <span class="variable">thread</span> <span class="operator">=</span> Thread.startVirtualThread(() -&gt; &#123;</span><br><span class="line">  <span class="comment">// your code here</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3、通过 Executors.newVirtualThreadPerTaskExecutor() 创建</span></span><br><span class="line"><span class="type">var</span> <span class="variable">executorService</span> <span class="operator">=</span> Executors.newVirtualThreadPerTaskExecutor();</span><br><span class="line"></span><br><span class="line">executorService.submit(() -&gt; &#123;</span><br><span class="line">  <span class="comment">// your code here</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CustomThread</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;CustomThread run&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//4、通过 ThreadFactory 创建</span></span><br><span class="line"><span class="type">CustomThread</span> <span class="variable">customThread</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CustomThread</span>();</span><br><span class="line"><span class="comment">// 获取线程工厂类</span></span><br><span class="line"><span class="type">ThreadFactory</span> <span class="variable">factory</span> <span class="operator">=</span> Thread.ofVirtual().factory();</span><br><span class="line"><span class="comment">// 创建虚拟线程</span></span><br><span class="line"><span class="type">Thread</span> <span class="variable">thread</span> <span class="operator">=</span> factory.newThread(customThread);</span><br><span class="line"><span class="comment">// 启动线程</span></span><br><span class="line">thread.start(); </span><br></pre></td></tr></table></figure>
 
-Thread thread = Thread.ofVirtual(fn)
-                      .start();
-
-// 2、通过 Thread.startVirtualThread() 、创建
-Thread thread = Thread.startVirtualThread(() -&gt; &#123;
-  // your code here
-&#125;);
-
-// 3、通过 Executors.newVirtualThreadPerTaskExecutor() 创建
-var executorService = Executors.newVirtualThreadPerTaskExecutor();
-
-executorService.submit(() -&gt; &#123;
-  // your code here
-&#125;);
-
-class CustomThread implements Runnable &#123;
-  @Override
-  public void run() &#123;
-    System.out.println(&quot;CustomThread run&quot;);
-  &#125;
-&#125;
-
-//4、通过 ThreadFactory 创建
-CustomThread customThread = new CustomThread();
-// 获取线程工厂类
-ThreadFactory factory = Thread.ofVirtual().factory();
-// 创建虚拟线程
-Thread thread = factory.newThread(customThread);
-// 启动线程
-thread.start(); 
-</code></pre>
 <p>通过上述列举的 4 种创建虚拟线程的方式可以看出，官方为了降低虚拟线程的门槛，尽力复用原有的 Thread 线程类，这样可以平滑的过渡到虚拟线程的使用。</p>
 <h2 id="JEP-437-结构化并发-第二次孵化"><a href="#JEP-437-结构化并发-第二次孵化" class="headerlink" title="JEP 437: 结构化并发(第二次孵化)"></a>JEP 437: 结构化并发(第二次孵化)</h2><p>Java 19 引入了结构化并发，一种多线程编程方法，目的是为了通过结构化并发 API 来简化多线程编程，并不是为了取代java.util.concurrent，目前处于孵化器阶段。</p>
 <p>结构化并发将不同线程中运行的多个任务视为单个工作单元，从而简化错误处理、提高可靠性并增强可观察性。也就是说，结构化并发保留了单线程代码的可读性、可维护性和可观察性。</p>
 <p>结构化并发的基本 API 是<a target="_blank" rel="noopener" href="https://download.java.net/java/early_access/loom/docs/api/jdk.incubator.concurrent/jdk/incubator/concurrent/StructuredTaskScope.html">StructuredTaskScope</a>。StructuredTaskScope 支持将任务拆分为多个并发子任务，在它们自己的线程中执行，并且子任务必须在主任务继续之前完成。</p>
 <p>StructuredTaskScope 的基本用法如下：</p>
-<pre><code class="java">try (var scope = new StructuredTaskScope&lt;Object&gt;()) &#123;
-        // 使用fork方法派生线程来执行子任务
-        Future&lt;Integer&gt; future1 = scope.fork(task1);
-        Future&lt;String&gt; future2 = scope.fork(task2);
-        // 等待线程完成
-        scope.join();
-        // 结果的处理可能包括处理或重新抛出异常
-        ... process results/exceptions ...
-    &#125; // close
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> (<span class="type">var</span> <span class="variable">scope</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StructuredTaskScope</span>&lt;Object&gt;()) &#123;</span><br><span class="line">        <span class="comment">// 使用fork方法派生线程来执行子任务</span></span><br><span class="line">        Future&lt;Integer&gt; future1 = scope.fork(task1);</span><br><span class="line">        Future&lt;String&gt; future2 = scope.fork(task2);</span><br><span class="line">        <span class="comment">// 等待线程完成</span></span><br><span class="line">        scope.join();</span><br><span class="line">        <span class="comment">// 结果的处理可能包括处理或重新抛出异常</span></span><br><span class="line">        ... process results/exceptions ...</span><br><span class="line">    &#125; <span class="comment">// close</span></span><br></pre></td></tr></table></figure>
+
 <p>结构化并发非常适合虚拟线程，虚拟线程是 JDK 实现的轻量级线程。许多虚拟线程共享同一个操作系统线程，从而允许非常多的虚拟线程。</p>
 <p>JDK 20 中对结构化并发唯一变化是更新为支持在任务范围内创建的线程StructuredTaskScope继承范围值 这简化了跨线程共享不可变数据，详见<a target="_blank" rel="noopener" href="https://openjdk.org/jeps/429">JEP 429</a>。</p>
 <h2 id="JEP-432：向量-API（第五次孵化）"><a href="#JEP-432：向量-API（第五次孵化）" class="headerlink" title="JEP 432：向量 API（第五次孵化）"></a>JEP 432：向量 API（第五次孵化）</h2><p>向量计算由对向量的一系列操作组成。向量 API 用来表达向量计算，该计算可以在运行时可靠地编译为支持的 CPU 架构上的最佳向量指令，从而实现优于等效标量计算的性能。</p>

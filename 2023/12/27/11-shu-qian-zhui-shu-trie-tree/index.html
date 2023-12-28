@@ -425,214 +425,39 @@ Trie，又称字典树、单词查找树或键树，是一种树形结构，是�
 <p>重点在于节点数据结构，重要的插入和查找方法，以及递归和非递归两种形式。@pdai</p>
 </blockquote>
 <h3 id="节点数据结构定义"><a href="#节点数据结构定义" class="headerlink" title="节点数据结构定义"></a>节点数据结构定义</h3><p>Node节点中使用map较为高效，用于映射到下一个节点：</p>
-<pre><code class="java">public class Trie &#123;
- 
-  private class Node&#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Trie</span> &#123;</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">Node</span>&#123;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">public</span> <span class="type">boolean</span> isWord; <span class="comment">// 是否是某个单词的结束</span></span><br><span class="line">      </span><br><span class="line">      <span class="keyword">public</span> TreeMap&lt;Character, Node&gt; next; <span class="comment">//到下一个节点的映射</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">(<span class="type">boolean</span> isWord)</span>&#123;</span><br><span class="line">          <span class="built_in">this</span>.isWord = isWord;</span><br><span class="line">          <span class="comment">//初始化字典树</span></span><br><span class="line">          next = <span class="keyword">new</span> <span class="title class_">TreeMap</span>&lt;&gt;();</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">()</span>&#123;</span><br><span class="line">          <span class="built_in">this</span>(<span class="literal">false</span>);</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//根节点</span></span><br><span class="line">  <span class="keyword">private</span> Node root;</span><br><span class="line">  <span class="comment">//Trie单词个数</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">int</span> size;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">Trie</span><span class="params">()</span>&#123;</span><br><span class="line">      root = <span class="keyword">new</span> <span class="title class_">Node</span>();</span><br><span class="line">      size = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 获得Trie中存储的单词数量</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getSize</span><span class="params">()</span>&#123;</span><br><span class="line">      <span class="keyword">return</span> size;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-      public boolean isWord; // 是否是某个单词的结束
-      
-      public TreeMap&lt;Character, Node&gt; next; //到下一个节点的映射
-
-      public Node(boolean isWord)&#123;
-          this.isWord = isWord;
-          //初始化字典树
-          next = new TreeMap&lt;&gt;();
-      &#125;
-
-      public Node()&#123;
-          this(false);
-      &#125;
-  &#125;
-  
-  //根节点
-  private Node root;
-  //Trie单词个数
-  private int size;
-
-  public Trie()&#123;
-      root = new Node();
-      size = 0;
-  &#125;
-
-  // 获得Trie中存储的单词数量
-  public int getSize()&#123;
-      return size;
-  &#125;
-
-&#125;
-</code></pre>
 <h3 id="插入方法"><a href="#插入方法" class="headerlink" title="插入方法"></a>插入方法</h3><ul>
 <li><strong>非递归方式</strong></li>
 </ul>
 <p>向Trie中添加一个新的单词word: 将单词拆分成一个个字符c，然后从根节点开始往下添加</p>
-<pre><code class="java">public void add(String word)&#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">add</span><span class="params">(String word)</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">Node</span> <span class="variable">cur</span> <span class="operator">=</span> root;</span><br><span class="line">    <span class="comment">//循环判断新的cur节点是否包含下一个字符到下一个节点的映射</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span> ; i &lt; word.length() ; i ++)&#123;</span><br><span class="line">        <span class="comment">//将c当成一个节点插入Trie中</span></span><br><span class="line">        <span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> word.charAt(i);</span><br><span class="line">        <span class="comment">//判断cur.next是不是已经指向我们要找的c字符相应的节点</span></span><br><span class="line">        <span class="keyword">if</span>(cur.next.get(c) == <span class="literal">null</span>)&#123;</span><br><span class="line">            <span class="comment">//新建节点</span></span><br><span class="line">            cur.next.put(c, <span class="keyword">new</span> <span class="title class_">Node</span>());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//否则，就直接走到该节点位置即可</span></span><br><span class="line">        cur = cur.next.get(c);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//判断该单词并不表示任何一个单词的结尾</span></span><br><span class="line">    <span class="keyword">if</span>(!cur.isWord)&#123;</span><br><span class="line">        <span class="comment">//确定cur是新的单词</span></span><br><span class="line">        cur.isWord = <span class="literal">true</span>;</span><br><span class="line">        size ++;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-    Node cur = root;
-    //循环判断新的cur节点是否包含下一个字符到下一个节点的映射
-    for(int i = 0 ; i &lt; word.length() ; i ++)&#123;
-        //将c当成一个节点插入Trie中
-        char c = word.charAt(i);
-        //判断cur.next是不是已经指向我们要找的c字符相应的节点
-        if(cur.next.get(c) == null)&#123;
-            //新建节点
-            cur.next.put(c, new Node());
-        &#125;
-        //否则，就直接走到该节点位置即可
-        cur = cur.next.get(c);
-    &#125;
-    //判断该单词并不表示任何一个单词的结尾
-    if(!cur.isWord)&#123;
-        //确定cur是新的单词
-        cur.isWord = true;
-        size ++;
-    &#125;
-</code></pre>
 <ul>
 <li><strong>递归方式</strong></li>
 </ul>
-<pre><code class="java">/**
-  * 向Trie中添加一个新的单词word(递归写法接口)
-  *
-  * @param word
-  */
-public void recursionAdd(String word) &#123;
-    Node cur = root;
-    add(root, word, 0);
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 向Trie中添加一个新的单词word(递归写法接口)</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> word</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">recursionAdd</span><span class="params">(String word)</span> &#123;</span><br><span class="line">    <span class="type">Node</span> <span class="variable">cur</span> <span class="operator">=</span> root;</span><br><span class="line">    add(root, word, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 递归写法调用方法实现递归添加</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> node 传入要进行添加的节点</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> word 传入要进行添加的单词</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">add</span><span class="params">(Node node, String word, <span class="type">int</span> index)</span> &#123;</span><br><span class="line">    <span class="comment">// 确定终止条件,这个终止条件在没加index这个参数时,很难确定</span></span><br><span class="line">    <span class="comment">// 此时一个单词已经遍历完成了,如果这个结束节点没有标记为单词,就标记为单词</span></span><br><span class="line">    <span class="keyword">if</span> (!node.isWord &amp;&amp; index == word.length()) &#123;</span><br><span class="line">        node.isWord = <span class="literal">true</span>;</span><br><span class="line">        size++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (word.length() &gt; index) &#123;</span><br><span class="line">        <span class="type">char</span> <span class="variable">addLetter</span> <span class="operator">=</span> word.charAt(index);</span><br><span class="line">        <span class="comment">// 判断trie的下个节点组中是否有查询的字符,如果没有,就添加</span></span><br><span class="line">        <span class="keyword">if</span> (node.next.get(addLetter) == <span class="literal">null</span>) &#123;</span><br><span class="line">            node.next.put(addLetter, <span class="keyword">new</span> <span class="title class_">Node</span>());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 基于已经存在的字符进行下个字符的递归查询</span></span><br><span class="line">        add(node.next.get(addLetter), word, index + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-/**
-  * 递归写法调用方法实现递归添加
-  *
-  * @param node 传入要进行添加的节点
-  * @param word 传入要进行添加的单词
-  */
-public void add(Node node, String word, int index) &#123;
-    // 确定终止条件,这个终止条件在没加index这个参数时,很难确定
-    // 此时一个单词已经遍历完成了,如果这个结束节点没有标记为单词,就标记为单词
-    if (!node.isWord &amp;&amp; index == word.length()) &#123;
-        node.isWord = true;
-        size++;
-    &#125;
-
-    if (word.length() &gt; index) &#123;
-        char addLetter = word.charAt(index);
-        // 判断trie的下个节点组中是否有查询的字符,如果没有,就添加
-        if (node.next.get(addLetter) == null) &#123;
-            node.next.put(addLetter, new Node());
-        &#125;
-        // 基于已经存在的字符进行下个字符的递归查询
-        add(node.next.get(addLetter), word, index + 1);
-    &#125;
-&#125;
-</code></pre>
 <h3 id="查询单词方法"><a href="#查询单词方法" class="headerlink" title="查询单词方法"></a>查询单词方法</h3><ul>
 <li><strong>非递归方式</strong></li>
 </ul>
-<pre><code class="java">/**
-  * 查询单词word是否在Trie中(非递归写法)
-  *
-  * @param word
-  * @return
-  */
-public boolean contains(String word) &#123;
-    Node cur = root;
-    for (int i = 0; i &lt; word.length(); i++) &#123;
-        char c = word.charAt(i);
-        if (cur.next.get(c) == null) &#123;
-            return false;
-        &#125; else &#123;
-            cur = cur.next.get(c);
-        &#125;
-    &#125;
-    return cur.isWord;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 查询单词word是否在Trie中(非递归写法)</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> word</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">contains</span><span class="params">(String word)</span> &#123;</span><br><span class="line">    <span class="type">Node</span> <span class="variable">cur</span> <span class="operator">=</span> root;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; word.length(); i++) &#123;</span><br><span class="line">        <span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> word.charAt(i);</span><br><span class="line">        <span class="keyword">if</span> (cur.next.get(c) == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            cur = cur.next.get(c);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> cur.isWord;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><strong>递归方式</strong></li>
 </ul>
-<pre><code class="java">/**
-  * 查询单词word中是否在Trie中接口(递归写法)
-  *
-  * @param word
-  * @return
-  */
-public boolean recursionContains(String word) &#123;
-    Node cur = root;
-    return contains(root, word, 0);
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 查询单词word中是否在Trie中接口(递归写法)</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> word</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">recursionContains</span><span class="params">(String word)</span> &#123;</span><br><span class="line">    <span class="type">Node</span> <span class="variable">cur</span> <span class="operator">=</span> root;</span><br><span class="line">    <span class="keyword">return</span> contains(root, word, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 查询word中是否在Trie中递归写法</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> node</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> word</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> index</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">contains</span><span class="params">(Node node, String word, <span class="type">int</span> index)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index == word.length()) &#123;</span><br><span class="line">        <span class="keyword">return</span> node.isWord;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> word.charAt(index);</span><br><span class="line">    <span class="keyword">if</span> (node.next.get(c) == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> contains(node.next.get(c), word, index + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-/**
-  * 查询word中是否在Trie中递归写法
-  *
-  * @param node
-  * @param word
-  * @param index
-  * @return
-  */
-private boolean contains(Node node, String word, int index) &#123;
-    if (index == word.length()) &#123;
-        return node.isWord;
-    &#125;
-    char c = word.charAt(index);
-    if (node.next.get(c) == null) &#123;
-        return false;
-    &#125; else &#123;
-        return contains(node.next.get(c), word, index + 1);
-    &#125;
-&#125;
-</code></pre>
 <h3 id="查询前缀方法"><a href="#查询前缀方法" class="headerlink" title="查询前缀方法"></a>查询前缀方法</h3><ul>
 <li><strong>非递归方式</strong></li>
 </ul>
-<pre><code class="java">/**
-  * 查询是否在Trie中有单词一prefix为前缀
-  *
-  * @param prefix
-  * @return
-  */
-public boolean isPrefix(String prefix) &#123;
-    Node cur = root;
-    for (int i = 0; i &lt; prefix.length(); i++) &#123;
-        char c = prefix.charAt(i);
-        if (cur.next.get(c) == null) &#123;
-            return false;
-        &#125;
-        cur = cur.next.get(c);
-    &#125;
-    return true;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 查询是否在Trie中有单词一prefix为前缀</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> prefix</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isPrefix</span><span class="params">(String prefix)</span> &#123;</span><br><span class="line">    <span class="type">Node</span> <span class="variable">cur</span> <span class="operator">=</span> root;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; prefix.length(); i++) &#123;</span><br><span class="line">        <span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> prefix.charAt(i);</span><br><span class="line">        <span class="keyword">if</span> (cur.next.get(c) == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        cur = cur.next.get(c);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><strong>递归方式</strong></li>
 </ul>
-<pre><code class="java">/**
-  * 查询是否在Trie中有单词一prefix为前缀(递归调用)
-  *
-  * @param prefix
-  * @return
-  */
-public boolean recursionIsPrefix(String prefix) &#123;
-    Node node = root;
-    return recursionIsPrefix(root, prefix, 0);
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 查询是否在Trie中有单词一prefix为前缀(递归调用)</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> prefix</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">recursionIsPrefix</span><span class="params">(String prefix)</span> &#123;</span><br><span class="line">    <span class="type">Node</span> <span class="variable">node</span> <span class="operator">=</span> root;</span><br><span class="line">    <span class="keyword">return</span> recursionIsPrefix(root, prefix, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 查询是否在Trie中有单词一prefix为前缀(递归实现)</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">recursionIsPrefix</span><span class="params">(Node root, String prefix, <span class="type">int</span> index)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (prefix.length() == index) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> prefix.charAt(index);</span><br><span class="line">    <span class="keyword">if</span> (root.next.get(c) == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> recursionIsPrefix(root.next.get(c), prefix, ++index);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-/**
-  * 查询是否在Trie中有单词一prefix为前缀(递归实现)
-  *
-  * @return
-  */
-public boolean recursionIsPrefix(Node root, String prefix, int index) &#123;
-    if (prefix.length() == index) &#123;
-        return true;
-    &#125;
-    char c = prefix.charAt(index);
-    if (root.next.get(c) == null) &#123;
-        return false;
-    &#125; else &#123;
-        return recursionIsPrefix(root.next.get(c), prefix, ++index);
-    &#125;
-&#125;
-</code></pre>
 <h2 id="前缀树的拓展"><a href="#前缀树的拓展" class="headerlink" title="前缀树的拓展"></a>前缀树的拓展</h2><blockquote>
 <p>再深入理解下前缀树。</p>
 </blockquote>

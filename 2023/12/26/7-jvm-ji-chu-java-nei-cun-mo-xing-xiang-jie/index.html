@@ -434,16 +434,8 @@
 <p>上述的 1 属于编译器重排序，2 和 3 属于处理器重排序。这些重排序都可能会导致多线程程序出现内存可见性问题。对于编译器，JMM 的编译器重排序规则会禁止特定类型的编译器重排序（不是所有的编译器重排序都要禁止）。对于处理器重排序，JMM 的处理器重排序规则会要求 java 编译器在生成指令序列时，插入特定类型的内存屏障（memory barriers，intel 称之为 memory fence）指令，通过内存屏障指令来禁止特定类型的处理器重排序（不是所有的处理器重排序都要禁止）。</p>
 <p>JMM 属于语言级的内存模型，它确保在不同的编译器和不同的处理器平台之上，通过禁止特定类型的编译器重排序和处理器重排序，为程序员提供一致的内存可见性保证。</p>
 <h3 id="处理器重排序与内存屏障指令"><a href="#处理器重排序与内存屏障指令" class="headerlink" title="处理器重排序与内存屏障指令"></a>处理器重排序与内存屏障指令</h3><p>现代的处理器使用写缓冲区来临时保存向内存写入的数据。写缓冲区可以保证指令流水线持续运行，它可以避免由于处理器停顿下来等待向内存写入数据而产生的延迟。同时，通过以批处理的方式刷新写缓冲区，以及合并写缓冲区中对同一内存地址的多次写，可以减少对内存总线的占用。虽然写缓冲区有这么多好处，但每个处理器上的写缓冲区，仅仅对它所在的处理器可见。这个特性会对内存操作的执行顺序产生重要的影响：处理器对内存的读 &#x2F; 写操作的执行顺序，不一定与内存实际发生的读 &#x2F; 写操作顺序一致！为了具体说明，请看下面示例：</p>
-<pre><code class="java">// Processor A
-a = 1; //A1  
-x = b; //A2
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Processor A</span></span><br><span class="line">a = <span class="number">1</span>; <span class="comment">//A1  </span></span><br><span class="line">x = b; <span class="comment">//A2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Processor B</span></span><br><span class="line">b = <span class="number">2</span>; <span class="comment">//B1  </span></span><br><span class="line">y = a; <span class="comment">//B2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始状态：a = b = 0；处理器允许执行后得到结果：x = y = 0</span></span><br></pre></td></tr></table></figure>
 
-// Processor B
-b = 2; //B1  
-y = a; //B2
-
-// 初始状态：a = b = 0；处理器允许执行后得到结果：x = y = 0
-</code></pre>
 <p>假设处理器 A 和处理器 B 按程序的顺序并行执行内存访问，最终却可能得到 x &#x3D; y &#x3D; 0 的结果。具体的原因如下图所示：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261853557.png" alt="img"></p>
 <p>这里处理器 A 和处理器 B 可以同时把共享变量写入自己的写缓冲区（A1，B1），然后从内存中读取另一个共享变量（A2，B2），最后才把自己写缓存区中保存的脏数据刷新到内存中（A3，B3）。当以这种时序执行时，程序就可以得到 x &#x3D; y &#x3D; 0 的结果。</p>
@@ -575,10 +567,8 @@ y = a; //B2
 <p>注意，这里所说的数据依赖性仅针对单个处理器中执行的指令序列和单个线程中执行的操作，不同处理器之间和不同线程之间的数据依赖性不被编译器和处理器考虑。</p>
 <h3 id="as-if-serial-语义"><a href="#as-if-serial-语义" class="headerlink" title="as-if-serial 语义"></a>as-if-serial 语义</h3><p>as-if-serial 语义的意思指：不管怎么重排序（编译器和处理器为了提高并行度），（单线程）程序的执行结果不能被改变。编译器，runtime 和处理器都必须遵守 as-if-serial 语义。</p>
 <p>为了遵守 as-if-serial 语义，编译器和处理器不会对存在数据依赖关系的操作做重排序，因为这种重排序会改变执行结果。但是，如果操作之间不存在数据依赖关系，这些操作可能被编译器和处理器重排序。为了具体说明，请看下面计算圆面积的代码示例：</p>
-<pre><code class="java">double pi  = 3.14;    //A
-double r   = 1.0;     //B
-double area = pi * r * r; //C
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">double</span> <span class="variable">pi</span>  <span class="operator">=</span> <span class="number">3.14</span>;    <span class="comment">//A</span></span><br><span class="line"><span class="type">double</span> <span class="variable">r</span>   <span class="operator">=</span> <span class="number">1.0</span>;     <span class="comment">//B</span></span><br><span class="line"><span class="type">double</span> <span class="variable">area</span> <span class="operator">=</span> pi * r * r; <span class="comment">//C</span></span><br></pre></td></tr></table></figure>
+
 <p>上面三个操作的数据依赖关系如下图所示：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261854829.png" alt="img"></p>
 <p>如上图所示，A 和 C 之间存在数据依赖关系，同时 B 和 C 之间也存在数据依赖关系。因此在最终执行的指令序列中，C 不能被重排序到 A 和 B 的前面（C 排到 A 和 B 的前面，程序的结果将会被改变）。但 A 和 B 之间没有数据依赖关系，编译器和处理器可以重排序 A 和 B 之间的执行顺序。下图是该程序的两种执行顺序：</p>
@@ -594,23 +584,8 @@ double area = pi * r * r; //C
 <p>这里 A happens- before B，但实际执行时 B 却可以排在 A 之前执行（看上面的重排序后的执行顺序）。在第一章提到过，如果 A happens- before B，JMM 并不要求 A 一定要在 B 之前执行。JMM 仅仅要求前一个操作（执行的结果）对后一个操作可见，且前一个操作按顺序排在第二个操作之前。这里操作 A 的执行结果不需要对操作 B 可见；而且重排序操作 A 和操作 B 后的执行结果，与操作 A 和操作 B 按 happens- before 顺序执行的结果一致。在这种情况下，JMM 会认为这种重排序并不非法（not illegal），JMM 允许这种重排序。</p>
 <p>在计算机中，软件技术和硬件技术有一个共同的目标：在不改变程序执行结果的前提下，尽可能的开发并行度。编译器和处理器遵从这一目标，从 happens- before 的定义我们可以看出，JMM 同样遵从这一目标。</p>
 <h3 id="重排序对多线程的影响"><a href="#重排序对多线程的影响" class="headerlink" title="重排序对多线程的影响"></a>重排序对多线程的影响</h3><p>现在让我们来看看，重排序是否会改变多线程程序的执行结果。请看下面的示例代码：</p>
-<pre><code class="java">class ReorderExample &#123;
-    int a = 0;
-    boolean flag = false;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ReorderExample</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">flag</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">writer</span><span class="params">()</span> &#123;</span><br><span class="line">        a = <span class="number">1</span>;                   <span class="comment">//1</span></span><br><span class="line">        flag = <span class="literal">true</span>;             <span class="comment">//2</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Public <span class="keyword">void</span> <span class="title function_">reader</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (flag) &#123;                <span class="comment">//3</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span>  a * a;        <span class="comment">//4</span></span><br><span class="line">            ……</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    public void writer() &#123;
-        a = 1;                   //1
-        flag = true;             //2
-    &#125;
-
-    Public void reader() &#123;
-        if (flag) &#123;                //3
-            int i =  a * a;        //4
-            ……
-        &#125;
-    &#125;
-&#125;
-</code></pre>
 <p>flag 变量是个标记，用来标识变量 a 是否已被写入。这里假设有两个线程 A 和 B，A 首先执行 writer() 方法，随后 B 线程接着执行 reader() 方法。线程 B 在执行操作 4 时，能否看到线程 A 在操作 1 对共享变量 a 的写入?</p>
 <p>答案是：不一定能看到。</p>
 <p>由于操作 1 和操作 2 没有数据依赖关系，编译器和处理器可以对这两个操作重排序；同样，操作 3 和操作 4 没有数据依赖关系，编译器和处理器也可以对这两个操作重排序。让我们先来看看，当操作 1 和操作 2 重排序时，可能会产生什么效果? 请看下面的程序执行时序图：</p>
@@ -649,23 +624,8 @@ double area = pi * r * r; //C
 <p>但是，在 JMM 中就没有这个保证。未同步程序在 JMM 中不但整体的执行顺序是无序的，而且所有线程看到的操作执行顺序也可能不一致。比如，在当前线程把写过的数据缓存在本地内存中，且还没有刷新到主内存之前，这个写操作仅对当前线程可见；从其他线程的角度来观察，会认为这个写操作根本还没有被当前线程执行。只有当前线程把本地内存中写过的数据刷新到主内存之后，这个写操作才能对其他线程可见。在这种情况下，当前线程和其它线程看到的操作执行顺序将不一致。</p>
 <h3 id="同步程序的顺序一致性效果"><a href="#同步程序的顺序一致性效果" class="headerlink" title="同步程序的顺序一致性效果"></a>同步程序的顺序一致性效果</h3><p>下面我们对前面的示例程序 ReorderExample 用监视器来同步，看看正确同步的程序如何具有顺序一致性。</p>
 <p>请看下面的示例代码：</p>
-<pre><code class="java">class SynchronizedExample &#123;
-    int a = 0;
-    boolean flag = false;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SynchronizedExample</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">flag</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">writer</span><span class="params">()</span> &#123;</span><br><span class="line">        a = <span class="number">1</span>;</span><br><span class="line">        flag = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">reader</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (flag) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> a;</span><br><span class="line">            ……</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    public synchronized void writer() &#123;
-        a = 1;
-        flag = true;
-    &#125;
-
-    public synchronized void reader() &#123;
-        if (flag) &#123;
-            int i = a;
-            ……
-        &#125;
-    &#125;
-&#125;
-</code></pre>
 <p>上面示例代码中，假设 A 线程执行 writer() 方法后，B 线程执行 reader() 方法。这是一个正确同步的多线程程序。根据 JMM 规范，该程序的执行结果将与该程序在顺序一致性模型中的执行结果相同。下面是该程序在两个内存模型中的执行时序对比图：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261856998.png" alt="img"></p>
 <p>在顺序一致性模型中，所有操作完全按程序的顺序串行执行。而在 JMM 中，临界区内的代码可以重排序（但 JMM 不允许临界区内的代码“逸出”到临界区之外，那样会破坏监视器的语义）。JMM 会在退出监视器和进入监视器这两个关键时间点做一些特别处理，使得线程在这两个时间点具有与顺序一致性模型相同的内存视图（具体细节后文会说明）。虽然线程 A 在临界区内做了重排序，但由于监视器的互斥执行的特性，这里的线程 B 根本无法“观察”到线程 A 在临界区内的重排序。这种重排序既提高了执行效率，又没有改变程序的执行结果。</p>
@@ -759,10 +719,8 @@ double area = pi * r * r; //C
 </ul>
 <p>由于这两个因素互相矛盾，所以 JSR-133 专家组在设计 JMM 时的核心目标就是找到一个好的平衡点：一方面要为程序员提供足够强的内存可见性保证；另一方面，对编译器和处理器的限制要尽可能的放松。下面让我们看看 JSR-133 是如何实现这一目标的。</p>
 <p>为了具体说明，请看前面提到过的计算圆面积的示例代码：</p>
-<pre><code class="java">double pi  = 3.14;    //A
-double r   = 1.0;     //B
-double area = pi * r * r; //C
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">double</span> <span class="variable">pi</span>  <span class="operator">=</span> <span class="number">3.14</span>;    <span class="comment">//A</span></span><br><span class="line"><span class="type">double</span> <span class="variable">r</span>   <span class="operator">=</span> <span class="number">1.0</span>;     <span class="comment">//B</span></span><br><span class="line"><span class="type">double</span> <span class="variable">area</span> <span class="operator">=</span> pi * r * r; <span class="comment">//C</span></span><br></pre></td></tr></table></figure>
+
 <p>上面计算圆的面积的示例代码存在三个 happens- before 关系：</p>
 <ul>
 <li>A happens- before B；</li>

@@ -436,79 +436,19 @@ Java 堆内存">
 <p>只要将<code>-Xms(最小堆)</code>,<code>-Xmx(最大堆)</code> 设置为一样禁止自动扩展堆内存。</p>
 <p>当使用一个 <code>while(true)</code> 循环来不断创建对象就会发生 <code>OutOfMemory</code>，还可以使用 <code>-XX:+HeapDumpOutofMemoryErorr</code> 当发生 OOM 时会自动 dump 堆栈到文件中。</p>
 <p>伪代码:</p>
-<pre><code class="java">public static void main(String[] args) &#123;
-    List&lt;String&gt; list = new ArrayList&lt;&gt;(10) ;
-    while (true)&#123;
-        list.add(&quot;1&quot;) ;
-    &#125;
-&#125;
-</code></pre>
-<p>当出现 OOM 时可以通过工具来分析 <code>GC-Roots</code> <a target="_blank" rel="noopener" href="https://github.com/crossoverJie/Java-Interview/blob/master/MD/GarbageCollection.md#%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90%E7%AE%97%E6%B3%95">引用链在新窗口打开</a> ，查看对象和 <code>GC-Roots</code> 是如何进行关联的，是否存在对象的生命周期过长，或者是这些对象确实改存在的，那就要考虑将堆内存调大了。</p>
-<pre><code class="text">Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: Java heap space
-    at java.util.Arrays.copyOf(Arrays.java:3210)
-    at java.util.Arrays.copyOf(Arrays.java:3181)
-    at java.util.ArrayList.grow(ArrayList.java:261)
-    at java.util.ArrayList.ensureExplicitCapacity(ArrayList.java:235)
-    at java.util.ArrayList.ensureCapacityInternal(ArrayList.java:227)
-    at java.util.ArrayList.add(ArrayList.java:458)
-    at com.crossoverjie.oom.HeapOOM.main(HeapOOM.java:18)
-    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-    at java.lang.reflect.Method.invoke(Method.java:498)
-    at com.intellij.rt.execution.application.AppMain.main(AppMain.java:147)
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">	List&lt;String&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(<span class="number">10</span>) ;</span><br><span class="line">	<span class="keyword">while</span> (<span class="literal">true</span>)&#123;</span><br><span class="line">		list.add(<span class="string">&quot;1&quot;</span>) ;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-Process finished with exit code 1
-</code></pre>
+<p>当出现 OOM 时可以通过工具来分析 <code>GC-Roots</code> <a target="_blank" rel="noopener" href="https://github.com/crossoverJie/Java-Interview/blob/master/MD/GarbageCollection.md#%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90%E7%AE%97%E6%B3%95">引用链在新窗口打开</a> ，查看对象和 <code>GC-Roots</code> 是如何进行关联的，是否存在对象的生命周期过长，或者是这些对象确实改存在的，那就要考虑将堆内存调大了。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">	at java.util.Arrays.copyOf(Arrays.java:3210)</span><br><span class="line">	at java.util.Arrays.copyOf(Arrays.java:3181)</span><br><span class="line">	at java.util.ArrayList.grow(ArrayList.java:261)</span><br><span class="line">	at java.util.ArrayList.ensureExplicitCapacity(ArrayList.java:235)</span><br><span class="line">	at java.util.ArrayList.ensureCapacityInternal(ArrayList.java:227)</span><br><span class="line">	at java.util.ArrayList.add(ArrayList.java:458)</span><br><span class="line">	at com.crossoverjie.oom.HeapOOM.main(HeapOOM.java:18)</span><br><span class="line">	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br><span class="line">	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)</span><br><span class="line">	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span><br><span class="line">	at java.lang.reflect.Method.invoke(Method.java:498)</span><br><span class="line">	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:147)</span><br><span class="line"></span><br><span class="line">Process finished with exit code 1</span><br></pre></td></tr></table></figure>
+
 <p><code>java.lang.OutOfMemoryError: Java heap space</code>表示堆内存溢出。</p>
 <h4 id="OutOfMemoryError-GC-overhead-limit-exceeded"><a href="#OutOfMemoryError-GC-overhead-limit-exceeded" class="headerlink" title="OutOfMemoryError: GC overhead limit exceeded"></a>OutOfMemoryError: GC overhead limit exceeded</h4><p>GC overhead limt exceed检查是Hotspot VM 1.6定义的一个策略，通过统计GC时间来预测是否要OOM了，提前抛出异常，防止OOM发生。Sun 官方对此的定义是：“并行&#x2F;并发回收器在GC回收时间过长时会抛出OutOfMemroyError。过长的定义是，超过98%的时间用来做GC并且回收了不到2%的堆内存。用来避免内存过小造成应用不能正常工作。“</p>
 <p>PS：-Xmx最大内存配置2GB</p>
-<pre><code class="java">public void testOom1() &#123;
-    List&lt;Map&lt;String, Object&gt;&gt; mapList = new ArrayList&lt;&gt;();
-    for (int i = 0; i &lt; 1000000; i++) &#123;
-        Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();
-        for (int j = 0; j &lt; i; j++) &#123;
-                map.put(String.valueOf(j), j);
-        &#125;
-        mapList.add(map);
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testOom1</span><span class="params">()</span> &#123;</span><br><span class="line">	List&lt;Map&lt;String, Object&gt;&gt; mapList = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">	<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">1000000</span>; i++) &#123;</span><br><span class="line">		Map&lt;String, Object&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; i; j++) &#123;</span><br><span class="line">				map.put(String.valueOf(j), j);</span><br><span class="line">		&#125;</span><br><span class="line">		mapList.add(map);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>上述的代码执行会：old区占用过多导致频繁Full GC，最终导致GC overhead limit exceed。</p>
-<pre><code class="java">java.lang.OutOfMemoryError: GC overhead limit exceeded
-    at java.util.HashMap.newNode(HashMap.java:1747) ~[na:1.8.0_181]
-    at java.util.HashMap.putVal(HashMap.java:642) ~[na:1.8.0_181]
-    at java.util.HashMap.put(HashMap.java:612) ~[na:1.8.0_181]
-    at tech.pdai.test.oom.controller.TestOomController.testOom1(TestOomController.java:33) ~[classes/:na]
-    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_181]
-    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_181]
-    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_181]
-    at java.lang.reflect.Method.invoke(Method.java:498) ~[na:1.8.0_181]
-    at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:197) ~[spring-web-5.3.9.jar:5.3.9]
-    at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:141) ~[spring-web-5.3.9.jar:5.3.9]
-    at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:106) ~[spring-webmvc-5.3.9.jar:5.3.9]
-    at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895) ~[spring-webmvc-5.3.9.jar:5.3.9]
-    at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808) ~[spring-webmvc-5.3.9.jar:5.3.9]
-    at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-5.3.9.jar:5.3.9]
-    at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1064) ~[spring-webmvc-5.3.9.jar:5.3.9]
-    at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:963) ~[spring-webmvc-5.3.9.jar:5.3.9]
-    at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) ~[spring-webmvc-5.3.9.jar:5.3.9]
-    at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:898) ~[spring-webmvc-5.3.9.jar:5.3.9]
-    at javax.servlet.http.HttpServlet.service(HttpServlet.java:655) ~[tomcat-embed-core-9.0.50.jar:4.0.FR]
-    at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:883) ~[spring-webmvc-5.3.9.jar:5.3.9]
-    at javax.servlet.http.HttpServlet.service(HttpServlet.java:764) ~[tomcat-embed-core-9.0.50.jar:4.0.FR]
-    at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:228) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
-    at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
-    at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53) ~[tomcat-embed-websocket-9.0.50.jar:9.0.50]
-    at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
-    at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
-    at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-5.3.9.jar:5.3.9]
-    at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
-    at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
-    at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
-    at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-5.3.9.jar:5.3.9]
-    at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">java.lang.OutOfMemoryError: GC overhead limit exceeded</span><br><span class="line">	at java.util.HashMap.newNode(HashMap.java:<span class="number">1747</span>) ~[na:<span class="number">1.8</span><span class="number">.0_181</span>]</span><br><span class="line">	at java.util.HashMap.putVal(HashMap.java:<span class="number">642</span>) ~[na:<span class="number">1.8</span><span class="number">.0_181</span>]</span><br><span class="line">	at java.util.HashMap.put(HashMap.java:<span class="number">612</span>) ~[na:<span class="number">1.8</span><span class="number">.0_181</span>]</span><br><span class="line">	at tech.pdai.test.oom.controller.TestOomController.testOom1(TestOomController.java:<span class="number">33</span>) ~[classes/:na]</span><br><span class="line">	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:<span class="number">1.8</span><span class="number">.0_181</span>]</span><br><span class="line">	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:<span class="number">62</span>) ~[na:<span class="number">1.8</span><span class="number">.0_181</span>]</span><br><span class="line">	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:<span class="number">43</span>) ~[na:<span class="number">1.8</span><span class="number">.0_181</span>]</span><br><span class="line">	at java.lang.reflect.Method.invoke(Method.java:<span class="number">498</span>) ~[na:<span class="number">1.8</span><span class="number">.0_181</span>]</span><br><span class="line">	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:<span class="number">197</span>) ~[spring-web-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:<span class="number">141</span>) ~[spring-web-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:<span class="number">106</span>) ~[spring-webmvc-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:<span class="number">895</span>) ~[spring-webmvc-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:<span class="number">808</span>) ~[spring-webmvc-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:<span class="number">87</span>) ~[spring-webmvc-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:<span class="number">1064</span>) ~[spring-webmvc-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:<span class="number">963</span>) ~[spring-webmvc-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:<span class="number">1006</span>) ~[spring-webmvc-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:<span class="number">898</span>) ~[spring-webmvc-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at javax.servlet.http.HttpServlet.service(HttpServlet.java:<span class="number">655</span>) ~[tomcat-embed-core-<span class="number">9.0</span><span class="number">.50</span>.jar:<span class="number">4.0</span>.FR]</span><br><span class="line">	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:<span class="number">883</span>) ~[spring-webmvc-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at javax.servlet.http.HttpServlet.service(HttpServlet.java:<span class="number">764</span>) ~[tomcat-embed-core-<span class="number">9.0</span><span class="number">.50</span>.jar:<span class="number">4.0</span>.FR]</span><br><span class="line">	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:<span class="number">228</span>) ~[tomcat-embed-core-<span class="number">9.0</span><span class="number">.50</span>.jar:<span class="number">9.0</span><span class="number">.50</span>]</span><br><span class="line">	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:<span class="number">163</span>) ~[tomcat-embed-core-<span class="number">9.0</span><span class="number">.50</span>.jar:<span class="number">9.0</span><span class="number">.50</span>]</span><br><span class="line">	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:<span class="number">53</span>) ~[tomcat-embed-websocket-<span class="number">9.0</span><span class="number">.50</span>.jar:<span class="number">9.0</span><span class="number">.50</span>]</span><br><span class="line">	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:<span class="number">190</span>) ~[tomcat-embed-core-<span class="number">9.0</span><span class="number">.50</span>.jar:<span class="number">9.0</span><span class="number">.50</span>]</span><br><span class="line">	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:<span class="number">163</span>) ~[tomcat-embed-core-<span class="number">9.0</span><span class="number">.50</span>.jar:<span class="number">9.0</span><span class="number">.50</span>]</span><br><span class="line">	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:<span class="number">100</span>) ~[spring-web-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:<span class="number">119</span>) ~[spring-web-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:<span class="number">190</span>) ~[tomcat-embed-core-<span class="number">9.0</span><span class="number">.50</span>.jar:<span class="number">9.0</span><span class="number">.50</span>]</span><br><span class="line">	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:<span class="number">163</span>) ~[tomcat-embed-core-<span class="number">9.0</span><span class="number">.50</span>.jar:<span class="number">9.0</span><span class="number">.50</span>]</span><br><span class="line">	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:<span class="number">93</span>) ~[spring-web-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br><span class="line">	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:<span class="number">119</span>) ~[spring-web-<span class="number">5.3</span><span class="number">.9</span>.jar:<span class="number">5.3</span><span class="number">.9</span>]</span><br></pre></td></tr></table></figure>
+
 <p>还可以使用 <code>-XX:+HeapDumpOutofMemoryErorr</code> 当发生 OOM 时会自动 dump 堆栈到文件中。</p>
 <p>JVM还有这样一个参数：<code>-XX:-UseGCOverheadLimit</code> 设置为false可以禁用这个检查。其实这个参数解决不了内存问题，只是把错误的信息延后，替换成 java.lang.OutOfMemoryError: Java heap space。</p>
 <h3 id="MetaSpace-元数据-内存溢出"><a href="#MetaSpace-元数据-内存溢出" class="headerlink" title="MetaSpace (元数据) 内存溢出"></a>MetaSpace (元数据) 内存溢出</h3><blockquote>
@@ -517,34 +457,11 @@ Process finished with exit code 1
 <p><code>PermSize</code> 和 <code>MaxPermSize</code> 已经不能使用了，在 JDK8 中配置这两个参数将会发出警告。</p>
 <p>JDK 8 中将类信息移到到了本地堆内存(Native Heap)中，将原有的永久代移动到了本地堆中成为 <code>MetaSpace</code> ,如果不指定该区域的大小，JVM 将会动态的调整。</p>
 <p>可以使用 <code>-XX:MaxMetaspaceSize=10M</code> 来限制最大元数据。这样当不停的创建类时将会占满该区域并出现 <code>OOM</code>。</p>
-<pre><code class="java">public static void main(String[] args) &#123;
-    while (true)&#123;
-        Enhancer  enhancer = new Enhancer() ;
-        enhancer.setSuperclass(HeapOOM.class);
-        enhancer.setUseCache(false) ;
-        enhancer.setCallback(new MethodInterceptor() &#123;
-            @Override
-            public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable &#123;
-                return methodProxy.invoke(o,objects) ;
-            &#125;
-        &#125;);
-        enhancer.create() ;
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">	<span class="keyword">while</span> (<span class="literal">true</span>)&#123;</span><br><span class="line">		<span class="type">Enhancer</span>  <span class="variable">enhancer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Enhancer</span>() ;</span><br><span class="line">		enhancer.setSuperclass(HeapOOM.class);</span><br><span class="line">		enhancer.setUseCache(<span class="literal">false</span>) ;</span><br><span class="line">		enhancer.setCallback(<span class="keyword">new</span> <span class="title class_">MethodInterceptor</span>() &#123;</span><br><span class="line">			<span class="meta">@Override</span></span><br><span class="line">			<span class="keyword">public</span> Object <span class="title function_">intercept</span><span class="params">(Object o, Method method, Object[] objects, MethodProxy methodProxy)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">				<span class="keyword">return</span> methodProxy.invoke(o,objects) ;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;);</span><br><span class="line">		enhancer.create() ;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>使用 <code>cglib</code> 不停的创建新类，最终会抛出:</p>
-<pre><code class="text">Caused by: java.lang.reflect.InvocationTargetException
-    at sun.reflect.GeneratedMethodAccessor1.invoke(Unknown Source)
-    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-    at java.lang.reflect.Method.invoke(Method.java:498)
-    at net.sf.cglib.core.ReflectUtils.defineClass(ReflectUtils.java:459)
-    at net.sf.cglib.core.AbstractClassGenerator.generate(AbstractClassGenerator.java:336)
-    ... 11 more
-Caused by: java.lang.OutOfMemoryError: Metaspace
-    at java.lang.ClassLoader.defineClass1(Native Method)
-    at java.lang.ClassLoader.defineClass(ClassLoader.java:763)
-    ... 16 more
-</code></pre>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Caused by: java.lang.reflect.InvocationTargetException</span><br><span class="line">	at sun.reflect.GeneratedMethodAccessor1.invoke(Unknown Source)</span><br><span class="line">	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span><br><span class="line">	at java.lang.reflect.Method.invoke(Method.java:498)</span><br><span class="line">	at net.sf.cglib.core.ReflectUtils.defineClass(ReflectUtils.java:459)</span><br><span class="line">	at net.sf.cglib.core.AbstractClassGenerator.generate(AbstractClassGenerator.java:336)</span><br><span class="line">	... 11 more</span><br><span class="line">Caused by: java.lang.OutOfMemoryError: Metaspace</span><br><span class="line">	at java.lang.ClassLoader.defineClass1(Native Method)</span><br><span class="line">	at java.lang.ClassLoader.defineClass(ClassLoader.java:763)</span><br><span class="line">	... 16 more</span><br></pre></td></tr></table></figure>
+
 <p>注意: 这里的 OOM 伴随的是 <code>java.lang.OutOfMemoryError: Metaspace</code> 也就是元数据溢出。</p>
 <h2 id="分析案例"><a href="#分析案例" class="headerlink" title="分析案例"></a>分析案例</h2><blockquote>
 <p>在实际工作中，如何去定位内存泄漏问题呢？</p>
@@ -553,27 +470,27 @@ Caused by: java.lang.OutOfMemoryError: Metaspace
 <li><strong>通过OOM获取</strong></li>
 </ul>
 <p>即在OutOfMemoryError后获取一份HPROF二进制Heap Dump文件，在jvm中添加参数：</p>
-<pre><code class="bash">-XX:+HeapDumpOnOutOfMemoryError
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:+HeapDumpOnOutOfMemoryError</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><strong>主动获取</strong></li>
 </ul>
 <p>在虚拟机添加参数如下，然后在Ctrl+Break组合键即可获取一份Heap Dump</p>
-<pre><code class="bash">-XX:+HeapDumpOnCtrlBreak
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:+HeapDumpOnCtrlBreak</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><strong>使用HPROF agent</strong></li>
 </ul>
 <p>使用Agent可以在程序执行结束时或受到SIGOUT信号时生成Dump文件</p>
 <p>配置在虚拟机的参数如下：</p>
-<pre><code class="bash">-agentlib:hprof=heap=dump,format=b
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-agentlib:hprof=heap=dump,format=b</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><strong>jmap获取</strong> (常用)</li>
 </ul>
 <p>jmap可以在cmd里执行，命令如下：</p>
-<pre><code class="bash">jmap -dump:format=b file=&lt;文件名XX.hprof&gt; &lt;pid&gt;
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jmap -dump:format=b file=&lt;文件名XX.hprof&gt; &lt;pid&gt;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><strong>使用JConsole</strong></li>
 </ul>

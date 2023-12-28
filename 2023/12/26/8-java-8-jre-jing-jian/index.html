@@ -430,116 +430,18 @@ Oracle公司如期发布了Java 8正式版！没有让广大javaer失望。对�
 </ul>
 <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>紧凑的JRE分3种，分别是compact1、compact2、compact3，他们的关系是compact1&lt;compact2&lt;compact3,他们包含的API如下图所示</p>
 <p>使用javac根据profile编译应用程序</p>
-<pre><code class="bash">javac –bootclasspath, or javac –profile
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac –bootclasspath, or javac –profile</span><br></pre></td></tr></table></figure>
+
 <p>如果不符合compact的api，则报错。</p>
-<pre><code class="bash">$ javac -profile compact2 Test.java
-Test.java:7: error: ThreadMXBean is not available in profile &#39;compact2&#39;
- ThreadMXBean bean = ManagementFactory.getThreadMXBean();
- ^
-Test.java:7: error: ManagementFactory is not available in profile &#39;compact2&#39;
- ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-                     ^
-2 errors
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ javac -profile compact2 Test.java</span><br><span class="line">Test.java:7: error: ThreadMXBean is not available <span class="keyword">in</span> profile <span class="string">&#x27;compact2&#x27;</span></span><br><span class="line"> ThreadMXBean bean = ManagementFactory.getThreadMXBean();</span><br><span class="line"> ^</span><br><span class="line">Test.java:7: error: ManagementFactory is not available <span class="keyword">in</span> profile <span class="string">&#x27;compact2&#x27;</span></span><br><span class="line"> ThreadMXBean bean = ManagementFactory.getThreadMXBean();</span><br><span class="line">                     ^</span><br><span class="line">2 errors</span><br></pre></td></tr></table></figure>
+
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262248339.png" alt="img"></p>
 <h2 id="使用工具开发的效果"><a href="#使用工具开发的效果" class="headerlink" title="使用工具开发的效果"></a>使用工具开发的效果</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262249450.png" alt="img"></p>
 <h3 id="JDEPS工具使用"><a href="#JDEPS工具使用" class="headerlink" title="JDEPS工具使用"></a>JDEPS工具使用</h3><p>java8新增一个工具，用来分析应用程序所依赖的profile，有三个参数比较常用 -p，-v，-r</p>
-<pre><code class="java">import java.util.Set;
-import java.util.HashSet;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.Set;</span><br><span class="line"><span class="keyword">import</span> java.util.HashSet;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Deps</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    System.out.println(Math.random());</span><br><span class="line">    Set&lt;String&gt; set = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">************** PROFILE ********************</span><br><span class="line">jdeps -P Deps.<span class="keyword">class</span> </span><br><span class="line"><span class="title class_">Deps</span>.class -&gt; /Library/Java/JavaVirtualMachines/jdk1<span class="number">.8</span><span class="number">.0</span>.jdk/Contents/Home/jre/lib/rt.jar</span><br><span class="line">   &lt;unnamed&gt; (Deps.class)</span><br><span class="line">      -&gt; java.io                                            compact1</span><br><span class="line">      -&gt; java.lang                                          compact1</span><br><span class="line">      -&gt; java.util                                          compact1</span><br><span class="line"></span><br><span class="line">************** VERBOSE ********************</span><br><span class="line">jdeps -v Deps.<span class="keyword">class</span> </span><br><span class="line"><span class="title class_">Deps</span>.class -&gt; /Library/Java/JavaVirtualMachines/jdk1<span class="number">.8</span><span class="number">.0</span>.jdk/Contents/Home/jre/lib/rt.jar</span><br><span class="line">   <span class="title function_">Deps</span> <span class="params">(Deps.class)</span></span><br><span class="line">      -&gt; java.io.PrintStream                                </span><br><span class="line">      -&gt; java.lang.Math                                     </span><br><span class="line">      -&gt; java.lang.Object                                   </span><br><span class="line">      -&gt; java.lang.String                                   </span><br><span class="line">      -&gt; java.lang.System                                   </span><br><span class="line">      -&gt; java.util.HashSet  </span><br><span class="line"></span><br><span class="line">************** RECURSIVE ********************</span><br><span class="line">jdeps -R Deps.<span class="keyword">class</span> </span><br><span class="line"><span class="title class_">Deps</span>.class -&gt; /Library/Java/JavaVirtualMachines/jdk1<span class="number">.8</span><span class="number">.0</span>.jdk/Contents/Home/jre/lib/rt.jar</span><br><span class="line">   &lt;unnamed&gt; (Deps.class)</span><br><span class="line">      -&gt; java.io                                            </span><br><span class="line">      -&gt; java.lang                                          </span><br><span class="line">      -&gt; java.util                                          </span><br><span class="line">/Library/Java/JavaVirtualMachines/jdk1<span class="number">.8</span><span class="number">.0</span>.jdk/Contents/Home/jre/lib/jce.jar -&gt; /Library/Java/JavaVirtualMachines/jdk1<span class="number">.8</span><span class="number">.0</span>.jdk/Contents/Home/jre/lib/rt.jar</span><br><span class="line">   javax.crypto (jce.jar)</span><br><span class="line">      -&gt; java.io                                            </span><br><span class="line">      -&gt; java.lang                                          </span><br><span class="line">      -&gt; java.lang.reflect                                  </span><br><span class="line">      -&gt; java.net                                           </span><br><span class="line">      -&gt; java.nio                                           </span><br><span class="line">      -&gt; java.security                                      </span><br><span class="line">      -&gt; java.security.cert                                 </span><br><span class="line">      -&gt; java.security.spec                                 </span><br><span class="line">      -&gt; java.util                                          </span><br><span class="line">      -&gt; java.util.concurrent                               </span><br><span class="line">      -&gt; java.util.jar                                      </span><br><span class="line">      -&gt; java.util.regex                                    </span><br><span class="line">      -&gt; java.util.zip                                      </span><br><span class="line">      -&gt; javax.security.auth                                </span><br><span class="line">      -&gt; sun.security.jca                                   JDK internal <span class="title function_">API</span> <span class="params">(rt.jar)</span></span><br><span class="line">      -&gt; sun.security.util                                  JDK internal <span class="title function_">API</span> <span class="params">(rt.jar)</span></span><br><span class="line">      -&gt; sun.security.validator                             JDK internal <span class="title function_">API</span> <span class="params">(rt.jar)</span></span><br><span class="line">   javax.crypto.interfaces (jce.jar)</span><br><span class="line">      -&gt; java.lang                                          </span><br><span class="line">      -&gt; java.math                                          </span><br><span class="line">      -&gt; java.security                                      </span><br><span class="line">   javax.crypto.spec (jce.jar)</span><br><span class="line">      -&gt; java.lang                                          </span><br><span class="line">      -&gt; java.math                                          </span><br><span class="line">      -&gt; java.security.spec                                 </span><br><span class="line">      -&gt; java.util                                          </span><br><span class="line">/Library/Java/JavaVirtualMachines/jdk1<span class="number">.8</span><span class="number">.0</span>.jdk/Contents/Home/jre/lib/rt.jar -&gt; /Library/Java/JavaVirtualMachines/jdk1<span class="number">.8</span><span class="number">.0</span>.jdk/Contents/Home/jre/lib/jce.jar</span><br><span class="line">   java.security (rt.jar)</span><br><span class="line">      -&gt; javax.crypto                                       JDK internal <span class="title function_">API</span> <span class="params">(jce.jar)</span></span><br><span class="line">   sun.security.util (rt.jar)</span><br><span class="line">      -&gt; javax.crypto                                       JDK internal <span class="title function_">API</span> <span class="params">(jce.jar)</span></span><br><span class="line">      -&gt; javax.crypto.interfaces                            JDK internal <span class="title function_">API</span> <span class="params">(jce.jar)</span></span><br><span class="line">      -&gt; javax.crypto.spec                                  JDK internal <span class="title function_">API</span> <span class="params">(jce.jar)</span></span><br></pre></td></tr></table></figure>
 
-public class Deps &#123;
-  public static void main(String[] args) &#123;
-    System.out.println(Math.random());
-    Set&lt;String&gt; set = new HashSet&lt;&gt;();
-  &#125;
-&#125;
-************** PROFILE ********************
-jdeps -P Deps.class 
-Deps.class -&gt; /Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/jre/lib/rt.jar
-   &lt;unnamed&gt; (Deps.class)
-      -&gt; java.io                                            compact1
-      -&gt; java.lang                                          compact1
-      -&gt; java.util                                          compact1
+<h3 id="在linux上构建profile"><a href="#在linux上构建profile" class="headerlink" title="在linux上构建profile"></a>在linux上构建profile</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ hg <span class="built_in">clone</span> http://hg.openjdk.java.net/jdk8/jdk8/</span><br><span class="line">$ <span class="built_in">cd</span> jdk8</span><br><span class="line">$ make images profiles : </span><br><span class="line"><span class="comment"># Finished profiles (build time 00:00:27)</span></span><br><span class="line">----- Build <span class="built_in">times</span> -------</span><br><span class="line">Start 2013-03-17 14:47:35</span><br><span class="line">End 2013-03-17 14:58:26</span><br><span class="line">00:00:25 corba</span><br><span class="line">00:00:15 demos</span><br><span class="line">00:01:50 hotspot</span><br><span class="line">00:00:24 images</span><br><span class="line">00:00:21 jaxp</span><br><span class="line">00:00:31 jaxws</span><br><span class="line">00:05:37 jdk</span><br><span class="line">00:00:43 langtools</span><br><span class="line">00:00:18 nashorn</span><br><span class="line">00:00:27 profiles</span><br><span class="line">00:10:51 TOTAL</span><br><span class="line">-------------------------</span><br><span class="line">Finished building Java(TM) <span class="keyword">for</span> target <span class="string">&#x27;images profiles&#x27;</span></span><br><span class="line">$ <span class="built_in">cd</span> images</span><br><span class="line">$ <span class="built_in">ls</span> -d *image</span><br><span class="line">j2re-compact1-image j2re-compact2-image j2re-compact3-image j2re-image j2sdk-image</span><br></pre></td></tr></table></figure>
 
-************** VERBOSE ********************
-jdeps -v Deps.class 
-Deps.class -&gt; /Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/jre/lib/rt.jar
-   Deps (Deps.class)
-      -&gt; java.io.PrintStream                                
-      -&gt; java.lang.Math                                     
-      -&gt; java.lang.Object                                   
-      -&gt; java.lang.String                                   
-      -&gt; java.lang.System                                   
-      -&gt; java.util.HashSet  
-
-************** RECURSIVE ********************
-jdeps -R Deps.class 
-Deps.class -&gt; /Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/jre/lib/rt.jar
-   &lt;unnamed&gt; (Deps.class)
-      -&gt; java.io                                            
-      -&gt; java.lang                                          
-      -&gt; java.util                                          
-/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/jre/lib/jce.jar -&gt; /Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/jre/lib/rt.jar
-   javax.crypto (jce.jar)
-      -&gt; java.io                                            
-      -&gt; java.lang                                          
-      -&gt; java.lang.reflect                                  
-      -&gt; java.net                                           
-      -&gt; java.nio                                           
-      -&gt; java.security                                      
-      -&gt; java.security.cert                                 
-      -&gt; java.security.spec                                 
-      -&gt; java.util                                          
-      -&gt; java.util.concurrent                               
-      -&gt; java.util.jar                                      
-      -&gt; java.util.regex                                    
-      -&gt; java.util.zip                                      
-      -&gt; javax.security.auth                                
-      -&gt; sun.security.jca                                   JDK internal API (rt.jar)
-      -&gt; sun.security.util                                  JDK internal API (rt.jar)
-      -&gt; sun.security.validator                             JDK internal API (rt.jar)
-   javax.crypto.interfaces (jce.jar)
-      -&gt; java.lang                                          
-      -&gt; java.math                                          
-      -&gt; java.security                                      
-   javax.crypto.spec (jce.jar)
-      -&gt; java.lang                                          
-      -&gt; java.math                                          
-      -&gt; java.security.spec                                 
-      -&gt; java.util                                          
-/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/jre/lib/rt.jar -&gt; /Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home/jre/lib/jce.jar
-   java.security (rt.jar)
-      -&gt; javax.crypto                                       JDK internal API (jce.jar)
-   sun.security.util (rt.jar)
-      -&gt; javax.crypto                                       JDK internal API (jce.jar)
-      -&gt; javax.crypto.interfaces                            JDK internal API (jce.jar)
-      -&gt; javax.crypto.spec                                  JDK internal API (jce.jar)
-</code></pre>
-<h3 id="在linux上构建profile"><a href="#在linux上构建profile" class="headerlink" title="在linux上构建profile"></a>在linux上构建profile</h3><pre><code class="bash">$ hg clone http://hg.openjdk.java.net/jdk8/jdk8/
-$ cd jdk8
-$ make images profiles : 
-# Finished profiles (build time 00:00:27)
------ Build times -------
-Start 2013-03-17 14:47:35
-End 2013-03-17 14:58:26
-00:00:25 corba
-00:00:15 demos
-00:01:50 hotspot
-00:00:24 images
-00:00:21 jaxp
-00:00:31 jaxws
-00:05:37 jdk
-00:00:43 langtools
-00:00:18 nashorn
-00:00:27 profiles
-00:10:51 TOTAL
--------------------------
-Finished building Java(TM) for target &#39;images profiles&#39;
-$ cd images
-$ ls -d *image
-j2re-compact1-image j2re-compact2-image j2re-compact3-image j2re-image j2sdk-image
-</code></pre>
 <h3 id="编译后compact大致的占用空间"><a href="#编译后compact大致的占用空间" class="headerlink" title="编译后compact大致的占用空间"></a>编译后compact大致的占用空间</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262250681.png" alt="img"></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如今，物联网正风行一时。我们看到大量不同的设备在市场上出现，每一种的更新速度都越来越快。java需要一个占用资源少的JRE运行环境，紧凑的JRE特性的出现，希望能带来以后的物联网的发展，甚至还是会有大量的java应用程序出现在物联网上面。目前oracle也发布了针对raspberry pi的JRE了。</p>
 <p>另外该特性也是为java9的模块化项目做准备，模块化特性是javaer所期待的特性。他是解决业务系统复杂度的一个利器，当然OSGI也是相当的出色。但osgi对于新学者来说未免太复杂了。</p>

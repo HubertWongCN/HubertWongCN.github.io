@@ -435,38 +435,11 @@ JDK 17 在 2021 年 9 月 14 号正式发布了！根据发布的规划，这次
 <p>switch 表达式在之前的 Java 12 和 Java 13 中都是处于预览阶段，而在这次更新的 Java 14 中，终于成为稳定版本，能够正式可用。</p>
 </blockquote>
 <p>switch 表达式带来的不仅仅是编码上的简洁、流畅，也精简了 switch 语句的使用方式，同时也兼容之前的 switch 语句的使用；之前使用 switch 语句时，在每个分支结束之前，往往都需要加上 break 关键字进行分支跳出，以防 switch 语句一直往后执行到整个 switch 语句结束，由此造成一些意想不到的问题。switch 语句一般使用冒号 ：来作为语句分支代码的开始，而 switch 表达式则提供了新的分支切换方式，即 -&gt; 符号右则表达式方法体在执行完分支方法之后，自动结束 switch 分支，同时 -&gt; 右则方法块中可以是表达式、代码块或者是手动抛出的异常。以往的 switch 语句写法如下：</p>
-<pre><code class="java">int dayOfWeek;
-switch (day) &#123;
-    case MONDAY:
-    case FRIDAY:
-    case SUNDAY:
-        dayOfWeek = 6;
-        break;
-    case TUESDAY:
-        dayOfWeek = 7;
-        break;
-    case THURSDAY:
-    case SATURDAY:
-        dayOfWeek = 8;
-        break;
-    case WEDNESDAY:
-        dayOfWeek = 9;
-        break;
-    default:
-        dayOfWeek = 0;
-        break;
-&#125;
-</code></pre>
-<p>而现在 Java 14 可以使用 switch 表达式正式版之后，上面语句可以转换为下列写法：</p>
-<pre><code class="java">int dayOfWeek = switch (day) &#123;
-    case MONDAY, FRIDAY, SUNDAY -&gt; 6;
-    case TUESDAY                -&gt; 7;
-    case THURSDAY, SATURDAY     -&gt; 8;
-case WEDNESDAY              -&gt; 9;
-    default              -&gt; 0;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> dayOfWeek;</span><br><span class="line"><span class="keyword">switch</span> (day) &#123;</span><br><span class="line">    <span class="keyword">case</span> MONDAY:</span><br><span class="line">    <span class="keyword">case</span> FRIDAY:</span><br><span class="line">    <span class="keyword">case</span> SUNDAY:</span><br><span class="line">        dayOfWeek = <span class="number">6</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> TUESDAY:</span><br><span class="line">        dayOfWeek = <span class="number">7</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> THURSDAY:</span><br><span class="line">    <span class="keyword">case</span> SATURDAY:</span><br><span class="line">        dayOfWeek = <span class="number">8</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> WEDNESDAY:</span><br><span class="line">        dayOfWeek = <span class="number">9</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        dayOfWeek = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-&#125;;
-</code></pre>
+<p>而现在 Java 14 可以使用 switch 表达式正式版之后，上面语句可以转换为下列写法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="variable">dayOfWeek</span> <span class="operator">=</span> <span class="keyword">switch</span> (day) &#123;</span><br><span class="line">    <span class="keyword">case</span> MONDAY, FRIDAY, SUNDAY -&gt; <span class="number">6</span>;</span><br><span class="line">    <span class="keyword">case</span> TUESDAY                -&gt; <span class="number">7</span>;</span><br><span class="line">    <span class="keyword">case</span> THURSDAY, SATURDAY     -&gt; <span class="number">8</span>;</span><br><span class="line"><span class="keyword">case</span> WEDNESDAY              -&gt; <span class="number">9</span>;</span><br><span class="line">    <span class="keyword">default</span>              -&gt; <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
 <p>很明显，switch 表达式将之前 switch 语句从编码方式上简化了不少，但是还是需要注意下面几点：</p>
 <ul>
 <li>需要保持与之前 switch 语句同样的 case 分支情况。</li>
@@ -480,33 +453,18 @@ case WEDNESDAY              -&gt; 9;
 <p>文本块，是一个多行字符串，它可以避免使用大多数转义符号，自动以可预测的方式格式化字符串，并让开发人员在需要时可以控制格式。</p>
 </blockquote>
 <p>Text Blocks首次是在JDK 13中以预览功能出现的，然后在JDK 14中又预览了一次，终于在JDK 15中被确定下来，可放心使用了。</p>
-<pre><code class="java">public static void main(String[] args) &#123;
-    String query = &quot;&quot;&quot;
-           SELECT * from USER \
-           WHERE `id` = 1 \
-           ORDER BY `id`, `name`;\
-           &quot;&quot;&quot;;
-    System.out.println(query);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">query</span> <span class="operator">=</span> <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">           SELECT * from USER \</span></span><br><span class="line"><span class="string">           WHERE `id` = 1 \</span></span><br><span class="line"><span class="string">           ORDER BY `id`, `name`;\</span></span><br><span class="line"><span class="string">           &quot;&quot;&quot;</span>;</span><br><span class="line">    System.out.println(query);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>运行程序，输出（可以看到展示为一行了）：</p>
-<pre><code class="java">SELECT * from USER WHERE `id` = 1 ORDER BY `id`, `name`;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * from USER WHERE `id` = <span class="number">1</span> ORDER BY `id`, `name`;</span><br></pre></td></tr></table></figure>
+
 <h3 id="JDK16-instanceof-模式匹配（JDK-14-15预览，16正式）"><a href="#JDK16-instanceof-模式匹配（JDK-14-15预览，16正式）" class="headerlink" title="JDK16 - instanceof 模式匹配（JDK 14,15预览，16正式）"></a>JDK16 - instanceof 模式匹配（JDK 14,15预览，16正式）</h3><blockquote>
 <p>模式匹配（Pattern Matching）最早在 Java 14 中作为预览特性引入，在 Java 15 中还是预览特性，在Java 16中成为正式版。模式匹配通过对 instacneof 运算符进行模式匹配来增强 Java 编程语言。</p>
 </blockquote>
 <p>对 instanceof 的改进，主要目的是为了让创建对象更简单、简洁和高效，并且可读性更强、提高安全性。</p>
 <p>在以往实际使用中，instanceof 主要用来检查对象的类型，然后根据类型对目标对象进行类型转换，之后进行不同的处理、实现不同的逻辑，具体可以参考如下：</p>
-<pre><code class="java">if (person instanceof Student) &#123;
-    Student student = (Student) person;
-    student.say();
-   // other student operations
-&#125; else if (person instanceof Teacher) &#123;
-    Teacher teacher = (Teacher) person;
-    teacher.say();
-    // other teacher operations
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (person <span class="keyword">instanceof</span> Student) &#123;</span><br><span class="line">    <span class="type">Student</span> <span class="variable">student</span> <span class="operator">=</span> (Student) person;</span><br><span class="line">    student.say();</span><br><span class="line">   <span class="comment">// other student operations</span></span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (person <span class="keyword">instanceof</span> Teacher) &#123;</span><br><span class="line">    <span class="type">Teacher</span> <span class="variable">teacher</span> <span class="operator">=</span> (Teacher) person;</span><br><span class="line">    teacher.say();</span><br><span class="line">    <span class="comment">// other teacher operations</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>上述代码中，我们首先需要对 person 对象进行类型判断，判断 person 具体是 Student 还是 Teacher，因为这两种角色对应不同操作，亦即对应到的实际逻辑实现，判断完 person 类型之后，然后强制对 person 进行类型转换为局部变量，以方便后续执行属于该角色的特定操作。</p>
 <p>上面这种写法，有下面两个问题：</p>
 <ul>
@@ -514,18 +472,12 @@ case WEDNESDAY              -&gt; 9;
 <li>类型转换后，需要提前创建一个局部变量来接收转换后的结果，代码显得多余且繁琐。</li>
 </ul>
 <p>对 instanceof 进行模式匹配改进之后，上面示例代码可以改写成：</p>
-<pre><code class="java">if (person instanceof Student student) &#123;
-    student.say();
-   // other student operations
-&#125; else if (person instanceof Teacher teacher) &#123;
-    teacher.say();
-    // other teacher operations
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (person <span class="keyword">instanceof</span> Student student) &#123;</span><br><span class="line">    student.say();</span><br><span class="line">   <span class="comment">// other student operations</span></span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (person <span class="keyword">instanceof</span> Teacher teacher) &#123;</span><br><span class="line">    teacher.say();</span><br><span class="line">    <span class="comment">// other teacher operations</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>首先在 if 代码块中，对 person 对象进行类型匹配，校验 person 对象是否为 Student 类型，如果类型匹配成功，则会转换为 Student 类型，并赋值给模式局部变量 student，并且只有当模式匹配表达式匹配成功是才会生效和复制，同时这里的 student 变量只能在 if 块中使用，而不能在 else if&#x2F;else 中使用，否则会报编译错误。</p>
 <p>注意，如果 if 条件中有 &amp;&amp; 运算符时，当 instanceof 类型匹配成功，模式局部变量的作用范围也可以相应延长，如下面代码：</p>
-<pre><code class="java">if (obj instanceof String s &amp;&amp; s.length() &gt; 5) &#123;.. s.contains(..) ..&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (obj <span class="keyword">instanceof</span> String s &amp;&amp; s.length() &gt; <span class="number">5</span>) &#123;.. s.contains(..) ..&#125;</span><br></pre></td></tr></table></figure>
+
 <p>另外，需要注意，这种作用范围延长，并不适用于或 || 运算符，因为即便 || 运算符左边的 instanceof 类型匹配没有成功也不会造成短路，依旧会执行到||运算符右边的表达式，但是此时，因为 instanceof 类型匹配没有成功，局部变量并未定义赋值，此时使用会产生问题。</p>
 <p>与传统写法对比，可以发现模式匹配不但提高了程序的安全性、健壮性，另一方面，不需要显式的去进行二次类型转换，减少了大量不必要的强制类型转换。模式匹配变量在模式匹配成功之后，可以直接使用，同时它还被限制了作用范围，大大提高了程序的简洁性、可读性和安全性。instanceof 的模式匹配，为 Java 带来的有一次便捷的提升，能够剔除一些冗余的代码，写出更加简洁安全的代码，提高码代码效率。</p>
 <h3 id="JDK16-Records类型（JDK-14-15预览，16正式）"><a href="#JDK16-Records类型（JDK-14-15预览，16正式）" class="headerlink" title="JDK16 - Records类型（JDK 14,15预览，16正式）"></a>JDK16 - Records类型（JDK 14,15预览，16正式）</h3><blockquote>
@@ -533,34 +485,11 @@ case WEDNESDAY              -&gt; 9;
 </blockquote>
 <p>Record 类型允许在代码中使用紧凑的语法形式来声明类，而这些类能够作为不可变数据类型的封装持有者。Record 这一特性主要用在特定领域的类上；与枚举类型一样，Record 类型是一种受限形式的类型，主要用于存储、保存数据，并且没有其它额外自定义行为的场景下。</p>
 <p>在以往开发过程中，被当作数据载体的类对象，在正确声明定义过程中，通常需要编写大量的无实际业务、重复性质的代码，其中包括：构造函数、属性调用、访问以及 equals() 、hashCode()、toString() 等方法，因此在 Java 14 中引入了 Record 类型，其效果有些类似 Lombok 的 @Data 注解、Kotlin 中的 data class，但是又不尽完全相同，它们的共同点都是类的部分或者全部可以直接在类头中定义、描述，并且这个类只用于存储数据而已。对于 Record 类型，具体可以用下面代码来说明：</p>
-<pre><code class="java">public record Person(String name, int age) &#123;
-    public static String address;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">record</span> <span class="title class_">Person</span><span class="params">(String name, <span class="type">int</span> age)</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String address;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    public String getName() &#123;
-        return name;
-    &#125;
-&#125;
-</code></pre>
 <p>对上述代码进行编译，然后反编译之后可以看到如下结果：</p>
-<pre><code class="java">public final class Person extends java.lang.Record &#123;
-    private final java.lang.String name;
-    private final java.lang.String age;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Person</span> <span class="keyword">extends</span> <span class="title class_">java</span>.lang.Record &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> java.lang.String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> java.lang.String age;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Person</span><span class="params">(java.lang.String name, java.lang.String age)</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">getName</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">toString</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(java.lang.Object o)</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">name</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">age</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    public Person(java.lang.String name, java.lang.String age) &#123; /* compiled code */ &#125;
-
-    public java.lang.String getName() &#123; /* compiled code */ &#125;
-
-    public java.lang.String toString() &#123; /* compiled code */ &#125;
-
-    public final int hashCode() &#123; /* compiled code */ &#125;
-
-    public final boolean equals(java.lang.Object o) &#123; /* compiled code */ &#125;
-
-    public java.lang.String name() &#123; /* compiled code */ &#125;
-
-    public java.lang.String age() &#123; /* compiled code */ &#125;
-&#125;
-</code></pre>
 <p>根据反编译结果，可以得出，当用 Record 来声明一个类时，该类将自动拥有下面特征：</p>
 <ul>
 <li>拥有一个构造方法</li>
@@ -572,9 +501,8 @@ case WEDNESDAY              -&gt; 9;
 </ul>
 <p>可以看到，该预览特性提供了一种更为紧凑的语法来声明类，并且可以大幅减少定义类似数据类型时所需的重复性代码。</p>
 <p>另外 Java 14 中为了引入 Record 这种新的类型，在 java.lang.Class 中引入了下面两个新方法：</p>
-<pre><code class="java">RecordComponent[] getRecordComponents()
-boolean isRecord()
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RecordComponent[] getRecordComponents()</span><br><span class="line"><span class="type">boolean</span> <span class="title function_">isRecord</span><span class="params">()</span></span><br></pre></td></tr></table></figure>
+
 <p>其中 getRecordComponents() 方法返回一组 java.lang.reflect.RecordComponent 对象组成的数组，java.lang.reflect.RecordComponent也是一个新引入类，该数组的元素与 Record 类中的组件相对应，其顺序与在记录声明中出现的顺序相同，可以从该数组中的每个 RecordComponent 中提取到组件信息，包括其名称、类型、泛型类型、注释及其访问方法。</p>
 <p>而 isRecord() 方法，则返回所在类是否是 Record 类型，如果是，则返回 true。</p>
 <h3 id="JDK17-密封的类和接口（JDK-15-16预览，17正式）"><a href="#JDK17-密封的类和接口（JDK-15-16预览，17正式）" class="headerlink" title="JDK17 - 密封的类和接口（JDK 15,16预览，17正式）"></a>JDK17 - 密封的类和接口（JDK 15,16预览，17正式）</h3><blockquote>
@@ -586,42 +514,19 @@ boolean isRecord()
 <p>因为我们引入了<code>sealed</code> <code>class</code>或<code>interfaces</code>，这些class或者interfaces只允许被指定的类或者interface进行扩展和实现。</p>
 <p>使用修饰符<code>sealed</code>，您可以将一个类声明为密封类。密封的类使用reserved关键字permits列出可以直接扩展它的类。子类可以是最终的，非密封的或密封的。</p>
 <p>之前我们的代码是这样的。</p>
-<pre><code class="java">public class Person &#123; &#125; //人
- 
-class Teacher extends Person &#123; &#125;//教师
- 
-class Worker extends Person &#123; &#125;  //工人
- 
-class Student extends Person&#123; &#125; //学生
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123; &#125; <span class="comment">//人</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Teacher</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;<span class="comment">//教师</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Worker</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;  <span class="comment">//工人</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span> <span class="keyword">extends</span> <span class="title class_">Person</span>&#123; &#125; <span class="comment">//学生</span></span><br></pre></td></tr></table></figure>
+
 <p>但是我们现在要限制 Person类 只能被这三个类继承，不能被其他类继承，需要这么做。</p>
-<pre><code class="java">// 添加sealed修饰符，permits后面跟上只能被继承的子类名称
-public sealed class Person permits Teacher, Worker, Student&#123; &#125; //人
- 
-// 子类可以被修饰为 final
-final class Teacher extends Person &#123; &#125;//教师
- 
-// 子类可以被修饰为 non-sealed，此时 Worker类就成了普通类，谁都可以继承它
-non-sealed class Worker extends Person &#123; &#125;  //工人
-// 任何类都可以继承Worker
-class AnyClass extends Worker&#123;&#125;
- 
-//子类可以被修饰为 sealed,同上
-sealed class Student extends Person permits MiddleSchoolStudent,GraduateStudent&#123; &#125; //学生
- 
- 
-final class MiddleSchoolStudent extends Student &#123; &#125;  //中学生
- 
-final class GraduateStudent extends Student &#123; &#125;  //研究生
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 添加sealed修饰符，permits后面跟上只能被继承的子类名称</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">sealed</span> <span class="keyword">class</span> <span class="title class_">Person</span> <span class="keyword">permits</span> Teacher, Worker, Student&#123; &#125; <span class="comment">//人</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 子类可以被修饰为 final</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Teacher</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;<span class="comment">//教师</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 子类可以被修饰为 non-sealed，此时 Worker类就成了普通类，谁都可以继承它</span></span><br><span class="line"><span class="keyword">non-sealed</span> <span class="keyword">class</span> <span class="title class_">Worker</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;  <span class="comment">//工人</span></span><br><span class="line"><span class="comment">// 任何类都可以继承Worker</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AnyClass</span> <span class="keyword">extends</span> <span class="title class_">Worker</span>&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//子类可以被修饰为 sealed,同上</span></span><br><span class="line"><span class="keyword">sealed</span> <span class="keyword">class</span> <span class="title class_">Student</span> <span class="keyword">extends</span> <span class="title class_">Person</span> <span class="keyword">permits</span> MiddleSchoolStudent,GraduateStudent&#123; &#125; <span class="comment">//学生</span></span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">MiddleSchoolStudent</span> <span class="keyword">extends</span> <span class="title class_">Student</span> &#123; &#125;  <span class="comment">//中学生</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">GraduateStudent</span> <span class="keyword">extends</span> <span class="title class_">Student</span> &#123; &#125;  <span class="comment">//研究生</span></span><br></pre></td></tr></table></figure>
+
 <p>很强很实用的一个特性，可以限制类的层次结构。</p>
 <h2 id="新工具和库更新"><a href="#新工具和库更新" class="headerlink" title="新工具和库更新"></a>新工具和库更新</h2><h3 id="JDK13-Socket-API-重构"><a href="#JDK13-Socket-API-重构" class="headerlink" title="JDK13 - Socket API 重构"></a>JDK13 - Socket API 重构</h3><p>Java 中的 Socket API 已经存在了二十多年了，尽管这么多年来，一直在维护和更新中，但是在实际使用中遇到一些局限性，并且不容易维护和调试，所以要对其进行大修大改，才能跟得上现代技术的发展，毕竟二十多年来，技术都发生了深刻的变化。Java 13 为 Socket API 带来了新的底层实现方法，并且在 Java 13 中是默认使用新的 Socket 实现，使其易于发现并在排除问题同时增加可维护性。</p>
 <p>Java Socket API（java.net.ServerSocket 和 java.net.Socket）包含允许监听控制服务器和发送数据的套接字对象。可以使用 ServerSocket 来监听连接请求的端口，一旦连接成功就返回一个 Socket 对象，可以使用该对象读取发送的数据和进行数据写回操作，而这些类的繁重工作都是依赖于 SocketImpl 的内部实现，服务器的发送和接收两端都基于 SOCKS 进行实现的。</p>
 <p>在 Java 13 之前，通过使用 PlainSocketImpl 作为 SocketImpl 的具体实现。</p>
 <p>Java 13 中的新底层实现，引入 NioSocketImpl 的实现用以替换 SocketImpl 的 PlainSocketImpl 实现，此实现与 NIO（新 I&#x2F;O）实现共享相同的内部基础结构，并且与现有的缓冲区高速缓存机制集成在一起，因此不需要使用线程堆栈。除了这些更改之外，还有其他一些更便利的更改，如使用 java.lang.ref.Cleaner 机制来关闭套接字（如果 SocketImpl 实现在尚未关闭的套接字上被进行了垃圾收集），以及在轮询时套接字处于非阻塞模式时处理超时操作等方面。</p>
 <p>为了最小化在重新实现已使用二十多年的方法时出现问题的风险，在引入新实现方法的同时，之前版本的实现还未被移除，可以通过使用下列系统属性以重新使用原实现方法：</p>
-<pre><code class="bash">-Djdk.net.usePlainSocketImpl = true
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Djdk.net.usePlainSocketImpl = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
 <p>另外需要注意的是，SocketImpl 是一种传统的 SPI 机制，同时也是一个抽象类，并未指定具体的实现，所以，新的实现方式尝试模拟未指定的行为，以达到与原有实现兼容的目的。但是，在使用新实现时，有些基本情况可能会失败，使用上述系统属性可以纠正遇到的问题，下面两个除外。</p>
 <ul>
 <li>老版本中，PlainSocketImpl 中的 getInputStream() 和 getOutputStream() 方法返回的 InputStream 和 OutputStream 分别来自于其对应的扩展类型 FileInputStream 和 FileOutputStream，而这个在新版实现中则没有。</li>
@@ -630,24 +535,21 @@ final class GraduateStudent extends Student &#123; &#125;  //研究生
 <p>通过这些更改，Java Socket API 将更易于维护，更好地维护将使套接字代码的可靠性得到改善。同时 NIO 实现也可以在基础层面完成，从而保持 Socket 和 ServerSocket 类层面上的不变。</p>
 <h3 id="JDK14-改进-NullPointerExceptions-提示信息"><a href="#JDK14-改进-NullPointerExceptions-提示信息" class="headerlink" title="JDK14 - 改进 NullPointerExceptions 提示信息"></a>JDK14 - 改进 NullPointerExceptions 提示信息</h3><p>Java 14 改进 NullPointerException 的可查性、可读性，能更准确地定位 null 变量的信息。该特性能够帮助开发者和技术支持人员提高生产力，以及改进各种开发工具和调试工具的质量，能够更加准确、清楚地根据动态异常与程序代码相结合来理解程序。</p>
 <p>相信每位开发者在实际编码过程中都遇到过 NullPointerException，每当遇到这种异常的时候，都需要根据打印出来的详细信息来分析、定位出现问题的原因，以在程序代码中规避或解决。例如，假设下面代码出现了一个 NullPointerException：</p>
-<pre><code class="java">book.id = 99;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">book.id = <span class="number">99</span>;</span><br></pre></td></tr></table></figure>
+
 <p>打印出来的 NullPointerException 信息如下：</p>
-<pre><code class="java">Exception in thread &quot;main&quot; java.lang.NullPointerException
-    at Book.main(Book.java:5)
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread <span class="string">&quot;main&quot;</span> java.lang.NullPointerException</span><br><span class="line">    at Book.main(Book.java:<span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+
 <p>像上面这种异常，因为代码比较简单，并且异常信息中也打印出来了行号信息，开发者可以很快速定位到出现异常位置：book 为空而导致的 NullPointerException，而对于一些复杂或者嵌套的情况下出现 NullPointerException 时，仅根据打印出来的信息，很难判断实际出现问题的位置，具体见下面示例：</p>
-<pre><code class="java">shoopingcart.buy.book.id = 99;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shoopingcart.buy.book.id = <span class="number">99</span>;</span><br></pre></td></tr></table></figure>
+
 <p>对于这种比较复杂的情况下，仅仅单根据异常信息中打印的行号，则比较难判断出现 NullPointerException 的原因。</p>
 <p>而 Java 14 中，则做了对 NullPointerException 打印异常信息的改进增强，通过分析程序的字节码信息，能够做到准确的定位到出现 NullPointerException 的变量，并且根据实际源代码打印出详细异常信息，对于上述示例，打印信息如下：</p>
-<pre><code class="java">Exception in thread &quot;main&quot; java.lang.NullPointerException: 
-        Cannot assign field &quot;book&quot; because &quot;shoopingcart.buy&quot; is null
-    at Book.main(Book.java:5)
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread <span class="string">&quot;main&quot;</span> java.lang.NullPointerException: </span><br><span class="line">        Cannot assign field <span class="string">&quot;book&quot;</span> because <span class="string">&quot;shoopingcart.buy&quot;</span> is <span class="literal">null</span></span><br><span class="line">    at Book.main(Book.java:<span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+
 <p>对比可以看出，改进之后的 NullPointerException 信息，能够准确打印出具体哪个变量导致的 NullPointerException，减少了由于仅带行号的异常提示信息带来的困惑。该改进功能可以通过如下参数开启：</p>
-<pre><code class="bash">-XX:+ShowCodeDetailsInExceptionMessages
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:+ShowCodeDetailsInExceptionMessages</span><br></pre></td></tr></table></figure>
+
 <p>该增强改进特性，不仅适用于属性访问，还适用于方法调用、数组访问和赋值等有可能会导致 NullPointerException 的地方。</p>
 <h3 id="JDK15-隐藏类-Hidden-Classes"><a href="#JDK15-隐藏类-Hidden-Classes" class="headerlink" title="JDK15 - 隐藏类 Hidden Classes"></a>JDK15 - 隐藏类 Hidden Classes</h3><blockquote>
 <p>隐藏类是为框架（frameworks）所设计的，隐藏类不能直接被其他类的字节码使用，只能在运行时生成类并通过反射间接使用它们。</p>
@@ -671,10 +573,8 @@ final class GraduateStudent extends Student &#123; &#125;  //研究生
 <p><strong>API的支持</strong></p>
 <p>所以我们需要一些API来定义无法发现的且具有有限生命周期的隐藏类。这将提高所有基于JVM的语言实现的效率。</p>
 <p>比如：</p>
-<pre><code class="java">java.lang.reflect.Proxy // 可以定义隐藏类作为实现代理接口的代理类。 
-java.lang.invoke.StringConcatFactory // 可以生成隐藏类来保存常量连接方法； 
-java.lang.invoke.LambdaMetaFactory //可以生成隐藏的nestmate类，以容纳访问封闭变量的lambda主体； 
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">java.lang.reflect.Proxy <span class="comment">// 可以定义隐藏类作为实现代理接口的代理类。 </span></span><br><span class="line">java.lang.invoke.StringConcatFactory <span class="comment">// 可以生成隐藏类来保存常量连接方法； </span></span><br><span class="line">java.lang.invoke.LambdaMetaFactory <span class="comment">//可以生成隐藏的nestmate类，以容纳访问封闭变量的lambda主体； </span></span><br></pre></td></tr></table></figure>
+
 <p>普通类是通过调用<code>ClassLoader::defineClass</code>创建的，而隐藏类是通过调用<code>Lookup::defineHiddenClass</code>创建的。这使JVM从提供的字节中派生一个隐藏类，链接该隐藏类，并返回提供对隐藏类的反射访问的查找对象。调用程序可以通过返回的查找对象来获取隐藏类的Class对象。</p>
 <h3 id="JDK15-DatagramSocket-API重构"><a href="#JDK15-DatagramSocket-API重构" class="headerlink" title="JDK15 - DatagramSocket API重构"></a>JDK15 - DatagramSocket API重构</h3><blockquote>
 <p>重新实现了老的 DatagramSocket API 接口，更改了 java.net.DatagramSocket 和 java.net.MulticastSocket 为更加简单、现代化的底层实现，更易于维护和调试。</p>
@@ -699,81 +599,17 @@ java.lang.invoke.LambdaMetaFactory //可以生成隐藏的nestmate类，以容�
 </ul>
 <p>JDK9注解@Deprecated得到了增强，增加了 since 和 forRemoval 两个属性，可以分别指定一个程序元素被废弃的版本，以及是否会在今后的版本中被删除。</p>
 <p>在如下的代码中，表示<code>PdaiDeprecatedTest</code>这个类在JDK9版本中被弃用并且在将来的某个版本中一定会被删除。</p>
-<pre><code class="java">@Deprecated(since=&quot;9&quot;, forRemoval = true)
-public class PdaiDeprecatedTest &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Deprecated(since=&quot;9&quot;, forRemoval = true)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PdaiDeprecatedTest</span> &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-&#125;
-</code></pre>
 <ul>
 <li><strong>JDK16中对基于值的类（@jdk.internal.ValueBased）给出告警</strong></li>
 </ul>
 <p>在JDK9中我们可以看到Integer.java类构造函数中加入了<code>@Deprecated(since=&quot;9&quot;)</code>，表示在JDK9版本中被弃用并且在将来的某个版本中一定会被删除</p>
-<pre><code class="java">public final class Integer extends Number implements Comparable&lt;Integer&gt; &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Integer</span> <span class="keyword">extends</span> <span class="title class_">Number</span> <span class="keyword">implements</span> <span class="title class_">Comparable</span>&lt;Integer&gt; &#123;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ... </span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Constructs a newly allocated &#123;<span class="doctag">@code</span> Integer&#125; object that</span></span><br><span class="line"><span class="comment">     * represents the specified &#123;<span class="doctag">@code</span> int&#125; value.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span>   value   the value to be represented by the</span></span><br><span class="line"><span class="comment">     *                  &#123;<span class="doctag">@code</span> Integer&#125; object.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@deprecated</span></span></span><br><span class="line"><span class="comment">     * It is rarely appropriate to use this constructor. The static factory</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@link</span> #valueOf(int)&#125; is generally a better choice, as it is</span></span><br><span class="line"><span class="comment">     * likely to yield significantly better space and time performance.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Deprecated(since=&quot;9&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Integer</span><span class="params">(<span class="type">int</span> value)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.value = value;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">// ... </span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-// ... 
-    /**
-     * Constructs a newly allocated &#123;@code Integer&#125; object that
-     * represents the specified &#123;@code int&#125; value.
-     *
-     * @param   value   the value to be represented by the
-     *                  &#123;@code Integer&#125; object.
-     *
-     * @deprecated
-     * It is rarely appropriate to use this constructor. The static factory
-     * &#123;@link #valueOf(int)&#125; is generally a better choice, as it is
-     * likely to yield significantly better space and time performance.
-     */
-    @Deprecated(since=&quot;9&quot;)
-    public Integer(int value) &#123;
-        this.value = value;
-    &#125;
-// ... 
-
-&#125;
-</code></pre>
 <p>如下是JDK16中Integer.java的代码</p>
-<pre><code class="java">/*
-* &lt;p&gt;This is a &lt;a href=&quot;&#123;@docRoot&#125;/java.base/java/lang/doc-files/ValueBased.html&quot;&gt;value-based&lt;/a&gt;
- * class; programmers should treat instances that are
- * &#123;@linkplain #equals(Object) equal&#125; as interchangeable and should not
- * use instances for synchronization, or unpredictable behavior may
- * occur. For example, in a future release, synchronization may fail.
- *
- * &lt;p&gt;Implementation note: The implementations of the &quot;bit twiddling&quot;
- * methods (such as &#123;@link #highestOneBit(int) highestOneBit&#125; and
- * &#123;@link #numberOfTrailingZeros(int) numberOfTrailingZeros&#125;) are
- * based on material from Henry S. Warren, Jr.&#39;s &lt;i&gt;Hacker&#39;s
- * Delight&lt;/i&gt;, (Addison Wesley, 2002).
- *
- * @author  Lee Boynton
- * @author  Arthur van Hoff
- * @author  Josh Bloch
- * @author  Joseph D. Darcy
- * @since 1.0
- */
-@jdk.internal.ValueBased
-public final class Integer extends Number
-        implements Comparable&lt;Integer&gt;, Constable, ConstantDesc &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">* &lt;p&gt;This is a &lt;a href=&quot;&#123;@docRoot&#125;/java.base/java/lang/doc-files/ValueBased.html&quot;&gt;value-based&lt;/a&gt;</span></span><br><span class="line"><span class="comment"> * class; programmers should treat instances that are</span></span><br><span class="line"><span class="comment"> * &#123;@linkplain #equals(Object) equal&#125; as interchangeable and should not</span></span><br><span class="line"><span class="comment"> * use instances for synchronization, or unpredictable behavior may</span></span><br><span class="line"><span class="comment"> * occur. For example, in a future release, synchronization may fail.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;Implementation note: The implementations of the &quot;bit twiddling&quot;</span></span><br><span class="line"><span class="comment"> * methods (such as &#123;@link #highestOneBit(int) highestOneBit&#125; and</span></span><br><span class="line"><span class="comment"> * &#123;@link #numberOfTrailingZeros(int) numberOfTrailingZeros&#125;) are</span></span><br><span class="line"><span class="comment"> * based on material from Henry S. Warren, Jr.&#x27;s &lt;i&gt;Hacker&#x27;s</span></span><br><span class="line"><span class="comment"> * Delight&lt;/i&gt;, (Addison Wesley, 2002).</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @author  Lee Boynton</span></span><br><span class="line"><span class="comment"> * @author  Arthur van Hoff</span></span><br><span class="line"><span class="comment"> * @author  Josh Bloch</span></span><br><span class="line"><span class="comment"> * @author  Joseph D. Darcy</span></span><br><span class="line"><span class="comment"> * @since 1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@jdk</span>.internal.ValueBased</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Integer</span> <span class="keyword">extends</span> <span class="title class_">Number</span></span><br><span class="line">        <span class="keyword">implements</span> <span class="title class_">Comparable</span>&lt;Integer&gt;, Constable, ConstantDesc &#123;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ... </span></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * Constructs a newly allocated &#123;<span class="doctag">@code</span> Integer&#125; object that</span></span><br><span class="line"><span class="comment">    * represents the specified &#123;<span class="doctag">@code</span> int&#125; value.</span></span><br><span class="line"><span class="comment">    *</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span>   value   the value to be represented by the</span></span><br><span class="line"><span class="comment">    *                  &#123;<span class="doctag">@code</span> Integer&#125; object.</span></span><br><span class="line"><span class="comment">    *</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@deprecated</span></span></span><br><span class="line"><span class="comment">    * It is rarely appropriate to use this constructor. The static factory</span></span><br><span class="line"><span class="comment">    * &#123;<span class="doctag">@link</span> #valueOf(int)&#125; is generally a better choice, as it is</span></span><br><span class="line"><span class="comment">    * likely to yield significantly better space and time performance.</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">  <span class="meta">@Deprecated(since=&quot;9&quot;, forRemoval = true)</span></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">Integer</span><span class="params">(<span class="type">int</span> value)</span> &#123;</span><br><span class="line">      <span class="built_in">this</span>.value = value;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
 
-// ... 
-  /**
-    * Constructs a newly allocated &#123;@code Integer&#125; object that
-    * represents the specified &#123;@code int&#125; value.
-    *
-    * @param   value   the value to be represented by the
-    *                  &#123;@code Integer&#125; object.
-    *
-    * @deprecated
-    * It is rarely appropriate to use this constructor. The static factory
-    * &#123;@link #valueOf(int)&#125; is generally a better choice, as it is
-    * likely to yield significantly better space and time performance.
-    */
-  @Deprecated(since=&quot;9&quot;, forRemoval = true)
-  public Integer(int value) &#123;
-      this.value = value;
-  &#125;
-// ...
-</code></pre>
 <p>添加<code>@jdk.internal.ValueBased</code>和<code>@Deprecated(since=&quot;9&quot;, forRemoval = true)</code>的作用是什么呢？</p>
 <ol>
 <li><strong>JDK设计者建议使用Integer a &#x3D; 10或者Integer.valueOf()函数，而不是new Integer()，让其抛出告警？</strong></li>
@@ -783,16 +619,8 @@ public final class Integer extends Number
 <li><strong>在并发环境下，Integer 对象根本无法通过 Synchronized 来保证线程安全，让其抛出告警？</strong></li>
 </ol>
 <p>由于JDK中对<code>@jdk.internal.ValueBased</code>注解加入了基于值的类的告警，所以继续在 Synchronized 同步块中使用值类型，将会在编译期和运行期产生警告，甚至是异常。</p>
-<pre><code class="java">public void inc(Integer count) &#123;
-    for (int i = 0; i &lt; 10; i++) &#123;
-        new Thread(() -&gt; &#123;
-            synchronized (count) &#123; // 这里会产生编译告警
-                count++;
-            &#125;
-        &#125;).start();
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">inc</span><span class="params">(Integer count)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (count) &#123; <span class="comment">// 这里会产生编译告警</span></span><br><span class="line">                count++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="JDK17-增强的伪随机数生成器"><a href="#JDK17-增强的伪随机数生成器" class="headerlink" title="JDK17 - 增强的伪随机数生成器"></a>JDK17 - 增强的伪随机数生成器</h3><blockquote>
 <p>为伪随机数生成器 (PRNG) 提供新的接口类型和实现。这一变化提高了不同 PRNG 的互操作性，并使得根据需求请求算法变得容易，而不是硬编码特定的实现。简单而言只需要理解如下三个问题：</p>
 </blockquote>
@@ -800,66 +628,20 @@ public final class Integer extends Number
 <li><strong>Random 类</strong></li>
 </ol>
 <p>典型的使用如下，随机一个int值</p>
-<pre><code class="java">// random int
-new Random().nextInt();
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// random int</span></span><br><span class="line"><span class="keyword">new</span> <span class="title class_">Random</span>().nextInt();</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * description 获取指定位数的随机数</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> length 1</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> java.lang.String</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">getRandomString</span><span class="params">(<span class="type">int</span> length)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">base</span> <span class="operator">=</span> <span class="string">&quot;abcdefghijklmnopqrstuvwxyz0123456789&quot;</span>;</span><br><span class="line">    <span class="type">Random</span> <span class="variable">random</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line">    <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; length; i++) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">number</span> <span class="operator">=</span> random.nextInt(base.length());</span><br><span class="line">        sb.append(base.charAt(number));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sb.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-/**
- * description 获取指定位数的随机数
- *
- * @param length 1
- * @return java.lang.String
- */
-public static String getRandomString(int length) &#123;
-    String base = &quot;abcdefghijklmnopqrstuvwxyz0123456789&quot;;
-    Random random = new Random();
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i &lt; length; i++) &#123;
-        int number = random.nextInt(base.length());
-        sb.append(base.charAt(number));
-    &#125;
-    return sb.toString();
-&#125;
-</code></pre>
 <ol>
 <li><strong>ThreadLocalRandom 类</strong></li>
 </ol>
 <p>提供线程间独立的随机序列。它只有一个实例，多个线程用到这个实例，也会在线程内部各自更新状态。它同时也是 Random 的子类，不过它几乎把所有 Random 的方法又实现了一遍。</p>
-<pre><code class="java">/**
- * nextInt(bound) returns 0 &lt;= value &lt; bound; repeated calls produce at
- * least two distinct results
- */
-public void testNextIntBounded() &#123;
-    // sample bound space across prime number increments
-    for (int bound = 2; bound &lt; MAX_INT_BOUND; bound += 524959) &#123;
-        int f = ThreadLocalRandom.current().nextInt(bound);
-        assertTrue(0 &lt;= f &amp;&amp; f &lt; bound);
-        int i = 0;
-        int j;
-        while (i &lt; NCALLS &amp;&amp;
-               (j = ThreadLocalRandom.current().nextInt(bound)) == f) &#123;
-            assertTrue(0 &lt;= j &amp;&amp; j &lt; bound);
-            ++i;
-        &#125;
-        assertTrue(i &lt; NCALLS);
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * nextInt(bound) returns 0 &lt;= value &lt; bound; repeated calls produce at</span></span><br><span class="line"><span class="comment"> * least two distinct results</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testNextIntBounded</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// sample bound space across prime number increments</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">bound</span> <span class="operator">=</span> <span class="number">2</span>; bound &lt; MAX_INT_BOUND; bound += <span class="number">524959</span>) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">f</span> <span class="operator">=</span> ThreadLocalRandom.current().nextInt(bound);</span><br><span class="line">        assertTrue(<span class="number">0</span> &lt;= f &amp;&amp; f &lt; bound);</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> j;</span><br><span class="line">        <span class="keyword">while</span> (i &lt; NCALLS &amp;&amp;</span><br><span class="line">               (j = ThreadLocalRandom.current().nextInt(bound)) == f) &#123;</span><br><span class="line">            assertTrue(<span class="number">0</span> &lt;= j &amp;&amp; j &lt; bound);</span><br><span class="line">            ++i;</span><br><span class="line">        &#125;</span><br><span class="line">        assertTrue(i &lt; NCALLS);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <ol>
 <li><strong>SplittableRandom 类</strong></li>
 </ol>
 <p>非线程安全，但可以 fork 的随机序列实现，适用于拆分子任务的场景。</p>
-<pre><code class="java">/**
- * Repeated calls to nextLong produce at least two distinct results
- */
-public void testNextLong() &#123;
-    SplittableRandom sr = new SplittableRandom();
-    long f = sr.nextLong();
-    int i = 0;
-    while (i &lt; NCALLS &amp;&amp; sr.nextLong() == f)
-        ++i;
-    assertTrue(i &lt; NCALLS);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Repeated calls to nextLong produce at least two distinct results</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testNextLong</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">SplittableRandom</span> <span class="variable">sr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SplittableRandom</span>();</span><br><span class="line">    <span class="type">long</span> <span class="variable">f</span> <span class="operator">=</span> sr.nextLong();</span><br><span class="line">    <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (i &lt; NCALLS &amp;&amp; sr.nextLong() == f)</span><br><span class="line">        ++i;</span><br><span class="line">    assertTrue(i &lt; NCALLS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h4 id="为什么需要增强？"><a href="#为什么需要增强？" class="headerlink" title="为什么需要增强？"></a><strong>为什么需要增强</strong>？</h4><ol>
 <li>上述几个类实现代码质量和接口抽象不佳</li>
 <li>缺少常见的伪随机算法</li>
@@ -868,8 +650,8 @@ public void testNextLong() &#123;
 <h4 id="增强后是什么样的？"><a href="#增强后是什么样的？" class="headerlink" title="增强后是什么样的？"></a><strong>增强后是什么样的</strong>？</h4><p>代码的优化自不必说，我们就看下新增了哪些常见的伪随机算法</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271129865.png" alt="img"></p>
 <p>如何使用这个呢？可以使用RandomGenerator</p>
-<pre><code class="java">RandomGenerator g = RandomGenerator.of(&quot;L64X128MixRandom&quot;);
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">RandomGenerator</span> <span class="variable">g</span> <span class="operator">=</span> RandomGenerator.of(<span class="string">&quot;L64X128MixRandom&quot;</span>);</span><br></pre></td></tr></table></figure>
+
 <h2 id="JVM优化"><a href="#JVM优化" class="headerlink" title="JVM优化"></a>JVM优化</h2><h3 id="JDK13-增强-ZGC-释放未使用内存"><a href="#JDK13-增强-ZGC-释放未使用内存" class="headerlink" title="JDK13 - 增强 ZGC 释放未使用内存"></a>JDK13 - 增强 ZGC 释放未使用内存</h3><p>ZGC 是 Java 11 中引入的最为瞩目的垃圾回收特性，是一种可伸缩、低延迟的垃圾收集器，不过在 Java 11 中是实验性的引入，主要用来改善 GC 停顿时间，并支持几百 MB 至几个 TB 级别大小的堆，并且应用吞吐能力下降不会超过 15%，目前只支持 Linux&#x2F;x64 位平台的这样一种新型垃圾收集器。</p>
 <p>通过在实际中的使用，发现 ZGC 收集器中并没有像 Hotspot 中的 G1 和 Shenandoah 垃圾收集器一样，能够主动将未使用的内存释放给操作系统的功能。对于大多数应用程序来说，CPU 和内存都属于有限的紧缺资源，特别是现在使用的云上或者虚拟化环境中。如果应用程序中的内存长期处于空闲状态，并且还不能释放给操作系统，这样会导致其他需要内存的应用无法分配到需要的内存，而这边应用分配的内存还处于空闲状态，处于”忙的太忙，闲的太闲”的非公平状态，并且也容易导致基于虚拟化的环境中，因为这些实际并未使用的资源而多付费的情况。由此可见，将未使用内存释放给系统主内存是一项非常有用且亟需的功能。</p>
 <p>ZGC 堆由一组称为 ZPages 的堆区域组成。在 GC 周期中清空 ZPages 区域时，它们将被释放并返回到页面缓存 ZPageCache 中，此缓存中的 ZPages 按最近最少使用（LRU）的顺序，并按照大小进行组织。在 Java 13 中，ZGC 将向操作系统返回被标识为长时间未使用的页面，这样它们将可以被其他进程重用。同时释放这些未使用的内存给操作系统不会导致堆大小缩小到参数设置的最小大小以下，如果将最小和最大堆大小设置为相同的值，则不会释放任何内存给操作系统。</p>
@@ -886,16 +668,15 @@ public void testNextLong() &#123;
 <p>NUMA 是 <strong>non-unified memory access</strong> 的缩写，主要是指在当前的多插槽物理计算机体系中，比较普遍是多核的处理器，并且越来越多的具有 NUMA 内存访问体系结构，即内存与每个插槽或内核之间的距离并不相等。同时套接字之间的内存访问具有不同的性能特征，对更远的套接字的访问通常具有更多的时间消耗。这样每个核对于每一块或者某一区域的内存访问速度会随着核和物理内存所在的位置的远近而有不同的时延差异。</p>
 <p>Java 中，堆内存分配一般发生在线程运行的时候，当创建了一个新对象时，该线程会触发 G1 去分配一块内存出来，用来存放新创建的对象，在 G1 内存体系中，其实就是一块 region（大对象除外，大对象需要多个 region），在这个分配新内存的过程中，如果支持了 NUMA 感知内存分配，将会优先在与当前线程所绑定的 NUMA 节点空闲内存区域来执行 allocate 操作，同一线程创建的对象，尽可能的保留在年轻代的同一 NUMA 内存节点上，因为是基于同一个线程创建的对象大部分是短存活并且高概率互相调用的。</p>
 <p>具体启用方式可以在 JVM 参数后面加上如下参数:</p>
-<pre><code class="bash">-XX:+UseNUMA
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:+UseNUMA</span><br></pre></td></tr></table></figure>
+
 <p>通过这种方式来启用可识别的内存分配方式，能够提高一些大型计算机的 G1 内存分配回收性能。</p>
 <h3 id="JDK14-删除-CMS-垃圾回收器"><a href="#JDK14-删除-CMS-垃圾回收器" class="headerlink" title="JDK14 - 删除 CMS 垃圾回收器"></a>JDK14 - 删除 CMS 垃圾回收器</h3><p>CMS 是老年代垃圾回收算法，通过标记-清除的方式进行内存回收，在内存回收过程中能够与用户线程并行执行。CMS 回收器可以与 Serial 回收器和 Parallel New 回收器搭配使用，CMS 主要通过并发的方式，适当减少系统的吞吐量以达到追求响应速度的目的，比较适合在追求 GC 速度的服务器上使用。</p>
 <p>因为 CMS 回收算法在进行 GC 回收内存过程中是使用并行方式进行的，如果服务器 CPU 核数不多的情况下，进行 CMS 垃圾回收有可能造成比较高的负载。同时在 CMS 并行标记和并行清理时，应用线程还在继续运行，程序在运行过程中自然会创建新对象、释放不用对象，所以在这个过程中，会有新的不可达内存地址产生，而这部分的不可达内存是出现在标记过程结束之后，本轮 CMS 回收无法在周期内将它们回收掉，只能留在下次垃圾回收周期再清理掉。这样的垃圾就叫做浮动垃圾。由于垃圾收集和用户线程是并发执行的，因此 CMS 回收器不能像其他回收器那样进行内存回收，需要预留一些空间用来保存用户新创建的对象。由于 CMS 回收器在老年代中使用标记-清除的内存回收策略，势必会产生内存碎片，内存当碎片过多时，将会给大对象分配带来麻烦，往往会出现老年代还有空间但不能再保存对象的情况。</p>
 <p>所以，早在几年前的 Java 9 中，就已经决定放弃使用 CMS 回收器了，而这次在 Java 14 中，是继之前 Java 9 中放弃使用 CMS 之后，彻底将其禁用，并删除与 CMS 有关的选项，同时清除与 CMS 有关的文档内容，至此曾经辉煌一度的 CMS 回收器，也将成为历史。</p>
 <p>当在 Java 14 版本中，通过使用参数： <code>-XX:+UseConcMarkSweepGC</code>，尝试使用 CMS 时，将会收到下面信息：</p>
-<pre><code class="java">Java HotSpot(TM) 64-Bit Server VM warning: Ignoring option UseConcMarkSweepGC; \
-support was removed in &lt;version&gt;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Java <span class="title function_">HotSpot</span><span class="params">(TM)</span> <span class="number">64</span>-Bit Server VM warning: Ignoring option UseConcMarkSweepGC; \</span><br><span class="line">support was removed in &lt;version&gt;</span><br></pre></td></tr></table></figure>
+
 <h3 id="JDK14-弃用-ParallelScavenge-和-SerialOld-GC-的组合使用"><a href="#JDK14-弃用-ParallelScavenge-和-SerialOld-GC-的组合使用" class="headerlink" title="JDK14 - 弃用 ParallelScavenge 和 SerialOld GC 的组合使用"></a>JDK14 - 弃用 ParallelScavenge 和 SerialOld GC 的组合使用</h3><p>由于 Parallel Scavenge 和 Serial Old 垃圾收集算法组合起来使用的情况比较少，并且在年轻代中使用并行算法，而在老年代中使用串行算法，这种并行、串行混搭使用的情况，本身已属罕见同时也很冒险。由于这两 GC 算法组合很少使用，却要花费巨大工作量来进行维护，所以在 Java 14 版本中，考虑将这两 GC 的组合弃用。</p>
 <p>具体弃用情况如下，通过弃用组合参数：<code>-XX:+UseParallelGC -XX:-UseParallelOldGC</code>，来弃用年轻代、老年期中并行、串行混搭使用的情况；同时，对于单独使用参数：<code>-XX:-UseParallelOldGC</code> 的地方，也将显示该参数已被弃用的警告信息。</p>
 <h3 id="JDK15-禁用偏向锁定"><a href="#JDK15-禁用偏向锁定" class="headerlink" title="JDK15 - 禁用偏向锁定"></a>JDK15 - 禁用偏向锁定</h3><blockquote>
