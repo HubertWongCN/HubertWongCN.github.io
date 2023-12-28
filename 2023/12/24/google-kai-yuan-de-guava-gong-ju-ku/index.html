@@ -407,8 +407,22 @@
 <p>举个栗子，比如String提供的split方法，我们得关心空字符串吧，还得考虑返回的结果中存在null元素吧，只提供了前后trim的方法（如果我想对中间元素进行trim呢）。</p>
 </blockquote>
 <p><strong>那么，看下面的代码示例，guava让你不必在操心这些：</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 连接器</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Joiner</span> <span class="variable">joiner</span> <span class="operator">=</span> Joiner.on(<span class="string">&quot;,&quot;</span>).skipNulls();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 分割器</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Splitter</span> <span class="variable">splitter</span> <span class="operator">=</span> Splitter.on(<span class="string">&quot;,&quot;</span>).trimResults().omitEmptyStrings();</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="comment">// 把集合/数组中的元素 join 在一起</span></span><br><span class="line">    <span class="type">String</span> <span class="variable">join</span> <span class="operator">=</span> joiner.join(Lists.newArrayList(<span class="string">&quot;a&quot;</span>, <span class="literal">null</span>, <span class="string">&quot;b&quot;</span>));</span><br><span class="line">    System.out.println(<span class="string">&quot;join=&quot;</span> + join);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(String tmp : splitter.split(<span class="string">&quot;a, ,b,,&quot;</span>)) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;|&quot;</span> + tmp + <span class="string">&quot;|&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">// 连接器
+private static final Joiner joiner = Joiner.on(&quot;,&quot;).skipNulls();
 
+// 分割器
+private static final Splitter splitter = Splitter.on(&quot;,&quot;).trimResults().omitEmptyStrings();
+
+public static void main(String[] args) &#123;
+    // 把集合/数组中的元素 join 在一起
+    String join = joiner.join(Lists.newArrayList(&quot;a&quot;, null, &quot;b&quot;));
+    System.out.println(&quot;join=&quot; + join);
+
+    for(String tmp : splitter.split(&quot;a, ,b,,&quot;)) &#123;
+        System.out.println(&quot;|&quot; + tmp + &quot;|&quot;);
+    &#125;
+&#125;
+</code></pre>
 <p><strong>Joiner&#x2F;Splitter</strong></p>
 <blockquote>
 <p>Joiner是连接器，Splitter是分割器，通常我们会把它们定义为static final，利用on生成对象后在应用到String进行处理，这是可以复用的。要知道apache commons StringUtils提供的都是static method。</p>
@@ -418,8 +432,19 @@
 <p>对于Splitter，常用的方法是：trimResults()&#x2F;omitEmptyStrings()。注意拆分的方式，有字符串，还有正则，还有固定长度分割（太贴心了！）</p>
 </blockquote>
 <p>其实除了Joiner&#x2F;Splitter外，guava还提供了字符串匹配器：<strong>CharMatcher</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">CharMatcher</span> <span class="variable">charMatcherDigit</span> <span class="operator">=</span> CharMatcher.DIGIT;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Charmatcher</span> <span class="variable">charMatcherAny</span> <span class="operator">=</span> CharMatcher.ANY;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="comment">// 只保留匹配的字符，其他移除</span></span><br><span class="line">    System.out.println(charMatcherDigit.retainFrom(<span class="string">&quot;abc2def134f~&quot;</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 移除匹配的字符</span></span><br><span class="line">    System.out.println(charMatcherDigit.removeFrom(<span class="string">&quot;yes,i love you 1314&quot;</span>));</span><br><span class="line"></span><br><span class="line">    System.out.println(charMatcherAny.inRange(<span class="string">&#x27;a&#x27;</span>, <span class="string">&#x27;f&#x27;</span>).or(charMatcherAny.is(<span class="string">&#x27;a&#x27;</span>)).replaceFrom(<span class="string">&quot;abcdefg&quot;</span>,<span class="string">&quot;*&quot;</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">private static final CharMatcher charMatcherDigit = CharMatcher.DIGIT;
+private static final Charmatcher charMatcherAny = CharMatcher.ANY;
 
+public static void main(String[] args) &#123;
+    // 只保留匹配的字符，其他移除
+    System.out.println(charMatcherDigit.retainFrom(&quot;abc2def134f~&quot;));
+
+    // 移除匹配的字符
+    System.out.println(charMatcherDigit.removeFrom(&quot;yes,i love you 1314&quot;));
+
+    System.out.println(charMatcherAny.inRange(&#39;a&#39;, &#39;f&#39;).or(charMatcherAny.is(&#39;a&#39;)).replaceFrom(&quot;abcdefg&quot;,&quot;*&quot;));
+&#125;
+</code></pre>
 <p><strong>CharMatcher</strong></p>
 <blockquote>
 <p>CharMatcher，将字符的匹配和处理解耦，并提供丰富的方法供你使用！</p>
@@ -428,8 +453,24 @@
 <h2 id="对基本类型进行支持"><a href="#对基本类型进行支持" class="headerlink" title="对基本类型进行支持"></a><strong>对基本类型进行支持</strong></h2><blockquote>
 <p>guava对JDK提供的原生类型操作进行了扩展，使得功能更加强大！</p>
 </blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 快速完成到集合的转换</span></span><br><span class="line">List&lt;Integer&gt; list = Ints.asList(<span class="number">1</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">9</span>);</span><br><span class="line"></span><br><span class="line">System.out.println(Ints.join(<span class="string">&quot;,&quot;</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">4</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 原生类型数据快速合并</span></span><br><span class="line"><span class="type">int</span>[] newIntArray = Ints.concat(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;<span class="number">1</span>, <span class="number">2</span>&#125;, <span class="keyword">new</span> <span class="title class_">int</span>[]&#123;<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>&#125;);</span><br><span class="line">System.out.println(newIntArray.length);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 最大/最小</span></span><br><span class="line">System.out.println(Ints.max(newIntArray) + <span class="string">&quot;,&quot;</span> + Ints.min(newIntArray));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 是否包含</span></span><br><span class="line">System.out.println(Ints.contains(newArray, <span class="number">6</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 集合到数组的转换</span></span><br><span class="line"><span class="type">int</span>[] someArray = Ints.toArray(list);</span><br></pre></td></tr></table></figure>
+<pre><code class="java">// 快速完成到集合的转换
+List&lt;Integer&gt; list = Ints.asList(1, 3, 5, 7, 9);
 
+System.out.println(Ints.join(&quot;,&quot;, 1, 3, 1, 4));
+
+// 原生类型数据快速合并
+int[] newIntArray = Ints.concat(new int[]&#123;1, 2&#125;, new int[]&#123;2, 3, 4&#125;);
+System.out.println(newIntArray.length);
+
+// 最大/最小
+System.out.println(Ints.max(newIntArray) + &quot;,&quot; + Ints.min(newIntArray));
+
+// 是否包含
+System.out.println(Ints.contains(newArray, 6));
+
+// 集合到数组的转换
+int[] someArray = Ints.toArray(list);
+</code></pre>
 <p><strong>Ints</strong></p>
 <blockquote>
 <p>guava提供了</p>
@@ -445,15 +486,37 @@
 <p>Multiset是什么，我想上面的图，你应该了解它的概念了。Multiset就是无序的，但是可以重复的集合，它就是游离在List&#x2F;Set之间的“灰色地带”！（至于有序的，不允许重复的集合嘛，guava还没有提供，当然在未来应该会提供UniqueList，我猜的，哈哈）</p>
 </blockquote>
 <p>来看一个Multiset的示例：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Multiset&lt;String&gt; multiset = HashMultiset.create();</span><br><span class="line"></span><br><span class="line">multiset.add(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">multiset.add(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">multiset.add(<span class="string">&quot;b&quot;</span>);</span><br><span class="line">multiset.add(<span class="string">&quot;c&quot;</span>);</span><br><span class="line">multiset.add(<span class="string">&quot;b&quot;</span>);</span><br><span class="line"></span><br><span class="line">System.out.println(multiset.size());</span><br><span class="line">System.out.println(multiset.count(<span class="string">&quot;a&quot;</span>));</span><br></pre></td></tr></table></figure>
+<pre><code class="java">Multiset&lt;String&gt; multiset = HashMultiset.create();
 
+multiset.add(&quot;a&quot;);
+multiset.add(&quot;a&quot;);
+multiset.add(&quot;b&quot;);
+multiset.add(&quot;c&quot;);
+multiset.add(&quot;b&quot;);
+
+System.out.println(multiset.size());
+System.out.println(multiset.count(&quot;a&quot;));
+</code></pre>
 <p><strong>Multiset Code</strong></p>
 <blockquote>
 <p>Multiset自带一个有用的功能，就是可以跟踪每个对象的数量。</p>
 </blockquote>
 <h3 id="Immutable-vs-unmodifiable"><a href="#Immutable-vs-unmodifiable" class="headerlink" title="Immutable vs unmodifiable"></a>Immutable vs unmodifiable</h3><p>来我们先看一个unmodifiable的例子：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// List 的不可变设置</span></span><br><span class="line">List&lt;String&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;();</span><br><span class="line">list.add(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">list.add(<span class="string">&quot;b&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 这种视图，不够安全，不是真正意义上的快照，怎么能随着而变化呢？</span></span><br><span class="line">List&lt;String&gt; readOnlyList = Collections.unmodifiableList(list);</span><br><span class="line"></span><br><span class="line"><span class="comment">// readOnlyList.add(&quot;c&quot;);</span></span><br><span class="line"><span class="comment">// 抛异常：java.lang.UnsupportedOperationException</span></span><br><span class="line"></span><br><span class="line">list.acc(<span class="string">&quot;c&quot;</span>);</span><br><span class="line"></span><br><span class="line">System.out.println(reaOnlyList.size()); <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">// List 的不可变设置
+List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+list.add(&quot;a&quot;);
+list.add(&quot;b&quot;);
 
+// 这种视图，不够安全，不是真正意义上的快照，怎么能随着而变化呢？
+List&lt;String&gt; readOnlyList = Collections.unmodifiableList(list);
+
+// readOnlyList.add(&quot;c&quot;);
+// 抛异常：java.lang.UnsupportedOperationException
+
+list.acc(&quot;c&quot;);
+
+System.out.println(reaOnlyList.size()); // 3
+</code></pre>
 <p><strong>unmodifiable</strong></p>
 <blockquote>
 <p>你看到JDK提供的unmodifiable的缺陷了吗？</p>
@@ -461,15 +524,30 @@
 <p>也即是说我们改变源集合，导致不可变视图（unmodifiable View）也会发生变化，oh my god!</p>
 </blockquote>
 <p>当然，在不使用guava的情况下，我们是怎么避免上面的问题的呢？</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// List    的不可变性设置</span></span><br><span class="line">List&lt;String&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;~&gt;();</span><br><span class="line">list.add(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">list.add(<span class="string">&quot;b&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// new Object ; Copy</span></span><br><span class="line">List&lt;String&gt; readOnList = Collections.unmodifiableList(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;(list));</span><br></pre></td></tr></table></figure>
+<pre><code class="java">// List    的不可变性设置
+List&lt;String&gt; list = new ArrayList&lt;~&gt;();
+list.add(&quot;a&quot;);
+list.add(&quot;b&quot;);
 
+// new Object ; Copy
+List&lt;String&gt; readOnList = Collections.unmodifiableList(new ArrayList&lt;String&gt;(list));
+</code></pre>
 <p><strong>defensive copies</strong></p>
 <blockquote>
 <p>上面揭示了一个概念：Defensive Copies，保护性拷贝。</p>
 </blockquote>
 <p>OK，unmodifiable看上去没有问题呢，但是guava依然觉得可以改进，于是提出了Immutable的概念，来看：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// guava 是如何做的呢？</span></span><br><span class="line">List&lt;String&gt; immutable = ImmutabeList.of(<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>);</span><br><span class="line"><span class="comment">// immutable.add(&quot;d&quot;);</span></span><br><span class="line"><span class="comment">// 抛异常：java.lang.UnsupportedOperationException</span></span><br><span class="line"></span><br><span class="line">List&lt;String&gt; immutable2 = ImmutableList.copyOf(list);</span><br><span class="line">list.add(<span class="string">&quot;d&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 视图不随着源而改变 guava 只读设置安全可靠 简单易用</span></span><br><span class="line">System.out.println(<span class="string">&quot;list size:&quot;</span> + list.size() + <span class="string">&quot; immutable2.size:&quot;</span> + immutables.size());</span><br></pre></td></tr></table></figure>
+<pre><code class="java">// guava 是如何做的呢？
+List&lt;String&gt; immutable = ImmutabeList.of(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;);
+// immutable.add(&quot;d&quot;);
+// 抛异常：java.lang.UnsupportedOperationException
 
+List&lt;String&gt; immutable2 = ImmutableList.copyOf(list);
+list.add(&quot;d&quot;);
+
+// 视图不随着源而改变 guava 只读设置安全可靠 简单易用
+System.out.println(&quot;list size:&quot; + list.size() + &quot; immutable2.size:&quot; + immutables.size());
+</code></pre>
 <p><strong>Immutable</strong></p>
 <blockquote>
 <p>就一个copyOf，你不会忘记，如此cheap~</p>
@@ -478,15 +556,23 @@
 <p>ImmutableList&#x2F;ImmutableSet&#x2F;ImmutableSortedSet&#x2F;ImmutableMap&#x2F;……</p>
 </blockquote>
 <p>看一个ImmutableMap的例子：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ImmutableMap&lt;String, String&gt; immutableMap = ImmutableMap.of(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;hubert&quot;</span>, <span class="string">&quot;sex&quot;</span>, <span class="string">&quot;man&quot;</span>);</span><br><span class="line"></span><br><span class="line">immutableMap.put(<span class="string">&quot;wife&quot;</span>, <span class="string">&quot;no...&quot;</span>);    <span class="comment">// UnsupportedOperationException</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">ImmutableMap&lt;String, String&gt; immutableMap = ImmutableMap.of(&quot;name&quot;, &quot;hubert&quot;, &quot;sex&quot;, &quot;man&quot;);
 
+immutableMap.put(&quot;wife&quot;, &quot;no...&quot;);    // UnsupportedOperationException
+</code></pre>
 <p><strong>ImmutableMap</strong></p>
 <h3 id="可不可以一对多：Multimap"><a href="#可不可以一对多：Multimap" class="headerlink" title="可不可以一对多：Multimap"></a>可不可以一对多：Multimap</h3><blockquote>
 <p>JDK提供给我们的Map是一个键，一个值，一对一的，那么在实际开发中，显然存在一个KEY多个VALUE的情况（比如一个分类下的书本），我们往往这样表达：<code>Map&lt;k,List&lt;v&gt;&gt;</code>，好像有点臃肿！臃肿也就算了，更加不爽的事，我们还得判断KEY是否存在来决定是否new 一个LIST出来，有点麻烦！更加麻烦的事情还在后头，比如遍历，比如删除，so hard……</p>
 </blockquote>
 <p>来看guava如何替你解决这个大麻烦的：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Multimap&lt;String, String&gt; multiMap = ArrayListMultimap.create();</span><br><span class="line"></span><br><span class="line">multiMap.put(<span class="string">&quot;hubert&quot;</span>, <span class="string">&quot;man&quot;</span>);</span><br><span class="line">multiMap.put(<span class="string">&quot;hubert&quot;</span>, <span class="string">&quot;yes&quot;</span>);</span><br><span class="line">multiMap.put(<span class="string">&quot;lucy&quot;</span>, <span class="string">&quot;woman&quot;</span>);</span><br><span class="line"></span><br><span class="line">System.out.println(multiMap.get(<span class="string">&quot;hubert&quot;</span>)); <span class="comment">//collection</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">Multimap&lt;String, String&gt; multiMap = ArrayListMultimap.create();
 
+multiMap.put(&quot;hubert&quot;, &quot;man&quot;);
+multiMap.put(&quot;hubert&quot;, &quot;yes&quot;);
+multiMap.put(&quot;lucy&quot;, &quot;woman&quot;);
+
+System.out.println(multiMap.get(&quot;hubert&quot;)); //collection
+</code></pre>
 <p><strong>Multimap</strong></p>
 <blockquote>
 <p>友情提示下，guava所有的集合都有create方法，这样的好处在于简单，而且我们不必在重复泛型信息了。</p>
@@ -498,8 +584,20 @@
 <p>JDK提供的MAP让我们可以find value by key，那么能不能通过find key by value呢，能不能KEY和VALUE都是唯一的呢。这是一个双向的概念，即forward+backward。</p>
 <p>在实际场景中有这样的需求吗？比如通过用户ID找到mail，也需要通过mail找回用户名。没有guava的时候，我们需要create forward map AND create backward map，and now just let guava do that for you.</p>
 </blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">BiMap&lt;String, String&gt; biMap = HashBiMap.create();</span><br><span class="line"></span><br><span class="line">biMap.put(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;hubert&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// java.lang.IllegaArgumentException: value already present: hubert</span></span><br><span class="line"><span class="comment">// value 重复会报错</span></span><br><span class="line">biMap.put(<span class="string">&quot;nick&quot;</span>, <span class="string">&quot;hubert&quot;</span>);</span><br><span class="line"><span class="comment">// 强制覆盖 name:hubert</span></span><br><span class="line">biMap.forcePut(<span class="string">&quot;nick&quot;</span>, <span class="string">&quot;hubert&quot;</span>);</span><br><span class="line"></span><br><span class="line">biMap.put(<span class="string">&quot;123&quot;</span>, <span class="string">&quot;hubertwongcn@163.com&quot;</span>);</span><br><span class="line"></span><br><span class="line">System.out.println(biMap.inverse().get(<span class="string">&quot;hubertwongcn@163.com&quot;</span>)); <span class="comment">// 123</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">BiMap&lt;String, String&gt; biMap = HashBiMap.create();
 
+biMap.put(&quot;name&quot;, &quot;hubert&quot;);
+
+// java.lang.IllegaArgumentException: value already present: hubert
+// value 重复会报错
+biMap.put(&quot;nick&quot;, &quot;hubert&quot;);
+// 强制覆盖 name:hubert
+biMap.forcePut(&quot;nick&quot;, &quot;hubert&quot;);
+
+biMap.put(&quot;123&quot;, &quot;hubertwongcn@163.com&quot;);
+
+System.out.println(biMap.inverse().get(&quot;hubertwongcn@163.com&quot;)); // 123
+</code></pre>
 <p><strong>BiMap</strong></p>
 <blockquote>
 <p>biMap &#x2F; biMap.inverse() &#x2F; biMap.inverse().inverse() 它们是什么关系呢？</p>
@@ -509,44 +607,135 @@
 <h3 id="可不可以多个KEY：Table"><a href="#可不可以多个KEY：Table" class="headerlink" title="可不可以多个KEY：Table"></a><strong>可不可以多个KEY：Table</strong></h3><blockquote>
 <p>我们知道数据库除了主键外，还提供了复合索引，而且实际中这样的多级关系查找也是比较多的，当然我们可以利用嵌套的Map来实现：<code>Map&lt;k1,Map&lt;k2,v2&gt;&gt;</code>。为了让我们的代码看起来不那么丑陋，guava为我们提供了Table。</p>
 </blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Table&lt;String, String, Integer&gt; table = HashBaseTable.create();</span><br><span class="line">table.put(<span class="string">&quot;张三&quot;</span>, <span class="string">&quot;计算机&quot;</span>, <span class="number">80</span>);</span><br><span class="line">table.put(<span class="string">&quot;张三&quot;</span>, <span class="string">&quot;数学&quot;</span>, <span class="number">90</span>);</span><br><span class="line">table.put(<span class="string">&quot;张三&quot;</span>, <span class="string">&quot;语文&quot;</span>, <span class="number">70</span>);</span><br><span class="line">table.put(<span class="string">&quot;李四&quot;</span>, <span class="string">&quot;计算机&quot;</span>, <span class="number">70</span>);</span><br><span class="line">table.put(<span class="string">&quot;李四&quot;</span>, <span class="string">&quot;数学&quot;</span>, <span class="number">60</span>);</span><br><span class="line">table.put(<span class="string">&quot;李四&quot;</span>, <span class="string">&quot;语文&quot;</span>, <span class="number">100</span>);</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Table&lt;String, String, Integer&gt; table = HashBaseTable.create();
+table.put(&quot;张三&quot;, &quot;计算机&quot;, 80);
+table.put(&quot;张三&quot;, &quot;数学&quot;, 90);
+table.put(&quot;张三&quot;, &quot;语文&quot;, 70);
+table.put(&quot;李四&quot;, &quot;计算机&quot;, 70);
+table.put(&quot;李四&quot;, &quot;数学&quot;, 60);
+table.put(&quot;李四&quot;, &quot;语文&quot;, 100);
+</code></pre>
 <p><strong>Table</strong></p>
 <blockquote>
 <p>Table涉及到3个概念：rowKey,columnKey,value，并提供了多种视图以及操作方法让你更加轻松的处理多个KEY的场景。</p>
 </blockquote>
-<h2 id="函数式编程：Functions"><a href="#函数式编程：Functions" class="headerlink" title="函数式编程：Functions"></a><strong>函数式编程：Functions</strong></h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; list = Lists.newArrayList(<span class="string">&quot;hello world&quot;</span>, <span class="string">&quot;yes&quot;</span>, <span class="string">&quot;hubert&quot;</span>);</span><br><span class="line"></span><br><span class="line">Function&lt;String, String&gt; f1 = <span class="keyword">new</span> <span class="title class_">Function</span>&lt;String, String&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">apply</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> s.length() &lt;= <span class="number">5</span> ? s : s.substring(<span class="number">0</span>, <span class="number">5</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Function&lt;String, String&gt; f2 = <span class="keyword">new</span> <span class="title class_">Function</span>&lt;String, String&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">apply</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> s.toUpperCase();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Function&lt;String, String&gt; f3 = Functions.compose(f1, f2);</span><br><span class="line"></span><br><span class="line">Collection&lt;String&gt; collection = Collections2.transform(list, f3);</span><br><span class="line"><span class="keyword">for</span>(String s : collection) &#123;</span><br><span class="line">    System.out.println(s);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="函数式编程：Functions"><a href="#函数式编程：Functions" class="headerlink" title="函数式编程：Functions"></a><strong>函数式编程：Functions</strong></h2><pre><code class="java">List&lt;String&gt; list = Lists.newArrayList(&quot;hello world&quot;, &quot;yes&quot;, &quot;hubert&quot;);
 
+Function&lt;String, String&gt; f1 = new Function&lt;String, String&gt;() &#123;
+    @Override
+    public String apply(String s) &#123;
+        return s.length() &lt;= 5 ? s : s.substring(0, 5);
+    &#125;
+&#125;;
+
+Function&lt;String, String&gt; f2 = new Function&lt;String, String&gt;() &#123;
+    @Override
+    public String apply(String s) &#123;
+        return s.toUpperCase();
+    &#125;
+&#125;;
+
+Function&lt;String, String&gt; f3 = Functions.compose(f1, f2);
+
+Collection&lt;String&gt; collection = Collections2.transform(list, f3);
+for(String s : collection) &#123;
+    System.out.println(s);
+&#125;
+</code></pre>
 <p><strong>Functions</strong></p>
 <blockquote>
 <p>上面的代码是为了完成将List集合中的元素，先截取5个长度，然后转成大写。</p>
 <p>函数式编程的好处在于在集合遍历操作中提供自定义Function的操作，比如transform转换。我们再也不需要一遍遍的遍历集合，显著的简化了代码！</p>
 </blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Iterables.transform(Iterable, Function);</span><br><span class="line">Iterators.transform(Iterator, Function);</span><br><span class="line">Collections2.transform(Collection, Function);</span><br><span class="line">Lists.transform(List, Function);</span><br><span class="line">Maps.transformValues(Map, Function);</span><br><span class="line">Multimaps.transformValues(Multimap, Function);</span><br><span class="line">Multimaps.transformValues(ListMultimap, Funtion);</span><br><span class="line">Tables.transformValues(Table, Function);</span><br><span class="line">Maps.transformEntries(Map, EntryTransformer);</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Iterables.transform(Iterable, Function);
+Iterators.transform(Iterator, Function);
+Collections2.transform(Collection, Function);
+Lists.transform(List, Function);
+Maps.transformValues(Map, Function);
+Multimaps.transformValues(Multimap, Function);
+Multimaps.transformValues(ListMultimap, Funtion);
+Tables.transformValues(Table, Function);
+Maps.transformEntries(Map, EntryTransformer);
+// ...
+</code></pre>
 <p><strong>对集合的transform操作可以通过Function完成</strong></p>
-<h2 id="断言：Predicate"><a href="#断言：Predicate" class="headerlink" title="断言：Predicate"></a><strong>断言：Predicate</strong></h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; list = Lists.newArrayList(<span class="string">&quot;moom&quot;</span>, <span class="string">&quot;dad&quot;</span>, <span class="string">&quot;refer&quot;</span>, <span class="string">&quot;yes&quot;</span>);</span><br><span class="line"></span><br><span class="line">Collection&lt;String&gt; collection = Collections2.filter(list, <span class="keyword">new</span> <span class="title class_">Predicate</span>&lt;String&gt;)) &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">apply</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="comment">// 业务逻辑</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>(s).reverse().toString().equals(s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(String s : collection) &#123;</span><br><span class="line">    System.out.println(s);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="断言：Predicate"><a href="#断言：Predicate" class="headerlink" title="断言：Predicate"></a><strong>断言：Predicate</strong></h2><pre><code class="java">List&lt;String&gt; list = Lists.newArrayList(&quot;moom&quot;, &quot;dad&quot;, &quot;refer&quot;, &quot;yes&quot;);
 
+Collection&lt;String&gt; collection = Collections2.filter(list, new Predicate&lt;String&gt;)) &#123;
+    @Override
+    public boolean apply(String s) &#123;
+        // 业务逻辑
+        return new StringBuilder(s).reverse().toString().equals(s);
+    &#125;
+&#125;;
+
+for(String s : collection) &#123;
+    System.out.println(s);
+&#125;
+</code></pre>
 <blockquote>
 <p>Predicate最常用的功能就是运用在集合的过滤当中！</p>
 </blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Iterables.filter(Iterable, Predicate);</span><br><span class="line">Iterators.filter(Iterator, Predicate);</span><br><span class="line">Collectios2.filter(Collection, Predicate);</span><br><span class="line">Sets.filter(Set, Predicate);</span><br><span class="line">Sets.filter(SortedSet, Predicate);</span><br><span class="line">Maps.filterKeys(Map, Predicate);</span><br><span class="line">Multimaps.filterKeys(Multimap, Predicate);</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Iterables.filter(Iterable, Predicate);
+Iterators.filter(Iterator, Predicate);
+Collectios2.filter(Collection, Predicate);
+Sets.filter(Set, Predicate);
+Sets.filter(SortedSet, Predicate);
+Maps.filterKeys(Map, Predicate);
+Multimaps.filterKeys(Multimap, Predicate);
+// ...
+</code></pre>
 <p><strong>filter</strong></p>
 <blockquote>
 <p>需要注意的是Lists并没有提供filter方法，不过你可以使用Collections2.filter完成！</p>
 </blockquote>
 <h3 id="check-null-and-other：Optional、Preconditions"><a href="#check-null-and-other：Optional、Preconditions" class="headerlink" title="check null and other：Optional、Preconditions"></a>check null and other：Optional、Preconditions</h3><p>在guava中，对于null的处理手段是快速失败，你可以看看guava的源码，很多方法的第一行就是：Preconditions.checkNotNull(elements);</p>
 <p>要知道null是模糊的概念，是成功呢，还是失败呢，还是别的什么含义呢？</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">test</span><span class="params">(String name, <span class="type">int</span> age, Map&lt;String, String&gt; extInfo)</span> &#123;</span><br><span class="line">    Preconditions.checkNotNull(name, <span class="string">&quot;name must be given!&quot;</span>);</span><br><span class="line">    Preconditions.checkArgument(age &gt;= <span class="number">18</span>, <span class="string">&quot;the game you can not play it, your age is under 18!&quot;</span>);</span><br><span class="line"></span><br><span class="line">    Map&lt;String, String&gt; defaulExtInfo = Maps.newHashMap();</span><br><span class="line">    defaultExtInfo.put(<span class="string">&quot;sex&quot;</span>, <span class="string">&quot;man&quot;</span>);</span><br><span class="line"></span><br><span class="line">    extInfo = Optional.fromNullable(extInfo).or(defaultExtInfo);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(Map.Entry&lt;String, Stirng&gt; entry : extInfo.entrySet())) &#123;</span><br><span class="line">        System.out.println(entry.getKey() + <span class="string">&quot;:&quot;</span> + entry.getValue());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public static void test(String name, int age, Map&lt;String, String&gt; extInfo) &#123;
+    Preconditions.checkNotNull(name, &quot;name must be given!&quot;);
+    Preconditions.checkArgument(age &gt;= 18, &quot;the game you can not play it, your age is under 18!&quot;);
 
+    Map&lt;String, String&gt; defaulExtInfo = Maps.newHashMap();
+    defaultExtInfo.put(&quot;sex&quot;, &quot;man&quot;);
+
+    extInfo = Optional.fromNullable(extInfo).or(defaultExtInfo);
+
+    for(Map.Entry&lt;String, Stirng&gt; entry : extInfo.entrySet())) &#123;
+        System.out.println(entry.getKey() + &quot;:&quot; + entry.getValue());
+    &#125;
+&#125;
+</code></pre>
 <p><strong>Preconditions&#x2F;Optional</strong></p>
 <h3 id="Cache-is-king"><a href="#Cache-is-king" class="headerlink" title="Cache is king"></a><strong>Cache is king</strong></h3><blockquote>
 <p>对于大多数互联网项目而言，缓存的重要性，不言而喻！</p>
 <p>如果我们的应用系统，并不想使用一些第三方缓存组件（如redis），我们仅仅想在本地有一个功能足够强大的缓存，很可惜JDK提供的那些SET&#x2F;MAP还不行！</p>
 </blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 定义缓存的实现</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> CacheLoader&lt;Long, User&gt; userCacheLoader = <span class="keyword">new</span> <span class="title class_">CacheLoader</span>&lt;Long, User&gt;() &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> User <span class="title function_">load</span><span class="params">(Long along)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 模拟从数据库/Redis/缓存中加载数据</span></span><br><span class="line">        <span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>();</span><br><span class="line">        user.setId(along);</span><br><span class="line">        user.setName(Thread.currentThread().getName() + <span class="string">&quot;-&quot;</span> <span class="keyword">new</span> <span class="title class_">SimpleDateFormat</span>(<span class="string">&quot;yyyy-MM-dd hh:mm:ss&quot;</span>).format(<span class="keyword">new</span> <span class="title class_">Date</span>())  </span><br><span class="line">                     + <span class="string">&quot;-&quot;</span> + along);</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;load:&quot;</span> + user);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> user;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义缓存的策略，提供对外访问缓存</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> LoadingCache&lt;Long, User&gt; userCacheData = CacheBuilder.newBuilder()</span><br><span class="line">    .expireAfterAccess(<span class="number">2</span>, TimeUnit.SECONDS)</span><br><span class="line">    .expireAfterWrite(<span class="number">2</span>, TimeUnit.SECONDS)</span><br><span class="line">    .refreshAfterWrite(<span class="number">3</span>, TimeUnit.SECONS)</span><br><span class="line">    .maximumSize(<span class="number">10000L</span>)</span><br><span class="line">    .bulid(userCacheLoader);</span><br></pre></td></tr></table></figure>
+<pre><code class="java">// 定义缓存的实现
+private static final CacheLoader&lt;Long, User&gt; userCacheLoader = new CacheLoader&lt;Long, User&gt;() &#123;
 
+    @Override
+    public User load(Long along) throws Exception &#123;
+
+        // 模拟从数据库/Redis/缓存中加载数据
+        User user = new User();
+        user.setId(along);
+        user.setName(Thread.currentThread().getName() + &quot;-&quot; new SimpleDateFormat(&quot;yyyy-MM-dd hh:mm:ss&quot;).format(new Date())  
+                     + &quot;-&quot; + along);
+
+        System.out.println(&quot;load:&quot; + user);
+
+        return user;
+    &#125;
+&#125;;
+
+// 定义缓存的策略，提供对外访问缓存
+private static final LoadingCache&lt;Long, User&gt; userCacheData = CacheBuilder.newBuilder()
+    .expireAfterAccess(2, TimeUnit.SECONDS)
+    .expireAfterWrite(2, TimeUnit.SECONDS)
+    .refreshAfterWrite(3, TimeUnit.SECONS)
+    .maximumSize(10000L)
+    .bulid(userCacheLoader);
+</code></pre>
 <p><strong>CacheLoader</strong></p>
 <blockquote>
 <p>首先，这是一个本地缓存，guava提供的cache是一个简洁、高效，易于维护的。为什么这么说呢？因为并没有一个单独的线程用于刷新 OR 清理cache，对于cache的操作，都是通过访问&#x2F;读写带来的，也就是说在读写中完成缓存的刷新操作！</p>
@@ -555,8 +744,35 @@
 <h3 id="让异步回调更加简单"><a href="#让异步回调更加简单" class="headerlink" title="让异步回调更加简单"></a><strong>让异步回调更加简单</strong></h3><blockquote>
 <p>JDK中提供了Future&#x2F;FutureTask&#x2F;Callable来对异步回调进行支持，但是还是看上去挺复杂的，能不能更加简单呢？比如注册一个监听回调。</p>
 </blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JDK 所提供的线程池</span></span><br><span class="line"><span class="type">ExecutorService</span> <span class="variable">es</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">3</span>);</span><br><span class="line"><span class="comment">// 经过guava封装的带有监听回调功能的线程池</span></span><br><span class="line"><span class="type">ListeningExecutorService</span> <span class="variable">listeningExecutorService</span> <span class="operator">=</span> MoreExecutors.listeningDecorator(es);</span><br><span class="line"></span><br><span class="line"><span class="type">ListenableFuture</span> <span class="variable">listenableFuture</span> <span class="operator">=</span> listeningExecutorService.submit(<span class="keyword">new</span> <span class="title class_">Callable</span>&lt;Integer&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Integer <span class="title function_">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">new</span> <span class="title class_">Random</span>().nextInt(<span class="number">3</span>) == <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="type">FutureCallback</span> <span class="variable">futureCallback</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FutureCallback</span>&lt;Integer&gt; &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onSuccess</span><span class="params">(<span class="keyword">final</span> Integer o)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;------&quot;</span> + o);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onFailure</span><span class="params">(<span class="keyword">final</span> Throwable throwable)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;======&quot;</span> + throwable.getMessage());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Futures.addCallback(listenableFuture, futureCallback);</span><br></pre></td></tr></table></figure>
+<pre><code class="java">// JDK 所提供的线程池
+ExecutorService es = Executors.newFixedThreadPool(3);
+// 经过guava封装的带有监听回调功能的线程池
+ListeningExecutorService listeningExecutorService = MoreExecutors.listeningDecorator(es);
 
+ListenableFuture listenableFuture = listeningExecutorService.submit(new Callable&lt;Integer&gt;() &#123;
+    @Override
+    public Integer call() throws Exception &#123;
+        if (new Random().nextInt(3) == 2) &#123;
+            throw new NullPointerException();
+        &#125;
+        return 1;
+    &#125;
+&#125;);
+
+FutureCallback futureCallback = new FutureCallback&lt;Integer&gt; &#123;
+    @Override
+    public void onSuccess(final Integer o) &#123;
+        System.out.println(&quot;------&quot; + o);
+    &#125;
+
+    @Override
+    public void onFailure(final Throwable throwable) &#123;
+        System.out.println(&quot;======&quot; + throwable.getMessage());
+    &#125;
+&#125;;
+
+Futures.addCallback(listenableFuture, futureCallback);
+</code></pre>
 <p><strong>异步回调</strong></p>
 <blockquote>
 <p>我们可以通过guava对JDK提供的线程池进行装饰，让其具有异步回调监听功能，然后在设置监听器即可！</p>

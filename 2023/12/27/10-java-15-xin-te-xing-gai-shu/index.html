@@ -416,19 +416,41 @@ JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次
 <p>文本块，是一个多行字符串，它可以避免使用大多数转义符号，自动以可预测的方式格式化字符串，并让开发人员在需要时可以控制格式。</p>
 </blockquote>
 <p>Text Blocks首次是在JDK 13中以预览功能出现的，然后在JDK 14中又预览了一次，终于在JDK 15中被确定下来，可放心使用了。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">query</span> <span class="operator">=</span> <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">           SELECT * from USER \</span></span><br><span class="line"><span class="string">           WHERE `id` = 1 \</span></span><br><span class="line"><span class="string">           ORDER BY `id`, `name`;\</span></span><br><span class="line"><span class="string">           &quot;&quot;&quot;</span>;</span><br><span class="line">    System.out.println(query);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static void main(String[] args) &#123;
+    String query = &quot;&quot;&quot;
+           SELECT * from USER \
+           WHERE `id` = 1 \
+           ORDER BY `id`, `name`;\
+           &quot;&quot;&quot;;
+    System.out.println(query);
+&#125;
+</code></pre>
 <p>运行程序，输出（可以看到展示为一行了）：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * from USER WHERE `id` = <span class="number">1</span> ORDER BY `id`, `name`;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">SELECT * from USER WHERE `id` = 1 ORDER BY `id`, `name`;
+</code></pre>
 <p><a href="/2023/12/27/9-java-14-xin-te-xing-gai-shu/#JEP 368: 文本块（第二预览版本）">Java14中文本块相关介绍</a></p>
 <h2 id="新功能和库的更新"><a href="#新功能和库的更新" class="headerlink" title="新功能和库的更新"></a>新功能和库的更新</h2><h3 id="JEP-339-Edwards-Curve-数字签名算法-EdDSA"><a href="#JEP-339-Edwards-Curve-数字签名算法-EdDSA" class="headerlink" title="JEP 339: Edwards-Curve 数字签名算法 (EdDSA)"></a>JEP 339: Edwards-Curve 数字签名算法 (EdDSA)</h3><blockquote>
 <p>Edwards-Curve 数字签名算法（EdDSA），一种根据 RFC 8032 规范所描述的 Edwards-Curve 数字签名算法（EdDSA）实现加密签名，实现了一种 RFC 8032 标准化方案，但它不能代替 ECDSA。</p>
 </blockquote>
 <p>与 JDK 中的现有签名方案相比，EdDSA 具有更高的安全性和性能，因此备受关注。它已经在OpenSSL和BoringSSL等加密库中得到支持，在区块链领域用的比较多。</p>
 <p>EdDSA是一种现代的椭圆曲线方案，具有JDK中现有签名方案的优点。EdDSA将只在SunEC提供商中实现。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// example: generate a key pair and sign</span></span><br><span class="line"><span class="type">KeyPairGenerator</span> <span class="variable">kpg</span> <span class="operator">=</span> KeyPairGenerator.getInstance(<span class="string">&quot;Ed25519&quot;</span>);</span><br><span class="line"><span class="type">KeyPair</span> <span class="variable">kp</span> <span class="operator">=</span> kpg.generateKeyPair();</span><br><span class="line"><span class="comment">// algorithm is pure Ed25519</span></span><br><span class="line"><span class="type">Signature</span> <span class="variable">sig</span> <span class="operator">=</span> Signature.getInstance(<span class="string">&quot;Ed25519&quot;</span>);</span><br><span class="line">sig.initSign(kp.getPrivate());</span><br><span class="line">sig.update(msg);</span><br><span class="line"><span class="type">byte</span>[] s = sig.sign();</span><br><span class="line"></span><br><span class="line"><span class="comment">// example: use KeyFactory to contruct a public key</span></span><br><span class="line"><span class="type">KeyFactory</span> <span class="variable">kf</span> <span class="operator">=</span> KeyFactory.getInstance(<span class="string">&quot;EdDSA&quot;</span>);</span><br><span class="line"><span class="type">boolean</span> <span class="variable">xOdd</span> <span class="operator">=</span> ...</span><br><span class="line"><span class="type">BigInteger</span> <span class="variable">y</span> <span class="operator">=</span> ...</span><br><span class="line"><span class="type">NamedParameterSpec</span> <span class="variable">paramSpec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">NamedParameterSpec</span>(<span class="string">&quot;Ed25519&quot;</span>);</span><br><span class="line"><span class="type">EdECPublicKeySpec</span> <span class="variable">pubSpec</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">EdECPublicKeySpec</span>(paramSpec, <span class="keyword">new</span> <span class="title class_">EdPoint</span>(xOdd, y));</span><br><span class="line"><span class="type">PublicKey</span> <span class="variable">pubKey</span> <span class="operator">=</span> kf.generatePublic(pubSpec);</span><br></pre></td></tr></table></figure>
+<pre><code class="java">// example: generate a key pair and sign
+KeyPairGenerator kpg = KeyPairGenerator.getInstance(&quot;Ed25519&quot;);
+KeyPair kp = kpg.generateKeyPair();
+// algorithm is pure Ed25519
+Signature sig = Signature.getInstance(&quot;Ed25519&quot;);
+sig.initSign(kp.getPrivate());
+sig.update(msg);
+byte[] s = sig.sign();
 
+// example: use KeyFactory to contruct a public key
+KeyFactory kf = KeyFactory.getInstance(&quot;EdDSA&quot;);
+boolean xOdd = ...
+BigInteger y = ...
+NamedParameterSpec paramSpec = new NamedParameterSpec(&quot;Ed25519&quot;);
+EdECPublicKeySpec pubSpec = new EdECPublicKeySpec(paramSpec, new EdPoint(xOdd, y));
+PublicKey pubKey = kf.generatePublic(pubSpec);
+</code></pre>
 <h3 id="JEP-371-隐藏类-Hidden-Classes"><a href="#JEP-371-隐藏类-Hidden-Classes" class="headerlink" title="JEP 371: 隐藏类 Hidden Classes"></a>JEP 371: 隐藏类 Hidden Classes</h3><blockquote>
 <p>隐藏类是为框架（frameworks）所设计的，隐藏类不能直接被其他类的字节码使用，只能在运行时生成类并通过反射间接使用它们。</p>
 </blockquote>
@@ -451,8 +473,10 @@ JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次
 <p><strong>API的支持</strong></p>
 <p>所以我们需要一些API来定义无法发现的且具有有限生命周期的隐藏类。这将提高所有基于JVM的语言实现的效率。</p>
 <p>比如：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">java.lang.reflect.Proxy <span class="comment">// 可以定义隐藏类作为实现代理接口的代理类。 </span></span><br><span class="line">java.lang.invoke.StringConcatFactory <span class="comment">// 可以生成隐藏类来保存常量连接方法； </span></span><br><span class="line">java.lang.invoke.LambdaMetaFactory <span class="comment">//可以生成隐藏的nestmate类，以容纳访问封闭变量的lambda主体； </span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">java.lang.reflect.Proxy // 可以定义隐藏类作为实现代理接口的代理类。 
+java.lang.invoke.StringConcatFactory // 可以生成隐藏类来保存常量连接方法； 
+java.lang.invoke.LambdaMetaFactory //可以生成隐藏的nestmate类，以容纳访问封闭变量的lambda主体； 
+</code></pre>
 <p>普通类是通过调用<code>ClassLoader::defineClass</code>创建的，而隐藏类是通过调用<code>Lookup::defineHiddenClass</code>创建的。这使JVM从提供的字节中派生一个隐藏类，链接该隐藏类，并返回提供对隐藏类的反射访问的查找对象。调用程序可以通过返回的查找对象来获取隐藏类的Class对象。</p>
 <h3 id="JEP-373-重新实现-DatagramSocket-API"><a href="#JEP-373-重新实现-DatagramSocket-API" class="headerlink" title="JEP 373: 重新实现 DatagramSocket API"></a>JEP 373: 重新实现 DatagramSocket API</h3><blockquote>
 <p>重新实现了老的 DatagramSocket API 接口，更改了 java.net.DatagramSocket 和 java.net.MulticastSocket 为更加简单、现代化的底层实现，更易于维护和调试。</p>
@@ -486,8 +510,8 @@ JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次
 <p>本图片引用自： The Z Garbage Collector – An Introduction</p>
 <p>不过目前 ZGC 还处于实验阶段，目前只在 Linux&#x2F;x64 上可用，如果有足够的需求，将来可能会增加对其他平台的支持。同时作为实验性功能的 ZGC 将不会出现在 JDK 构建中，除非在编译时使用 configure 参数：<code> --with-jvm-features=zgc</code> 显式启用。</p>
 <p>在实验阶段，编译完成之后，已经迫不及待的想试试 ZGC，需要配置以下 JVM 参数，才能使用 ZGC，具体启动 ZGC 参数如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX：+ UnlockExperimentalVMOptions -XX：+ UseZGC -Xmx10g</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">-XX：+ UnlockExperimentalVMOptions -XX：+ UseZGC -Xmx10g
+</code></pre>
 <p>其中参数： -Xmx 是 ZGC 收集器中最重要的调优选项，大大解决了程序员在 JVM 参数调优上的困扰。ZGC 是一个并发收集器，必须要设置一个最大堆的大小，应用需要多大的堆，主要有下面几个考量：</p>
 <ul>
 <li>对象的分配速率，要保证在 GC 的时候，堆中有足够的内存分配新对象。</li>
@@ -532,11 +556,21 @@ JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次
 <p>模式匹配（第二次预览），第一次预览是 JDK 14 中提出来的。</p>
 </blockquote>
 <p>Java 14 之前：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (object <span class="keyword">instanceof</span> Kid) &#123;</span><br><span class="line">    <span class="type">Kid</span> <span class="variable">kid</span> <span class="operator">=</span> (Kid) object;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (object <span class="keyword">instanceof</span> Kiddle) &#123;</span><br><span class="line">    <span class="type">Kid</span> <span class="variable">kid</span> <span class="operator">=</span> (Kid) object;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">if (object instanceof Kid) &#123;
+    Kid kid = (Kid) object;
+    // ...
+&#125; else if (object instanceof Kiddle) &#123;
+    Kid kid = (Kid) object;
+    // ...
+&#125;
+</code></pre>
 <p>Java 14+：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (object <span class="keyword">instanceof</span> Kid kid) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (object <span class="keyword">instanceof</span> Kiddle kiddle) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">if (object instanceof Kid kid) &#123;
+    // ...
+&#125; else if (object instanceof Kiddle kiddle) &#123;
+    // ...
+&#125;
+</code></pre>
 <p>Java 15 并没有对此特性进行调整，继续预览特性，只是为了收集更多的用户反馈，可能还不成熟吧。</p>
 <h3 id="JEP-360-密封的类和接口（预览）"><a href="#JEP-360-密封的类和接口（预览）" class="headerlink" title="JEP 360: 密封的类和接口（预览）"></a>JEP 360: 密封的类和接口（预览）</h3><blockquote>
 <p>封闭类（预览特性），可以是封闭类和或者封闭接口，用来增强 Java 编程语言，<strong>防止其他类或接口扩展或实现它们</strong>。</p>
@@ -544,11 +578,34 @@ JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次
 <p>因为我们引入了<code>sealed</code> <code>class</code>或<code>interfaces</code>，这些class或者interfaces只允许被指定的类或者interface进行扩展和实现。</p>
 <p>使用修饰符<code>sealed</code>，您可以将一个类声明为密封类。密封的类使用reserved关键字permits列出可以直接扩展它的类。子类可以是最终的，非密封的或密封的。</p>
 <p>之前我们的代码是这样的。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123; &#125; <span class="comment">//人</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Teacher</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;<span class="comment">//教师</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Worker</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;  <span class="comment">//工人</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span> <span class="keyword">extends</span> <span class="title class_">Person</span>&#123; &#125; <span class="comment">//学生</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public class Person &#123; &#125; //人
+ 
+class Teacher extends Person &#123; &#125;//教师
+ 
+class Worker extends Person &#123; &#125;  //工人
+ 
+class Student extends Person&#123; &#125; //学生
+</code></pre>
 <p>但是我们现在要限制 Person类 只能被这三个类继承，不能被其他类继承，需要这么做。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 添加sealed修饰符，permits后面跟上只能被继承的子类名称</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">sealed</span> <span class="keyword">class</span> <span class="title class_">Person</span> <span class="keyword">permits</span> Teacher, Worker, Student&#123; &#125; <span class="comment">//人</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 子类可以被修饰为 final</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Teacher</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;<span class="comment">//教师</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">// 子类可以被修饰为 non-sealed，此时 Worker类就成了普通类，谁都可以继承它</span></span><br><span class="line"><span class="keyword">non-sealed</span> <span class="keyword">class</span> <span class="title class_">Worker</span> <span class="keyword">extends</span> <span class="title class_">Person</span> &#123; &#125;  <span class="comment">//工人</span></span><br><span class="line"><span class="comment">// 任何类都可以继承Worker</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AnyClass</span> <span class="keyword">extends</span> <span class="title class_">Worker</span>&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//子类可以被修饰为 sealed,同上</span></span><br><span class="line"><span class="keyword">sealed</span> <span class="keyword">class</span> <span class="title class_">Student</span> <span class="keyword">extends</span> <span class="title class_">Person</span> <span class="keyword">permits</span> MiddleSchoolStudent,GraduateStudent&#123; &#125; <span class="comment">//学生</span></span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">MiddleSchoolStudent</span> <span class="keyword">extends</span> <span class="title class_">Student</span> &#123; &#125;  <span class="comment">//中学生</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">GraduateStudent</span> <span class="keyword">extends</span> <span class="title class_">Student</span> &#123; &#125;  <span class="comment">//研究生</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">// 添加sealed修饰符，permits后面跟上只能被继承的子类名称
+public sealed class Person permits Teacher, Worker, Student&#123; &#125; //人
+ 
+// 子类可以被修饰为 final
+final class Teacher extends Person &#123; &#125;//教师
+ 
+// 子类可以被修饰为 non-sealed，此时 Worker类就成了普通类，谁都可以继承它
+non-sealed class Worker extends Person &#123; &#125;  //工人
+// 任何类都可以继承Worker
+class AnyClass extends Worker&#123;&#125;
+ 
+//子类可以被修饰为 sealed,同上
+sealed class Student extends Person permits MiddleSchoolStudent,GraduateStudent&#123; &#125; //学生
+ 
+ 
+final class MiddleSchoolStudent extends Student &#123; &#125;  //中学生
+ 
+final class GraduateStudent extends Student &#123; &#125;  //研究生
+</code></pre>
 <p>很强很实用的一个特性，可以限制类的层次结构。</p>
 <h3 id="JEP-383-外部存储器访问-API（二次孵化器版）"><a href="#JEP-383-外部存储器访问-API（二次孵化器版）" class="headerlink" title="JEP 383: 外部存储器访问 API（二次孵化器版）"></a>JEP 383: 外部存储器访问 API（二次孵化器版）</h3><blockquote>
 <p>外存访问 API（二次孵化），可以允许 Java 应用程序安全有效地访问 Java 堆之外的外部内存。目的是引入一个 API，以允许 Java 程序安全、有效地访问 Java 堆之外的外部存储器。如本机、持久和托管堆。如下内容来源于<a target="_blank" rel="noopener" href="https://xie.infoq.cn/article/8304c894c4e38318d38ceb116%EF%BC%8C%E4%BD%9C%E8%80%85%E6%98%AF%E4%B9%9D%E5%8F%94">https://xie.infoq.cn/article/8304c894c4e38318d38ceb116，作者是九叔</a></p>
@@ -563,8 +620,17 @@ JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271236720.png" alt="img"></p>
 <p>在此大家需要注意，程序中通过 ByteBuffer.allocateDirect()方法来申请物理内存资源所耗费的成本远远高于直接在 on-heap 中的操作，而且实际开发过程中还需要考虑数据结构如何设计、序列化&#x2F;反序列化如何支撑等诸多难题，所以与其使用语法层面的 API 倒不如直接使用 MapDB 等开源产品来得更实惠。</p>
 <p>如今，在堆外内存领域，我们似乎又多了一个选择，<strong>从 Java14 开始，Java 的设计者们在语法层面为大家带来了崭新的 Memory Access API，极大程度上简化了开发难度，并得以有效的解决了安全性和高效性等 2 个核心问题</strong>。示例：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取内存访问var句柄</span></span><br><span class="line"><span class="type">var</span> <span class="variable">handle</span> <span class="operator">=</span> MemoryHandles.varHandle(<span class="type">char</span>.class,</span><br><span class="line">        ByteOrder.nativeOrder());</span><br><span class="line"><span class="comment">// 申请200字节的堆外内存</span></span><br><span class="line"><span class="keyword">try</span> (<span class="type">MemorySegment</span> <span class="variable">segment</span> <span class="operator">=</span> MemorySegment.allocateNative(<span class="number">200</span>)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">25</span>; i++) &#123;</span><br><span class="line">        handle.set(segment, i &lt;&lt; <span class="number">2</span>, (<span class="type">char</span>) (i + <span class="number">1</span> + <span class="number">64</span>));</span><br><span class="line">        System.out.println(handle.get(segment, i &lt;&lt; <span class="number">2</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">// 获取内存访问var句柄
+var handle = MemoryHandles.varHandle(char.class,
+        ByteOrder.nativeOrder());
+// 申请200字节的堆外内存
+try (MemorySegment segment = MemorySegment.allocateNative(200)) &#123;
+    for (int i = 0; i &lt; 25; i++) &#123;
+        handle.set(segment, i &lt;&lt; 2, (char) (i + 1 + 64));
+        System.out.println(handle.get(segment, i &lt;&lt; 2));
+    &#125;
+&#125;
+</code></pre>
 <p>关于堆外内存段的释放，Memory Access API 提供有显式和隐式 2 种方式，开发人员除了可以在程序中通过 MemorySegment 的 close()方法来显式释放所申请的内存资源外，还可以注册 Cleaner 清理器来实现资源的隐式释放，后者会在 GC 确定目标内存段不再可访问时，释放与之关联的堆外内存资源。</p>
 <h3 id="JEP-384-Records-二次预览"><a href="#JEP-384-Records-二次预览" class="headerlink" title="JEP 384: Records (二次预览)"></a>JEP 384: Records (二次预览)</h3><blockquote>
 <p>Records 最早在 JDK 14 中成为预览特性，JDK 15 继续二次预览。</p>
@@ -572,11 +638,34 @@ JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次
 <p><strong>如下内容来自Java14</strong></p>
 <p>Record 类型允许在代码中使用紧凑的语法形式来声明类，而这些类能够作为不可变数据类型的封装持有者。Record 这一特性主要用在特定领域的类上；与枚举类型一样，Record 类型是一种受限形式的类型，主要用于存储、保存数据，并且没有其它额外自定义行为的场景下。</p>
 <p>在以往开发过程中，被当作数据载体的类对象，在正确声明定义过程中，通常需要编写大量的无实际业务、重复性质的代码，其中包括：构造函数、属性调用、访问以及 equals() 、hashCode()、toString() 等方法，因此在 Java 14 中引入了 Record 类型，其效果有些类似 Lombok 的 @Data 注解、Kotlin 中的 data class，但是又不尽完全相同，它们的共同点都是类的部分或者全部可以直接在类头中定义、描述，并且这个类只用于存储数据而已。对于 Record 类型，具体可以用下面代码来说明：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">record</span> <span class="title class_">Person</span><span class="params">(String name, <span class="type">int</span> age)</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String address;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public record Person(String name, int age) &#123;
+    public static String address;
 
+    public String getName() &#123;
+        return name;
+    &#125;
+&#125;
+</code></pre>
 <p>对上述代码进行编译，然后反编译之后可以看到如下结果：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Person</span> <span class="keyword">extends</span> <span class="title class_">java</span>.lang.Record &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> java.lang.String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> java.lang.String age;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Person</span><span class="params">(java.lang.String name, java.lang.String age)</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">getName</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">toString</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(java.lang.Object o)</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">name</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.String <span class="title function_">age</span><span class="params">()</span> &#123; <span class="comment">/* compiled code */</span> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public final class Person extends java.lang.Record &#123;
+    private final java.lang.String name;
+    private final java.lang.String age;
 
+    public Person(java.lang.String name, java.lang.String age) &#123; /* compiled code */ &#125;
+
+    public java.lang.String getName() &#123; /* compiled code */ &#125;
+
+    public java.lang.String toString() &#123; /* compiled code */ &#125;
+
+    public final int hashCode() &#123; /* compiled code */ &#125;
+
+    public final boolean equals(java.lang.Object o) &#123; /* compiled code */ &#125;
+
+    public java.lang.String name() &#123; /* compiled code */ &#125;
+
+    public java.lang.String age() &#123; /* compiled code */ &#125;
+&#125;
+</code></pre>
 <p>根据反编译结果，可以得出，当用 Record 来声明一个类时，该类将自动拥有下面特征：</p>
 <ul>
 <li>拥有一个构造方法</li>
@@ -588,8 +677,9 @@ JDK 15 在 2020 年 9 月 15 号正式发布了！根据发布的规划，这次
 </ul>
 <p>可以看到，该预览特性提供了一种更为紧凑的语法来声明类，并且可以大幅减少定义类似数据类型时所需的重复性代码。</p>
 <p>另外 Java 14 中为了引入 Record 这种新的类型，在 java.lang.Class 中引入了下面两个新方法：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RecordComponent[] getRecordComponents()</span><br><span class="line"><span class="type">boolean</span> <span class="title function_">isRecord</span><span class="params">()</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">RecordComponent[] getRecordComponents()
+boolean isRecord()
+</code></pre>
 <p>其中 getRecordComponents() 方法返回一组 java.lang.reflect.RecordComponent 对象组成的数组，java.lang.reflect.RecordComponent也是一个新引入类，该数组的元素与 Record 类中的组件相对应，其顺序与在记录声明中出现的顺序相同，可以从该数组中的每个 RecordComponent 中提取到组件信息，包括其名称、类型、泛型类型、注释及其访问方法。</p>
 <p>而 isRecord() 方法，则返回所在类是否是 Record 类型，如果是，则返回 true。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>

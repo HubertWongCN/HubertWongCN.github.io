@@ -475,38 +475,208 @@
 <h2 id="图相关题目"><a href="#图相关题目" class="headerlink" title="图相关题目"></a>图相关题目</h2><h3 id="二分图"><a href="#二分图" class="headerlink" title="二分图"></a>二分图</h3><p>如果可以用两种颜色对图中的节点进行着色，并且保证相邻的节点颜色不同，那么这个图就是二分图。</p>
 <p><strong>判断是否为二分图</strong></p>
 <p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/is-graph-bipartite/description/">785. Is Graph Bipartite? (Medium)</a></p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Input: [[1,3], [0,2], [1,3], [0,2]]</span><br><span class="line">Output: true</span><br><span class="line">Explanation:</span><br><span class="line">The graph looks like this:</span><br><span class="line">0----1</span><br><span class="line">|    |</span><br><span class="line">|    |</span><br><span class="line">3----2</span><br><span class="line">We can divide the vertices into two groups: &#123;0, 2&#125; and &#123;1, 3&#125;.</span><br></pre></td></tr></table></figure>
+<pre><code class="text">Input: [[1,3], [0,2], [1,3], [0,2]]
+Output: true
+Explanation:
+The graph looks like this:
+0----1
+|    |
+|    |
+3----2
+We can divide the vertices into two groups: &#123;0, 2&#125; and &#123;1, 3&#125;.
+</code></pre>
+<pre><code class="text">Example 2:
+Input: [[1,2,3], [0,2], [0,1,3], [0,2]]
+Output: false
+Explanation:
+The graph looks like this:
+0----1
+| \  |
+|  \ |
+3----2
+We cannot find a way to divide the set of nodes into two independent subsets.
+</code></pre>
+<pre><code class="java">public boolean isBipartite(int[][] graph) &#123;
+    int[] colors = new int[graph.length];
+    Arrays.fill(colors, -1);
+    for (int i = 0; i &lt; graph.length; i++) &#123;  // 处理图不是连通的情况
+        if (colors[i] == -1 &amp;&amp; !isBipartite(i, 0, colors, graph)) &#123;
+            return false;
+        &#125;
+    &#125;
+    return true;
+&#125;
 
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Example 2:</span><br><span class="line">Input: [[1,2,3], [0,2], [0,1,3], [0,2]]</span><br><span class="line">Output: false</span><br><span class="line">Explanation:</span><br><span class="line">The graph looks like this:</span><br><span class="line">0----1</span><br><span class="line">| \  |</span><br><span class="line">|  \ |</span><br><span class="line">3----2</span><br><span class="line">We cannot find a way to divide the set of nodes into two independent subsets.</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isBipartite</span><span class="params">(<span class="type">int</span>[][] graph)</span> &#123;</span><br><span class="line">    <span class="type">int</span>[] colors = <span class="keyword">new</span> <span class="title class_">int</span>[graph.length];</span><br><span class="line">    Arrays.fill(colors, -<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; graph.length; i++) &#123;  <span class="comment">// 处理图不是连通的情况</span></span><br><span class="line">        <span class="keyword">if</span> (colors[i] == -<span class="number">1</span> &amp;&amp; !isBipartite(i, <span class="number">0</span>, colors, graph)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isBipartite</span><span class="params">(<span class="type">int</span> curNode, <span class="type">int</span> curColor, <span class="type">int</span>[] colors, <span class="type">int</span>[][] graph)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (colors[curNode] != -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> colors[curNode] == curColor;</span><br><span class="line">    &#125;</span><br><span class="line">    colors[curNode] = curColor;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> nextNode : graph[curNode]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!isBipartite(nextNode, <span class="number">1</span> - curColor, colors, graph)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+private boolean isBipartite(int curNode, int curColor, int[] colors, int[][] graph) &#123;
+    if (colors[curNode] != -1) &#123;
+        return colors[curNode] == curColor;
+    &#125;
+    colors[curNode] = curColor;
+    for (int nextNode : graph[curNode]) &#123;
+        if (!isBipartite(nextNode, 1 - curColor, colors, graph)) &#123;
+            return false;
+        &#125;
+    &#125;
+    return true;
+&#125;
+</code></pre>
 <h3 id="拓扑排序"><a href="#拓扑排序" class="headerlink" title="拓扑排序"></a>拓扑排序</h3><p>常用于在具有先序关系的任务规划中。</p>
 <p><strong>课程安排的合法性</strong></p>
 <p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/course-schedule/description/">207. Course Schedule (Medium)</a></p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2, [[1,0]]</span><br><span class="line">return true</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2, [[1,0],[0,1]]</span><br><span class="line">return false</span><br></pre></td></tr></table></figure>
-
+<pre><code class="text">2, [[1,0]]
+return true
+</code></pre>
+<pre><code class="text">2, [[1,0],[0,1]]
+return false
+</code></pre>
 <p>题目描述: 一个课程可能会先修课程，判断给定的先修课程规定是否合法。</p>
 <p>本题不需要使用拓扑排序，只需要检测有向图是否存在环即可。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">canFinish</span><span class="params">(<span class="type">int</span> numCourses, <span class="type">int</span>[][] prerequisites)</span> &#123;</span><br><span class="line">    List&lt;Integer&gt;[] graphic = <span class="keyword">new</span> <span class="title class_">List</span>[numCourses];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; numCourses; i++) &#123;</span><br><span class="line">        graphic[i] = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>[] pre : prerequisites) &#123;</span><br><span class="line">        graphic[pre[<span class="number">0</span>]].add(pre[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">boolean</span>[] globalMarked = <span class="keyword">new</span> <span class="title class_">boolean</span>[numCourses];</span><br><span class="line">    <span class="type">boolean</span>[] localMarked = <span class="keyword">new</span> <span class="title class_">boolean</span>[numCourses];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; numCourses; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (hasCycle(globalMarked, localMarked, graphic, i)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">hasCycle</span><span class="params">(<span class="type">boolean</span>[] globalMarked, <span class="type">boolean</span>[] localMarked,</span></span><br><span class="line"><span class="params">                         List&lt;Integer&gt;[] graphic, <span class="type">int</span> curNode)</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (localMarked[curNode]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (globalMarked[curNode]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    globalMarked[curNode] = <span class="literal">true</span>;</span><br><span class="line">    localMarked[curNode] = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> nextNode : graphic[curNode]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (hasCycle(globalMarked, localMarked, graphic, nextNode)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    localMarked[curNode] = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public boolean canFinish(int numCourses, int[][] prerequisites) &#123;
+    List&lt;Integer&gt;[] graphic = new List[numCourses];
+    for (int i = 0; i &lt; numCourses; i++) &#123;
+        graphic[i] = new ArrayList&lt;&gt;();
+    &#125;
+    for (int[] pre : prerequisites) &#123;
+        graphic[pre[0]].add(pre[1]);
+    &#125;
+    boolean[] globalMarked = new boolean[numCourses];
+    boolean[] localMarked = new boolean[numCourses];
+    for (int i = 0; i &lt; numCourses; i++) &#123;
+        if (hasCycle(globalMarked, localMarked, graphic, i)) &#123;
+            return false;
+        &#125;
+    &#125;
+    return true;
+&#125;
 
+private boolean hasCycle(boolean[] globalMarked, boolean[] localMarked,
+                         List&lt;Integer&gt;[] graphic, int curNode) &#123;
+
+    if (localMarked[curNode]) &#123;
+        return true;
+    &#125;
+    if (globalMarked[curNode]) &#123;
+        return false;
+    &#125;
+    globalMarked[curNode] = true;
+    localMarked[curNode] = true;
+    for (int nextNode : graphic[curNode]) &#123;
+        if (hasCycle(globalMarked, localMarked, graphic, nextNode)) &#123;
+            return true;
+        &#125;
+    &#125;
+    localMarked[curNode] = false;
+    return false;
+&#125;
+</code></pre>
 <p><strong>课程安排的顺序</strong></p>
 <p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/course-schedule-ii/description/">210. Course Schedule II (Medium)</a></p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">4, [[1,0],[2,0],[3,1],[3,2]]</span><br><span class="line">There are a total of 4 courses to take. To take course 3 you should have finished both courses 1 and 2. Both courses 1 and 2 should be taken after you finished course 0. So one correct course order is [0,1,2,3]. Another correct ordering is[0,2,1,3].</span><br></pre></td></tr></table></figure>
-
+<pre><code class="html">4, [[1,0],[2,0],[3,1],[3,2]]
+There are a total of 4 courses to take. To take course 3 you should have finished both courses 1 and 2. Both courses 1 and 2 should be taken after you finished course 0. So one correct course order is [0,1,2,3]. Another correct ordering is[0,2,1,3].
+</code></pre>
 <p>使用 DFS 来实现拓扑排序，使用一个栈存储后序遍历结果，这个栈的逆序结果就是拓扑排序结果。</p>
 <p>证明: 对于任何先序关系: v-&gt;w，后序遍历结果可以保证 w 先进入栈中，因此栈的逆序结果中 v 会在 w 之前。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] findOrder(<span class="type">int</span> numCourses, <span class="type">int</span>[][] prerequisites) &#123;</span><br><span class="line">    List&lt;Integer&gt;[] graphic = <span class="keyword">new</span> <span class="title class_">List</span>[numCourses];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; numCourses; i++) &#123;</span><br><span class="line">        graphic[i] = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>[] pre : prerequisites) &#123;</span><br><span class="line">        graphic[pre[<span class="number">0</span>]].add(pre[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    Stack&lt;Integer&gt; postOrder = <span class="keyword">new</span> <span class="title class_">Stack</span>&lt;&gt;();</span><br><span class="line">    <span class="type">boolean</span>[] globalMarked = <span class="keyword">new</span> <span class="title class_">boolean</span>[numCourses];</span><br><span class="line">    <span class="type">boolean</span>[] localMarked = <span class="keyword">new</span> <span class="title class_">boolean</span>[numCourses];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; numCourses; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (hasCycle(globalMarked, localMarked, graphic, i, postOrder)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">0</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span>[] orders = <span class="keyword">new</span> <span class="title class_">int</span>[numCourses];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> numCourses - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">        orders[i] = postOrder.pop();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> orders;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">hasCycle</span><span class="params">(<span class="type">boolean</span>[] globalMarked, <span class="type">boolean</span>[] localMarked, List&lt;Integer&gt;[] graphic,</span></span><br><span class="line"><span class="params">                         <span class="type">int</span> curNode, Stack&lt;Integer&gt; postOrder)</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (localMarked[curNode]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (globalMarked[curNode]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    globalMarked[curNode] = <span class="literal">true</span>;</span><br><span class="line">    localMarked[curNode] = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> nextNode : graphic[curNode]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (hasCycle(globalMarked, localMarked, graphic, nextNode, postOrder)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    localMarked[curNode] = <span class="literal">false</span>;</span><br><span class="line">    postOrder.push(curNode);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public int[] findOrder(int numCourses, int[][] prerequisites) &#123;
+    List&lt;Integer&gt;[] graphic = new List[numCourses];
+    for (int i = 0; i &lt; numCourses; i++) &#123;
+        graphic[i] = new ArrayList&lt;&gt;();
+    &#125;
+    for (int[] pre : prerequisites) &#123;
+        graphic[pre[0]].add(pre[1]);
+    &#125;
+    Stack&lt;Integer&gt; postOrder = new Stack&lt;&gt;();
+    boolean[] globalMarked = new boolean[numCourses];
+    boolean[] localMarked = new boolean[numCourses];
+    for (int i = 0; i &lt; numCourses; i++) &#123;
+        if (hasCycle(globalMarked, localMarked, graphic, i, postOrder)) &#123;
+            return new int[0];
+        &#125;
+    &#125;
+    int[] orders = new int[numCourses];
+    for (int i = numCourses - 1; i &gt;= 0; i--) &#123;
+        orders[i] = postOrder.pop();
+    &#125;
+    return orders;
+&#125;
 
+private boolean hasCycle(boolean[] globalMarked, boolean[] localMarked, List&lt;Integer&gt;[] graphic,
+                         int curNode, Stack&lt;Integer&gt; postOrder) &#123;
+
+    if (localMarked[curNode]) &#123;
+        return true;
+    &#125;
+    if (globalMarked[curNode]) &#123;
+        return false;
+    &#125;
+    globalMarked[curNode] = true;
+    localMarked[curNode] = true;
+    for (int nextNode : graphic[curNode]) &#123;
+        if (hasCycle(globalMarked, localMarked, graphic, nextNode, postOrder)) &#123;
+            return true;
+        &#125;
+    &#125;
+    localMarked[curNode] = false;
+    postOrder.push(curNode);
+    return false;
+&#125;
+</code></pre>
 <h3 id="并查集"><a href="#并查集" class="headerlink" title="并查集"></a>并查集</h3><p>并查集可以动态地连通两个点，并且可以非常快速地判断两个点是否连通。</p>
 <p><strong>冗余连接</strong></p>
 <p><a target="_blank" rel="noopener" href="https://leetcode.com/problems/redundant-connection/description/">684. Redundant Connection (Medium)</a></p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Input: [[1,2], [1,3], [2,3]]</span><br><span class="line">Output: [2,3]</span><br><span class="line">Explanation: The given undirected graph will be like this:</span><br><span class="line">  1</span><br><span class="line"> / \</span><br><span class="line">2 - 3</span><br></pre></td></tr></table></figure>
-
+<pre><code class="html">Input: [[1,2], [1,3], [2,3]]
+Output: [2,3]
+Explanation: The given undirected graph will be like this:
+  1
+ / \
+2 - 3
+</code></pre>
 <p>题目描述: 有一系列的边连成的图，找出一条边，移除它之后该图能够成为一棵树。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span>[] findRedundantConnection(<span class="type">int</span>[][] edges) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> edges.length;</span><br><span class="line">    <span class="type">UF</span> <span class="variable">uf</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UF</span>(N);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span>[] e : edges) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">u</span> <span class="operator">=</span> e[<span class="number">0</span>], v = e[<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">if</span> (uf.connect(u, v)) &#123;</span><br><span class="line">            <span class="keyword">return</span> e;</span><br><span class="line">        &#125;</span><br><span class="line">        uf.union(u, v);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">int</span>[]&#123;-<span class="number">1</span>, -<span class="number">1</span>&#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">UF</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[] id;</span><br><span class="line"></span><br><span class="line">    UF(<span class="type">int</span> N) &#123;</span><br><span class="line">        id = <span class="keyword">new</span> <span class="title class_">int</span>[N + <span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; id.length; i++) &#123;</span><br><span class="line">            id[i] = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">union</span><span class="params">(<span class="type">int</span> u, <span class="type">int</span> v)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">uID</span> <span class="operator">=</span> find(u);</span><br><span class="line">        <span class="type">int</span> <span class="variable">vID</span> <span class="operator">=</span> find(v);</span><br><span class="line">        <span class="keyword">if</span> (uID == vID) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; id.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (id[i] == uID) &#123;</span><br><span class="line">                id[i] = vID;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="title function_">find</span><span class="params">(<span class="type">int</span> p)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> id[p];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">connect</span><span class="params">(<span class="type">int</span> u, <span class="type">int</span> v)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> find(u) == find(v);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public int[] findRedundantConnection(int[][] edges) &#123;
+    int N = edges.length;
+    UF uf = new UF(N);
+    for (int[] e : edges) &#123;
+        int u = e[0], v = e[1];
+        if (uf.connect(u, v)) &#123;
+            return e;
+        &#125;
+        uf.union(u, v);
+    &#125;
+    return new int[]&#123;-1, -1&#125;;
+&#125;
+
+private class UF &#123;
+
+    private int[] id;
+
+    UF(int N) &#123;
+        id = new int[N + 1];
+        for (int i = 0; i &lt; id.length; i++) &#123;
+            id[i] = i;
+        &#125;
+    &#125;
+
+    void union(int u, int v) &#123;
+        int uID = find(u);
+        int vID = find(v);
+        if (uID == vID) &#123;
+            return;
+        &#125;
+        for (int i = 0; i &lt; id.length; i++) &#123;
+            if (id[i] == uID) &#123;
+                id[i] = vID;
+            &#125;
+        &#125;
+    &#125;
+
+    int find(int p) &#123;
+        return id[p];
+    &#125;
+
+    boolean connect(int u, int v) &#123;
+        return find(u) == find(v);
+    &#125;
+&#125;
+</code></pre>
 
                 
             </div>

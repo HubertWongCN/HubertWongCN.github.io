@@ -445,17 +445,285 @@ BIO就是: blocking IO。最容易理解、最容易实现的IO工作方式，�
 </ul>
 <h2 id="BIO通信方式深入分析"><a href="#BIO通信方式深入分析" class="headerlink" title="BIO通信方式深入分析"></a>BIO通信方式深入分析</h2><p>BIO的问题关键不在于是否使用了多线程(包括线程池)处理这次请求，而在于accept()、read()的操作点都是被阻塞。要测试这个问题，也很简单。我们模拟了20个客户端(用20根线程模拟)，利用JAVA的同步计数器CountDownLatch，保证这20个客户都初始化完成后然后同时向服务器发送请求，然后我们来观察一下Server这边接受信息的情况。</p>
 <h3 id="模拟20个客户端并发请求，服务器端使用单线程"><a href="#模拟20个客户端并发请求，服务器端使用单线程" class="headerlink" title="模拟20个客户端并发请求，服务器端使用单线程:"></a>模拟20个客户端并发请求，服务器端使用单线程:</h3><p>客户端代码(SocketClientDaemon)</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> testBSocket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.CountDownLatch;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SocketClientDaemon</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Integer</span> <span class="variable">clientNumber</span> <span class="operator">=</span> <span class="number">20</span>;</span><br><span class="line">        <span class="type">CountDownLatch</span> <span class="variable">countDownLatch</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CountDownLatch</span>(clientNumber);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//分别开始启动这20个客户端</span></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> <span class="number">0</span> ; index &lt; clientNumber ; index++ , countDownLatch.countDown()) &#123;</span><br><span class="line">            <span class="type">SocketClientRequestThread</span> <span class="variable">client</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SocketClientRequestThread</span>(countDownLatch, index);</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Thread</span>(client).start();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//这个wait不涉及到具体的实验逻辑，只是为了保证守护线程在启动所有线程后，进入等待状态</span></span><br><span class="line">        <span class="keyword">synchronized</span> (SocketClientDaemon.class) &#123;</span><br><span class="line">            SocketClientDaemon.class.wait();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">package testBSocket;
 
+import java.util.concurrent.CountDownLatch;
+
+public class SocketClientDaemon &#123;
+    public static void main(String[] args) throws Exception &#123;
+        Integer clientNumber = 20;
+        CountDownLatch countDownLatch = new CountDownLatch(clientNumber);
+
+        //分别开始启动这20个客户端
+        for(int index = 0 ; index &lt; clientNumber ; index++ , countDownLatch.countDown()) &#123;
+            SocketClientRequestThread client = new SocketClientRequestThread(countDownLatch, index);
+            new Thread(client).start();
+        &#125;
+
+        //这个wait不涉及到具体的实验逻辑，只是为了保证守护线程在启动所有线程后，进入等待状态
+        synchronized (SocketClientDaemon.class) &#123;
+            SocketClientDaemon.class.wait();
+        &#125;
+    &#125;
+&#125;
+</code></pre>
 <p>客户端代码(SocketClientRequestThread模拟请求)</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> testBSocket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.InputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStream;</span><br><span class="line"><span class="keyword">import</span> java.net.Socket;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.CountDownLatch;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.Log;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.LogFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.log4j.BasicConfigurator;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 一个SocketClientRequestThread线程模拟一个客户端请求。</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> yinwenjie</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SocketClientRequestThread</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        BasicConfigurator.configure();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 日志</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Log</span> <span class="variable">LOGGER</span> <span class="operator">=</span> LogFactory.getLog(SocketClientRequestThread.class);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> CountDownLatch countDownLatch;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 这个线层的编号</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> countDownLatch</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer clientIndex;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * countDownLatch是java提供的同步计数器。</span></span><br><span class="line"><span class="comment">     * 当计数器数值减为0时，所有受其影响而等待的线程将会被激活。这样保证模拟并发请求的真实性</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> countDownLatch</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SocketClientRequestThread</span><span class="params">(CountDownLatch countDownLatch , Integer clientIndex)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.countDownLatch = countDownLatch;</span><br><span class="line">        <span class="built_in">this</span>.clientIndex = clientIndex;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">Socket</span> <span class="variable">socket</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">OutputStream</span> <span class="variable">clientRequest</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">InputStream</span> <span class="variable">clientResponse</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            socket = <span class="keyword">new</span> <span class="title class_">Socket</span>(<span class="string">&quot;localhost&quot;</span>,<span class="number">83</span>);</span><br><span class="line">            clientRequest = socket.getOutputStream();</span><br><span class="line">            clientResponse = socket.getInputStream();</span><br><span class="line"></span><br><span class="line">            <span class="comment">//等待，直到SocketClientDaemon完成所有线程的启动，然后所有线程一起发送请求</span></span><br><span class="line">            <span class="built_in">this</span>.countDownLatch.await();</span><br><span class="line"></span><br><span class="line">            <span class="comment">//发送请求信息</span></span><br><span class="line">            clientRequest.write((<span class="string">&quot;这是第&quot;</span> + <span class="built_in">this</span>.clientIndex + <span class="string">&quot; 个客户端的请求。&quot;</span>).getBytes());</span><br><span class="line">            clientRequest.flush();</span><br><span class="line"></span><br><span class="line">            <span class="comment">//在这里等待，直到服务器返回信息</span></span><br><span class="line">            SocketClientRequestThread.LOGGER.info(<span class="string">&quot;第&quot;</span> + <span class="built_in">this</span>.clientIndex + <span class="string">&quot;个客户端的请求发送完成，等待服务器返回信息&quot;</span>);</span><br><span class="line">            <span class="type">int</span> <span class="variable">maxLen</span> <span class="operator">=</span> <span class="number">1024</span>;</span><br><span class="line">            <span class="type">byte</span>[] contextBytes = <span class="keyword">new</span> <span class="title class_">byte</span>[maxLen];</span><br><span class="line">            <span class="type">int</span> realLen;</span><br><span class="line">            <span class="type">String</span> <span class="variable">message</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">            <span class="comment">//程序执行到这里，会一直等待服务器返回信息(注意，前提是in和out都不能close，如果close了就收不到服务器的反馈了)</span></span><br><span class="line">            <span class="keyword">while</span>((realLen = clientResponse.read(contextBytes, <span class="number">0</span>, maxLen)) != -<span class="number">1</span>) &#123;</span><br><span class="line">                message += <span class="keyword">new</span> <span class="title class_">String</span>(contextBytes , <span class="number">0</span> , realLen);</span><br><span class="line">            &#125;</span><br><span class="line">            SocketClientRequestThread.LOGGER.info(<span class="string">&quot;接收到来自服务器的信息:&quot;</span> + message);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            SocketClientRequestThread.LOGGER.error(e.getMessage(), e);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span>(clientRequest != <span class="literal">null</span>) &#123;</span><br><span class="line">                    clientRequest.close();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span>(clientResponse != <span class="literal">null</span>) &#123;</span><br><span class="line">                    clientResponse.close();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                SocketClientRequestThread.LOGGER.error(e.getMessage(), e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">package testBSocket;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.concurrent.CountDownLatch;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.BasicConfigurator;
+
+/**
+ * 一个SocketClientRequestThread线程模拟一个客户端请求。
+ * @author yinwenjie
+ */
+public class SocketClientRequestThread implements Runnable &#123;
+
+    static &#123;
+        BasicConfigurator.configure();
+    &#125;
+
+    /**
+     * 日志
+     */
+    private static final Log LOGGER = LogFactory.getLog(SocketClientRequestThread.class);
+
+    private CountDownLatch countDownLatch;
+
+    /**
+     * 这个线层的编号
+     * @param countDownLatch
+     */
+    private Integer clientIndex;
+
+    /**
+     * countDownLatch是java提供的同步计数器。
+     * 当计数器数值减为0时，所有受其影响而等待的线程将会被激活。这样保证模拟并发请求的真实性
+     * @param countDownLatch
+     */
+    public SocketClientRequestThread(CountDownLatch countDownLatch , Integer clientIndex) &#123;
+        this.countDownLatch = countDownLatch;
+        this.clientIndex = clientIndex;
+    &#125;
+
+    @Override
+    public void run() &#123;
+        Socket socket = null;
+        OutputStream clientRequest = null;
+        InputStream clientResponse = null;
+
+        try &#123;
+            socket = new Socket(&quot;localhost&quot;,83);
+            clientRequest = socket.getOutputStream();
+            clientResponse = socket.getInputStream();
+
+            //等待，直到SocketClientDaemon完成所有线程的启动，然后所有线程一起发送请求
+            this.countDownLatch.await();
+
+            //发送请求信息
+            clientRequest.write((&quot;这是第&quot; + this.clientIndex + &quot; 个客户端的请求。&quot;).getBytes());
+            clientRequest.flush();
+
+            //在这里等待，直到服务器返回信息
+            SocketClientRequestThread.LOGGER.info(&quot;第&quot; + this.clientIndex + &quot;个客户端的请求发送完成，等待服务器返回信息&quot;);
+            int maxLen = 1024;
+            byte[] contextBytes = new byte[maxLen];
+            int realLen;
+            String message = &quot;&quot;;
+            //程序执行到这里，会一直等待服务器返回信息(注意，前提是in和out都不能close，如果close了就收不到服务器的反馈了)
+            while((realLen = clientResponse.read(contextBytes, 0, maxLen)) != -1) &#123;
+                message += new String(contextBytes , 0 , realLen);
+            &#125;
+            SocketClientRequestThread.LOGGER.info(&quot;接收到来自服务器的信息:&quot; + message);
+        &#125; catch (Exception e) &#123;
+            SocketClientRequestThread.LOGGER.error(e.getMessage(), e);
+        &#125; finally &#123;
+            try &#123;
+                if(clientRequest != null) &#123;
+                    clientRequest.close();
+                &#125;
+                if(clientResponse != null) &#123;
+                    clientResponse.close();
+                &#125;
+            &#125; catch (IOException e) &#123;
+                SocketClientRequestThread.LOGGER.error(e.getMessage(), e);
+            &#125;
+        &#125;
+    &#125;
+&#125;
+</code></pre>
 <p>服务器端(SocketServer1)单个线程</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> testBSocket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.InputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStream;</span><br><span class="line"><span class="keyword">import</span> java.net.ServerSocket;</span><br><span class="line"><span class="keyword">import</span> java.net.Socket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.Log;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.LogFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.log4j.BasicConfigurator;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SocketServer1</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        BasicConfigurator.configure();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 日志</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Log</span> <span class="variable">LOGGER</span> <span class="operator">=</span> LogFactory.getLog(SocketServer1.class);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception&#123;</span><br><span class="line">        <span class="type">ServerSocket</span> <span class="variable">serverSocket</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ServerSocket</span>(<span class="number">83</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">while</span>(<span class="literal">true</span>) &#123;</span><br><span class="line">                <span class="type">Socket</span> <span class="variable">socket</span> <span class="operator">=</span> serverSocket.accept();</span><br><span class="line"></span><br><span class="line">                <span class="comment">//下面我们收取信息</span></span><br><span class="line">                <span class="type">InputStream</span> <span class="variable">in</span> <span class="operator">=</span> socket.getInputStream();</span><br><span class="line">                <span class="type">OutputStream</span> <span class="variable">out</span> <span class="operator">=</span> socket.getOutputStream();</span><br><span class="line">                <span class="type">Integer</span> <span class="variable">sourcePort</span> <span class="operator">=</span> socket.getPort();</span><br><span class="line">                <span class="type">int</span> <span class="variable">maxLen</span> <span class="operator">=</span> <span class="number">2048</span>;</span><br><span class="line">                <span class="type">byte</span>[] contextBytes = <span class="keyword">new</span> <span class="title class_">byte</span>[maxLen];</span><br><span class="line">                <span class="comment">//这里也会被阻塞，直到有数据准备好</span></span><br><span class="line">                <span class="type">int</span> <span class="variable">realLen</span> <span class="operator">=</span> in.read(contextBytes, <span class="number">0</span>, maxLen);</span><br><span class="line">                <span class="comment">//读取信息</span></span><br><span class="line">                <span class="type">String</span> <span class="variable">message</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(contextBytes , <span class="number">0</span> , realLen);</span><br><span class="line"></span><br><span class="line">                <span class="comment">//下面打印信息</span></span><br><span class="line">                SocketServer1.LOGGER.info(<span class="string">&quot;服务器收到来自于端口: &quot;</span> + sourcePort + <span class="string">&quot;的信息: &quot;</span> + message);</span><br><span class="line"></span><br><span class="line">                <span class="comment">//下面开始发送信息</span></span><br><span class="line">                out.write(<span class="string">&quot;回发响应信息！&quot;</span>.getBytes());</span><br><span class="line"></span><br><span class="line">                <span class="comment">//关闭</span></span><br><span class="line">                out.close();</span><br><span class="line">                in.close();</span><br><span class="line">                socket.close();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span>(Exception e) &#123;</span><br><span class="line">            SocketServer1.LOGGER.error(e.getMessage(), e);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span>(serverSocket != <span class="literal">null</span>) &#123;</span><br><span class="line">                serverSocket.close();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">package testBSocket;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.BasicConfigurator;
+
+public class SocketServer1 &#123;
+
+    static &#123;
+        BasicConfigurator.configure();
+    &#125;
+
+    /**
+     * 日志
+     */
+    private static final Log LOGGER = LogFactory.getLog(SocketServer1.class);
+
+    public static void main(String[] args) throws Exception&#123;
+        ServerSocket serverSocket = new ServerSocket(83);
+
+        try &#123;
+            while(true) &#123;
+                Socket socket = serverSocket.accept();
+
+                //下面我们收取信息
+                InputStream in = socket.getInputStream();
+                OutputStream out = socket.getOutputStream();
+                Integer sourcePort = socket.getPort();
+                int maxLen = 2048;
+                byte[] contextBytes = new byte[maxLen];
+                //这里也会被阻塞，直到有数据准备好
+                int realLen = in.read(contextBytes, 0, maxLen);
+                //读取信息
+                String message = new String(contextBytes , 0 , realLen);
+
+                //下面打印信息
+                SocketServer1.LOGGER.info(&quot;服务器收到来自于端口: &quot; + sourcePort + &quot;的信息: &quot; + message);
+
+                //下面开始发送信息
+                out.write(&quot;回发响应信息！&quot;.getBytes());
+
+                //关闭
+                out.close();
+                in.close();
+                socket.close();
+            &#125;
+        &#125; catch(Exception e) &#123;
+            SocketServer1.LOGGER.error(e.getMessage(), e);
+        &#125; finally &#123;
+            if(serverSocket != null) &#123;
+                serverSocket.close();
+            &#125;
+        &#125;
+    &#125;
+&#125;
+</code></pre>
 <h3 id="多线程来优化服务器端"><a href="#多线程来优化服务器端" class="headerlink" title="多线程来优化服务器端"></a>多线程来优化服务器端</h3><p>客户端代码和上文一样，最主要是更改服务器端的代码:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> testBSocket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.InputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStream;</span><br><span class="line"><span class="keyword">import</span> java.net.ServerSocket;</span><br><span class="line"><span class="keyword">import</span> java.net.Socket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.Log;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.LogFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.log4j.BasicConfigurator;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SocketServer2</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        BasicConfigurator.configure();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Log</span> <span class="variable">LOGGER</span> <span class="operator">=</span> LogFactory.getLog(SocketServer2.class);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception&#123;</span><br><span class="line">        <span class="type">ServerSocket</span> <span class="variable">serverSocket</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ServerSocket</span>(<span class="number">83</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">while</span>(<span class="literal">true</span>) &#123;</span><br><span class="line">                <span class="type">Socket</span> <span class="variable">socket</span> <span class="operator">=</span> serverSocket.accept();</span><br><span class="line">                <span class="comment">//当然业务处理过程可以交给一个线程(这里可以使用线程池),并且线程的创建是很耗资源的。</span></span><br><span class="line">                <span class="comment">//最终改变不了.accept()只能一个一个接受socket的情况,并且被阻塞的情况</span></span><br><span class="line">                <span class="type">SocketServerThread</span> <span class="variable">socketServerThread</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SocketServerThread</span>(socket);</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Thread</span>(socketServerThread).start();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span>(Exception e) &#123;</span><br><span class="line">            SocketServer2.LOGGER.error(e.getMessage(), e);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span>(serverSocket != <span class="literal">null</span>) &#123;</span><br><span class="line">                serverSocket.close();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 当然，接收到客户端的socket后，业务的处理过程可以交给一个线程来做。</span></span><br><span class="line"><span class="comment"> * 但还是改变不了socket被一个一个的做accept()的情况。</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> yinwenjie</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SocketServerThread</span> <span class="keyword">implements</span> <span class="title class_">Runnable</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 日志</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Log</span> <span class="variable">LOGGER</span> <span class="operator">=</span> LogFactory.getLog(SocketServerThread.class);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Socket socket;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SocketServerThread</span> <span class="params">(Socket socket)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.socket = socket;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">InputStream</span> <span class="variable">in</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">OutputStream</span> <span class="variable">out</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//下面我们收取信息</span></span><br><span class="line">            in = socket.getInputStream();</span><br><span class="line">            out = socket.getOutputStream();</span><br><span class="line">            <span class="type">Integer</span> <span class="variable">sourcePort</span> <span class="operator">=</span> socket.getPort();</span><br><span class="line">            <span class="type">int</span> <span class="variable">maxLen</span> <span class="operator">=</span> <span class="number">1024</span>;</span><br><span class="line">            <span class="type">byte</span>[] contextBytes = <span class="keyword">new</span> <span class="title class_">byte</span>[maxLen];</span><br><span class="line">            <span class="comment">//使用线程，同样无法解决read方法的阻塞问题，</span></span><br><span class="line">            <span class="comment">//也就是说read方法处同样会被阻塞，直到操作系统有数据准备好</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">realLen</span> <span class="operator">=</span> in.read(contextBytes, <span class="number">0</span>, maxLen);</span><br><span class="line">            <span class="comment">//读取信息</span></span><br><span class="line">            <span class="type">String</span> <span class="variable">message</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(contextBytes , <span class="number">0</span> , realLen);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//下面打印信息</span></span><br><span class="line">            SocketServerThread.LOGGER.info(<span class="string">&quot;服务器收到来自于端口: &quot;</span> + sourcePort + <span class="string">&quot;的信息: &quot;</span> + message);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//下面开始发送信息</span></span><br><span class="line">            out.write(<span class="string">&quot;回发响应信息！&quot;</span>.getBytes());</span><br><span class="line">        &#125; <span class="keyword">catch</span>(Exception e) &#123;</span><br><span class="line">            SocketServerThread.LOGGER.error(e.getMessage(), e);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">//试图关闭</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span>(in != <span class="literal">null</span>) &#123;</span><br><span class="line">                    in.close();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span>(out != <span class="literal">null</span>) &#123;</span><br><span class="line">                    out.close();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span>(<span class="built_in">this</span>.socket != <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="built_in">this</span>.socket.close();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                SocketServerThread.LOGGER.error(e.getMessage(), e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">package testBSocket;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.BasicConfigurator;
+
+public class SocketServer2 &#123;
+
+    static &#123;
+        BasicConfigurator.configure();
+    &#125;
+
+    private static final Log LOGGER = LogFactory.getLog(SocketServer2.class);
+
+    public static void main(String[] args) throws Exception&#123;
+        ServerSocket serverSocket = new ServerSocket(83);
+
+        try &#123;
+            while(true) &#123;
+                Socket socket = serverSocket.accept();
+                //当然业务处理过程可以交给一个线程(这里可以使用线程池),并且线程的创建是很耗资源的。
+                //最终改变不了.accept()只能一个一个接受socket的情况,并且被阻塞的情况
+                SocketServerThread socketServerThread = new SocketServerThread(socket);
+                new Thread(socketServerThread).start();
+            &#125;
+        &#125; catch(Exception e) &#123;
+            SocketServer2.LOGGER.error(e.getMessage(), e);
+        &#125; finally &#123;
+            if(serverSocket != null) &#123;
+                serverSocket.close();
+            &#125;
+        &#125;
+    &#125;
+&#125;
+
+/**
+ * 当然，接收到客户端的socket后，业务的处理过程可以交给一个线程来做。
+ * 但还是改变不了socket被一个一个的做accept()的情况。
+ * @author yinwenjie
+ */
+class SocketServerThread implements Runnable &#123;
+
+    /**
+     * 日志
+     */
+    private static final Log LOGGER = LogFactory.getLog(SocketServerThread.class);
+
+    private Socket socket;
+
+    public SocketServerThread (Socket socket) &#123;
+        this.socket = socket;
+    &#125;
+
+    @Override
+    public void run() &#123;
+        InputStream in = null;
+        OutputStream out = null;
+        try &#123;
+            //下面我们收取信息
+            in = socket.getInputStream();
+            out = socket.getOutputStream();
+            Integer sourcePort = socket.getPort();
+            int maxLen = 1024;
+            byte[] contextBytes = new byte[maxLen];
+            //使用线程，同样无法解决read方法的阻塞问题，
+            //也就是说read方法处同样会被阻塞，直到操作系统有数据准备好
+            int realLen = in.read(contextBytes, 0, maxLen);
+            //读取信息
+            String message = new String(contextBytes , 0 , realLen);
+
+            //下面打印信息
+            SocketServerThread.LOGGER.info(&quot;服务器收到来自于端口: &quot; + sourcePort + &quot;的信息: &quot; + message);
+
+            //下面开始发送信息
+            out.write(&quot;回发响应信息！&quot;.getBytes());
+        &#125; catch(Exception e) &#123;
+            SocketServerThread.LOGGER.error(e.getMessage(), e);
+        &#125; finally &#123;
+            //试图关闭
+            try &#123;
+                if(in != null) &#123;
+                    in.close();
+                &#125;
+                if(out != null) &#123;
+                    out.close();
+                &#125;
+                if(this.socket != null) &#123;
+                    this.socket.close();
+                &#125;
+            &#125; catch (IOException e) &#123;
+                SocketServerThread.LOGGER.error(e.getMessage(), e);
+            &#125;
+        &#125;
+    &#125;
+&#125;
+</code></pre>
 <h3 id="看看服务器端的执行效果"><a href="#看看服务器端的执行效果" class="headerlink" title="看看服务器端的执行效果"></a>看看服务器端的执行效果</h3><p>我们主要看一看服务器使用多线程处理时的情况:</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262203586.png" alt="img"></p>
 <h3 id="问题根源"><a href="#问题根源" class="headerlink" title="问题根源"></a>问题根源</h3><p>那么重点的问题并不是“是否使用了多线程”，而是为什么accept()、read()方法会被阻塞。即: 异步IO模式 就是为了解决这样的并发性存在的。但是为了说清楚异步IO模式，在介绍IO模式的时候，我们就要首先了解清楚，什么是 阻塞式同步、非阻塞式同步、多路复用同步模式。</p>

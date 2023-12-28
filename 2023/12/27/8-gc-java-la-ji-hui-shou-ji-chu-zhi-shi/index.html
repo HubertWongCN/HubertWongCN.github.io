@@ -416,8 +416,18 @@
 <h2 id="判断一个对象是否可被回收"><a href="#判断一个对象是否可被回收" class="headerlink" title="判断一个对象是否可被回收"></a>判断一个对象是否可被回收</h2><h3 id="1-引用计数算法"><a href="#1-引用计数算法" class="headerlink" title="1. 引用计数算法"></a>1. 引用计数算法</h3><p>给对象添加一个引用计数器，当对象增加一个引用时计数器加 1，引用失效时计数器减 1。引用计数为 0 的对象可被回收。</p>
 <p>两个对象出现循环引用的情况下，此时引用计数器永远不为 0，导致无法对它们进行回收。</p>
 <p>正因为循环引用的存在，因此 Java 虚拟机不使用引用计数算法。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReferenceCountingGC</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">Object</span> <span class="variable">instance</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ReferenceCountingGC</span> <span class="variable">objectA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGC</span>();</span><br><span class="line">        <span class="type">ReferenceCountingGC</span> <span class="variable">objectB</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceCountingGC</span>();</span><br><span class="line">        objectA.instance = objectB;</span><br><span class="line">        objectB.instance = objectA;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class ReferenceCountingGC &#123;
 
+    public Object instance = null;
+
+    public static void main(String[] args) &#123;
+        ReferenceCountingGC objectA = new ReferenceCountingGC();
+        ReferenceCountingGC objectB = new ReferenceCountingGC();
+        objectA.instance = objectB;
+        objectB.instance = objectA;
+    &#125;
+&#125;
+</code></pre>
 <h3 id="2-可达性分析算法"><a href="#2-可达性分析算法" class="headerlink" title="2. 可达性分析算法"></a>2. 可达性分析算法</h3><p>通过 GC Roots 作为起始点进行搜索，能够到达到的对象都是存活的，不可达的对象可被回收。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271420254.png" alt="image"></p>
 <p>Java 虚拟机使用该算法来判断对象是否可被回收，在 Java 中 GC Roots 一般包含以下内容:</p>
@@ -443,21 +453,27 @@
 <p>Java 具有四种强度不同的引用类型。</p>
 <h3 id="1-强引用"><a href="#1-强引用" class="headerlink" title="1. 强引用"></a>1. 强引用</h3><p>被强引用关联的对象不会被回收。</p>
 <p>使用 new 一个新对象的方式来创建强引用。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Object</span> <span class="variable">obj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Object obj = new Object();
+</code></pre>
 <h3 id="2-软引用"><a href="#2-软引用" class="headerlink" title="2. 软引用"></a>2. 软引用</h3><p>被软引用关联的对象只有在内存不够的情况下才会被回收。</p>
 <p>使用 SoftReference 类来创建软引用。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Object</span> <span class="variable">obj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">SoftReference&lt;Object&gt; sf = <span class="keyword">new</span> <span class="title class_">SoftReference</span>&lt;Object&gt;(obj);</span><br><span class="line">obj = <span class="literal">null</span>;  <span class="comment">// 使对象只被软引用关联</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Object obj = new Object();
+SoftReference&lt;Object&gt; sf = new SoftReference&lt;Object&gt;(obj);
+obj = null;  // 使对象只被软引用关联
+</code></pre>
 <h3 id="3-弱引用"><a href="#3-弱引用" class="headerlink" title="3. 弱引用"></a>3. 弱引用</h3><p>被弱引用关联的对象一定会被回收，也就是说它只能存活到下一次垃圾回收发生之前。</p>
 <p>使用 WeakReference 类来实现弱引用。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Object</span> <span class="variable">obj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">WeakReference&lt;Object&gt; wf = <span class="keyword">new</span> <span class="title class_">WeakReference</span>&lt;Object&gt;(obj);</span><br><span class="line">obj = <span class="literal">null</span>;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Object obj = new Object();
+WeakReference&lt;Object&gt; wf = new WeakReference&lt;Object&gt;(obj);
+obj = null;
+</code></pre>
 <h3 id="4-虚引用"><a href="#4-虚引用" class="headerlink" title="4. 虚引用"></a>4. 虚引用</h3><p>又称为幽灵引用或者幻影引用。一个对象是否有虚引用的存在，完全不会对其生存时间构成影响，也无法通过虚引用取得一个对象。</p>
 <p>为一个对象设置虚引用关联的唯一目的就是能在这个对象被回收时收到一个系统通知。</p>
 <p>使用 PhantomReference 来实现虚引用。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Object</span> <span class="variable">obj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">PhantomReference&lt;Object&gt; pf = <span class="keyword">new</span> <span class="title class_">PhantomReference</span>&lt;Object&gt;(obj);</span><br><span class="line">obj = <span class="literal">null</span>;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Object obj = new Object();
+PhantomReference&lt;Object&gt; pf = new PhantomReference&lt;Object&gt;(obj);
+obj = null;
+</code></pre>
 <h2 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h2><h3 id="1-标记-清除"><a href="#1-标记-清除" class="headerlink" title="1. 标记 - 清除"></a>1. 标记 - 清除</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271421502.jpg" alt="image"></p>
 <p>将存活的对象进行标记，然后清理掉未被标记的对象。</p>
 <p>不足:</p>

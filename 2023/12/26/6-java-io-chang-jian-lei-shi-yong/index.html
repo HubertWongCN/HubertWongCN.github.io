@@ -418,12 +418,52 @@ IO常见类的使用Java 的 I&amp;#x2F;O 大概可以分成以下几类:
 </ul>
 <h3 id="File相关"><a href="#File相关" class="headerlink" title="File相关"></a>File相关</h3><p>File 类可以用于表示文件和目录的信息，但是它不表示文件的内容。</p>
 <p>递归地列出一个目录下所有文件:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">listAllFiles</span><span class="params">(File dir)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (dir == <span class="literal">null</span> || !dir.exists()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (dir.isFile()) &#123;</span><br><span class="line">        System.out.println(dir.getName());</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (File file : dir.listFiles()) &#123;</span><br><span class="line">        listAllFiles(file);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public static void listAllFiles(File dir) &#123;
+    if (dir == null || !dir.exists()) &#123;
+        return;
+    &#125;
+    if (dir.isFile()) &#123;
+        System.out.println(dir.getName());
+        return;
+    &#125;
+    for (File file : dir.listFiles()) &#123;
+        listAllFiles(file);
+    &#125;
+&#125;
+</code></pre>
+<h3 id="字节流相关"><a href="#字节流相关" class="headerlink" title="字节流相关"></a>字节流相关</h3><pre><code class="java">public static void copyFile(String src, String dist) throws IOException &#123;
 
-<h3 id="字节流相关"><a href="#字节流相关" class="headerlink" title="字节流相关"></a>字节流相关</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">copyFile</span><span class="params">(String src, String dist)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">FileInputStream</span> <span class="variable">in</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(src);</span><br><span class="line">    <span class="type">FileOutputStream</span> <span class="variable">out</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(dist);</span><br><span class="line">    <span class="type">byte</span>[] buffer = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">20</span> * <span class="number">1024</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// read() 最多读取 buffer.length 个字节</span></span><br><span class="line">    <span class="comment">// 返回的是实际读取的个数</span></span><br><span class="line">    <span class="comment">// 返回 -1 的时候表示读到 eof，即文件尾</span></span><br><span class="line">    <span class="keyword">while</span> (in.read(buffer, <span class="number">0</span>, buffer.length) != -<span class="number">1</span>) &#123;</span><br><span class="line">        out.write(buffer);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    in.close();</span><br><span class="line">    out.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    FileInputStream in = new FileInputStream(src);
+    FileOutputStream out = new FileOutputStream(dist);
+    byte[] buffer = new byte[20 * 1024];
 
-<h3 id="实现逐行输出文本文件的内容"><a href="#实现逐行输出文本文件的内容" class="headerlink" title="实现逐行输出文本文件的内容"></a>实现逐行输出文本文件的内容</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">readFileContent</span><span class="params">(String filePath)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">FileReader</span> <span class="variable">fileReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileReader</span>(filePath);</span><br><span class="line">    <span class="type">BufferedReader</span> <span class="variable">bufferedReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(fileReader);</span><br><span class="line"></span><br><span class="line">    String line;</span><br><span class="line">    <span class="keyword">while</span> ((line = bufferedReader.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">        System.out.println(line);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 装饰者模式使得 BufferedReader 组合了一个 Reader 对象</span></span><br><span class="line">    <span class="comment">// 在调用 BufferedReader 的 close() 方法时会去调用 Reader 的 close() 方法</span></span><br><span class="line">    <span class="comment">// 因此只要一个 close() 调用即可</span></span><br><span class="line">    bufferedReader.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    // read() 最多读取 buffer.length 个字节
+    // 返回的是实际读取的个数
+    // 返回 -1 的时候表示读到 eof，即文件尾
+    while (in.read(buffer, 0, buffer.length) != -1) &#123;
+        out.write(buffer);
+    &#125;
 
+    in.close();
+    out.close();
+&#125;
+</code></pre>
+<h3 id="实现逐行输出文本文件的内容"><a href="#实现逐行输出文本文件的内容" class="headerlink" title="实现逐行输出文本文件的内容"></a>实现逐行输出文本文件的内容</h3><pre><code class="java">public static void readFileContent(String filePath) throws IOException &#123;
+
+    FileReader fileReader = new FileReader(filePath);
+    BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+    String line;
+    while ((line = bufferedReader.readLine()) != null) &#123;
+        System.out.println(line);
+    &#125;
+
+    // 装饰者模式使得 BufferedReader 组合了一个 Reader 对象
+    // 在调用 BufferedReader 的 close() 方法时会去调用 Reader 的 close() 方法
+    // 因此只要一个 close() 调用即可
+    bufferedReader.close();
+&#125;
+</code></pre>
 <h3 id="序列化-Serializable-transient"><a href="#序列化-Serializable-transient" class="headerlink" title="序列化 &amp; Serializable &amp; transient"></a>序列化 &amp; Serializable &amp; transient</h3><p>序列化就是将一个对象转换成字节序列，方便存储和传输。</p>
 <ul>
 <li>序列化: ObjectOutputStream.writeObject()</li>
@@ -432,13 +472,39 @@ IO常见类的使用Java 的 I&amp;#x2F;O 大概可以分成以下几类:
 <p>不会对静态变量进行序列化，因为序列化只是保存对象的状态，静态变量属于类的状态。</p>
 <p><strong>Serializable</strong></p>
 <p>序列化的类需要实现 Serializable 接口，它只是一个标准，没有任何方法需要实现，但是如果不去实现它的话而进行序列化，会抛出异常。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">    <span class="type">A</span> <span class="variable">a1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">A</span>(<span class="number">123</span>, <span class="string">&quot;abc&quot;</span>);</span><br><span class="line">    <span class="type">String</span> <span class="variable">objectFile</span> <span class="operator">=</span> <span class="string">&quot;file/a1&quot;</span>;</span><br><span class="line">    <span class="type">ObjectOutputStream</span> <span class="variable">objectOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(objectFile));</span><br><span class="line">    objectOutputStream.writeObject(a1);</span><br><span class="line">    objectOutputStream.close();</span><br><span class="line"></span><br><span class="line">    <span class="type">ObjectInputStream</span> <span class="variable">objectInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(objectFile));</span><br><span class="line">    <span class="type">A</span> <span class="variable">a2</span> <span class="operator">=</span> (A) objectInputStream.readObject();</span><br><span class="line">    objectInputStream.close();</span><br><span class="line">    System.out.println(a2);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">A</span> <span class="keyword">implements</span> <span class="title class_">Serializable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> x;</span><br><span class="line">    <span class="keyword">private</span> String y;</span><br><span class="line"></span><br><span class="line">    A(<span class="type">int</span> x, String y) &#123;</span><br><span class="line">        <span class="built_in">this</span>.x = x;</span><br><span class="line">        <span class="built_in">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;x = &quot;</span> + x + <span class="string">&quot;  &quot;</span> + <span class="string">&quot;y = &quot;</span> + y;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public static void main(String[] args) throws IOException, ClassNotFoundException &#123;
+    A a1 = new A(123, &quot;abc&quot;);
+    String objectFile = &quot;file/a1&quot;;
+    ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(objectFile));
+    objectOutputStream.writeObject(a1);
+    objectOutputStream.close();
 
+    ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(objectFile));
+    A a2 = (A) objectInputStream.readObject();
+    objectInputStream.close();
+    System.out.println(a2);
+&#125;
+
+private static class A implements Serializable &#123;
+    private int x;
+    private String y;
+
+    A(int x, String y) &#123;
+        this.x = x;
+        this.y = y;
+    &#125;
+
+    @Override
+    public String toString() &#123;
+        return &quot;x = &quot; + x + &quot;  &quot; + &quot;y = &quot; + y;
+    &#125;
+&#125;
+</code></pre>
 <p><strong>transient</strong></p>
 <p>transient 关键字可以使一些属性不会被序列化。</p>
 <p>ArrayList 中存储数据的数组 elementData 是用 transient 修饰的，因为这个数组是动态扩展的，并不是所有的空间都被使用，因此就不需要所有的内容都被序列化。通过重写序列化和反序列化方法，使得可以只序列化数组中有内容的那部分数据。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> Object[] elementData;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">private transient Object[] elementData;
+</code></pre>
 <h3 id="Java-中的网络支持"><a href="#Java-中的网络支持" class="headerlink" title="Java 中的网络支持:"></a>Java 中的网络支持:</h3><ul>
 <li>InetAddress: 用于表示网络上的硬件资源，即 IP 地址；</li>
 <li>URL: 统一资源定位符；</li>
@@ -446,11 +512,31 @@ IO常见类的使用Java 的 I&amp;#x2F;O 大概可以分成以下几类:
 <li>Datagram: 使用 UDP 协议实现网络通信。</li>
 </ul>
 <h4 id="InetAddress"><a href="#InetAddress" class="headerlink" title="InetAddress"></a>InetAddress</h4><p>没有公有的构造函数，只能通过静态方法来创建实例。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">InetAddress.getByName(String host);</span><br><span class="line">InetAddress.getByAddress(<span class="type">byte</span>[] address);</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">InetAddress.getByName(String host);
+InetAddress.getByAddress(byte[] address);
+</code></pre>
 <h4 id="URL"><a href="#URL" class="headerlink" title="URL"></a>URL</h4><p>可以直接从 URL 中读取字节流数据。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">URL</span> <span class="variable">url</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URL</span>(<span class="string">&quot;http://www.baidu.com&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 字节流 */</span></span><br><span class="line">    <span class="type">InputStream</span> <span class="variable">is</span> <span class="operator">=</span> url.openStream();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 字符流 */</span></span><br><span class="line">    <span class="type">InputStreamReader</span> <span class="variable">isr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(is, <span class="string">&quot;utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 提供缓存功能 */</span></span><br><span class="line">    <span class="type">BufferedReader</span> <span class="variable">br</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(isr);</span><br><span class="line"></span><br><span class="line">    String line;</span><br><span class="line">    <span class="keyword">while</span> ((line = br.readLine()) != <span class="literal">null</span>) &#123;</span><br><span class="line">        System.out.println(line);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    br.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public static void main(String[] args) throws IOException &#123;
 
+    URL url = new URL(&quot;http://www.baidu.com&quot;);
+
+    /* 字节流 */
+    InputStream is = url.openStream();
+
+    /* 字符流 */
+    InputStreamReader isr = new InputStreamReader(is, &quot;utf-8&quot;);
+
+    /* 提供缓存功能 */
+    BufferedReader br = new BufferedReader(isr);
+
+    String line;
+    while ((line = br.readLine()) != null) &#123;
+        System.out.println(line);
+    &#125;
+
+    br.close();
+&#125;
+</code></pre>
 <h4 id="Sockets"><a href="#Sockets" class="headerlink" title="Sockets"></a>Sockets</h4><ul>
 <li>ServerSocket: 服务器端类</li>
 <li>Socket: 客户端类</li>

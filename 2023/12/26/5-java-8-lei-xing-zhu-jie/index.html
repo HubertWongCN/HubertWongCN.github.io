@@ -336,12 +336,12 @@
                                 <span class="chip bg-color">Java</span>
                             </a>
                         
-                            <a href="/tags/Java8/">
-                                <span class="chip bg-color">Java8</span>
-                            </a>
-                        
                             <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
                                 <span class="chip bg-color">新特性</span>
+                            </a>
+                        
+                            <a href="/tags/Java8/">
+                                <span class="chip bg-color">Java8</span>
                             </a>
                         
                     </div>
@@ -434,38 +434,55 @@
 <li>java 8里面，注解可以应用在任何地方，比如:</li>
 </ol>
 <p>创建类实例</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="meta">@Interned</span> MyObject();</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">new @Interned MyObject();
+</code></pre>
 <p>类型映射</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">myString = (<span class="meta">@NonNull</span> String) str;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">myString = (@NonNull String) str;
+</code></pre>
 <p>implements 语句中</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">UnmodifiableList</span>&lt;T&gt; implements <span class="meta">@Readonly</span> List&lt;<span class="meta">@Readonly</span> T&gt; &#123; … &#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">class UnmodifiableList&lt;T&gt; implements @Readonly List&lt;@Readonly T&gt; &#123; … &#125;
+</code></pre>
 <p>throw exception声明</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">monitorTemperature</span><span class="params">()</span> <span class="keyword">throws</span> <span class="meta">@Critical</span> TemperatureException &#123; … &#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">void monitorTemperature() throws @Critical TemperatureException &#123; … &#125;
+</code></pre>
 <p>需要注意的是，<strong>类型注解只是语法而不是语义，并不会影响java的编译时间，加载时间，以及运行时间，也就是说，编译成class文件的时候并不包含类型注解</strong>。</p>
 <h2 id="类型注解的作用"><a href="#类型注解的作用" class="headerlink" title="类型注解的作用"></a>类型注解的作用</h2><p>先看看下面代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Collections.emptyList().add(<span class="string">&quot;One&quot;</span>);</span><br><span class="line"><span class="type">int</span> i=Integer.parseInt(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">System.console().readLine();</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Collections.emptyList().add(&quot;One&quot;);
+int i=Integer.parseInt(&quot;hello&quot;);
+System.console().readLine();
+</code></pre>
 <p>上面的代码编译是通过的，但运行是会分别报UnsupportedOperationException； NumberFormatException；NullPointerException异常，这些都是runtime error；</p>
 <p>类型注解被用来支持在Java的程序中做强类型检查。配合插件式的check framework，可以在编译的时候检测出runtime error，以提高代码质量。这就是类型注解的作用了。</p>
 <p>check framework是第三方工具，配合Java的类型注解效果就是1+1&gt;2。它可以嵌入到javac编译器里面，可以配合ant和maven使用, 地址是<a target="_blank" rel="noopener" href="http://types.cs.washington.edu/checker-framework/%E3%80%82">http://types.cs.washington.edu/checker-framework/。</a> check framework可以找到类型注解出现的地方并检查，举个简单的例子:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> checkers.nullness.quals.*;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GetStarted</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">sample</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="meta">@NonNull</span> <span class="type">Object</span> <span class="variable">ref</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">import checkers.nullness.quals.*;
+public class GetStarted &#123;
+    void sample() &#123;
+        @NonNull Object ref = new Object();
+    &#125;
+&#125;
+</code></pre>
 <p>使用javac编译上面的类</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac -processor checkers.nullness.NullnessChecker GetStarted.java</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">javac -processor checkers.nullness.NullnessChecker GetStarted.java
+</code></pre>
 <p>编译是通过，但如果修改成</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@NonNull</span> <span class="type">Object</span> <span class="variable">ref</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">@NonNull Object ref = null;
+</code></pre>
 <p>再次编译，则出现</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GetStarted.java:5: incompatible types.</span><br><span class="line">found   : @Nullable &lt;nulltype&gt;</span><br><span class="line">required: @NonNull Object</span><br><span class="line">        @NonNull Object ref = null;</span><br><span class="line">                              ^</span><br><span class="line">1 error</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">GetStarted.java:5: incompatible types.
+found   : @Nullable &lt;nulltype&gt;
+required: @NonNull Object
+        @NonNull Object ref = null;
+                              ^
+1 error
+</code></pre>
 <h2 id="类型注解向下兼容的解决方案"><a href="#类型注解向下兼容的解决方案" class="headerlink" title="类型注解向下兼容的解决方案"></a>类型注解向下兼容的解决方案</h2><p>如果你不想使用类型注解检测出来错误，则不需要processor，直接javac GetStarted.java是可以编译通过的，这是在java 8 with Type Annotation Support版本里面可以，但java 5,6,7版本都不行，因为javac编译器不知道@NonNull是什么东西，但check framework 有个向下兼容的解决方案，就是将类型注解nonnull用&#x2F;**&#x2F;注释起来，比如上面例子修改为</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> checkers.nullness.quals.*;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GetStarted</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">sample</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">/*@NonNull*/</span> <span class="type">Object</span> <span class="variable">ref</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">import checkers.nullness.quals.*;
+public class GetStarted &#123;
+    void sample() &#123;
+        /*@NonNull*/ Object ref = null;
+    &#125;
+&#125;
+</code></pre>
 <p>这样javac编译器就会忽略掉注释块，但用check framework里面的javac编译器同样能够检测出nonnull错误。 通过类型注解+check framework我们可以看到，现在runtime error可以在编译时候就能找到。</p>
 <h2 id="关于JSR-308"><a href="#关于JSR-308" class="headerlink" title="关于JSR 308"></a>关于JSR 308</h2><p>JSR 308想要解决在Java 1.5注解中出现的两个问题:</p>
 <ul>
@@ -478,11 +495,11 @@
 <li>通过引入可插拔的类型系统(pluggable type systems)能够创建功能更强大的注解处理器。类型检查器对带有类型限定注解的源码进行分析，一旦发现不匹配等错误之处就会产生警告信息。其实就是check framework</li>
 </ul>
 <p>对JSR308，有人反对，觉得更复杂更静态了，比如</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@NotEmpty</span> List&lt;<span class="meta">@NonNull</span> String&gt; strings = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;<span class="meta">@NonNull</span> String&gt;()&gt;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">@NotEmpty List&lt;@NonNull String&gt; strings = new ArrayList&lt;@NonNull String&gt;()&gt;
+</code></pre>
 <p>换成动态语言为</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">var</span> <span class="variable">strings</span> <span class="operator">=</span> [<span class="string">&quot;one&quot;</span>, <span class="string">&quot;two&quot;</span>];</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">var strings = [&quot;one&quot;, &quot;two&quot;];
+</code></pre>
 <p>有人赞成，说到底，代码才是“最根本”的文档。代码中包含的注解清楚表明了代码编写者的意图。当没有及时更新或者有遗漏的时候，恰恰是注解中包含的意图信息，最容易在其他文档中被丢失。而且将运行时的错误转到编译阶段，不但可以加速开发进程，还可以节省测试时检查bug的时间。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>并不是人人都喜欢这个特性，特别是动态语言比较流行的今天，所幸，java 8并不强求大家使用这个特性，反对的人可以不使用这一特性，而对代码质量有些要求比较高的人或公司可以采用JSR 308，毕竟代码才是“最基本”的文档，这句话我是赞同的。虽然代码会增多，但可以使你的代码更具有表达意义。对这个特性有何看法，大家各抒己见。。。。</p>
 
@@ -553,12 +570,12 @@
                                     <span class="chip bg-color">Java</span>
                                 </a>
                             
-                                <a href="/tags/Java8/">
-                                    <span class="chip bg-color">Java8</span>
-                                </a>
-                            
                                 <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
                                     <span class="chip bg-color">新特性</span>
+                                </a>
+                            
+                                <a href="/tags/Java8/">
+                                    <span class="chip bg-color">Java8</span>
                                 </a>
                             
                         </div>
@@ -654,12 +671,12 @@
                         <span class="chip bg-color">Java</span>
                     </a>
                     
-                    <a href="/tags/Java8/">
-                        <span class="chip bg-color">Java8</span>
-                    </a>
-                    
                     <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
                         <span class="chip bg-color">新特性</span>
+                    </a>
+                    
+                    <a href="/tags/Java8/">
+                        <span class="chip bg-color">Java8</span>
                     </a>
                     
                 </div>

@@ -334,12 +334,12 @@ JDK8之前java 8之前也有重复使用注">
                                 <span class="chip bg-color">Java</span>
                             </a>
                         
-                            <a href="/tags/Java8/">
-                                <span class="chip bg-color">Java8</span>
-                            </a>
-                        
                             <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
                                 <span class="chip bg-color">新特性</span>
+                            </a>
+                        
+                            <a href="/tags/Java8/">
+                                <span class="chip bg-color">Java8</span>
                             </a>
                         
                     </div>
@@ -385,7 +385,7 @@ JDK8之前java 8之前也有重复使用注">
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    358
+                    357
                 </div>
                 
 
@@ -424,12 +424,38 @@ JDK8之前java 8之前也有重复使用注">
 </blockquote>
 <h2 id="什么是重复注解"><a href="#什么是重复注解" class="headerlink" title="什么是重复注解"></a>什么是重复注解</h2><p>允许在同一申明类型(类，属性，或方法)的多次使用同一个注解</p>
 <h3 id="JDK8之前"><a href="#JDK8之前" class="headerlink" title="JDK8之前"></a>JDK8之前</h3><p>java 8之前也有重复使用注解的解决方案，但可读性不是很好，比如下面的代码:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Authority &#123;</span><br><span class="line">     String <span class="title function_">role</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Authorities &#123;</span><br><span class="line">    Authority[] value();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RepeatAnnotationUseOldVersion</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Authorities(&#123;@Authority(role=&quot;Admin&quot;),@Authority(role=&quot;Manager&quot;)&#125;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doSomeThing</span><span class="params">()</span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public @interface Authority &#123;
+     String role();
+&#125;
 
+public @interface Authorities &#123;
+    Authority[] value();
+&#125;
+
+public class RepeatAnnotationUseOldVersion &#123;
+
+    @Authorities(&#123;@Authority(role=&quot;Admin&quot;),@Authority(role=&quot;Manager&quot;)&#125;)
+    public void doSomeThing()&#123;
+    &#125;
+&#125;
+</code></pre>
 <p>由另一个注解来存储重复注解，在使用时候，用存储注解Authorities来扩展重复注解。</p>
 <h3 id="Jdk8重复注解"><a href="#Jdk8重复注解" class="headerlink" title="Jdk8重复注解"></a>Jdk8重复注解</h3><p>我们再来看看java 8里面的做法:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Repeatable(Authorities.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Authority &#123;</span><br><span class="line">     String <span class="title function_">role</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Authorities &#123;</span><br><span class="line">    Authority[] value();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RepeatAnnotationUseNewVersion</span> &#123;</span><br><span class="line">    <span class="meta">@Authority(role=&quot;Admin&quot;)</span></span><br><span class="line">    <span class="meta">@Authority(role=&quot;Manager&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doSomeThing</span><span class="params">()</span>&#123; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">@Repeatable(Authorities.class)
+public @interface Authority &#123;
+     String role();
+&#125;
 
+public @interface Authorities &#123;
+    Authority[] value();
+&#125;
+
+public class RepeatAnnotationUseNewVersion &#123;
+    @Authority(role=&quot;Admin&quot;)
+    @Authority(role=&quot;Manager&quot;)
+    public void doSomeThing()&#123; &#125;
+&#125;
+</code></pre>
 <p>不同的地方是，创建重复注解Authority时，加上@Repeatable,指向存储注解Authorities，在使用时候，直接可以重复使用Authority注解。从上面例子看出，java 8里面做法更适合常规的思维，可读性强一点</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>JEP120没有太多内容，是一个小特性，仅仅是为了提高代码可读性。这次java 8对注解做了2个方面的改进(JEP 104,JEP120)，相信注解会比以前使用得更加频繁了。</p>
 
@@ -500,12 +526,12 @@ JDK8之前java 8之前也有重复使用注">
                                     <span class="chip bg-color">Java</span>
                                 </a>
                             
-                                <a href="/tags/Java8/">
-                                    <span class="chip bg-color">Java8</span>
-                                </a>
-                            
                                 <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
                                     <span class="chip bg-color">新特性</span>
+                                </a>
+                            
+                                <a href="/tags/Java8/">
+                                    <span class="chip bg-color">Java8</span>
                                 </a>
                             
                         </div>
@@ -662,12 +688,12 @@ JDK8之前java 8之前也有重复使用注">
                         <span class="chip bg-color">Java</span>
                     </a>
                     
-                    <a href="/tags/Java8/">
-                        <span class="chip bg-color">Java8</span>
-                    </a>
-                    
                     <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
                         <span class="chip bg-color">新特性</span>
+                    </a>
+                    
+                    <a href="/tags/Java8/">
+                        <span class="chip bg-color">Java8</span>
                     </a>
                     
                 </div>

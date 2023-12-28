@@ -456,18 +456,56 @@ NIO 不单单是 New IO，个人认为解释为 No-Blocking IO 更为">
 <p>⑤ 最后需要调用 clear() 方法来清空缓冲区，此时 position 和 limit 都被设置为最初位置。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262208957.png" alt="image"></p>
 <h2 id="文件-NIO-实例"><a href="#文件-NIO-实例" class="headerlink" title="文件 NIO 实例"></a>文件 NIO 实例</h2><p>以下展示了使用 NIO 快速复制文件的实例:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">fastCopy</span><span class="params">(String src, String dist)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 获得源文件的输入字节流 */</span></span><br><span class="line">    <span class="type">FileInputStream</span> <span class="variable">fin</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(src);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 获取输入字节流的文件通道 */</span></span><br><span class="line">    <span class="type">FileChannel</span> <span class="variable">fcin</span> <span class="operator">=</span> fin.getChannel();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 获取目标文件的输出字节流 */</span></span><br><span class="line">    <span class="type">FileOutputStream</span> <span class="variable">fout</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(dist);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 获取输出字节流的通道 */</span></span><br><span class="line">    <span class="type">FileChannel</span> <span class="variable">fcout</span> <span class="operator">=</span> fout.getChannel();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 为缓冲区分配 1024 个字节 */</span></span><br><span class="line">    <span class="type">ByteBuffer</span> <span class="variable">buffer</span> <span class="operator">=</span> ByteBuffer.allocateDirect(<span class="number">1024</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 从输入通道中读取数据到缓冲区中 */</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">r</span> <span class="operator">=</span> fcin.read(buffer);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* read() 返回 -1 表示 EOF */</span></span><br><span class="line">        <span class="keyword">if</span> (r == -<span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 切换读写 */</span></span><br><span class="line">        buffer.flip();</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 把缓冲区的内容写入输出文件中 */</span></span><br><span class="line">        fcout.write(buffer);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">/* 清空缓冲区 */</span></span><br><span class="line">        buffer.clear();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public static void fastCopy(String src, String dist) throws IOException &#123;
 
+    /* 获得源文件的输入字节流 */
+    FileInputStream fin = new FileInputStream(src);
+
+    /* 获取输入字节流的文件通道 */
+    FileChannel fcin = fin.getChannel();
+
+    /* 获取目标文件的输出字节流 */
+    FileOutputStream fout = new FileOutputStream(dist);
+
+    /* 获取输出字节流的通道 */
+    FileChannel fcout = fout.getChannel();
+
+    /* 为缓冲区分配 1024 个字节 */
+    ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
+
+    while (true) &#123;
+
+        /* 从输入通道中读取数据到缓冲区中 */
+        int r = fcin.read(buffer);
+
+        /* read() 返回 -1 表示 EOF */
+        if (r == -1) &#123;
+            break;
+        &#125;
+
+        /* 切换读写 */
+        buffer.flip();
+
+        /* 把缓冲区的内容写入输出文件中 */
+        fcout.write(buffer);
+        
+        /* 清空缓冲区 */
+        buffer.clear();
+    &#125;
+&#125;
+</code></pre>
 <h2 id="选择器"><a href="#选择器" class="headerlink" title="选择器"></a>选择器</h2><p>NIO 常常被叫做非阻塞 IO，主要是因为 NIO 在网络通信中的非阻塞特性被广泛使用。</p>
 <p>NIO 实现了 IO 多路复用中的 Reactor 模型，一个线程 Thread 使用一个选择器 Selector 通过轮询的方式去监听多个通道 Channel 上的事件，从而让一个线程就可以处理多个事件。</p>
 <p>通过配置监听的通道 Channel 为非阻塞，那么当 Channel 上的 IO 事件还未到达时，就不会进入阻塞状态一直等待，而是继续轮询其它 Channel，找到 IO 事件已经到达的 Channel 执行。</p>
 <p>因为创建和切换线程的开销很大，因此使用一个线程来处理多个事件而不是一个线程处理一个事件具有更好的性能。</p>
 <p>应该注意的是，只有套接字 Channel 才能配置为非阻塞，而 FileChannel 不能，为 FileChannel 配置非阻塞也没有意义。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262209193.png" alt="image"></p>
-<h3 id="1-创建选择器"><a href="#1-创建选择器" class="headerlink" title="1. 创建选择器"></a>1. 创建选择器</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Selector</span> <span class="variable">selector</span> <span class="operator">=</span> Selector.open();</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-将通道注册到选择器上"><a href="#2-将通道注册到选择器上" class="headerlink" title="2. 将通道注册到选择器上"></a>2. 将通道注册到选择器上</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ServerSocketChannel</span> <span class="variable">ssChannel</span> <span class="operator">=</span> ServerSocketChannel.open();</span><br><span class="line">ssChannel.configureBlocking(<span class="literal">false</span>);</span><br><span class="line">ssChannel.register(selector, SelectionKey.OP_ACCEPT);</span><br></pre></td></tr></table></figure>
-
+<h3 id="1-创建选择器"><a href="#1-创建选择器" class="headerlink" title="1. 创建选择器"></a>1. 创建选择器</h3><pre><code class="java">Selector selector = Selector.open();
+</code></pre>
+<h3 id="2-将通道注册到选择器上"><a href="#2-将通道注册到选择器上" class="headerlink" title="2. 将通道注册到选择器上"></a>2. 将通道注册到选择器上</h3><pre><code class="java">ServerSocketChannel ssChannel = ServerSocketChannel.open();
+ssChannel.configureBlocking(false);
+ssChannel.register(selector, SelectionKey.OP_ACCEPT);
+</code></pre>
 <p>通道必须配置为非阻塞模式，否则使用选择器就没有任何意义了，因为如果通道在某个事件上被阻塞，那么服务器就不能响应其它事件，必须等待这个事件处理完毕才能去处理其它事件，显然这和选择器的作用背道而驰。</p>
 <p>在将通道注册到选择器上时，还需要指定要注册的具体事件，主要有以下几类:</p>
 <ul>
@@ -477,26 +515,132 @@ NIO 不单单是 New IO，个人认为解释为 No-Blocking IO 更为">
 <li>SelectionKey.OP_WRITE</li>
 </ul>
 <p>它们在 SelectionKey 的定义如下:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">OP_READ</span> <span class="operator">=</span> <span class="number">1</span> &lt;&lt; <span class="number">0</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">OP_WRITE</span> <span class="operator">=</span> <span class="number">1</span> &lt;&lt; <span class="number">2</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">OP_CONNECT</span> <span class="operator">=</span> <span class="number">1</span> &lt;&lt; <span class="number">3</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">OP_ACCEPT</span> <span class="operator">=</span> <span class="number">1</span> &lt;&lt; <span class="number">4</span>;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static final int OP_READ = 1 &lt;&lt; 0;
+public static final int OP_WRITE = 1 &lt;&lt; 2;
+public static final int OP_CONNECT = 1 &lt;&lt; 3;
+public static final int OP_ACCEPT = 1 &lt;&lt; 4;
+</code></pre>
 <p>可以看出每个事件可以被当成一个位域，从而组成事件集整数。例如:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="variable">interestSet</span> <span class="operator">=</span> SelectionKey.OP_READ | SelectionKey.OP_WRITE;</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-监听事件"><a href="#3-监听事件" class="headerlink" title="3. 监听事件"></a>3. 监听事件</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="variable">num</span> <span class="operator">=</span> selector.select();</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">int interestSet = SelectionKey.OP_READ | SelectionKey.OP_WRITE;
+</code></pre>
+<h3 id="3-监听事件"><a href="#3-监听事件" class="headerlink" title="3. 监听事件"></a>3. 监听事件</h3><pre><code class="java">int num = selector.select();
+</code></pre>
 <p>使用 select() 来监听到达的事件，它会一直阻塞直到有至少一个事件到达。</p>
-<h3 id="4-获取到达的事件"><a href="#4-获取到达的事件" class="headerlink" title="4. 获取到达的事件"></a>4. 获取到达的事件</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Set&lt;SelectionKey&gt; keys = selector.selectedKeys();</span><br><span class="line">Iterator&lt;SelectionKey&gt; keyIterator = keys.iterator();</span><br><span class="line"><span class="keyword">while</span> (keyIterator.hasNext()) &#123;</span><br><span class="line">    <span class="type">SelectionKey</span> <span class="variable">key</span> <span class="operator">=</span> keyIterator.next();</span><br><span class="line">    <span class="keyword">if</span> (key.isAcceptable()) &#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (key.isReadable()) &#123;</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line">    keyIterator.remove();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<h3 id="4-获取到达的事件"><a href="#4-获取到达的事件" class="headerlink" title="4. 获取到达的事件"></a>4. 获取到达的事件</h3><pre><code class="java">Set&lt;SelectionKey&gt; keys = selector.selectedKeys();
+Iterator&lt;SelectionKey&gt; keyIterator = keys.iterator();
+while (keyIterator.hasNext()) &#123;
+    SelectionKey key = keyIterator.next();
+    if (key.isAcceptable()) &#123;
+        // ...
+    &#125; else if (key.isReadable()) &#123;
+        // ...
+    &#125;
+    keyIterator.remove();
+&#125;
+</code></pre>
 <h3 id="5-事件循环"><a href="#5-事件循环" class="headerlink" title="5. 事件循环"></a>5. 事件循环</h3><p>因为一次 select() 调用不能处理完所有的事件，并且服务器端有可能需要一直监听事件，因此服务器端处理事件的代码一般会放在一个死循环内。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">num</span> <span class="operator">=</span> selector.select();</span><br><span class="line">    Set&lt;SelectionKey&gt; keys = selector.selectedKeys();</span><br><span class="line">    Iterator&lt;SelectionKey&gt; keyIterator = keys.iterator();</span><br><span class="line">    <span class="keyword">while</span> (keyIterator.hasNext()) &#123;</span><br><span class="line">        <span class="type">SelectionKey</span> <span class="variable">key</span> <span class="operator">=</span> keyIterator.next();</span><br><span class="line">        <span class="keyword">if</span> (key.isAcceptable()) &#123;</span><br><span class="line">            <span class="comment">// ...</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (key.isReadable()) &#123;</span><br><span class="line">            <span class="comment">// ...</span></span><br><span class="line">        &#125;</span><br><span class="line">        keyIterator.remove();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">while (true) &#123;
+    int num = selector.select();
+    Set&lt;SelectionKey&gt; keys = selector.selectedKeys();
+    Iterator&lt;SelectionKey&gt; keyIterator = keys.iterator();
+    while (keyIterator.hasNext()) &#123;
+        SelectionKey key = keyIterator.next();
+        if (key.isAcceptable()) &#123;
+            // ...
+        &#125; else if (key.isReadable()) &#123;
+            // ...
+        &#125;
+        keyIterator.remove();
+    &#125;
+&#125;
+</code></pre>
+<h2 id="套接字-NIO-实例"><a href="#套接字-NIO-实例" class="headerlink" title="套接字 NIO 实例"></a>套接字 NIO 实例</h2><pre><code class="java">public class NIOServer &#123;
 
-<h2 id="套接字-NIO-实例"><a href="#套接字-NIO-实例" class="headerlink" title="套接字 NIO 实例"></a>套接字 NIO 实例</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">NIOServer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">Selector</span> <span class="variable">selector</span> <span class="operator">=</span> Selector.open();</span><br><span class="line"></span><br><span class="line">        <span class="type">ServerSocketChannel</span> <span class="variable">ssChannel</span> <span class="operator">=</span> ServerSocketChannel.open();</span><br><span class="line">        ssChannel.configureBlocking(<span class="literal">false</span>);</span><br><span class="line">        ssChannel.register(selector, SelectionKey.OP_ACCEPT);</span><br><span class="line"></span><br><span class="line">        <span class="type">ServerSocket</span> <span class="variable">serverSocket</span> <span class="operator">=</span> ssChannel.socket();</span><br><span class="line">        <span class="type">InetSocketAddress</span> <span class="variable">address</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InetSocketAddress</span>(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">8888</span>);</span><br><span class="line">        serverSocket.bind(address);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line"></span><br><span class="line">            selector.select();</span><br><span class="line">            Set&lt;SelectionKey&gt; keys = selector.selectedKeys();</span><br><span class="line">            Iterator&lt;SelectionKey&gt; keyIterator = keys.iterator();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> (keyIterator.hasNext()) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="type">SelectionKey</span> <span class="variable">key</span> <span class="operator">=</span> keyIterator.next();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (key.isAcceptable()) &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="type">ServerSocketChannel</span> <span class="variable">ssChannel1</span> <span class="operator">=</span> (ServerSocketChannel) key.channel();</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// 服务器会为每个新连接创建一个 SocketChannel</span></span><br><span class="line">                    <span class="type">SocketChannel</span> <span class="variable">sChannel</span> <span class="operator">=</span> ssChannel1.accept();</span><br><span class="line">                    sChannel.configureBlocking(<span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// 这个新连接主要用于从客户端读取数据</span></span><br><span class="line">                    sChannel.register(selector, SelectionKey.OP_READ);</span><br><span class="line"></span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (key.isReadable()) &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="type">SocketChannel</span> <span class="variable">sChannel</span> <span class="operator">=</span> (SocketChannel) key.channel();</span><br><span class="line">                    System.out.println(readDataFromSocketChannel(sChannel));</span><br><span class="line">                    sChannel.close();</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                keyIterator.remove();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String <span class="title function_">readDataFromSocketChannel</span><span class="params">(SocketChannel sChannel)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">ByteBuffer</span> <span class="variable">buffer</span> <span class="operator">=</span> ByteBuffer.allocate(<span class="number">1024</span>);</span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">data</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line"></span><br><span class="line">            buffer.clear();</span><br><span class="line">            <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> sChannel.read(buffer);</span><br><span class="line">            <span class="keyword">if</span> (n == -<span class="number">1</span>) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            buffer.flip();</span><br><span class="line">            <span class="type">int</span> <span class="variable">limit</span> <span class="operator">=</span> buffer.limit();</span><br><span class="line">            <span class="type">char</span>[] dst = <span class="keyword">new</span> <span class="title class_">char</span>[limit];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; limit; i++) &#123;</span><br><span class="line">                dst[i] = (<span class="type">char</span>) buffer.get(i);</span><br><span class="line">            &#125;</span><br><span class="line">            data.append(dst);</span><br><span class="line">            buffer.clear();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> data.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">NIOClient</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">Socket</span> <span class="variable">socket</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Socket</span>(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">8888</span>);</span><br><span class="line">        <span class="type">OutputStream</span> <span class="variable">out</span> <span class="operator">=</span> socket.getOutputStream();</span><br><span class="line">        <span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> <span class="string">&quot;hello world&quot;</span>;</span><br><span class="line">        out.write(s.getBytes());</span><br><span class="line">        out.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    public static void main(String[] args) throws IOException &#123;
 
+        Selector selector = Selector.open();
+
+        ServerSocketChannel ssChannel = ServerSocketChannel.open();
+        ssChannel.configureBlocking(false);
+        ssChannel.register(selector, SelectionKey.OP_ACCEPT);
+
+        ServerSocket serverSocket = ssChannel.socket();
+        InetSocketAddress address = new InetSocketAddress(&quot;127.0.0.1&quot;, 8888);
+        serverSocket.bind(address);
+
+        while (true) &#123;
+
+            selector.select();
+            Set&lt;SelectionKey&gt; keys = selector.selectedKeys();
+            Iterator&lt;SelectionKey&gt; keyIterator = keys.iterator();
+
+            while (keyIterator.hasNext()) &#123;
+
+                SelectionKey key = keyIterator.next();
+
+                if (key.isAcceptable()) &#123;
+
+                    ServerSocketChannel ssChannel1 = (ServerSocketChannel) key.channel();
+
+                    // 服务器会为每个新连接创建一个 SocketChannel
+                    SocketChannel sChannel = ssChannel1.accept();
+                    sChannel.configureBlocking(false);
+
+                    // 这个新连接主要用于从客户端读取数据
+                    sChannel.register(selector, SelectionKey.OP_READ);
+
+                &#125; else if (key.isReadable()) &#123;
+
+                    SocketChannel sChannel = (SocketChannel) key.channel();
+                    System.out.println(readDataFromSocketChannel(sChannel));
+                    sChannel.close();
+                &#125;
+
+                keyIterator.remove();
+            &#125;
+        &#125;
+    &#125;
+
+    private static String readDataFromSocketChannel(SocketChannel sChannel) throws IOException &#123;
+
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        StringBuilder data = new StringBuilder();
+
+        while (true) &#123;
+
+            buffer.clear();
+            int n = sChannel.read(buffer);
+            if (n == -1) &#123;
+                break;
+            &#125;
+            buffer.flip();
+            int limit = buffer.limit();
+            char[] dst = new char[limit];
+            for (int i = 0; i &lt; limit; i++) &#123;
+                dst[i] = (char) buffer.get(i);
+            &#125;
+            data.append(dst);
+            buffer.clear();
+        &#125;
+        return data.toString();
+    &#125;
+&#125;
+public class NIOClient &#123;
+
+    public static void main(String[] args) throws IOException &#123;
+        Socket socket = new Socket(&quot;127.0.0.1&quot;, 8888);
+        OutputStream out = socket.getOutputStream();
+        String s = &quot;hello world&quot;;
+        out.write(s.getBytes());
+        out.close();
+    &#125;
+&#125;
+</code></pre>
 <h2 id="内存映射文件"><a href="#内存映射文件" class="headerlink" title="内存映射文件"></a>内存映射文件</h2><p>内存映射文件 I&#x2F;O 是一种读和写文件数据的方法，它可以比常规的基于流或者基于通道的 I&#x2F;O 快得多。</p>
 <p>向内存映射文件写入可能是危险的，只是改变数组的单个元素这样的简单操作，就可能会直接修改磁盘上的文件。修改数据与将数据保存到磁盘是没有分开的。</p>
 <p>下面代码行将文件的前 1024 个字节映射到内存中，map() 方法返回一个 MappedByteBuffer，它是 ByteBuffer 的子类。因此，可以像使用其他任何 ByteBuffer 一样使用新映射的缓冲区，操作系统会在需要时负责执行映射。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">MappedByteBuffer</span> <span class="variable">mbb</span> <span class="operator">=</span> fc.map(FileChannel.MapMode.READ_WRITE, <span class="number">0</span>, <span class="number">1024</span>);</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, 1024);
+</code></pre>
 <h2 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h2><p>NIO 与普通 I&#x2F;O 的区别主要有以下两点:</p>
 <ul>
 <li>NIO 是非阻塞的</li>

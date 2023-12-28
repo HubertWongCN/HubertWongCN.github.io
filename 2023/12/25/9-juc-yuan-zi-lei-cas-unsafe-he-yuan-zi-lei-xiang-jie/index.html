@@ -439,11 +439,21 @@ JUC中多数类是通过volatile和CAS来实现的，CAS本质上提供的是一
 <p>CAS操作是原子性的，所以多线程并发使用CAS更新数据时，可以不使用锁。JDK中大量使用了CAS来更新数据而防止加锁(synchronized 重量级锁)来保持原子更新。</p>
 <p>相信sql大家都熟悉，类似sql中的条件更新一样：update set id&#x3D;3 from table where id&#x3D;2。因为单条sql执行具有原子性，如果有多个线程同时执行此sql语句，只有一条能更新成功。</p>
 <h3 id="CAS使用示例"><a href="#CAS使用示例" class="headerlink" title="CAS使用示例"></a>CAS使用示例</h3><p>如果不使用CAS，在高并发下，多线程同时修改一个变量的值我们需要synchronized加锁(可能有人说可以用Lock加锁，Lock底层的AQS也是基于CAS进行获取锁的)。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> i=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="type">int</span> <span class="title function_">add</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> i++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public class Test &#123;
+    private int i=0;
+    public synchronized int add()&#123;
+        return i++;
+    &#125;
+&#125;
+</code></pre>
 <p>java中为我们提供了AtomicInteger 原子类(底层基于CAS进行更新数据的)，不需要加锁就在多线程并发场景下实现数据的一致性。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">private</span>  <span class="type">AtomicInteger</span> <span class="variable">i</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">add</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> i.addAndGet(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public class Test &#123;
+    private  AtomicInteger i = new AtomicInteger(0);
+    public int add()&#123;
+        return i.addAndGet(1);
+    &#125;
+&#125;
+</code></pre>
 <h3 id="CAS-问题"><a href="#CAS-问题" class="headerlink" title="CAS 问题"></a>CAS 问题</h3><p>CAS 方式为乐观锁，synchronized 为悲观锁。因此使用 CAS 解决并发问题通常情况下性能更优。</p>
 <p>但使用 CAS 方式也会有几个问题：</p>
 <h4 id="ABA问题"><a href="#ABA问题" class="headerlink" title="ABA问题"></a>ABA问题</h4><p>因为CAS需要在操作值的时候，检查值有没有发生变化，比如没有发生变化则更新，但是如果一个值原来是A，变成了B，又变成了A，那么使用CAS进行检查时则会发现它的值没有发生变化，但是实际上却变化了。</p>
@@ -462,54 +472,181 @@ JUC中多数类是通过volatile和CAS来实现的，CAS本质上提供的是一
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261949973.png" alt="img"></p>
 <p>如上图所示，Unsafe提供的API大致可分为内存操作、CAS、Class相关、对象操作、线程调度、系统信息获取、内存屏障、数组操作等几类，下面将对其相关方法和应用场景进行详细介绍。</p>
 <h3 id="Unsafe与CAS"><a href="#Unsafe与CAS" class="headerlink" title="Unsafe与CAS"></a>Unsafe与CAS</h3><p>反编译出来的代码：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAddInt</span><span class="params">(Object paramObject, <span class="type">long</span> paramLong, <span class="type">int</span> paramInt)</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="type">int</span> i;</span><br><span class="line">    <span class="type">do</span></span><br><span class="line">      <span class="variable">i</span> <span class="operator">=</span> getIntVolatile(paramObject, paramLong);</span><br><span class="line">    <span class="keyword">while</span> (!compareAndSwapInt(paramObject, paramLong, i, i + paramInt));</span><br><span class="line">    <span class="keyword">return</span> i;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">long</span> <span class="title function_">getAndAddLong</span><span class="params">(Object paramObject, <span class="type">long</span> paramLong1, <span class="type">long</span> paramLong2)</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="type">long</span> l;</span><br><span class="line">    <span class="type">do</span></span><br><span class="line">      <span class="variable">l</span> <span class="operator">=</span> getLongVolatile(paramObject, paramLong1);</span><br><span class="line">    <span class="keyword">while</span> (!compareAndSwapLong(paramObject, paramLong1, l, l + paramLong2));</span><br><span class="line">    <span class="keyword">return</span> l;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndSetInt</span><span class="params">(Object paramObject, <span class="type">long</span> paramLong, <span class="type">int</span> paramInt)</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="type">int</span> i;</span><br><span class="line">    <span class="type">do</span></span><br><span class="line">      <span class="variable">i</span> <span class="operator">=</span> getIntVolatile(paramObject, paramLong);</span><br><span class="line">    <span class="keyword">while</span> (!compareAndSwapInt(paramObject, paramLong, i, paramInt));</span><br><span class="line">    <span class="keyword">return</span> i;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">long</span> <span class="title function_">getAndSetLong</span><span class="params">(Object paramObject, <span class="type">long</span> paramLong1, <span class="type">long</span> paramLong2)</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="type">long</span> l;</span><br><span class="line">    <span class="type">do</span></span><br><span class="line">      <span class="variable">l</span> <span class="operator">=</span> getLongVolatile(paramObject, paramLong1);</span><br><span class="line">    <span class="keyword">while</span> (!compareAndSwapLong(paramObject, paramLong1, l, paramLong2));</span><br><span class="line">    <span class="keyword">return</span> l;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> Object <span class="title function_">getAndSetObject</span><span class="params">(Object paramObject1, <span class="type">long</span> paramLong, Object paramObject2)</span></span><br><span class="line">  &#123;</span><br><span class="line">    Object localObject;</span><br><span class="line">    <span class="type">do</span></span><br><span class="line">      <span class="variable">localObject</span> <span class="operator">=</span> getObjectVolatile(paramObject1, paramLong);</span><br><span class="line">    <span class="keyword">while</span> (!compareAndSwapObject(paramObject1, paramLong, localObject, paramObject2));</span><br><span class="line">    <span class="keyword">return</span> localObject;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public final int getAndAddInt(Object paramObject, long paramLong, int paramInt)
+  &#123;
+    int i;
+    do
+      i = getIntVolatile(paramObject, paramLong);
+    while (!compareAndSwapInt(paramObject, paramLong, i, i + paramInt));
+    return i;
+  &#125;
 
+  public final long getAndAddLong(Object paramObject, long paramLong1, long paramLong2)
+  &#123;
+    long l;
+    do
+      l = getLongVolatile(paramObject, paramLong1);
+    while (!compareAndSwapLong(paramObject, paramLong1, l, l + paramLong2));
+    return l;
+  &#125;
+
+  public final int getAndSetInt(Object paramObject, long paramLong, int paramInt)
+  &#123;
+    int i;
+    do
+      i = getIntVolatile(paramObject, paramLong);
+    while (!compareAndSwapInt(paramObject, paramLong, i, paramInt));
+    return i;
+  &#125;
+
+  public final long getAndSetLong(Object paramObject, long paramLong1, long paramLong2)
+  &#123;
+    long l;
+    do
+      l = getLongVolatile(paramObject, paramLong1);
+    while (!compareAndSwapLong(paramObject, paramLong1, l, paramLong2));
+    return l;
+  &#125;
+
+  public final Object getAndSetObject(Object paramObject1, long paramLong, Object paramObject2)
+  &#123;
+    Object localObject;
+    do
+      localObject = getObjectVolatile(paramObject1, paramLong);
+    while (!compareAndSwapObject(paramObject1, paramLong, localObject, paramObject2));
+    return localObject;
+  &#125;
+</code></pre>
 <p>从源码中发现，内部使用自旋的方式进行CAS更新(while循环进行CAS更新，如果更新失败，则循环再次重试)。</p>
 <p>又从Unsafe类中发现，原子操作其实只支持下面三个方法。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="type">boolean</span> <span class="title function_">compareAndSwapObject</span><span class="params">(Object paramObject1, <span class="type">long</span> paramLong, Object paramObject2, Object paramObject3)</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="type">boolean</span> <span class="title function_">compareAndSwapInt</span><span class="params">(Object paramObject, <span class="type">long</span> paramLong, <span class="type">int</span> paramInt1, <span class="type">int</span> paramInt2)</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="type">boolean</span> <span class="title function_">compareAndSwapLong</span><span class="params">(Object paramObject, <span class="type">long</span> paramLong1, <span class="type">long</span> paramLong2, <span class="type">long</span> paramLong3)</span>;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public final native boolean compareAndSwapObject(Object paramObject1, long paramLong, Object paramObject2, Object paramObject3);
 
+public final native boolean compareAndSwapInt(Object paramObject, long paramLong, int paramInt1, int paramInt2);
+
+public final native boolean compareAndSwapLong(Object paramObject, long paramLong1, long paramLong2, long paramLong3);
+</code></pre>
 <p>我们发现Unsafe只提供了3种CAS方法：compareAndSwapObject、compareAndSwapInt和compareAndSwapLong。都是native方法。</p>
 <h3 id="Unsafe底层"><a href="#Unsafe底层" class="headerlink" title="Unsafe底层"></a>Unsafe底层</h3><p>不妨再看看Unsafe的compareAndSwap*方法来实现CAS操作，它是一个本地方法，实现位于unsafe.cpp中。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">UNSAFE_ENTRY(jboolean, Unsafe_CompareAndSwapInt(JNIEnv *env, jobject unsafe, jobject obj, jlong offset, jint e, jint x))</span><br><span class="line">  UnsafeWrapper(<span class="string">&quot;Unsafe_CompareAndSwapInt&quot;</span>);</span><br><span class="line">  oop p = JNIHandles::resolve(obj);</span><br><span class="line">  jint* addr = (jint *) index_oop_from_field_offset_long(p, offset);</span><br><span class="line">  <span class="keyword">return</span> (jint)(Atomic::cmpxchg(x, addr, e)) == e;</span><br><span class="line">UNSAFE_END</span><br></pre></td></tr></table></figure>
-
+<pre><code class="c">UNSAFE_ENTRY(jboolean, Unsafe_CompareAndSwapInt(JNIEnv *env, jobject unsafe, jobject obj, jlong offset, jint e, jint x))
+  UnsafeWrapper(&quot;Unsafe_CompareAndSwapInt&quot;);
+  oop p = JNIHandles::resolve(obj);
+  jint* addr = (jint *) index_oop_from_field_offset_long(p, offset);
+  return (jint)(Atomic::cmpxchg(x, addr, e)) == e;
+UNSAFE_END
+</code></pre>
 <p>可以看到它通过 <code>Atomic::cmpxchg</code> 来实现比较和替换操作。其中参数x是即将更新的值，参数e是原内存的值。</p>
 <p>如果是Linux的x86，<code>Atomic::cmpxchg</code>方法的实现如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">inline</span> jint <span class="title function_">Atomic::cmpxchg</span> <span class="params">(jint exchange_value, <span class="keyword">volatile</span> jint* dest, jint compare_value)</span> &#123;</span><br><span class="line">  <span class="type">int</span> mp = os::is_MP();</span><br><span class="line">  __asm__ <span class="title function_">volatile</span> <span class="params">(LOCK_IF_MP(%<span class="number">4</span>) <span class="string">&quot;cmpxchgl %1,(%3)&quot;</span></span></span><br><span class="line"><span class="params">                    : <span class="string">&quot;=a&quot;</span> (exchange_value)</span></span><br><span class="line"><span class="params">                    : <span class="string">&quot;r&quot;</span> (exchange_value), <span class="string">&quot;a&quot;</span> (compare_value), <span class="string">&quot;r&quot;</span> (dest), <span class="string">&quot;r&quot;</span> (mp)</span></span><br><span class="line"><span class="params">                    : <span class="string">&quot;cc&quot;</span>, <span class="string">&quot;memory&quot;</span>)</span>;</span><br><span class="line">  <span class="keyword">return</span> exchange_value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="c">inline jint Atomic::cmpxchg (jint exchange_value, volatile jint* dest, jint compare_value) &#123;
+  int mp = os::is_MP();
+  __asm__ volatile (LOCK_IF_MP(%4) &quot;cmpxchgl %1,(%3)&quot;
+                    : &quot;=a&quot; (exchange_value)
+                    : &quot;r&quot; (exchange_value), &quot;a&quot; (compare_value), &quot;r&quot; (dest), &quot;r&quot; (mp)
+                    : &quot;cc&quot;, &quot;memory&quot;);
+  return exchange_value;
+&#125;
+</code></pre>
 <p>而windows的x86的实现如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">inline</span> jint <span class="title function_">Atomic::cmpxchg</span> <span class="params">(jint exchange_value, <span class="keyword">volatile</span> jint* dest, jint compare_value)</span> &#123;</span><br><span class="line">    <span class="type">int</span> mp = os::isMP(); <span class="comment">//判断是否是多处理器</span></span><br><span class="line">    _asm &#123;</span><br><span class="line">        mov edx, dest</span><br><span class="line">        mov ecx, exchange_value</span><br><span class="line">        mov eax, compare_value</span><br><span class="line">        <span class="title function_">LOCK_IF_MP</span><span class="params">(mp)</span></span><br><span class="line">        cmpxchg dword ptr [edx], ecx</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Adding a lock prefix to an instruction on MP machine</span></span><br><span class="line"><span class="comment">// VC++ doesn&#x27;t like the lock prefix to be on a single line</span></span><br><span class="line"><span class="comment">// so we can&#x27;t insert a label after the lock prefix.</span></span><br><span class="line"><span class="comment">// By emitting a lock prefix, we can define a label after it.</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LOCK_IF_MP(mp) __asm cmp mp, 0  \</span></span><br><span class="line"><span class="meta">                       __asm je L0      \</span></span><br><span class="line"><span class="meta">                       __asm _emit 0xF0 \</span></span><br><span class="line"><span class="meta">                       __asm L0:</span></span><br></pre></td></tr></table></figure>
+<pre><code class="c">inline jint Atomic::cmpxchg (jint exchange_value, volatile jint* dest, jint compare_value) &#123;
+    int mp = os::isMP(); //判断是否是多处理器
+    _asm &#123;
+        mov edx, dest
+        mov ecx, exchange_value
+        mov eax, compare_value
+        LOCK_IF_MP(mp)
+        cmpxchg dword ptr [edx], ecx
+    &#125;
+&#125;
 
+// Adding a lock prefix to an instruction on MP machine
+// VC++ doesn&#39;t like the lock prefix to be on a single line
+// so we can&#39;t insert a label after the lock prefix.
+// By emitting a lock prefix, we can define a label after it.
+#define LOCK_IF_MP(mp) __asm cmp mp, 0  \
+                       __asm je L0      \
+                       __asm _emit 0xF0 \
+                       __asm L0:
+</code></pre>
 <p>如果是多处理器，为cmpxchg指令添加lock前缀。反之，就省略lock前缀(单处理器会不需要lock前缀提供的内存屏障效果)。这里的lock前缀就是使用了处理器的总线锁(最新的处理器都使用缓存锁代替总线锁来提高性能)。</p>
 <blockquote>
 <p>cmpxchg(void* ptr, int old, int new)，如果ptr和old的值一样，则把new写到ptr内存，否则返回ptr的值，整个操作是原子的。在Intel平台下，会用lock cmpxchg来实现，使用lock触发缓存锁，这样另一个线程想访问ptr的内存，就会被block住。</p>
 </blockquote>
 <h3 id="Unsafe其它功能"><a href="#Unsafe其它功能" class="headerlink" title="Unsafe其它功能"></a>Unsafe其它功能</h3><p>Unsafe 提供了硬件级别的操作，比如说获取某个属性在内存中的位置，比如说修改对象的字段值，即使它是私有的。不过 Java 本身就是为了屏蔽底层的差异，对于一般的开发而言也很少会有这样的需求。</p>
 <p>举两个例子，比方说：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">long</span> <span class="title function_">staticFieldOffset</span><span class="params">(Field paramField)</span>;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public native long staticFieldOffset(Field paramField);
+</code></pre>
 <p>这个方法可以用来获取给定的 paramField 的内存地址偏移量，这个值对于给定的 field 是唯一的且是固定不变的。</p>
 <p>再比如说：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">int</span> <span class="title function_">arrayBaseOffset</span><span class="params">(Class paramClass)</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">int</span> <span class="title function_">arrayIndexScale</span><span class="params">(Class paramClass)</span>;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public native int arrayBaseOffset(Class paramClass);
+public native int arrayIndexScale(Class paramClass);
+</code></pre>
 <p>前一个方法是用来获取数组第一个元素的偏移地址，后一个方法是用来获取数组的转换因子即数组中元素的增量地址的。</p>
 <p>最后看三个方法：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">long</span> <span class="title function_">allocateMemory</span><span class="params">(<span class="type">long</span> paramLong)</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">long</span> <span class="title function_">reallocateMemory</span><span class="params">(<span class="type">long</span> paramLong1, <span class="type">long</span> paramLong2)</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">freeMemory</span><span class="params">(<span class="type">long</span> paramLong)</span>;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public native long allocateMemory(long paramLong);
+public native long reallocateMemory(long paramLong1, long paramLong2);
+public native void freeMemory(long paramLong);
+</code></pre>
 <p>分别用来分配内存，扩充内存和释放内存的。</p>
 <blockquote>
 <p>更多相关功能，推荐你看下这篇文章：来自美团技术团队：<a target="_blank" rel="noopener" href="https://tech.meituan.com/2019/02/14/talk-about-java-magic-class-unsafe.html">Java魔法类：Unsafe应用解析在</a></p>
 </blockquote>
 <h2 id="AtomicInteger"><a href="#AtomicInteger" class="headerlink" title="AtomicInteger"></a>AtomicInteger</h2><h3 id="使用举例"><a href="#使用举例" class="headerlink" title="使用举例"></a>使用举例</h3><p>以 AtomicInteger 为例，常用 API：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">()</span>：获取当前的值</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndSet</span><span class="params">(<span class="type">int</span> newValue)</span>：获取当前的值，并设置新的值</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndIncrement</span><span class="params">()</span>：获取当前的值，并自增</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndDecrement</span><span class="params">()</span>：获取当前的值，并自减</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAdd</span><span class="params">(<span class="type">int</span> delta)</span>：获取当前的值，并加上预期的值</span><br><span class="line"><span class="keyword">void</span> <span class="title function_">lazySet</span><span class="params">(<span class="type">int</span> newValue)</span>: 最终会设置成newValue,使用lazySet设置值后，可能导致其他线程在之后的一小段时间内还是可以读到旧的值。</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public final int get()：获取当前的值
+public final int getAndSet(int newValue)：获取当前的值，并设置新的值
+public final int getAndIncrement()：获取当前的值，并自增
+public final int getAndDecrement()：获取当前的值，并自减
+public final int getAndAdd(int delta)：获取当前的值，并加上预期的值
+void lazySet(int newValue): 最终会设置成newValue,使用lazySet设置值后，可能导致其他线程在之后的一小段时间内还是可以读到旧的值。
+</code></pre>
 <p>相比 Integer 的优势，多线程中让变量自增：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="comment">// 若要线程安全执行执行 count++，需要加锁</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title function_">increment</span><span class="params">()</span> &#123;</span><br><span class="line">    count++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCount</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> count;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">private volatile int count = 0;
+// 若要线程安全执行执行 count++，需要加锁
+public synchronized void increment() &#123;
+    count++;
+&#125;
+public int getCount() &#123;
+    return count;
+&#125;
+</code></pre>
 <p>使用 AtomicInteger 后：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">AtomicInteger</span> <span class="variable">count</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">increment</span><span class="params">()</span> &#123;</span><br><span class="line">    count.incrementAndGet();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 使用 AtomicInteger 后，不需要加锁，也可以实现线程安全</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCount</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> count.get();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">private AtomicInteger count = new AtomicInteger();
+public void increment() &#123;
+    count.incrementAndGet();
+&#125;
+// 使用 AtomicInteger 后，不需要加锁，也可以实现线程安全
+public int getCount() &#123;
+    return count.get();
+&#125;
+</code></pre>
+<h3 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h3><pre><code class="java">public class AtomicInteger extends Number implements java.io.Serializable &#123;
+    private static final Unsafe unsafe = Unsafe.getUnsafe();
+    private static final long valueOffset;
+    static &#123;
+        try &#123;
+            //用于获取value字段相对当前对象的“起始地址”的偏移量
+            valueOffset = unsafe.objectFieldOffset(AtomicInteger.class.getDeclaredField(&quot;value&quot;));
+        &#125; catch (Exception ex) &#123; throw new Error(ex); &#125;
+    &#125;
 
-<h3 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AtomicInteger</span> <span class="keyword">extends</span> <span class="title class_">Number</span> <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> Unsafe.getUnsafe();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> valueOffset;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//用于获取value字段相对当前对象的“起始地址”的偏移量</span></span><br><span class="line">            valueOffset = unsafe.objectFieldOffset(AtomicInteger.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception ex) &#123; <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(ex); &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="type">int</span> value;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//返回当前值</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//递增加detla</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">getAndAdd</span><span class="params">(<span class="type">int</span> delta)</span> &#123;</span><br><span class="line">        <span class="comment">//三个参数，1、当前的实例 2、value实例变量的偏移量 3、当前value要加上的数(value+delta)。</span></span><br><span class="line">        <span class="keyword">return</span> unsafe.getAndAddInt(<span class="built_in">this</span>, valueOffset, delta);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//递增加1</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">incrementAndGet</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> unsafe.getAndAddInt(<span class="built_in">this</span>, valueOffset, <span class="number">1</span>) + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    private volatile int value;
 
+    //返回当前值
+    public final int get() &#123;
+        return value;
+    &#125;
+
+    //递增加detla
+    public final int getAndAdd(int delta) &#123;
+        //三个参数，1、当前的实例 2、value实例变量的偏移量 3、当前value要加上的数(value+delta)。
+        return unsafe.getAndAddInt(this, valueOffset, delta);
+    &#125;
+
+    //递增加1
+    public final int incrementAndGet() &#123;
+        return unsafe.getAndAddInt(this, valueOffset, 1) + 1;
+    &#125;
+...
+&#125;
+</code></pre>
 <p>我们可以看到 AtomicInteger 底层用的是volatile的变量和CAS来进行更改数据的。</p>
 <ul>
 <li>volatile保证线程的可见性，多线程并发时，一个线程修改数据，可以保证其它线程立马看到修改后的值</li>
@@ -537,11 +674,22 @@ JUC中多数类是通过volatile和CAS来实现的，CAS本质上提供的是一
 <li>compareAndSet(int i,E expect,E update): 如果当前值等于预期值，则以原子方式将数组位置i的元素设置为update值。</li>
 </ul>
 <p>举个AtomicIntegerArray例子：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.atomic.AtomicIntegerArray;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo5</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException &#123;</span><br><span class="line">        <span class="type">AtomicIntegerArray</span> <span class="variable">array</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicIntegerArray</span>(<span class="keyword">new</span> <span class="title class_">int</span>[] &#123; <span class="number">0</span>, <span class="number">0</span> &#125;);</span><br><span class="line">        System.out.println(array);</span><br><span class="line">        System.out.println(array.getAndAdd(<span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">        System.out.println(array);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">import java.util.concurrent.atomic.AtomicIntegerArray;
 
+public class Demo5 &#123;
+    public static void main(String[] args) throws InterruptedException &#123;
+        AtomicIntegerArray array = new AtomicIntegerArray(new int[] &#123; 0, 0 &#125;);
+        System.out.println(array);
+        System.out.println(array.getAndAdd(1, 2));
+        System.out.println(array);
+    &#125;
+&#125;
+</code></pre>
 <p>输出结果：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">0</span>, <span class="number">0</span>]</span><br><span class="line"><span class="number">0</span></span><br><span class="line">[<span class="number">0</span>, <span class="number">2</span>]</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">[0, 0]
+0
+[0, 2]
+</code></pre>
 <h3 id="原子更新引用类型"><a href="#原子更新引用类型" class="headerlink" title="原子更新引用类型"></a>原子更新引用类型</h3><p>Atomic包提供了以下三个类：</p>
 <ul>
 <li>AtomicReference: 原子更新引用类型。</li>
@@ -550,11 +698,40 @@ JUC中多数类是通过volatile和CAS来实现的，CAS本质上提供的是一
 </ul>
 <p>这三个类提供的方法都差不多，首先构造一个引用对象，然后把引用对象set进Atomic类，然后调用compareAndSet等一些方法去进行原子操作，原理都是基于Unsafe实现，但AtomicReferenceFieldUpdater略有不同，更新的字段必须用volatile修饰。</p>
 <p>举个AtomicReference例子：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.atomic.AtomicReference;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AtomicReferenceTest</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建两个Person对象，它们的id分别是101和102。</span></span><br><span class="line">        <span class="type">Person</span> <span class="variable">p1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">101</span>);</span><br><span class="line">        <span class="type">Person</span> <span class="variable">p2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="number">102</span>);</span><br><span class="line">        <span class="comment">// 新建AtomicReference对象，初始化它的值为p1对象</span></span><br><span class="line">        <span class="type">AtomicReference</span> <span class="variable">ar</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicReference</span>(p1);</span><br><span class="line">        <span class="comment">// 通过CAS设置ar。如果ar的值为p1的话，则将其设置为p2。</span></span><br><span class="line">        ar.compareAndSet(p1, p2);</span><br><span class="line"></span><br><span class="line">        <span class="type">Person</span> <span class="variable">p3</span> <span class="operator">=</span> (Person)ar.get();</span><br><span class="line">        System.out.println(<span class="string">&quot;p3 is &quot;</span>+p3);</span><br><span class="line">        System.out.println(<span class="string">&quot;p3.equals(p1)=&quot;</span>+p3.equals(p1));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line">    <span class="keyword">volatile</span> <span class="type">long</span> id;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Person</span><span class="params">(<span class="type">long</span> id)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.id = id;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;id:&quot;</span>+id;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">import java.util.concurrent.atomic.AtomicReference;
 
+public class AtomicReferenceTest &#123;
+    
+    public static void main(String[] args)&#123;
+
+        // 创建两个Person对象，它们的id分别是101和102。
+        Person p1 = new Person(101);
+        Person p2 = new Person(102);
+        // 新建AtomicReference对象，初始化它的值为p1对象
+        AtomicReference ar = new AtomicReference(p1);
+        // 通过CAS设置ar。如果ar的值为p1的话，则将其设置为p2。
+        ar.compareAndSet(p1, p2);
+
+        Person p3 = (Person)ar.get();
+        System.out.println(&quot;p3 is &quot;+p3);
+        System.out.println(&quot;p3.equals(p1)=&quot;+p3.equals(p1));
+    &#125;
+&#125;
+
+class Person &#123;
+    volatile long id;
+    public Person(long id) &#123;
+        this.id = id;
+    &#125;
+    public String toString() &#123;
+        return &quot;id:&quot;+id;
+    &#125;
+&#125;
+</code></pre>
 <p>结果输出：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p3 is id:<span class="number">102</span></span><br><span class="line">p3.equals(p1)=<span class="literal">false</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">p3 is id:102
+p3.equals(p1)=false
+</code></pre>
 <p>结果说明：</p>
 <ul>
 <li>新建AtomicReference对象ar时，将它初始化为p1。</li>
@@ -573,8 +750,50 @@ JUC中多数类是通过volatile和CAS来实现的，CAS本质上提供的是一
 <li>第二步，更新类的字段必须使用public volatile修饰。</li>
 </ul>
 <p>举个例子：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestAtomicIntegerFieldUpdater</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span>&#123;</span><br><span class="line">        <span class="type">TestAtomicIntegerFieldUpdater</span> <span class="variable">tIA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TestAtomicIntegerFieldUpdater</span>();</span><br><span class="line">        tIA.doIt();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> AtomicIntegerFieldUpdater&lt;DataDemo&gt; <span class="title function_">updater</span><span class="params">(String name)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> AtomicIntegerFieldUpdater.newUpdater(DataDemo.class,name);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doIt</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="type">DataDemo</span> <span class="variable">data</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DataDemo</span>();</span><br><span class="line">        System.out.println(<span class="string">&quot;publicVar = &quot;</span>+updater(<span class="string">&quot;publicVar&quot;</span>).getAndAdd(data, <span class="number">2</span>));</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">            * 由于在DataDemo类中属性value2/value3,在TestAtomicIntegerFieldUpdater中不能访问</span></span><br><span class="line"><span class="comment">            * */</span></span><br><span class="line">        <span class="comment">//System.out.println(&quot;protectedVar = &quot;+updater(&quot;protectedVar&quot;).getAndAdd(data,2));</span></span><br><span class="line">        <span class="comment">//System.out.println(&quot;privateVar = &quot;+updater(&quot;privateVar&quot;).getAndAdd(data,2));</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//System.out.println(&quot;staticVar = &quot;+updater(&quot;staticVar&quot;).getAndIncrement(data));//报java.lang.IllegalArgumentException</span></span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">            * 下面报异常：must be integer</span></span><br><span class="line"><span class="comment">            * */</span></span><br><span class="line">        <span class="comment">//System.out.println(&quot;integerVar = &quot;+updater(&quot;integerVar&quot;).getAndIncrement(data));</span></span><br><span class="line">        <span class="comment">//System.out.println(&quot;longVar = &quot;+updater(&quot;longVar&quot;).getAndIncrement(data));</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DataDemo</span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="type">int</span> publicVar=<span class="number">3</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">volatile</span> <span class="type">int</span> protectedVar=<span class="number">4</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span>  <span class="type">int</span> privateVar=<span class="number">5</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">staticVar</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line">    <span class="comment">//public  final int finalVar = 11;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="type">Integer</span> <span class="variable">integerVar</span> <span class="operator">=</span> <span class="number">19</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="type">Long</span> <span class="variable">longVar</span> <span class="operator">=</span> <span class="number">18L</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class TestAtomicIntegerFieldUpdater &#123;
 
+    public static void main(String[] args)&#123;
+        TestAtomicIntegerFieldUpdater tIA = new TestAtomicIntegerFieldUpdater();
+        tIA.doIt();
+    &#125;
+
+    public AtomicIntegerFieldUpdater&lt;DataDemo&gt; updater(String name)&#123;
+        return AtomicIntegerFieldUpdater.newUpdater(DataDemo.class,name);
+
+    &#125;
+
+    public void doIt()&#123;
+        DataDemo data = new DataDemo();
+        System.out.println(&quot;publicVar = &quot;+updater(&quot;publicVar&quot;).getAndAdd(data, 2));
+        /*
+            * 由于在DataDemo类中属性value2/value3,在TestAtomicIntegerFieldUpdater中不能访问
+            * */
+        //System.out.println(&quot;protectedVar = &quot;+updater(&quot;protectedVar&quot;).getAndAdd(data,2));
+        //System.out.println(&quot;privateVar = &quot;+updater(&quot;privateVar&quot;).getAndAdd(data,2));
+
+        //System.out.println(&quot;staticVar = &quot;+updater(&quot;staticVar&quot;).getAndIncrement(data));//报java.lang.IllegalArgumentException
+        /*
+            * 下面报异常：must be integer
+            * */
+        //System.out.println(&quot;integerVar = &quot;+updater(&quot;integerVar&quot;).getAndIncrement(data));
+        //System.out.println(&quot;longVar = &quot;+updater(&quot;longVar&quot;).getAndIncrement(data));
+    &#125;
+
+&#125;
+
+class DataDemo&#123;
+    public volatile int publicVar=3;
+    protected volatile int protectedVar=4;
+    private volatile  int privateVar=5;
+
+    public volatile static int staticVar = 10;
+    //public  final int finalVar = 11;
+
+    public volatile Integer integerVar = 19;
+    public volatile Long longVar = 18L;
+
+&#125;
+</code></pre>
 <p>再说下对于AtomicIntegerFieldUpdater 的使用稍微有一些限制和约束，约束如下：</p>
 <ul>
 <li>字段必须是volatile类型的，在线程之间共享变量时保证立即可见.eg:volatile int value &#x3D; 3</li>
@@ -584,8 +803,51 @@ JUC中多数类是通过volatile和CAS来实现的，CAS本质上提供的是一
 <li>对于AtomicIntegerFieldUpdater和AtomicLongFieldUpdater只能修改int&#x2F;long类型的字段，不能修改其包装类型(Integer&#x2F;Long)。如果要修改包装类型就需要使用AtomicReferenceFieldUpdater。</li>
 </ul>
 <h2 id="再讲讲AtomicStampedReference解决CAS的ABA问题"><a href="#再讲讲AtomicStampedReference解决CAS的ABA问题" class="headerlink" title="再讲讲AtomicStampedReference解决CAS的ABA问题"></a>再讲讲AtomicStampedReference解决CAS的ABA问题</h2><h3 id="AtomicStampedReference解决ABA问题"><a href="#AtomicStampedReference解决ABA问题" class="headerlink" title="AtomicStampedReference解决ABA问题"></a>AtomicStampedReference解决ABA问题</h3><p>AtomicStampedReference主要维护包含一个对象引用以及一个可以自动更新的整数”stamp”的pair对象来解决ABA问题。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AtomicStampedReference</span>&lt;V&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Pair</span>&lt;T&gt; &#123;</span><br><span class="line">        <span class="keyword">final</span> T reference;  <span class="comment">//维护对象引用</span></span><br><span class="line">        <span class="keyword">final</span> <span class="type">int</span> stamp;  <span class="comment">//用于标志版本</span></span><br><span class="line">        <span class="keyword">private</span> <span class="title function_">Pair</span><span class="params">(T reference, <span class="type">int</span> stamp)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.reference = reference;</span><br><span class="line">            <span class="built_in">this</span>.stamp = stamp;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">static</span> &lt;T&gt; Pair&lt;T&gt; <span class="title function_">of</span><span class="params">(T reference, <span class="type">int</span> stamp)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Pair</span>&lt;T&gt;(reference, stamp);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> Pair&lt;V&gt; pair;</span><br><span class="line">    ....</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">      * expectedReference ：更新之前的原始值</span></span><br><span class="line"><span class="comment">      * newReference : 将要更新的新值</span></span><br><span class="line"><span class="comment">      * expectedStamp : 期待更新的标志版本</span></span><br><span class="line"><span class="comment">      * newStamp : 将要更新的标志版本</span></span><br><span class="line"><span class="comment">      */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">compareAndSet</span><span class="params">(V   expectedReference,</span></span><br><span class="line"><span class="params">                             V   newReference,</span></span><br><span class="line"><span class="params">                             <span class="type">int</span> expectedStamp,</span></span><br><span class="line"><span class="params">                             <span class="type">int</span> newStamp)</span> &#123;</span><br><span class="line">        <span class="comment">// 获取当前的(元素值，版本号)对</span></span><br><span class="line">        Pair&lt;V&gt; current = pair;</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">            <span class="comment">// 引用没变</span></span><br><span class="line">            expectedReference == current.reference &amp;&amp;</span><br><span class="line">            <span class="comment">// 版本号没变</span></span><br><span class="line">            expectedStamp == current.stamp &amp;&amp;</span><br><span class="line">            <span class="comment">// 新引用等于旧引用</span></span><br><span class="line">            ((newReference == current.reference &amp;&amp;</span><br><span class="line">            <span class="comment">// 新版本号等于旧版本号</span></span><br><span class="line">            newStamp == current.stamp) ||</span><br><span class="line">            <span class="comment">// 构造新的Pair对象并CAS更新</span></span><br><span class="line">            casPair(current, Pair.of(newReference, newStamp)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">casPair</span><span class="params">(Pair&lt;V&gt; cmp, Pair&lt;V&gt; val)</span> &#123;</span><br><span class="line">        <span class="comment">// 调用Unsafe的compareAndSwapObject()方法CAS更新pair的引用为新引用</span></span><br><span class="line">        <span class="keyword">return</span> UNSAFE.compareAndSwapObject(<span class="built_in">this</span>, pairOffset, cmp, val);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class AtomicStampedReference&lt;V&gt; &#123;
+    private static class Pair&lt;T&gt; &#123;
+        final T reference;  //维护对象引用
+        final int stamp;  //用于标志版本
+        private Pair(T reference, int stamp) &#123;
+            this.reference = reference;
+            this.stamp = stamp;
+        &#125;
+        static &lt;T&gt; Pair&lt;T&gt; of(T reference, int stamp) &#123;
+            return new Pair&lt;T&gt;(reference, stamp);
+        &#125;
+    &#125;
+    private volatile Pair&lt;V&gt; pair;
+    ....
+    
+    /**
+      * expectedReference ：更新之前的原始值
+      * newReference : 将要更新的新值
+      * expectedStamp : 期待更新的标志版本
+      * newStamp : 将要更新的标志版本
+      */
+    public boolean compareAndSet(V   expectedReference,
+                             V   newReference,
+                             int expectedStamp,
+                             int newStamp) &#123;
+        // 获取当前的(元素值，版本号)对
+        Pair&lt;V&gt; current = pair;
+        return
+            // 引用没变
+            expectedReference == current.reference &amp;&amp;
+            // 版本号没变
+            expectedStamp == current.stamp &amp;&amp;
+            // 新引用等于旧引用
+            ((newReference == current.reference &amp;&amp;
+            // 新版本号等于旧版本号
+            newStamp == current.stamp) ||
+            // 构造新的Pair对象并CAS更新
+            casPair(current, Pair.of(newReference, newStamp)));
+    &#125;
 
+    private boolean casPair(Pair&lt;V&gt; cmp, Pair&lt;V&gt; val) &#123;
+        // 调用Unsafe的compareAndSwapObject()方法CAS更新pair的引用为新引用
+        return UNSAFE.compareAndSwapObject(this, pairOffset, cmp, val);
+    &#125;
+</code></pre>
 <ul>
 <li>如果元素值和版本号都没有变化，并且和新的也相同，返回true；</li>
 <li>如果元素值和版本号都没有变化，并且和新的不完全相同，就构造一个新的Pair对象并执行CAS更新pair。</li>
@@ -596,11 +858,47 @@ JUC中多数类是通过volatile和CAS来实现的，CAS本质上提供的是一
 <li>其次，不重复使用节点(Pair)的引用，每次都新建一个新的Pair来作为CAS比较的对象，而不是复用旧的；</li>
 <li>最后，外部传入元素值及版本号，而不是节点(Pair)的引用。</li>
 </ul>
-<h3 id="使用举例-1"><a href="#使用举例-1" class="headerlink" title="使用举例"></a>使用举例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AtomicTester</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> AtomicStampedReference&lt;Integer&gt; atomicStampedRef =</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">AtomicStampedReference</span>&lt;&gt;(<span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span>&#123;</span><br><span class="line">        first().start();</span><br><span class="line">        second().start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Thread <span class="title function_">first</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;操作线程&quot;</span> + Thread.currentThread() +<span class="string">&quot;,初始值 a = &quot;</span> + atomicStampedRef.getReference());</span><br><span class="line">            <span class="type">int</span> <span class="variable">stamp</span> <span class="operator">=</span> atomicStampedRef.getStamp(); <span class="comment">//获取当前标识别</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(<span class="number">1000</span>); <span class="comment">//等待1秒 ，以便让干扰线程执行</span></span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">boolean</span> <span class="variable">isCASSuccess</span> <span class="operator">=</span> atomicStampedRef.compareAndSet(<span class="number">1</span>,<span class="number">2</span>,stamp,stamp +<span class="number">1</span>);  <span class="comment">//此时expectedReference未发生改变，但是stamp已经被修改了,所以CAS失败</span></span><br><span class="line">            System.out.println(<span class="string">&quot;操作线程&quot;</span> + Thread.currentThread() +<span class="string">&quot;,CAS操作结果: &quot;</span> + isCASSuccess);</span><br><span class="line">        &#125;,<span class="string">&quot;主操作线程&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Thread <span class="title function_">second</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            Thread.<span class="keyword">yield</span>(); <span class="comment">// 确保thread-first 优先执行</span></span><br><span class="line">            atomicStampedRef.compareAndSet(<span class="number">1</span>,<span class="number">2</span>,atomicStampedRef.getStamp(),atomicStampedRef.getStamp() +<span class="number">1</span>);</span><br><span class="line">            System.out.println(<span class="string">&quot;操作线程&quot;</span> + Thread.currentThread() +<span class="string">&quot;,【increment】 ,值 = &quot;</span>+ atomicStampedRef.getReference());</span><br><span class="line">            atomicStampedRef.compareAndSet(<span class="number">2</span>,<span class="number">1</span>,atomicStampedRef.getStamp(),atomicStampedRef.getStamp() +<span class="number">1</span>);</span><br><span class="line">            System.out.println(<span class="string">&quot;操作线程&quot;</span> + Thread.currentThread() +<span class="string">&quot;,【decrement】 ,值 = &quot;</span>+ atomicStampedRef.getReference());</span><br><span class="line">        &#125;,<span class="string">&quot;干扰线程&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="使用举例-1"><a href="#使用举例-1" class="headerlink" title="使用举例"></a>使用举例</h3><pre><code class="java">public class AtomicTester &#123;
 
+    private static AtomicStampedReference&lt;Integer&gt; atomicStampedRef =
+            new AtomicStampedReference&lt;&gt;(1, 0);
+
+    public static void main(String[] args)&#123;
+        first().start();
+        second().start();
+    &#125;
+
+    private static Thread first() &#123;
+        return new Thread(() -&gt; &#123;
+            System.out.println(&quot;操作线程&quot; + Thread.currentThread() +&quot;,初始值 a = &quot; + atomicStampedRef.getReference());
+            int stamp = atomicStampedRef.getStamp(); //获取当前标识别
+            try &#123;
+                Thread.sleep(1000); //等待1秒 ，以便让干扰线程执行
+            &#125; catch (InterruptedException e) &#123;
+                e.printStackTrace();
+            &#125;
+            boolean isCASSuccess = atomicStampedRef.compareAndSet(1,2,stamp,stamp +1);  //此时expectedReference未发生改变，但是stamp已经被修改了,所以CAS失败
+            System.out.println(&quot;操作线程&quot; + Thread.currentThread() +&quot;,CAS操作结果: &quot; + isCASSuccess);
+        &#125;,&quot;主操作线程&quot;);
+    &#125;
+
+    private static Thread second() &#123;
+        return new Thread(() -&gt; &#123;
+            Thread.yield(); // 确保thread-first 优先执行
+            atomicStampedRef.compareAndSet(1,2,atomicStampedRef.getStamp(),atomicStampedRef.getStamp() +1);
+            System.out.println(&quot;操作线程&quot; + Thread.currentThread() +&quot;,【increment】 ,值 = &quot;+ atomicStampedRef.getReference());
+            atomicStampedRef.compareAndSet(2,1,atomicStampedRef.getStamp(),atomicStampedRef.getStamp() +1);
+            System.out.println(&quot;操作线程&quot; + Thread.currentThread() +&quot;,【decrement】 ,值 = &quot;+ atomicStampedRef.getReference());
+        &#125;,&quot;干扰线程&quot;);
+    &#125;
+&#125;
+</code></pre>
 <p>输出结果：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">操作线程Thread[主操作线程,5,main],初始值 a = 1</span><br><span class="line">操作线程Thread[干扰线程,5,main],【increment】 ,值 = 2</span><br><span class="line">操作线程Thread[干扰线程,5,main],【decrement】 ,值 = 1</span><br><span class="line">操作线程Thread[主操作线程,5,main],CAS操作结果: <span class="literal">false</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">操作线程Thread[主操作线程,5,main],初始值 a = 1
+操作线程Thread[干扰线程,5,main],【increment】 ,值 = 2
+操作线程Thread[干扰线程,5,main],【decrement】 ,值 = 1
+操作线程Thread[主操作线程,5,main],CAS操作结果: false
+</code></pre>
 <h3 id="java中还有哪些类可以解决ABA的问题"><a href="#java中还有哪些类可以解决ABA的问题" class="headerlink" title="java中还有哪些类可以解决ABA的问题?"></a>java中还有哪些类可以解决ABA的问题?</h3><p>AtomicMarkableReference，它不是维护一个版本号，而是维护一个boolean类型的标记，标记值有修改，了解一下。</p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://benjaminwhx.com/2018/05/03/%E3%80%90%E7%BB%86%E8%B0%88Java%E5%B9%B6%E5%8F%91%E3%80%91%E8%B0%88%E8%B0%88CAS/">https://benjaminwhx.com/2018/05/03/%E3%80%90%E7%BB%86%E8%B0%88Java%E5%B9%B6%E5%8F%91%E3%80%91%E8%B0%88%E8%B0%88CAS/</a></li>

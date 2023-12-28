@@ -429,26 +429,38 @@ Java 11 在 2018 年 9 月 25 日正式发布！根据发布的规划，JDK 11 �
 <li>JVM优化</li>
 </ol>
 <h2 id="语言新特性"><a href="#语言新特性" class="headerlink" title="语言新特性"></a>语言新特性</h2><h3 id="JDK9-允许在接口中使用私有方法"><a href="#JDK9-允许在接口中使用私有方法" class="headerlink" title="JDK9 - 允许在接口中使用私有方法"></a>JDK9 - 允许在接口中使用私有方法</h3><p>在如下代码中，buildMessage 是接口 SayHi 中的私有方法，在默认方法 sayHi 中被使用。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">SayHi</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String <span class="title function_">buildMessage</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;Hello&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">sayHi</span><span class="params">(<span class="keyword">final</span> String message)</span>;</span><br><span class="line">    <span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">sayHi</span><span class="params">()</span> &#123;</span><br><span class="line">        sayHi(buildMessage());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public interface SayHi &#123;
+    private String buildMessage() &#123;
+        return &quot;Hello&quot;;
+    &#125;
+    void sayHi(final String message);
+    default void sayHi() &#123;
+        sayHi(buildMessage());
+    &#125;
+&#125;
+</code></pre>
 <h3 id="JDK10-局部变量类型推断"><a href="#JDK10-局部变量类型推断" class="headerlink" title="JDK10 - 局部变量类型推断"></a>JDK10 - 局部变量类型推断</h3><p>局部变量类型推断是 Java 10 中最值得开发人员注意的新特性，这是 Java 语言开发人员为了简化 Java 应用程序的编写而进行的又一重要改进。</p>
 <p>这一新功能将为 Java 增加一些新语法，允许开发人员省略通常不必要的局部变量类型初始化声明。新的语法将减少 Java 代码的冗长度，同时保持对静态类型安全性的承诺。局部变量类型推断主要是向 Java 语法中引入在其他语言（比如 C#、JavaScript）中很常见的保留类型名称 var 。但需要特别注意的是： var 不是一个关键字，而是一个保留字。只要编译器可以推断此种类型，开发人员不再需要专门声明一个局部变量的类型，也就是可以随意定义变量而不必指定变量的类型。这种改进对于链式表达式来说，也会很方便。以下是一个简单的例子：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">var</span> <span class="variable">list</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;(); <span class="comment">// ArrayList&lt;String&gt;</span></span><br><span class="line"><span class="type">var</span> <span class="variable">stream</span> <span class="operator">=</span> list.stream(); <span class="comment">// Stream&lt;String&gt;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">var list = new ArrayList&lt;String&gt;(); // ArrayList&lt;String&gt;
+var stream = list.stream(); // Stream&lt;String&gt;
+</code></pre>
 <p>看着是不是有点 JS 的感觉？有没有感觉越来越像 JS 了？虽然变量类型的推断在 Java 中不是一个崭新的概念，但在局部变量中确是很大的一个改进。说到变量类型推断，从 Java 5 中引进泛型，到 Java 7 的 <code>&lt;&gt;</code> 操作符允许不绑定类型而初始化 List，再到 Java 8 中的 Lambda 表达式，再到现在 Java 10 中引入的局部变量类型推断，Java 类型推断正大刀阔斧地向前进步、发展。</p>
 <p>而上面这段例子，在以前版本的 Java 语法中初始化列表的写法为：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;();</span><br><span class="line">Stream&lt;String&gt; stream = getStream();</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+Stream&lt;String&gt; stream = getStream();
+</code></pre>
 <p>在运算符允许在没有绑定 <code>ArrayList &lt;&gt;</code> 的类型的情况下初始化列表的写法为：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; list = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">Stream&lt;String&gt; stream = getStream();</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">List&lt;String&gt; list = new LinkedList&lt;&gt;();
+Stream&lt;String&gt; stream = getStream();
+</code></pre>
 <p>但这种 var 变量类型推断的使用也有局限性，仅局限于具有初始化器的局部变量、增强型 for 循环中的索引变量以及在传统 for 循环中声明的局部变量，而不能用于推断方法的参数类型，不能用于构造函数参数类型推断，不能用于推断方法返回类型，也不能用于字段类型推断，同时还不能用于捕获表达式（或任何其他类型的变量声明）。</p>
 <p>不过对于开发者而言，变量类型显式声明会提供更加全面的程序语言信息，对于理解和维护代码有很大的帮助。Java 10 中新引入的局部变量类型推断能够帮助我们快速编写更加简洁的代码，但是局部变量类型推断的保留字 var 的使用势必会引起变量类型可视化缺失，并不是任何时候使用 var 都能容易、清晰的分辨出变量的类型。一旦 var 被广泛运用，开发者在没有 IDE 的支持下阅读代码，势必会对理解程序的执行流程带来一定的困难。所以还是建议尽量显式定义变量类型，在保持代码简洁的同时，也需要兼顾程序的易读性、可维护性。</p>
 <h3 id="JDK11-用于-Lambda-参数的局部变量语法"><a href="#JDK11-用于-Lambda-参数的局部变量语法" class="headerlink" title="JDK11 - 用于 Lambda 参数的局部变量语法"></a>JDK11 - 用于 Lambda 参数的局部变量语法</h3><p>在 Lambda 表达式中使用局部变量类型推断是 Java 11 引入的唯一与语言相关的特性，这一节，我们将探索这一新特性。</p>
 <p>从 Java 10 开始，便引入了局部变量类型推断这一关键特性。类型推断允许使用关键字 var 作为局部变量的类型而不是实际类型，编译器根据分配给变量的值推断出类型。这一改进简化了代码编写、节省了开发者的工作时间，因为不再需要显式声明局部变量的类型，而是可以使用关键字 var，且不会使源代码过于复杂。</p>
 <p>可以使用关键字 var 声明局部变量，如下所示：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">var</span> <span class="variable">s</span> <span class="operator">=</span> <span class="string">&quot;Hello Java 11&quot;</span>;</span><br><span class="line">System.out.println(s);</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">var s = &quot;Hello Java 11&quot;;
+System.out.println(s);
+</code></pre>
 <p>但是在 Java 10 中，还有下面几个限制：</p>
 <ul>
 <li>只能用于局部变量上</li>
@@ -458,55 +470,154 @@ Java 11 在 2018 年 9 月 25 日正式发布！根据发布的规划，JDK 11 �
 </ul>
 <p>Java 11 与 Java 10 的不同之处在于允许开发者在 Lambda 表达式中使用 var 进行参数声明。乍一看，这一举措似乎有点多余，因为在写代码过程中可以省略 Lambda 参数的类型，并通过类型推断确定它们。但是，添加上类型定义同时使用 @Nonnull 和 @Nullable 等类型注释还是很有用的，既能保持与局部变量的一致写法，也不丢失代码简洁。</p>
 <p>Lambda 表达式使用隐式类型定义，它形参的所有类型全部靠推断出来的。隐式类型 Lambda 表达式如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(x, y) -&gt; x.process(y)</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">(x, y) -&gt; x.process(y)
+</code></pre>
 <p>Java 10 为局部变量提供隐式定义写法如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">var</span> <span class="variable">x</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Foo</span>();</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> x : xs) &#123; ... &#125;</span><br><span class="line"><span class="keyword">try</span> (<span class="type">var</span> <span class="variable">x</span> <span class="operator">=</span> ...) &#123; ... &#125; <span class="keyword">catch</span> ...</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">var x = new Foo();
+for (var x : xs) &#123; ... &#125;
+try (var x = ...) &#123; ... &#125; catch ...
+</code></pre>
 <p>为了 Lambda 类型表达式中正式参数定义的语法与局部变量定义语法的不一致，且为了保持与其他局部变量用法上的一致性，希望能够使用关键字 var 隐式定义 Lambda 表达式的形参：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">var</span> x, <span class="keyword">var</span> y) -&gt; x.process(y)</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">(var x, var y) -&gt; x.process(y)
+</code></pre>
 <p>于是在 Java 11 中将局部变量和 Lambda 表达式的用法进行了统一，并且可以将注释应用于局部变量和 Lambda 表达式：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Nonnull</span> <span class="type">var</span> <span class="variable">x</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Foo</span>();</span><br><span class="line">(<span class="meta">@Nonnull</span> <span class="keyword">var</span> x, <span class="meta">@Nullable</span> <span class="keyword">var</span> y) -&gt; x.process(y)</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">@Nonnull var x = new Foo();
+(@Nonnull var x, @Nullable var y) -&gt; x.process(y)
+</code></pre>
 <h2 id="新工具和库更新"><a href="#新工具和库更新" class="headerlink" title="新工具和库更新"></a>新工具和库更新</h2><h3 id="JDK9-集合、Stream-和-Optional更新方法"><a href="#JDK9-集合、Stream-和-Optional更新方法" class="headerlink" title="JDK9 - 集合、Stream 和 Optional更新方法"></a>JDK9 - 集合、Stream 和 Optional更新方法</h3><p>在集合上，Java 9 增加 了 <code>List.of()</code>、<code>Set.of()</code>、<code>Map.of()</code> 和 <code>Map.ofEntries()</code>等工厂方法来创建不可变集合 ，如 如下 所示。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">List.of();</span><br><span class="line">List.of(<span class="string">&quot;Hello&quot;</span>, <span class="string">&quot;World&quot;</span>);</span><br><span class="line">List.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">Set.of();</span><br><span class="line">Set.of(<span class="string">&quot;Hello&quot;</span>, <span class="string">&quot;World&quot;</span>);</span><br><span class="line">Set.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">Map.of();</span><br><span class="line">Map.of(<span class="string">&quot;Hello&quot;</span>, <span class="number">1</span>, <span class="string">&quot;World&quot;</span>, <span class="number">2</span>);</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">List.of();
+List.of(&quot;Hello&quot;, &quot;World&quot;);
+List.of(1, 2, 3);
+Set.of();
+Set.of(&quot;Hello&quot;, &quot;World&quot;);
+Set.of(1, 2, 3);
+Map.of();
+Map.of(&quot;Hello&quot;, 1, &quot;World&quot;, 2);
+</code></pre>
 <p>Stream 中增加了新的方法 ofNullable、dropWhile、takeWhile 和 iterate。在 如下代码 中，流中包含了从 1 到 5 的 元素。断言检查元素是否为奇数。第一个元素 1 被删除，结果流中包含 4 个元素。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testDropWhile</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">count</span> <span class="operator">=</span> Stream.of(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)</span><br><span class="line">        .dropWhile(i -&gt; i % <span class="number">2</span> != <span class="number">0</span>)</span><br><span class="line">        .count();</span><br><span class="line">    assertEquals(<span class="number">4</span>, count);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">@Test
+public void testDropWhile() throws Exception &#123;
+    final long count = Stream.of(1, 2, 3, 4, 5)
+        .dropWhile(i -&gt; i % 2 != 0)
+        .count();
+    assertEquals(4, count);
+&#125;
+</code></pre>
 <p>Collectors 中增加了新的方法 filtering 和 flatMapping。在 如下代码 中，对于输入的 String 流 ，先通过 flatMapping 把 String 映射成 Integer 流 ，再把所有的 Integer 收集到一个集合中。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testFlatMapping</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="keyword">final</span> Set&lt;Integer&gt; result = Stream.of(<span class="string">&quot;a&quot;</span>, <span class="string">&quot;ab&quot;</span>, <span class="string">&quot;abc&quot;</span>)</span><br><span class="line">        .collect(Collectors.flatMapping(v -&gt; v.chars().boxed(),</span><br><span class="line">            Collectors.toSet()));</span><br><span class="line">    assertEquals(<span class="number">3</span>, result.size());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">@Test
+public void testFlatMapping() throws Exception &#123;
+    final Set&lt;Integer&gt; result = Stream.of(&quot;a&quot;, &quot;ab&quot;, &quot;abc&quot;)
+        .collect(Collectors.flatMapping(v -&gt; v.chars().boxed(),
+            Collectors.toSet()));
+    assertEquals(3, result.size());
+&#125;
+</code></pre>
 <p>Optional 类中新增了 ifPresentOrElse、or 和 stream 等方法。在 如下代码 中，Optiona l 流中包含 3 个 元素，其中只有 2 个有值。在使用 flatMap 之后，结果流中包含了 2 个值。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testStream</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">long</span> <span class="variable">count</span> <span class="operator">=</span> Stream.of(</span><br><span class="line">        Optional.of(<span class="number">1</span>),</span><br><span class="line">        Optional.empty(),</span><br><span class="line">        Optional.of(<span class="number">2</span>)</span><br><span class="line">    ).flatMap(Optional::stream)</span><br><span class="line">        .count();</span><br><span class="line">    assertEquals(<span class="number">2</span>, count);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">@Test
+public void testStream() throws Exception &#123;
+    final long count = Stream.of(
+        Optional.of(1),
+        Optional.empty(),
+        Optional.of(2)
+    ).flatMap(Optional::stream)
+        .count();
+    assertEquals(2, count);
+&#125;
+</code></pre>
 <h3 id="JDK9-进程-API-Process-Handle"><a href="#JDK9-进程-API-Process-Handle" class="headerlink" title="JDK9 - 进程 API (Process Handle)"></a>JDK9 - 进程 API (Process Handle)</h3><p>Java 9 增加了 ProcessHandle 接口，可以对原生进程进行管理，尤其适合于管理长时间运行的进程。在使用 ProcessBuilder 来启动一个进程之后，可以通过 Process.toHandle()方法来得到一个 ProcessHandl e 对象的实例。通过 ProcessHandle 可以获取到由 ProcessHandle.Info 表 示的进程的基本信息，如命令行参数、可执行文件路径和启动时间等。ProcessHandle 的 onExit()方法返回一个 CompletableFuture对象，可以在进程结束时执行自定义的动作。 如下代码中给出了进程 API 的使用示例。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">ProcessBuilder</span> <span class="variable">processBuilder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ProcessBuilder</span>(<span class="string">&quot;top&quot;</span>)</span><br><span class="line">    .inheritIO();</span><br><span class="line"><span class="keyword">final</span> <span class="type">ProcessHandle</span> <span class="variable">processHandle</span> <span class="operator">=</span> processBuilder.start().toHandle();</span><br><span class="line">processHandle.onExit().whenCompleteAsync((handle, throwable) -&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (throwable == <span class="literal">null</span>) &#123;</span><br><span class="line">        System.out.println(handle.pid());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        throwable.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">final ProcessBuilder processBuilder = new ProcessBuilder(&quot;top&quot;)
+    .inheritIO();
+final ProcessHandle processHandle = processBuilder.start().toHandle();
+processHandle.onExit().whenCompleteAsync((handle, throwable) -&gt; &#123;
+    if (throwable == null) &#123;
+        System.out.println(handle.pid());
+    &#125; else &#123;
+        throwable.printStackTrace();
+    &#125;
+&#125;);
+</code></pre>
 <h3 id="JDK9-变量句柄-Var-Handle"><a href="#JDK9-变量句柄-Var-Handle" class="headerlink" title="JDK9 - 变量句柄 (Var Handle)"></a>JDK9 - 变量句柄 (Var Handle)</h3><p>变量句柄是一个变量或一组变量的引用，包括静态域，非静态域，数组元素和堆外数据结构中的组成部分等。变量句柄的含义类似于已有的方法句柄。变量句柄由 Java 类 java.lang.invoke.VarHandle 来表示。可以使用类 java.lang.invoke.MethodHandles.Lookup 中的静态工厂方法来创建 VarHandle 对象。通过变量句柄，可以在变量上进行各种操作。这些操作称为访问模式。不同的访问模式尤其在内存排序上的不同语义。目前一共有 31 种 访问模式，而每种访问模式都 在 VarHandle 中 有对应的方法。这些方法可以对变量进行读取、写入、原子更新、数值原子更新和比特位原子操作等。VarHandle 还可以用来访问数组中的单个元素，以及把 byte[]数组 和 ByteBuffer 当成是不同原始类型的数组来访问。</p>
 <p>在 如下代码 中，我们创建了访问 HandleTarget 类中的域 count 的变量句柄，并在其上进行读取操作。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HandleTarget</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">VarHandleTest</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">HandleTarget</span> <span class="variable">handleTarget</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HandleTarget</span>();</span><br><span class="line">    <span class="keyword">private</span> VarHandle varHandle;</span><br><span class="line">    <span class="meta">@Before</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setUp</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="built_in">this</span>.handleTarget = <span class="keyword">new</span> <span class="title class_">HandleTarget</span>();</span><br><span class="line">        <span class="built_in">this</span>.varHandle = MethodHandles</span><br><span class="line">            .lookup()</span><br><span class="line">            .findVarHandle(HandleTarget.class, <span class="string">&quot;count&quot;</span>, <span class="type">int</span>.class);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testGet</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        assertEquals(<span class="number">1</span>, <span class="built_in">this</span>.varHandle.get(<span class="built_in">this</span>.handleTarget));</span><br><span class="line">        assertEquals(<span class="number">1</span>, <span class="built_in">this</span>.varHandle.getVolatile(<span class="built_in">this</span>.handleTarget));</span><br><span class="line">        assertEquals(<span class="number">1</span>, <span class="built_in">this</span>.varHandle.getOpaque(<span class="built_in">this</span>.handleTarget));</span><br><span class="line">        assertEquals(<span class="number">1</span>, <span class="built_in">this</span>.varHandle.getAcquire(<span class="built_in">this</span>.handleTarget));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public class HandleTarget &#123;
+    public int count = 1;
+&#125;
+public class VarHandleTest &#123;
+    private HandleTarget handleTarget = new HandleTarget();
+    private VarHandle varHandle;
+    @Before
+    public void setUp() throws Exception &#123;
+        this.handleTarget = new HandleTarget();
+        this.varHandle = MethodHandles
+            .lookup()
+            .findVarHandle(HandleTarget.class, &quot;count&quot;, int.class);
+    &#125;
+    @Test
+    public void testGet() throws Exception &#123;
+        assertEquals(1, this.varHandle.get(this.handleTarget));
+        assertEquals(1, this.varHandle.getVolatile(this.handleTarget));
+        assertEquals(1, this.varHandle.getOpaque(this.handleTarget));
+        assertEquals(1, this.varHandle.getAcquire(this.handleTarget));
+    &#125;
+&#125;
+</code></pre>
 <h3 id="JDK9-I-O-流新特性"><a href="#JDK9-I-O-流新特性" class="headerlink" title="JDK9 - I&#x2F;O 流新特性"></a>JDK9 - I&#x2F;O 流新特性</h3><p>类 java.io.InputStream 中增加了新的方法来读取和复制 InputStream 中包含的数据。</p>
 <ul>
 <li>readAllBytes：读取 InputStream 中的所有剩余字节。</li>
 <li>readNBytes： 从 InputStream 中读取指定数量的字节到数组中。</li>
 <li>transferTo：读取 InputStream 中的全部字节并写入到指定的 OutputStream 中 。</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestInputStream</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> InputStream inputStream;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">CONTENT</span> <span class="operator">=</span> <span class="string">&quot;Hello World&quot;</span>;</span><br><span class="line">    <span class="meta">@Before</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setUp</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="built_in">this</span>.inputStream =</span><br><span class="line">            TestInputStream.class.getResourceAsStream(<span class="string">&quot;/input.txt&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testReadAllBytes</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">String</span> <span class="variable">content</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="built_in">this</span>.inputStream.readAllBytes());</span><br><span class="line">        assertEquals(CONTENT, content);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testReadNBytes</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">byte</span>[] data = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">5</span>];</span><br><span class="line">        <span class="built_in">this</span>.inputStream.readNBytes(data, <span class="number">0</span>, <span class="number">5</span>);</span><br><span class="line">        assertEquals(<span class="string">&quot;Hello&quot;</span>, <span class="keyword">new</span> <span class="title class_">String</span>(data));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testTransferTo</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">ByteArrayOutputStream</span> <span class="variable">outputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="built_in">this</span>.inputStream.transferTo(outputStream);</span><br><span class="line">        assertEquals(CONTENT, outputStream.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public class TestInputStream &#123;
+    private InputStream inputStream;
+    private static final String CONTENT = &quot;Hello World&quot;;
+    @Before
+    public void setUp() throws Exception &#123;
+        this.inputStream =
+            TestInputStream.class.getResourceAsStream(&quot;/input.txt&quot;);
+    &#125;
+    @Test
+    public void testReadAllBytes() throws Exception &#123;
+        final String content = new String(this.inputStream.readAllBytes());
+        assertEquals(CONTENT, content);
+    &#125;
+    @Test
+    public void testReadNBytes() throws Exception &#123;
+        final byte[] data = new byte[5];
+        this.inputStream.readNBytes(data, 0, 5);
+        assertEquals(&quot;Hello&quot;, new String(data));
+    &#125;
+    @Test
+    public void testTransferTo() throws Exception &#123;
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        this.inputStream.transferTo(outputStream);
+        assertEquals(CONTENT, outputStream.toString());
+    &#125;
+&#125;
+</code></pre>
 <p>ObjectInputFilter 可以对 ObjectInputStream 中 包含的内容进行检查，来确保其中包含的数据是合法的。可以使用 ObjectInputStream 的方法 setObjectInputFilter 来设置。ObjectInputFilter 在 进行检查时，可以检查如对象图的最大深度、对象引用的最大数量、输入流中的最大字节数和数组的最大长度等限制，也可以对包含的类的名称进行限制。</p>
 <h3 id="JDK9-改进应用安全性能"><a href="#JDK9-改进应用安全性能" class="headerlink" title="JDK9 - 改进应用安全性能"></a>JDK9 - 改进应用安全性能</h3><p>Java 9 新增了 4 个 SHA-3 哈希算法，SHA3-224、SHA3-256、SHA3-384 和 SHA3-512。另外也增加了通过 java.security.SecureRandom 生成使用 DRBG 算法的强随机数。如下代码中给出了 SHA-3 哈希算法的使用示例。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.commons.codec.binary.Hex;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SHA3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(<span class="keyword">final</span> String[] args)</span> <span class="keyword">throws</span> NoSuchAlgorithmException &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">MessageDigest</span> <span class="variable">instance</span> <span class="operator">=</span> MessageDigest.getInstance(<span class="string">&quot;SHA3-224&quot;</span>);</span><br><span class="line">        <span class="keyword">final</span> <span class="type">byte</span>[] digest = instance.digest(<span class="string">&quot;&quot;</span>.getBytes());</span><br><span class="line">        System.out.println(Hex.encodeHexString(digest));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">import org.apache.commons.codec.binary.Hex;
+public class SHA3 &#123;
+    public static void main(final String[] args) throws NoSuchAlgorithmException &#123;
+        final MessageDigest instance = MessageDigest.getInstance(&quot;SHA3-224&quot;);
+        final byte[] digest = instance.digest(&quot;&quot;.getBytes());
+        System.out.println(Hex.encodeHexString(digest));
+    &#125;
+&#125;
+</code></pre>
 <h3 id="JDK10-根证书认证"><a href="#JDK10-根证书认证" class="headerlink" title="JDK10 - 根证书认证"></a>JDK10 - 根证书认证</h3><p>自 Java 9 起在 keytool 中加入参数 -cacerts ，可以查看当前 JDK 管理的根证书。而 Java 9 中 cacerts 目录为空，这样就会给开发者带来很多不便。<strong>从 Java 10 开始，将会在 JDK 中提供一套默认的 CA 根证书</strong>。</p>
 <p>作为 JDK 一部分的 cacerts 密钥库旨在包含一组能够用于在各种安全协议的证书链中建立信任的根证书。但是，JDK 源代码中的 cacerts 密钥库至目前为止一直是空的。因此，在 JDK 构建中，默认情况下，关键安全组件（如 TLS）是不起作用的。要解决此问题，用户必须使用一组根证书配置和 cacerts 密钥库下的 CA 根证书。</p>
 <h3 id="JDK11-标准-HTTP-Client-升级"><a href="#JDK11-标准-HTTP-Client-升级" class="headerlink" title="JDK11 - 标准 HTTP Client 升级"></a>JDK11 - 标准 HTTP Client 升级</h3><p>Java 11 对 Java 9 中引入并在 Java 10 中进行了更新的 Http Client API 进行了标准化，在前两个版本中进行孵化的同时，Http Client 几乎被完全重写，并且现在完全支持异步非阻塞。</p>
 <p>新版 Java 中，Http Client 的包名由 jdk.incubator.http 改为 java.net.http，该 API 通过 CompleteableFutures 提供非阻塞请求和响应语义，可以联合使用以触发相应的动作，并且 RX Flo w 的概念也在 Java 11 中得到了实现。现在，在用户层请求发布者和响应发布者与底层套接字之间追踪数据流更容易了。这降低了复杂性，并最大程度上提高了 HTTP&#x2F;1 和 HTTP&#x2F;2 之间的重用的可能性。</p>
 <p>Java 11 中的新 Http Client API，提供了对 HTTP&#x2F;2 等业界前沿标准的支持，同时也向下兼容 HTTP&#x2F;1.1，精简而又友好的 API 接口，与主流开源 API（如：Apache HttpClient、Jetty、OkHttp 等）类似甚至拥有更高的性能。与此同时它是 Java 在 Reactive-Stream 方面的第一个生产实践，其中广泛使用了 Java Flow API，终于让 Java 标准 HTTP 类库在扩展能力等方面，满足了现代互联网的需求，是一个难得的现代 Http&#x2F;2 Client API 标准的实现，Java 工程师终于可以摆脱老旧的 HttpURLConnection 了。下面模拟 Http GET 请求并打印返回内容：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">HttpClient</span> <span class="variable">client</span> <span class="operator">=</span> HttpClient.newHttpClient();</span><br><span class="line"><span class="type">HttpRequest</span> <span class="variable">request</span> <span class="operator">=</span> HttpRequest.newBuilder()</span><br><span class="line">      .uri(URI.create(<span class="string">&quot;http://openjdk.java.net/&quot;</span>))</span><br><span class="line">      .build();</span><br><span class="line">client.sendAsync(request, BodyHandlers.ofString())</span><br><span class="line">      .thenApply(HttpResponse::body)</span><br><span class="line">      .thenAccept(System.out::println)</span><br><span class="line">      .join();</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+          .uri(URI.create(&quot;http://openjdk.java.net/&quot;))
+          .build();
+    client.sendAsync(request, BodyHandlers.ofString())
+          .thenApply(HttpResponse::body)
+          .thenAccept(System.out::println)
+          .join();
+</code></pre>
 <h3 id="JDK11-简化启动单个源代码文件的方法"><a href="#JDK11-简化启动单个源代码文件的方法" class="headerlink" title="JDK11 - 简化启动单个源代码文件的方法"></a>JDK11 - 简化启动单个源代码文件的方法</h3><p>Java 11 版本中最令人兴奋的功能之一是增强 Java 启动器，使之能够运行单一文件的 Java 源代码。此功能允许使用 Java 解释器直接执行 Java 源代码。源代码在内存中编译，然后由解释器执行。唯一的约束在于所有相关的类必须定义在同一个 Java 文件中。</p>
 <p>此功能对于开始学习 Java 并希望尝试简单程序的人特别有用，并且能与 jshell 一起使用，将成为任何初学者学习语言的一个很好的工具集。不仅初学者会受益，专业人员还可以利用这些工具来探索新的语言更改或尝试未知的 API。</p>
 <p>如今单文件程序在编写小实用程序时很常见，特别是脚本语言领域。从中开发者可以省去用 Java 编译程序等不必要工作，以及减少新手的入门障碍。在基于 Java 10 的程序实现中可以通过三种方式启动：</p>
@@ -516,11 +627,12 @@ Java 11 在 2018 年 9 月 25 日正式发布！根据发布的规划，JDK 11 �
 <li>作为模块中的主类</li>
 </ul>
 <p>而在最新的 Java 11 中新增了一个启动方式，即可以在源代码中声明类，例如：如果名为 HelloWorld.java 的文件包含一个名为 hello.World 的类，那么该命令：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ java HelloWorld.java</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">$ java HelloWorld.java
+</code></pre>
 <p>也等同于：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ javac HelloWorld.java</span><br><span class="line">$ java -cp . hello.World</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">$ javac HelloWorld.java
+$ java -cp . hello.World
+</code></pre>
 <h3 id="JDK11-支持-TLS-1-3-协议"><a href="#JDK11-支持-TLS-1-3-协议" class="headerlink" title="JDK11 - 支持 TLS 1.3 协议"></a>JDK11 - 支持 TLS 1.3 协议</h3><p>Java 11 中包含了传输层安全性（TLS）1.3 规范（RFC 8446）的实现，替换了之前版本中包含的 TLS，包括 TLS 1.2，同时还改进了其他 TLS 功能，例如 OCSP 装订扩展（RFC 6066，RFC 6961），以及会话散列和扩展主密钥扩展（RFC 7627），在安全性和性能方面也做了很多提升。</p>
 <p>新版本中包含了 Java 安全套接字扩展（JSSE）提供 SSL，TLS 和 DTLS 协议的框架和 Java 实现。目前，JSSE API 和 JDK 实现支持 SSL 3.0，TLS 1.0，TLS 1.1，TLS 1.2，DTLS 1.0 和 DTLS 1.2。</p>
 <p>同时 Java 11 版本中实现的 TLS 1.3，重新定义了以下新标准算法名称：</p>
@@ -582,8 +694,8 @@ Java 11 在 2018 年 9 月 25 日正式发布！根据发布的规划，JDK 11 �
 <p>本图片引用自： The Z Garbage Collector – An Introduction</p>
 <p>不过目前 ZGC 还处于实验阶段，目前只在 Linux&#x2F;x64 上可用，如果有足够的需求，将来可能会增加对其他平台的支持。同时作为实验性功能的 ZGC 将不会出现在 JDK 构建中，除非在编译时使用 configure 参数：<code> --with-jvm-features=zgc</code> 显式启用。</p>
 <p>在实验阶段，编译完成之后，已经迫不及待的想试试 ZGC，需要配置以下 JVM 参数，才能使用 ZGC，具体启动 ZGC 参数如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX：+ UnlockExperimentalVMOptions -XX：+ UseZGC -Xmx10g</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">-XX：+ UnlockExperimentalVMOptions -XX：+ UseZGC -Xmx10g
+</code></pre>
 <p>其中参数： -Xmx 是 ZGC 收集器中最重要的调优选项，大大解决了程序员在 JVM 参数调优上的困扰。ZGC 是一个并发收集器，必须要设置一个最大堆的大小，应用需要多大的堆，主要有下面几个考量：</p>
 <ul>
 <li>对象的分配速率，要保证在 GC 的时候，堆中有足够的内存分配新对象。</li>
@@ -825,12 +937,12 @@ Java 11 在 2018 年 9 月 25 日正式发布！根据发布的规划，JDK 11 �
                         <span class="chip bg-color">Java</span>
                     </a>
                     
-                    <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
-                        <span class="chip bg-color">新特性</span>
-                    </a>
-                    
                     <a href="/tags/Java8-plus/">
                         <span class="chip bg-color">Java8 plus</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
+                        <span class="chip bg-color">新特性</span>
                     </a>
                     
                 </div>

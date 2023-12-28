@@ -421,14 +421,213 @@
 <h2 id="JAVA对AIO的支持"><a href="#JAVA对AIO的支持" class="headerlink" title="JAVA对AIO的支持"></a>JAVA对AIO的支持</h2><h3 id="JAVA-AIO框架简析"><a href="#JAVA-AIO框架简析" class="headerlink" title="JAVA AIO框架简析"></a>JAVA AIO框架简析</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262212585.png" alt="img"></p>
 <p>这里通过这个结构分析要告诉各位读者JAVA AIO中类设计和操作系统的相关性</p>
 <p>在文中我们一再说明JAVA AIO框架在windows下使用windows IOCP技术，在Linux下使用epoll多路复用IO技术模拟异步IO，这个从JAVA AIO框架的部分类设计上就可以看出来。例如框架中，在Windows下负责实现套接字通道的具体类是“sun.nio.ch.WindowsAsynchronousSocketChannelImpl”，其引用的IOCP类型文档注释如是:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment">* Windows implementation of AsynchronousChannelGroup encapsulating an I/O </span></span><br><span class="line"><span class="comment">* completion port. </span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">/** 
+* Windows implementation of AsynchronousChannelGroup encapsulating an I/O 
+* completion port. 
+*/
+</code></pre>
 <p>如果您感兴趣，当然可以去看看全部完整代码(建议从“java.nio.channels.spi.AsynchronousChannelProvider”这个类看起)。</p>
 <p>特别说明一下，请注意图中的“java.nio.channels.NetworkChannel”接口，这个接口同样被JAVA NIO框架实现了，如下图所示:</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262213636.png" alt="img"></p>
 <h3 id="代码实例"><a href="#代码实例" class="headerlink" title="代码实例"></a>代码实例</h3><p>下面，我们通过一个代码示例，来讲解JAVA AIO框架的具体使用，先上代码，在针对代码编写和运行中的要点进行讲解:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> testASocket;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.UnsupportedEncodingException;</span><br><span class="line"><span class="keyword">import</span> java.net.InetSocketAddress;</span><br><span class="line"><span class="keyword">import</span> java.nio.ByteBuffer;</span><br><span class="line"><span class="keyword">import</span> java.nio.channels.AsynchronousChannelGroup;</span><br><span class="line"><span class="keyword">import</span> java.nio.channels.AsynchronousServerSocketChannel;</span><br><span class="line"><span class="keyword">import</span> java.nio.channels.AsynchronousSocketChannel;</span><br><span class="line"><span class="keyword">import</span> java.nio.channels.CompletionHandler;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.ExecutorService;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.Executors;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.Log;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.LogFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.log4j.BasicConfigurator;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> yinwenjie</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SocketServer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        BasicConfigurator.configure();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Object</span> <span class="variable">waitObject</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> args</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">         * 对于使用的线程池技术，我一定要多说几句</span></span><br><span class="line"><span class="comment">         * 1、Executors是线程池生成工具，通过这个工具我们可以很轻松的生成“固定大小的线程池”、“调度池”、“可伸缩线程数量的池”。具体请看API Doc</span></span><br><span class="line"><span class="comment">         * 2、当然您也可以通过ThreadPoolExecutor直接生成池。</span></span><br><span class="line"><span class="comment">         * 3、这个线程池是用来得到操作系统的“IO事件通知”的，不是用来进行“得到IO数据后的业务处理的”。要进行后者的操作，您可以再使用一个池(最好不要混用)</span></span><br><span class="line"><span class="comment">         * 4、您也可以不使用线程池(不推荐)，如果决定不使用线程池，直接AsynchronousServerSocketChannel.open()就行了。</span></span><br><span class="line"><span class="comment">         * */</span></span><br><span class="line">        <span class="type">ExecutorService</span> <span class="variable">threadPool</span> <span class="operator">=</span> Executors.newFixedThreadPool(<span class="number">20</span>);</span><br><span class="line">        <span class="type">AsynchronousChannelGroup</span> <span class="variable">group</span> <span class="operator">=</span> AsynchronousChannelGroup.withThreadPool(threadPool);</span><br><span class="line">        <span class="keyword">final</span> <span class="type">AsynchronousServerSocketChannel</span> <span class="variable">serverSocket</span> <span class="operator">=</span> AsynchronousServerSocketChannel.open(group);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//设置要监听的端口“0.0.0.0”代表本机所有IP设备</span></span><br><span class="line">        serverSocket.bind(<span class="keyword">new</span> <span class="title class_">InetSocketAddress</span>(<span class="string">&quot;0.0.0.0&quot;</span>, <span class="number">83</span>));</span><br><span class="line">        <span class="comment">//为AsynchronousServerSocketChannel注册监听，注意只是为AsynchronousServerSocketChannel通道注册监听</span></span><br><span class="line">        <span class="comment">//并不包括为 随后客户端和服务器 socketchannel通道注册的监听</span></span><br><span class="line">        serverSocket.accept(<span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">ServerSocketChannelHandle</span>(serverSocket));</span><br><span class="line"></span><br><span class="line">        <span class="comment">//等待，以便观察现象(这个和要讲解的原理本身没有任何关系，只是为了保证守护线程不会退出)</span></span><br><span class="line">        <span class="keyword">synchronized</span>(waitObject) &#123;</span><br><span class="line">            waitObject.wait();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 这个处理器类，专门用来响应 ServerSocketChannel 的事件。</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> yinwenjie</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ServerSocketChannelHandle</span> <span class="keyword">implements</span> <span class="title class_">CompletionHandler</span>&lt;AsynchronousSocketChannel, Void&gt; &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 日志</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Log</span> <span class="variable">LOGGER</span> <span class="operator">=</span> LogFactory.getLog(ServerSocketChannelHandle.class);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> AsynchronousServerSocketChannel serverSocketChannel;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> serverSocketChannel</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ServerSocketChannelHandle</span><span class="params">(AsynchronousServerSocketChannel serverSocketChannel)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.serverSocketChannel = serverSocketChannel;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 注意，我们分别观察 this、socketChannel、attachment三个对象的id。</span></span><br><span class="line"><span class="comment">     * 来观察不同客户端连接到达时，这三个对象的变化，以说明ServerSocketChannelHandle的监听模式</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">completed</span><span class="params">(AsynchronousSocketChannel socketChannel, Void attachment)</span> &#123;</span><br><span class="line">        ServerSocketChannelHandle.LOGGER.info(<span class="string">&quot;completed(AsynchronousSocketChannel result, ByteBuffer attachment)&quot;</span>);</span><br><span class="line">        <span class="comment">//每次都要重新注册监听(一次注册，一次响应)，但是由于“文件状态标示符”是独享的，所以不需要担心有“漏掉的”事件</span></span><br><span class="line">        <span class="built_in">this</span>.serverSocketChannel.accept(attachment, <span class="built_in">this</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//为这个新的socketChannel注册“read”事件，以便操作系统在收到数据并准备好后，主动通知应用程序</span></span><br><span class="line">        <span class="comment">//在这里，由于我们要将这个客户端多次传输的数据累加起来一起处理，所以我们将一个stringbuffer对象作为一个“附件”依附在这个channel上</span></span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        <span class="type">ByteBuffer</span> <span class="variable">readBuffer</span> <span class="operator">=</span> ByteBuffer.allocate(<span class="number">50</span>);</span><br><span class="line">        socketChannel.read(readBuffer, <span class="keyword">new</span> <span class="title class_">StringBuffer</span>(), <span class="keyword">new</span> <span class="title class_">SocketChannelReadHandle</span>(socketChannel , readBuffer));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* (non-Javadoc)</span></span><br><span class="line"><span class="comment">     * @see java.nio.channels.CompletionHandler#failed(java.lang.Throwable, java.lang.Object)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">failed</span><span class="params">(Throwable exc, Void attachment)</span> &#123;</span><br><span class="line">        ServerSocketChannelHandle.LOGGER.info(<span class="string">&quot;failed(Throwable exc, ByteBuffer attachment)&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 负责对每一个socketChannel的数据获取事件进行监听。&lt;p&gt;</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * 重要的说明: 一个socketchannel都会有一个独立工作的SocketChannelReadHandle对象(CompletionHandler接口的实现)，</span></span><br><span class="line"><span class="comment"> * 其中又都将独享一个“文件状态标示”对象FileDescriptor、</span></span><br><span class="line"><span class="comment"> * 一个独立的由程序员定义的Buffer缓存(这里我们使用的是ByteBuffer)、</span></span><br><span class="line"><span class="comment"> * 所以不用担心在服务器端会出现“窜对象”这种情况，因为JAVA AIO框架已经帮您组织好了。&lt;p&gt;</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * 但是最重要的，用于生成channel的对象: AsynchronousChannelProvider是单例模式，无论在哪组socketchannel，</span></span><br><span class="line"><span class="comment"> * 对是一个对象引用(但这没关系，因为您不会直接操作这个AsynchronousChannelProvider对象)。</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> yinwenjie</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SocketChannelReadHandle</span> <span class="keyword">implements</span> <span class="title class_">CompletionHandler</span>&lt;Integer, StringBuffer&gt; &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 日志</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Log</span> <span class="variable">LOGGER</span> <span class="operator">=</span> LogFactory.getLog(SocketChannelReadHandle.class);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> AsynchronousSocketChannel socketChannel;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 专门用于进行这个通道数据缓存操作的ByteBuffer&lt;br&gt;</span></span><br><span class="line"><span class="comment">     * 当然，您也可以作为CompletionHandler的attachment形式传入。&lt;br&gt;</span></span><br><span class="line"><span class="comment">     * 这是，在这段示例代码中，attachment被我们用来记录所有传送过来的Stringbuffer了。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> ByteBuffer byteBuffer;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SocketChannelReadHandle</span><span class="params">(AsynchronousSocketChannel socketChannel , ByteBuffer byteBuffer)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.socketChannel = socketChannel;</span><br><span class="line">        <span class="built_in">this</span>.byteBuffer = byteBuffer;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* (non-Javadoc)</span></span><br><span class="line"><span class="comment">     * @see java.nio.channels.CompletionHandler#completed(java.lang.Object, java.lang.Object)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">completed</span><span class="params">(Integer result, StringBuffer historyContext)</span> &#123;</span><br><span class="line">        <span class="comment">//如果条件成立，说明客户端主动终止了TCP套接字，这时服务端终止就可以了</span></span><br><span class="line">        <span class="keyword">if</span>(result == -<span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="built_in">this</span>.socketChannel.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                SocketChannelReadHandle.LOGGER.error(e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        SocketChannelReadHandle.LOGGER.info(<span class="string">&quot;completed(Integer result, Void attachment) : 然后我们来取出通道中准备好的值&quot;</span>);</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">         * 实际上，由于我们从Integer result知道了本次channel从操作系统获取数据总长度</span></span><br><span class="line"><span class="comment">         * 所以实际上，我们不需要切换成“读模式”的，但是为了保证编码的规范性，还是建议进行切换。</span></span><br><span class="line"><span class="comment">         * </span></span><br><span class="line"><span class="comment">         * 另外，无论是JAVA AIO框架还是JAVA NIO框架，都会出现“buffer的总容量”小于“当前从操作系统获取到的总数据量”，</span></span><br><span class="line"><span class="comment">         * 但区别是，JAVA AIO框架中，我们不需要专门考虑处理这样的情况，因为JAVA AIO框架已经帮我们做了处理(做成了多次通知)</span></span><br><span class="line"><span class="comment">         * */</span></span><br><span class="line">        <span class="built_in">this</span>.byteBuffer.flip();</span><br><span class="line">        <span class="type">byte</span>[] contexts = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">        <span class="built_in">this</span>.byteBuffer.get(contexts, <span class="number">0</span>, result);</span><br><span class="line">        <span class="built_in">this</span>.byteBuffer.clear();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">nowContent</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(contexts , <span class="number">0</span> , result , <span class="string">&quot;UTF-8&quot;</span>);</span><br><span class="line">            historyContext.append(nowContent);</span><br><span class="line">            SocketChannelReadHandle.LOGGER.info(<span class="string">&quot;================目前的传输结果: &quot;</span> + historyContext);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            SocketChannelReadHandle.LOGGER.error(e);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//如果条件成立，说明还没有接收到“结束标记”</span></span><br><span class="line">        <span class="keyword">if</span>(historyContext.indexOf(<span class="string">&quot;over&quot;</span>) == -<span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//=========================================================================</span></span><br><span class="line">        <span class="comment">//          和上篇文章的代码相同，我们以“over”符号作为客户端完整信息的标记</span></span><br><span class="line">        <span class="comment">//=========================================================================</span></span><br><span class="line">        SocketChannelReadHandle.LOGGER.info(<span class="string">&quot;=======收到完整信息，开始处理业务=========&quot;</span>);</span><br><span class="line">        historyContext = <span class="keyword">new</span> <span class="title class_">StringBuffer</span>();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//还要继续监听(一次监听一次通知)</span></span><br><span class="line">        <span class="built_in">this</span>.socketChannel.read(<span class="built_in">this</span>.byteBuffer, historyContext, <span class="built_in">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* (non-Javadoc)</span></span><br><span class="line"><span class="comment">     * @see java.nio.channels.CompletionHandler#failed(java.lang.Throwable, java.lang.Object)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">failed</span><span class="params">(Throwable exc, StringBuffer historyContext)</span> &#123;</span><br><span class="line">        SocketChannelReadHandle.LOGGER.info(<span class="string">&quot;=====发现客户端异常关闭，服务器将关闭TCP通道&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.socketChannel.close();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            SocketChannelReadHandle.LOGGER.error(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">package testASocket;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousChannelGroup;
+import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.CompletionHandler;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.BasicConfigurator;
+
+/**
+ * @author yinwenjie
+ */
+public class SocketServer &#123;
+
+    static &#123;
+        BasicConfigurator.configure();
+    &#125;
+
+    private static final Object waitObject = new Object();
+
+    /**
+     * @param args
+     * @throws Exception
+     */
+    public static void main(String[] args) throws Exception &#123;
+        /*
+         * 对于使用的线程池技术，我一定要多说几句
+         * 1、Executors是线程池生成工具，通过这个工具我们可以很轻松的生成“固定大小的线程池”、“调度池”、“可伸缩线程数量的池”。具体请看API Doc
+         * 2、当然您也可以通过ThreadPoolExecutor直接生成池。
+         * 3、这个线程池是用来得到操作系统的“IO事件通知”的，不是用来进行“得到IO数据后的业务处理的”。要进行后者的操作，您可以再使用一个池(最好不要混用)
+         * 4、您也可以不使用线程池(不推荐)，如果决定不使用线程池，直接AsynchronousServerSocketChannel.open()就行了。
+         * */
+        ExecutorService threadPool = Executors.newFixedThreadPool(20);
+        AsynchronousChannelGroup group = AsynchronousChannelGroup.withThreadPool(threadPool);
+        final AsynchronousServerSocketChannel serverSocket = AsynchronousServerSocketChannel.open(group);
+
+        //设置要监听的端口“0.0.0.0”代表本机所有IP设备
+        serverSocket.bind(new InetSocketAddress(&quot;0.0.0.0&quot;, 83));
+        //为AsynchronousServerSocketChannel注册监听，注意只是为AsynchronousServerSocketChannel通道注册监听
+        //并不包括为 随后客户端和服务器 socketchannel通道注册的监听
+        serverSocket.accept(null, new ServerSocketChannelHandle(serverSocket));
+
+        //等待，以便观察现象(这个和要讲解的原理本身没有任何关系，只是为了保证守护线程不会退出)
+        synchronized(waitObject) &#123;
+            waitObject.wait();
+        &#125;
+    &#125;
+&#125;
+
+/**
+ * 这个处理器类，专门用来响应 ServerSocketChannel 的事件。
+ * @author yinwenjie
+ */
+class ServerSocketChannelHandle implements CompletionHandler&lt;AsynchronousSocketChannel, Void&gt; &#123;
+    /**
+     * 日志
+     */
+    private static final Log LOGGER = LogFactory.getLog(ServerSocketChannelHandle.class);
+
+    private AsynchronousServerSocketChannel serverSocketChannel;
+
+    /**
+     * @param serverSocketChannel
+     */
+    public ServerSocketChannelHandle(AsynchronousServerSocketChannel serverSocketChannel) &#123;
+        this.serverSocketChannel = serverSocketChannel;
+    &#125;
+
+    /**
+     * 注意，我们分别观察 this、socketChannel、attachment三个对象的id。
+     * 来观察不同客户端连接到达时，这三个对象的变化，以说明ServerSocketChannelHandle的监听模式
+     */
+    @Override
+    public void completed(AsynchronousSocketChannel socketChannel, Void attachment) &#123;
+        ServerSocketChannelHandle.LOGGER.info(&quot;completed(AsynchronousSocketChannel result, ByteBuffer attachment)&quot;);
+        //每次都要重新注册监听(一次注册，一次响应)，但是由于“文件状态标示符”是独享的，所以不需要担心有“漏掉的”事件
+        this.serverSocketChannel.accept(attachment, this);
+
+        //为这个新的socketChannel注册“read”事件，以便操作系统在收到数据并准备好后，主动通知应用程序
+        //在这里，由于我们要将这个客户端多次传输的数据累加起来一起处理，所以我们将一个stringbuffer对象作为一个“附件”依附在这个channel上
+        //
+        ByteBuffer readBuffer = ByteBuffer.allocate(50);
+        socketChannel.read(readBuffer, new StringBuffer(), new SocketChannelReadHandle(socketChannel , readBuffer));
+    &#125;
+
+    /* (non-Javadoc)
+     * @see java.nio.channels.CompletionHandler#failed(java.lang.Throwable, java.lang.Object)
+     */
+    @Override
+    public void failed(Throwable exc, Void attachment) &#123;
+        ServerSocketChannelHandle.LOGGER.info(&quot;failed(Throwable exc, ByteBuffer attachment)&quot;);
+    &#125;
+&#125;
+
+/**
+ * 负责对每一个socketChannel的数据获取事件进行监听。&lt;p&gt;
+ * 
+ * 重要的说明: 一个socketchannel都会有一个独立工作的SocketChannelReadHandle对象(CompletionHandler接口的实现)，
+ * 其中又都将独享一个“文件状态标示”对象FileDescriptor、
+ * 一个独立的由程序员定义的Buffer缓存(这里我们使用的是ByteBuffer)、
+ * 所以不用担心在服务器端会出现“窜对象”这种情况，因为JAVA AIO框架已经帮您组织好了。&lt;p&gt;
+ * 
+ * 但是最重要的，用于生成channel的对象: AsynchronousChannelProvider是单例模式，无论在哪组socketchannel，
+ * 对是一个对象引用(但这没关系，因为您不会直接操作这个AsynchronousChannelProvider对象)。
+ * @author yinwenjie
+ */
+class SocketChannelReadHandle implements CompletionHandler&lt;Integer, StringBuffer&gt; &#123;
+    /**
+     * 日志
+     */
+    private static final Log LOGGER = LogFactory.getLog(SocketChannelReadHandle.class);
+
+    private AsynchronousSocketChannel socketChannel;
+
+    /**
+     * 专门用于进行这个通道数据缓存操作的ByteBuffer&lt;br&gt;
+     * 当然，您也可以作为CompletionHandler的attachment形式传入。&lt;br&gt;
+     * 这是，在这段示例代码中，attachment被我们用来记录所有传送过来的Stringbuffer了。
+     */
+    private ByteBuffer byteBuffer;
+
+    public SocketChannelReadHandle(AsynchronousSocketChannel socketChannel , ByteBuffer byteBuffer) &#123;
+        this.socketChannel = socketChannel;
+        this.byteBuffer = byteBuffer;
+    &#125;
+
+    /* (non-Javadoc)
+     * @see java.nio.channels.CompletionHandler#completed(java.lang.Object, java.lang.Object)
+     */
+    @Override
+    public void completed(Integer result, StringBuffer historyContext) &#123;
+        //如果条件成立，说明客户端主动终止了TCP套接字，这时服务端终止就可以了
+        if(result == -1) &#123;
+            try &#123;
+                this.socketChannel.close();
+            &#125; catch (IOException e) &#123;
+                SocketChannelReadHandle.LOGGER.error(e);
+            &#125;
+            return;
+        &#125;
+
+        SocketChannelReadHandle.LOGGER.info(&quot;completed(Integer result, Void attachment) : 然后我们来取出通道中准备好的值&quot;);
+        /*
+         * 实际上，由于我们从Integer result知道了本次channel从操作系统获取数据总长度
+         * 所以实际上，我们不需要切换成“读模式”的，但是为了保证编码的规范性，还是建议进行切换。
+         * 
+         * 另外，无论是JAVA AIO框架还是JAVA NIO框架，都会出现“buffer的总容量”小于“当前从操作系统获取到的总数据量”，
+         * 但区别是，JAVA AIO框架中，我们不需要专门考虑处理这样的情况，因为JAVA AIO框架已经帮我们做了处理(做成了多次通知)
+         * */
+        this.byteBuffer.flip();
+        byte[] contexts = new byte[1024];
+        this.byteBuffer.get(contexts, 0, result);
+        this.byteBuffer.clear();
+        try &#123;
+            String nowContent = new String(contexts , 0 , result , &quot;UTF-8&quot;);
+            historyContext.append(nowContent);
+            SocketChannelReadHandle.LOGGER.info(&quot;================目前的传输结果: &quot; + historyContext);
+        &#125; catch (UnsupportedEncodingException e) &#123;
+            SocketChannelReadHandle.LOGGER.error(e);
+        &#125;
+
+        //如果条件成立，说明还没有接收到“结束标记”
+        if(historyContext.indexOf(&quot;over&quot;) == -1) &#123;
+            return;
+        &#125;
+
+        //=========================================================================
+        //          和上篇文章的代码相同，我们以“over”符号作为客户端完整信息的标记
+        //=========================================================================
+        SocketChannelReadHandle.LOGGER.info(&quot;=======收到完整信息，开始处理业务=========&quot;);
+        historyContext = new StringBuffer();
+
+        //还要继续监听(一次监听一次通知)
+        this.socketChannel.read(this.byteBuffer, historyContext, this);
+    &#125;
+
+    /* (non-Javadoc)
+     * @see java.nio.channels.CompletionHandler#failed(java.lang.Throwable, java.lang.Object)
+     */
+    @Override
+    public void failed(Throwable exc, StringBuffer historyContext) &#123;
+        SocketChannelReadHandle.LOGGER.info(&quot;=====发现客户端异常关闭，服务器将关闭TCP通道&quot;);
+        try &#123;
+            this.socketChannel.close();
+        &#125; catch (IOException e) &#123;
+            SocketChannelReadHandle.LOGGER.error(e);
+        &#125;
+    &#125;
+&#125;
+</code></pre>
 <h3 id="要点讲解"><a href="#要点讲解" class="headerlink" title="要点讲解"></a>要点讲解</h3><p>注意在JAVA NIO框架中，我们说到了一个重要概念“selector”(选择器)。它负责代替应用查询中所有已注册的通道到操作系统中进行IO事件轮询、管理当前注册的通道集合，定位发生事件的通道等操操作；但是在JAVA AIO框架中，由于应用程序不是“轮询”方式，而是订阅-通知方式，所以不再需要“selector”(选择器)了，改由channel通道直接到操作系统注册监听。</p>
 <p>JAVA AIO框架中，只实现了两种网络IO通道“AsynchronousServerSocketChannel”(服务器监听通道)、“AsynchronousSocketChannel”(socket套接字通道)。但是无论哪种通道他们都有独立的fileDescriptor(文件标识符)、attachment(附件，附件可以使任意对象，类似“通道上下文”)，并被独立的SocketChannelReadHandle类实例引用。我们通过debug操作来看看它们的引用结构:</p>
 <p>在测试过程中，我们启动了两个客户端(客户端用什么语言来写都行，用阻塞或者非阻塞方式也都行，只要是支持 TCP Socket套接字的就行，然后我们观察服务器端对这两个客户端通道的处理情况:</p>

@@ -434,17 +434,29 @@ JEP 408:Simple Web Se">
 <h2 id="JEP-400-默认字符集为-UTF-8"><a href="#JEP-400-默认字符集为-UTF-8" class="headerlink" title="JEP 400:默认字符集为 UTF-8"></a>JEP 400:默认字符集为 UTF-8</h2><p>JDK 终于将 UTF-8 设置为默认字符集。</p>
 <p>在 Java 17 及更早版本中，默认字符集是在 Java 虚拟机运行时才确定的，取决于不同的操作系统、区域设置等因素，因此存在潜在的风险。就比如说你在 Mac 上运行正常的一段打印文字到控制台的 Java 程序到了 Windows 上就会出现乱码，如果你不手动更改字符集的话。</p>
 <h2 id="JEP-408-简易的-Web-服务器"><a href="#JEP-408-简易的-Web-服务器" class="headerlink" title="JEP 408:简易的 Web 服务器"></a>JEP 408:简易的 Web 服务器</h2><p>Java 18 之后，你可以使用 <code>jwebserver</code> 命令启动一个简易的静态 Web 服务器。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ jwebserver</span><br><span class="line">Binding to loopback by default. For all interfaces use <span class="string">&quot;-b 0.0.0.0&quot;</span> or <span class="string">&quot;-b ::&quot;</span>.</span><br><span class="line">Serving /cwd and subdirectories on 127.0.0.1 port 8000</span><br><span class="line">URL: http://127.0.0.1:8000/</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">$ jwebserver
+Binding to loopback by default. For all interfaces use &quot;-b 0.0.0.0&quot; or &quot;-b ::&quot;.
+Serving /cwd and subdirectories on 127.0.0.1 port 8000
+URL: http://127.0.0.1:8000/
+</code></pre>
 <p>这个服务器不支持 CGI 和 Servlet，只限于静态文件。</p>
 <h2 id="JEP-413-优化-Java-API-文档中的代码片段"><a href="#JEP-413-优化-Java-API-文档中的代码片段" class="headerlink" title="JEP 413:优化 Java API 文档中的代码片段"></a>JEP 413:优化 Java API 文档中的代码片段</h2><p>在 Java 18 之前，如果我们想要在 Javadoc 中引入代码片段可以使用 <code>&lt;pre&gt;&#123;@code ...&#125;&lt;/pre&gt; </code>。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;pre&gt;&#123;<span class="meta">@code</span></span><br><span class="line">    lines of source code</span><br><span class="line">&#125;&lt;/pre&gt;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">&lt;pre&gt;&#123;@code
+    lines of source code
+&#125;&lt;/pre&gt;
+</code></pre>
 <pre>{@code ...}</pre> 这种方式生成的效果比较一般。
 
 <p>在 Java 18 之后，可以通过 <code>@snippet</code> 标签来做这件事情。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The following code shows how to use &#123;<span class="doctag">@code</span> Optional.isPresent&#125;:</span></span><br><span class="line"><span class="comment"> * &#123;<span class="doctag">@snippet</span> :</span></span><br><span class="line"><span class="comment"> * if (v.isPresent()) &#123;</span></span><br><span class="line"><span class="comment"> *     System.out.println(&quot;v: &quot; + v.get());</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">/**
+ * The following code shows how to use &#123;@code Optional.isPresent&#125;:
+ * &#123;@snippet :
+ * if (v.isPresent()) &#123;
+ *     System.out.println(&quot;v: &quot; + v.get());
+ * &#125;
+ * &#125;
+ */
+</code></pre>
 <p><code>@snippet</code> 这种方式生成的效果更好且使用起来更方便一些。</p>
 <h2 id="JEP-416-使用方法句柄重新实现反射核心"><a href="#JEP-416-使用方法句柄重新实现反射核心" class="headerlink" title="JEP 416:使用方法句柄重新实现反射核心"></a>JEP 416:使用方法句柄重新实现反射核心</h2><p>Java 18 改进了 <code>java.lang.reflect.Method</code>、<code>Constructor</code> 的实现逻辑，使之性能更好，速度更快。这项改动不会改动相关 API ，这意味着开发中不需要改动反射相关代码，就可以体验到性能更好反射。</p>
 <p>OpenJDK 官方给出了新老实现的反射性能基准测试结果。</p>
@@ -453,11 +465,32 @@ JEP 408:Simple Web Se">
 <p>向量计算由对向量的一系列操作组成。向量 API 用来表达向量计算，该计算可以在运行时可靠地编译为支持的 CPU 架构上的最佳向量指令，从而实现优于等效标量计算的性能。</p>
 <p>向量 API 的目标是为用户提供简洁易用且与平台无关的表达范围广泛的向量计算。</p>
 <p>这是对数组元素的简单标量计算：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> <span class="title function_">scalarComputation</span><span class="params">(<span class="type">float</span>[] a, <span class="type">float</span>[] b, <span class="type">float</span>[] c)</span> &#123;</span><br><span class="line">   <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; a.length; i++) &#123;</span><br><span class="line">        c[i] = (a[i] * a[i] + b[i] * b[i]) * -<span class="number">1.0f</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">void scalarComputation(float[] a, float[] b, float[] c) &#123;
+   for (int i = 0; i &lt; a.length; i++) &#123;
+        c[i] = (a[i] * a[i] + b[i] * b[i]) * -1.0f;
+   &#125;
+&#125;
+</code></pre>
 <p>这是使用 Vector API 进行的等效向量计算：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> VectorSpecies&lt;Float&gt; SPECIES = FloatVector.SPECIES_PREFERRED;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">vectorComputation</span><span class="params">(<span class="type">float</span>[] a, <span class="type">float</span>[] b, <span class="type">float</span>[] c)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">upperBound</span> <span class="operator">=</span> SPECIES.loopBound(a.length);</span><br><span class="line">    <span class="keyword">for</span> (; i &lt; upperBound; i += SPECIES.length()) &#123;</span><br><span class="line">        <span class="comment">// FloatVector va, vb, vc;</span></span><br><span class="line">        <span class="type">var</span> <span class="variable">va</span> <span class="operator">=</span> FloatVector.fromArray(SPECIES, a, i);</span><br><span class="line">        <span class="type">var</span> <span class="variable">vb</span> <span class="operator">=</span> FloatVector.fromArray(SPECIES, b, i);</span><br><span class="line">        <span class="type">var</span> <span class="variable">vc</span> <span class="operator">=</span> va.mul(va)</span><br><span class="line">                   .add(vb.mul(vb))</span><br><span class="line">                   .neg();</span><br><span class="line">        vc.intoArray(c, i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (; i &lt; a.length; i++) &#123;</span><br><span class="line">        c[i] = (a[i] * a[i] + b[i] * b[i]) * -<span class="number">1.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">static final VectorSpecies&lt;Float&gt; SPECIES = FloatVector.SPECIES_PREFERRED;
 
+void vectorComputation(float[] a, float[] b, float[] c) &#123;
+    int i = 0;
+    int upperBound = SPECIES.loopBound(a.length);
+    for (; i &lt; upperBound; i += SPECIES.length()) &#123;
+        // FloatVector va, vb, vc;
+        var va = FloatVector.fromArray(SPECIES, a, i);
+        var vb = FloatVector.fromArray(SPECIES, b, i);
+        var vc = va.mul(va)
+                   .add(vb.mul(vb))
+                   .neg();
+        vc.intoArray(c, i);
+    &#125;
+    for (; i &lt; a.length; i++) &#123;
+        c[i] = (a[i] * a[i] + b[i] * b[i]) * -1.0f;
+    &#125;
+&#125;
+</code></pre>
 <p>在 JDK 18 中，向量 API 的性能得到了进一步的优化。</p>
 <h2 id="JEP-418-互联网地址解析-SPI"><a href="#JEP-418-互联网地址解析-SPI" class="headerlink" title="JEP 418:互联网地址解析 SPI"></a>JEP 418:互联网地址解析 SPI</h2><p>Java 18 定义了一个全新的 SPI（service-provider interface），用于主要名称和地址的解析，以便 <code>java.net.InetAddress</code> 可以使用平台之外的第三方解析器。</p>
 <h2 id="JEP-419-Foreign-Function-Memory-API（第二次孵化）"><a href="#JEP-419-Foreign-Function-Memory-API（第二次孵化）" class="headerlink" title="JEP 419:Foreign Function &amp; Memory API（第二次孵化）"></a>JEP 419:Foreign Function &amp; Memory API（第二次孵化）</h2><p>Java 程序可以通过该 API 与 Java 运行时之外的代码和数据进行互操作。通过高效地调用外部函数（即 JVM 之外的代码）和安全地访问外部内存（即不受 JVM 管理的内存），该 API 使 Java 程序能够调用本机库并处理本机数据，而不会像 JNI 那样危险和脆弱。</p>

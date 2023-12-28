@@ -456,14 +456,1038 @@
 <p><code>第3步</code>: 依次访问C,E,F。 在访问了B之后，接下来访问B的出边的另一个顶点，即C,E,F。前面已经说过，在本文实现中，顶点ABCDEFG按照顺序存储的，因此会先访问C，再依次访问E,F。</p>
 <p><code>第4步</code>: 依次访问D,G。 在访问完C,E,F之后，再依次访问它们的出边的另一个顶点。还是按照C,E,F的顺序访问，C的已经全部访问过了，那么就只剩下E,F；先访问E的邻接点D，再访问F的邻接点G。</p>
 <p>因此访问顺序是: A -&gt; B -&gt; C -&gt; E -&gt; F -&gt; D -&gt; G</p>
-<h2 id="相关实现"><a href="#相关实现" class="headerlink" title="相关实现"></a>相关实现</h2><h3 id="邻接矩阵实现无向图"><a href="#邻接矩阵实现无向图" class="headerlink" title="邻接矩阵实现无向图"></a>邻接矩阵实现无向图</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.util.Scanner;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MatrixUDG</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">char</span>[] mVexs;       <span class="comment">// 顶点集合</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[][] mMatrix;    <span class="comment">// 邻接矩阵</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* </span></span><br><span class="line"><span class="comment">     * 创建图(自己输入数据)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MatrixUDG</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 输入&quot;顶点数&quot;和&quot;边数&quot;</span></span><br><span class="line">        System.out.printf(<span class="string">&quot;input vertex number: &quot;</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">vlen</span> <span class="operator">=</span> readInt();</span><br><span class="line">        System.out.printf(<span class="string">&quot;input edge number: &quot;</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">elen</span> <span class="operator">=</span> readInt();</span><br><span class="line">        <span class="keyword">if</span> ( vlen &lt; <span class="number">1</span> || elen &lt; <span class="number">1</span> || (elen &gt; (vlen*(vlen - <span class="number">1</span>)))) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;input error: invalid parameters!\n&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> ;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 初始化&quot;顶点&quot;</span></span><br><span class="line">        mVexs = <span class="keyword">new</span> <span class="title class_">char</span>[vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;vertex(%d): &quot;</span>, i);</span><br><span class="line">            mVexs[i] = readChar();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;边&quot;</span></span><br><span class="line">        mMatrix = <span class="keyword">new</span> <span class="title class_">int</span>[vlen][vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; elen; i++) &#123;</span><br><span class="line">            <span class="comment">// 读取边的起始顶点和结束顶点</span></span><br><span class="line">            System.out.printf(<span class="string">&quot;edge(%d):&quot;</span>, i);</span><br><span class="line">            <span class="type">char</span> <span class="variable">c1</span> <span class="operator">=</span> readChar();</span><br><span class="line">            <span class="type">char</span> <span class="variable">c2</span> <span class="operator">=</span> readChar();</span><br><span class="line">            <span class="type">int</span> <span class="variable">p1</span> <span class="operator">=</span> getPosition(c1);</span><br><span class="line">            <span class="type">int</span> <span class="variable">p2</span> <span class="operator">=</span> getPosition(c2);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (p1==-<span class="number">1</span> || p2==-<span class="number">1</span>) &#123;</span><br><span class="line">                System.out.printf(<span class="string">&quot;input error: invalid edge!\n&quot;</span>);</span><br><span class="line">                <span class="keyword">return</span> ;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            mMatrix[p1][p2] = <span class="number">1</span>;</span><br><span class="line">            mMatrix[p2][p1] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 创建图(用已提供的矩阵)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明：</span></span><br><span class="line"><span class="comment">     *     vexs  -- 顶点数组</span></span><br><span class="line"><span class="comment">     *     edges -- 边数组</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MatrixUDG</span><span class="params">(<span class="type">char</span>[] vexs, <span class="type">char</span>[][] edges)</span> &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 初始化&quot;顶点数&quot;和&quot;边数&quot;</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">vlen</span> <span class="operator">=</span> vexs.length;</span><br><span class="line">        <span class="type">int</span> <span class="variable">elen</span> <span class="operator">=</span> edges.length;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;顶点&quot;</span></span><br><span class="line">        mVexs = <span class="keyword">new</span> <span class="title class_">char</span>[vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            mVexs[i] = vexs[i];</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;边&quot;</span></span><br><span class="line">        mMatrix = <span class="keyword">new</span> <span class="title class_">int</span>[vlen][vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; elen; i++) &#123;</span><br><span class="line">            <span class="comment">// 读取边的起始顶点和结束顶点</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">p1</span> <span class="operator">=</span> getPosition(edges[i][<span class="number">0</span>]);</span><br><span class="line">            <span class="type">int</span> <span class="variable">p2</span> <span class="operator">=</span> getPosition(edges[i][<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">            mMatrix[p1][p2] = <span class="number">1</span>;</span><br><span class="line">            mMatrix[p2][p1] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 返回ch位置</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">getPosition</span><span class="params">(<span class="type">char</span> ch)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;mVexs.length; i++)</span><br><span class="line">            <span class="keyword">if</span>(mVexs[i]==ch)</span><br><span class="line">                <span class="keyword">return</span> i;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 读取一个输入字符</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">char</span> <span class="title function_">readChar</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">char</span> ch=<span class="string">&#x27;0&#x27;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ch = (<span class="type">char</span>)System.in.read();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">while</span>(!((ch&gt;=<span class="string">&#x27;a&#x27;</span>&amp;&amp;ch&lt;=<span class="string">&#x27;z&#x27;</span>) || (ch&gt;=<span class="string">&#x27;A&#x27;</span>&amp;&amp;ch&lt;=<span class="string">&#x27;Z&#x27;</span>)));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ch;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 读取一个输入字符</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">readInt</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);</span><br><span class="line">        <span class="keyword">return</span> scanner.nextInt();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 返回顶点v的第一个邻接顶点的索引，失败则返回-1</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">firstVertex</span><span class="params">(<span class="type">int</span> v)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (v&lt;<span class="number">0</span> || v&gt;(mVexs.length-<span class="number">1</span>))</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            <span class="keyword">if</span> (mMatrix[v][i] == <span class="number">1</span>)</span><br><span class="line">                <span class="keyword">return</span> i;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 返回顶点v相对于w的下一个邻接顶点的索引，失败则返回-1</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">nextVertex</span><span class="params">(<span class="type">int</span> v, <span class="type">int</span> w)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (v&lt;<span class="number">0</span> || v&gt;(mVexs.length-<span class="number">1</span>) || w&lt;<span class="number">0</span> || w&gt;(mVexs.length-<span class="number">1</span>))</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> w + <span class="number">1</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            <span class="keyword">if</span> (mMatrix[v][i] == <span class="number">1</span>)</span><br><span class="line">                <span class="keyword">return</span> i;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 深度优先搜索遍历图的递归实现</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">DFS</span><span class="params">(<span class="type">int</span> i, <span class="type">boolean</span>[] visited)</span> &#123;</span><br><span class="line"></span><br><span class="line">        visited[i] = <span class="literal">true</span>;</span><br><span class="line">        System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[i]);</span><br><span class="line">        <span class="comment">// 遍历该顶点的所有邻接顶点。若是没有访问过，那么继续往下走</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">w</span> <span class="operator">=</span> firstVertex(i); w &gt;= <span class="number">0</span>; w = nextVertex(i, w)) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[w])</span><br><span class="line">                DFS(w, visited);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 深度优先搜索遍历图</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">DFS</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">boolean</span>[] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[mVexs.length];       <span class="comment">// 顶点访问标记</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化所有顶点都没有被访问</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            visited[i] = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;DFS: &quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[i])</span><br><span class="line">                DFS(i, visited);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 广度优先搜索（类似于树的层次遍历）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">BFS</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">head</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">rear</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span>[] queue = <span class="keyword">new</span> <span class="title class_">int</span>[mVexs.length];            <span class="comment">// 辅组队列</span></span><br><span class="line">        <span class="type">boolean</span>[] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[mVexs.length];  <span class="comment">// 顶点访问标记</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            visited[i] = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;BFS: &quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[i]) &#123;</span><br><span class="line">                visited[i] = <span class="literal">true</span>;</span><br><span class="line">                System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[i]);</span><br><span class="line">                queue[rear++] = i;  <span class="comment">// 入队列</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> (head != rear) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> queue[head++];  <span class="comment">// 出队列</span></span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> firstVertex(j); k &gt;= <span class="number">0</span>; k = nextVertex(j, k)) &#123; <span class="comment">//k是为访问的邻接顶点</span></span><br><span class="line">                    <span class="keyword">if</span> (!visited[k]) &#123;</span><br><span class="line">                        visited[k] = <span class="literal">true</span>;</span><br><span class="line">                        System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[k]);</span><br><span class="line">                        queue[rear++] = k;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 打印矩阵队列图</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">print</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.printf(<span class="string">&quot;Martix Graph:\n&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; mVexs.length; j++)</span><br><span class="line">                System.out.printf(<span class="string">&quot;%d &quot;</span>, mMatrix[i][j]);</span><br><span class="line">            System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">char</span>[] vexs = &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;D&#x27;</span>, <span class="string">&#x27;E&#x27;</span>, <span class="string">&#x27;F&#x27;</span>, <span class="string">&#x27;G&#x27;</span>&#125;;</span><br><span class="line">        <span class="type">char</span>[][] edges = <span class="keyword">new</span> <span class="title class_">char</span>[][]&#123;</span><br><span class="line">            &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;C&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;D&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;F&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;C&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;D&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;E&#x27;</span>, <span class="string">&#x27;G&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;F&#x27;</span>, <span class="string">&#x27;G&#x27;</span>&#125;&#125;;</span><br><span class="line">        MatrixUDG pG;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 自定义&quot;图&quot;(输入矩阵队列)</span></span><br><span class="line">        <span class="comment">//pG = new MatrixUDG();</span></span><br><span class="line">        <span class="comment">// 采用已有的&quot;图&quot;</span></span><br><span class="line">        pG = <span class="keyword">new</span> <span class="title class_">MatrixUDG</span>(vexs, edges);</span><br><span class="line"></span><br><span class="line">        pG.print();   <span class="comment">// 打印图</span></span><br><span class="line">        pG.DFS();     <span class="comment">// 深度优先遍历</span></span><br><span class="line">        pG.BFS();     <span class="comment">// 广度优先遍历</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="相关实现"><a href="#相关实现" class="headerlink" title="相关实现"></a>相关实现</h2><h3 id="邻接矩阵实现无向图"><a href="#邻接矩阵实现无向图" class="headerlink" title="邻接矩阵实现无向图"></a>邻接矩阵实现无向图</h3><pre><code class="java">import java.io.IOException;
+import java.util.Scanner;
 
-<h3 id="邻接表实现的无向图"><a href="#邻接表实现的无向图" class="headerlink" title="邻接表实现的无向图"></a>邻接表实现的无向图</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.util.Scanner;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ListUDG</span> &#123;</span><br><span class="line">    <span class="comment">// 邻接表中表对应的链表的顶点</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">ENode</span> &#123;</span><br><span class="line">        <span class="type">int</span> ivex;       <span class="comment">// 该边所指向的顶点的位置</span></span><br><span class="line">        ENode nextEdge; <span class="comment">// 指向下一条弧的指针</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 邻接表中表的顶点</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">VNode</span> &#123;</span><br><span class="line">        <span class="type">char</span> data;          <span class="comment">// 顶点信息</span></span><br><span class="line">        ENode firstEdge;    <span class="comment">// 指向第一条依附该顶点的弧</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> VNode[] mVexs;  <span class="comment">// 顶点数组</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* </span></span><br><span class="line"><span class="comment">     * 创建图(自己输入数据)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ListUDG</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 输入&quot;顶点数&quot;和&quot;边数&quot;</span></span><br><span class="line">        System.out.printf(<span class="string">&quot;input vertex number: &quot;</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">vlen</span> <span class="operator">=</span> readInt();</span><br><span class="line">        System.out.printf(<span class="string">&quot;input edge number: &quot;</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">elen</span> <span class="operator">=</span> readInt();</span><br><span class="line">        <span class="keyword">if</span> ( vlen &lt; <span class="number">1</span> || elen &lt; <span class="number">1</span> || (elen &gt; (vlen*(vlen - <span class="number">1</span>)))) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;input error: invalid parameters!\n&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> ;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 初始化&quot;顶点&quot;</span></span><br><span class="line">        mVexs = <span class="keyword">new</span> <span class="title class_">VNode</span>[vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;vertex(%d): &quot;</span>, i);</span><br><span class="line">            mVexs[i] = <span class="keyword">new</span> <span class="title class_">VNode</span>();</span><br><span class="line">            mVexs[i].data = readChar();</span><br><span class="line">            mVexs[i].firstEdge = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;边&quot;</span></span><br><span class="line">        <span class="comment">//mMatrix = new int[vlen][vlen];</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; elen; i++) &#123;</span><br><span class="line">            <span class="comment">// 读取边的起始顶点和结束顶点</span></span><br><span class="line">            System.out.printf(<span class="string">&quot;edge(%d):&quot;</span>, i);</span><br><span class="line">            <span class="type">char</span> <span class="variable">c1</span> <span class="operator">=</span> readChar();</span><br><span class="line">            <span class="type">char</span> <span class="variable">c2</span> <span class="operator">=</span> readChar();</span><br><span class="line">            <span class="type">int</span> <span class="variable">p1</span> <span class="operator">=</span> getPosition(c1);</span><br><span class="line">            <span class="type">int</span> <span class="variable">p2</span> <span class="operator">=</span> getPosition(c2);</span><br><span class="line">            <span class="comment">// 初始化node1</span></span><br><span class="line">            <span class="type">ENode</span> <span class="variable">node1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ENode</span>();</span><br><span class="line">            node1.ivex = p2;</span><br><span class="line">            <span class="comment">// 将node1链接到&quot;p1所在链表的末尾&quot;</span></span><br><span class="line">            <span class="keyword">if</span>(mVexs[p1].firstEdge == <span class="literal">null</span>)</span><br><span class="line">              mVexs[p1].firstEdge = node1;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                linkLast(mVexs[p1].firstEdge, node1);</span><br><span class="line">            <span class="comment">// 初始化node2</span></span><br><span class="line">            <span class="type">ENode</span> <span class="variable">node2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ENode</span>();</span><br><span class="line">            node2.ivex = p1;</span><br><span class="line">            <span class="comment">// 将node2链接到&quot;p2所在链表的末尾&quot;</span></span><br><span class="line">            <span class="keyword">if</span>(mVexs[p2].firstEdge == <span class="literal">null</span>)</span><br><span class="line">              mVexs[p2].firstEdge = node2;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                linkLast(mVexs[p2].firstEdge, node2);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 创建图(用已提供的矩阵)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明：</span></span><br><span class="line"><span class="comment">     *     vexs  -- 顶点数组</span></span><br><span class="line"><span class="comment">     *     edges -- 边数组</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ListUDG</span><span class="params">(<span class="type">char</span>[] vexs, <span class="type">char</span>[][] edges)</span> &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 初始化&quot;顶点数&quot;和&quot;边数&quot;</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">vlen</span> <span class="operator">=</span> vexs.length;</span><br><span class="line">        <span class="type">int</span> <span class="variable">elen</span> <span class="operator">=</span> edges.length;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;顶点&quot;</span></span><br><span class="line">        mVexs = <span class="keyword">new</span> <span class="title class_">VNode</span>[vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            mVexs[i] = <span class="keyword">new</span> <span class="title class_">VNode</span>();</span><br><span class="line">            mVexs[i].data = vexs[i];</span><br><span class="line">            mVexs[i].firstEdge = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;边&quot;</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; elen; i++) &#123;</span><br><span class="line">            <span class="comment">// 读取边的起始顶点和结束顶点</span></span><br><span class="line">            <span class="type">char</span> <span class="variable">c1</span> <span class="operator">=</span> edges[i][<span class="number">0</span>];</span><br><span class="line">            <span class="type">char</span> <span class="variable">c2</span> <span class="operator">=</span> edges[i][<span class="number">1</span>];</span><br><span class="line">            <span class="comment">// 读取边的起始顶点和结束顶点</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">p1</span> <span class="operator">=</span> getPosition(edges[i][<span class="number">0</span>]);</span><br><span class="line">            <span class="type">int</span> <span class="variable">p2</span> <span class="operator">=</span> getPosition(edges[i][<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 初始化node1</span></span><br><span class="line">            <span class="type">ENode</span> <span class="variable">node1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ENode</span>();</span><br><span class="line">            node1.ivex = p2;</span><br><span class="line">            <span class="comment">// 将node1链接到&quot;p1所在链表的末尾&quot;</span></span><br><span class="line">            <span class="keyword">if</span>(mVexs[p1].firstEdge == <span class="literal">null</span>)</span><br><span class="line">              mVexs[p1].firstEdge = node1;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                linkLast(mVexs[p1].firstEdge, node1);</span><br><span class="line">            <span class="comment">// 初始化node2</span></span><br><span class="line">            <span class="type">ENode</span> <span class="variable">node2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ENode</span>();</span><br><span class="line">            node2.ivex = p1;</span><br><span class="line">            <span class="comment">// 将node2链接到&quot;p2所在链表的末尾&quot;</span></span><br><span class="line">            <span class="keyword">if</span>(mVexs[p2].firstEdge == <span class="literal">null</span>)</span><br><span class="line">              mVexs[p2].firstEdge = node2;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                linkLast(mVexs[p2].firstEdge, node2);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 将node节点链接到list的最后</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">linkLast</span><span class="params">(ENode list, ENode node)</span> &#123;</span><br><span class="line">        <span class="type">ENode</span> <span class="variable">p</span> <span class="operator">=</span> list;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(p.nextEdge!=<span class="literal">null</span>)</span><br><span class="line">            p = p.nextEdge;</span><br><span class="line">        p.nextEdge = node;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 返回ch位置</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">getPosition</span><span class="params">(<span class="type">char</span> ch)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;mVexs.length; i++)</span><br><span class="line">            <span class="keyword">if</span>(mVexs[i].data==ch)</span><br><span class="line">                <span class="keyword">return</span> i;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 读取一个输入字符</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">char</span> <span class="title function_">readChar</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">char</span> ch=<span class="string">&#x27;0&#x27;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ch = (<span class="type">char</span>)System.in.read();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">while</span>(!((ch&gt;=<span class="string">&#x27;a&#x27;</span>&amp;&amp;ch&lt;=<span class="string">&#x27;z&#x27;</span>) || (ch&gt;=<span class="string">&#x27;A&#x27;</span>&amp;&amp;ch&lt;=<span class="string">&#x27;Z&#x27;</span>)));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ch;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 读取一个输入字符</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">readInt</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);</span><br><span class="line">        <span class="keyword">return</span> scanner.nextInt();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 深度优先搜索遍历图的递归实现</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">DFS</span><span class="params">(<span class="type">int</span> i, <span class="type">boolean</span>[] visited)</span> &#123;</span><br><span class="line">        ENode node;</span><br><span class="line"></span><br><span class="line">        visited[i] = <span class="literal">true</span>;</span><br><span class="line">        System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[i].data);</span><br><span class="line">        node = mVexs[i].firstEdge;</span><br><span class="line">        <span class="keyword">while</span> (node != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[node.ivex])</span><br><span class="line">                DFS(node.ivex, visited);</span><br><span class="line">            node = node.nextEdge;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 深度优先搜索遍历图</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">DFS</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">boolean</span>[] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[mVexs.length];       <span class="comment">// 顶点访问标记</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化所有顶点都没有被访问</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            visited[i] = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;DFS: &quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[i])</span><br><span class="line">                DFS(i, visited);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 广度优先搜索（类似于树的层次遍历）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">BFS</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">head</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">rear</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span>[] queue = <span class="keyword">new</span> <span class="title class_">int</span>[mVexs.length];            <span class="comment">// 辅组队列</span></span><br><span class="line">        <span class="type">boolean</span>[] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[mVexs.length];  <span class="comment">// 顶点访问标记</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            visited[i] = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;BFS: &quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[i]) &#123;</span><br><span class="line">                visited[i] = <span class="literal">true</span>;</span><br><span class="line">                System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[i].data);</span><br><span class="line">                queue[rear++] = i;  <span class="comment">// 入队列</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> (head != rear) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> queue[head++];  <span class="comment">// 出队列</span></span><br><span class="line">                <span class="type">ENode</span> <span class="variable">node</span> <span class="operator">=</span> mVexs[j].firstEdge;</span><br><span class="line">                <span class="keyword">while</span> (node != <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> node.ivex;</span><br><span class="line">                    <span class="keyword">if</span> (!visited[k])</span><br><span class="line">                    &#123;</span><br><span class="line">                        visited[k] = <span class="literal">true</span>;</span><br><span class="line">                        System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[k].data);</span><br><span class="line">                        queue[rear++] = k;</span><br><span class="line">                    &#125;</span><br><span class="line">                    node = node.nextEdge;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 打印矩阵队列图</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">print</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.printf(<span class="string">&quot;List Graph:\n&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;%d(%c): &quot;</span>, i, mVexs[i].data);</span><br><span class="line">            <span class="type">ENode</span> <span class="variable">node</span> <span class="operator">=</span> mVexs[i].firstEdge;</span><br><span class="line">            <span class="keyword">while</span> (node != <span class="literal">null</span>) &#123;</span><br><span class="line">                System.out.printf(<span class="string">&quot;%d(%c) &quot;</span>, node.ivex, mVexs[node.ivex].data);</span><br><span class="line">                node = node.nextEdge;</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">char</span>[] vexs = &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;D&#x27;</span>, <span class="string">&#x27;E&#x27;</span>, <span class="string">&#x27;F&#x27;</span>, <span class="string">&#x27;G&#x27;</span>&#125;;</span><br><span class="line">        <span class="type">char</span>[][] edges = <span class="keyword">new</span> <span class="title class_">char</span>[][]&#123;</span><br><span class="line">            &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;C&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;D&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;F&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;C&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;D&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;E&#x27;</span>, <span class="string">&#x27;G&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;F&#x27;</span>, <span class="string">&#x27;G&#x27;</span>&#125;&#125;;</span><br><span class="line">        ListUDG pG;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 自定义&quot;图&quot;(输入矩阵队列)</span></span><br><span class="line">        <span class="comment">//pG = new ListUDG();</span></span><br><span class="line">        <span class="comment">// 采用已有的&quot;图&quot;</span></span><br><span class="line">        pG = <span class="keyword">new</span> <span class="title class_">ListUDG</span>(vexs, edges);</span><br><span class="line"></span><br><span class="line">        pG.print();   <span class="comment">// 打印图</span></span><br><span class="line">        pG.DFS();     <span class="comment">// 深度优先遍历</span></span><br><span class="line">        pG.BFS();     <span class="comment">// 广度优先遍历</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+public class MatrixUDG &#123;
 
-<h3 id="邻接矩阵实现的有向图"><a href="#邻接矩阵实现的有向图" class="headerlink" title="邻接矩阵实现的有向图"></a>邻接矩阵实现的有向图</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.util.Scanner;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MatrixDG</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">char</span>[] mVexs;       <span class="comment">// 顶点集合</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[][] mMatrix;    <span class="comment">// 邻接矩阵</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* </span></span><br><span class="line"><span class="comment">     * 创建图(自己输入数据)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MatrixDG</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 输入&quot;顶点数&quot;和&quot;边数&quot;</span></span><br><span class="line">        System.out.printf(<span class="string">&quot;input vertex number: &quot;</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">vlen</span> <span class="operator">=</span> readInt();</span><br><span class="line">        System.out.printf(<span class="string">&quot;input edge number: &quot;</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">elen</span> <span class="operator">=</span> readInt();</span><br><span class="line">        <span class="keyword">if</span> ( vlen &lt; <span class="number">1</span> || elen &lt; <span class="number">1</span> || (elen &gt; (vlen*(vlen - <span class="number">1</span>)))) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;input error: invalid parameters!\n&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> ;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 初始化&quot;顶点&quot;</span></span><br><span class="line">        mVexs = <span class="keyword">new</span> <span class="title class_">char</span>[vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;vertex(%d): &quot;</span>, i);</span><br><span class="line">            mVexs[i] = readChar();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;边&quot;</span></span><br><span class="line">        mMatrix = <span class="keyword">new</span> <span class="title class_">int</span>[vlen][vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; elen; i++) &#123;</span><br><span class="line">            <span class="comment">// 读取边的起始顶点和结束顶点</span></span><br><span class="line">            System.out.printf(<span class="string">&quot;edge(%d):&quot;</span>, i);</span><br><span class="line">            <span class="type">char</span> <span class="variable">c1</span> <span class="operator">=</span> readChar();</span><br><span class="line">            <span class="type">char</span> <span class="variable">c2</span> <span class="operator">=</span> readChar();</span><br><span class="line">            <span class="type">int</span> <span class="variable">p1</span> <span class="operator">=</span> getPosition(c1);</span><br><span class="line">            <span class="type">int</span> <span class="variable">p2</span> <span class="operator">=</span> getPosition(c2);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (p1==-<span class="number">1</span> || p2==-<span class="number">1</span>) &#123;</span><br><span class="line">                System.out.printf(<span class="string">&quot;input error: invalid edge!\n&quot;</span>);</span><br><span class="line">                <span class="keyword">return</span> ;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            mMatrix[p1][p2] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 创建图(用已提供的矩阵)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明：</span></span><br><span class="line"><span class="comment">     *     vexs  -- 顶点数组</span></span><br><span class="line"><span class="comment">     *     edges -- 边数组</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MatrixDG</span><span class="params">(<span class="type">char</span>[] vexs, <span class="type">char</span>[][] edges)</span> &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 初始化&quot;顶点数&quot;和&quot;边数&quot;</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">vlen</span> <span class="operator">=</span> vexs.length;</span><br><span class="line">        <span class="type">int</span> <span class="variable">elen</span> <span class="operator">=</span> edges.length;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;顶点&quot;</span></span><br><span class="line">        mVexs = <span class="keyword">new</span> <span class="title class_">char</span>[vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            mVexs[i] = vexs[i];</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;边&quot;</span></span><br><span class="line">        mMatrix = <span class="keyword">new</span> <span class="title class_">int</span>[vlen][vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; elen; i++) &#123;</span><br><span class="line">            <span class="comment">// 读取边的起始顶点和结束顶点</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">p1</span> <span class="operator">=</span> getPosition(edges[i][<span class="number">0</span>]);</span><br><span class="line">            <span class="type">int</span> <span class="variable">p2</span> <span class="operator">=</span> getPosition(edges[i][<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">            mMatrix[p1][p2] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 返回ch位置</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">getPosition</span><span class="params">(<span class="type">char</span> ch)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;mVexs.length; i++)</span><br><span class="line">            <span class="keyword">if</span>(mVexs[i]==ch)</span><br><span class="line">                <span class="keyword">return</span> i;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 读取一个输入字符</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">char</span> <span class="title function_">readChar</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">char</span> ch=<span class="string">&#x27;0&#x27;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ch = (<span class="type">char</span>)System.in.read();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">while</span>(!((ch&gt;=<span class="string">&#x27;a&#x27;</span>&amp;&amp;ch&lt;=<span class="string">&#x27;z&#x27;</span>) || (ch&gt;=<span class="string">&#x27;A&#x27;</span>&amp;&amp;ch&lt;=<span class="string">&#x27;Z&#x27;</span>)));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ch;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 读取一个输入字符</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">readInt</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);</span><br><span class="line">        <span class="keyword">return</span> scanner.nextInt();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 返回顶点v的第一个邻接顶点的索引，失败则返回-1</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">firstVertex</span><span class="params">(<span class="type">int</span> v)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (v&lt;<span class="number">0</span> || v&gt;(mVexs.length-<span class="number">1</span>))</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            <span class="keyword">if</span> (mMatrix[v][i] == <span class="number">1</span>)</span><br><span class="line">                <span class="keyword">return</span> i;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 返回顶点v相对于w的下一个邻接顶点的索引，失败则返回-1</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">nextVertex</span><span class="params">(<span class="type">int</span> v, <span class="type">int</span> w)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (v&lt;<span class="number">0</span> || v&gt;(mVexs.length-<span class="number">1</span>) || w&lt;<span class="number">0</span> || w&gt;(mVexs.length-<span class="number">1</span>))</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> w + <span class="number">1</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            <span class="keyword">if</span> (mMatrix[v][i] == <span class="number">1</span>)</span><br><span class="line">                <span class="keyword">return</span> i;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 深度优先搜索遍历图的递归实现</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">DFS</span><span class="params">(<span class="type">int</span> i, <span class="type">boolean</span>[] visited)</span> &#123;</span><br><span class="line"></span><br><span class="line">        visited[i] = <span class="literal">true</span>;</span><br><span class="line">        System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[i]);</span><br><span class="line">        <span class="comment">// 遍历该顶点的所有邻接顶点。若是没有访问过，那么继续往下走</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">w</span> <span class="operator">=</span> firstVertex(i); w &gt;= <span class="number">0</span>; w = nextVertex(i, w)) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[w])</span><br><span class="line">                DFS(w, visited);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 深度优先搜索遍历图</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">DFS</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">boolean</span>[] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[mVexs.length];       <span class="comment">// 顶点访问标记</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化所有顶点都没有被访问</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            visited[i] = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;DFS: &quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[i])</span><br><span class="line">                DFS(i, visited);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 广度优先搜索（类似于树的层次遍历）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">BFS</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">head</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">rear</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span>[] queue = <span class="keyword">new</span> <span class="title class_">int</span>[mVexs.length];            <span class="comment">// 辅组队列</span></span><br><span class="line">        <span class="type">boolean</span>[] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[mVexs.length];  <span class="comment">// 顶点访问标记</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            visited[i] = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;BFS: &quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[i]) &#123;</span><br><span class="line">                visited[i] = <span class="literal">true</span>;</span><br><span class="line">                System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[i]);</span><br><span class="line">                queue[rear++] = i;  <span class="comment">// 入队列</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> (head != rear) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> queue[head++];  <span class="comment">// 出队列</span></span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> firstVertex(j); k &gt;= <span class="number">0</span>; k = nextVertex(j, k)) &#123; <span class="comment">//k是为访问的邻接顶点</span></span><br><span class="line">                    <span class="keyword">if</span> (!visited[k]) &#123;</span><br><span class="line">                        visited[k] = <span class="literal">true</span>;</span><br><span class="line">                        System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[k]);</span><br><span class="line">                        queue[rear++] = k;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 打印矩阵队列图</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">print</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.printf(<span class="string">&quot;Martix Graph:\n&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; mVexs.length; j++)</span><br><span class="line">                System.out.printf(<span class="string">&quot;%d &quot;</span>, mMatrix[i][j]);</span><br><span class="line">            System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">char</span>[] vexs = &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;D&#x27;</span>, <span class="string">&#x27;E&#x27;</span>, <span class="string">&#x27;F&#x27;</span>, <span class="string">&#x27;G&#x27;</span>&#125;;</span><br><span class="line">        <span class="type">char</span>[][] edges = <span class="keyword">new</span> <span class="title class_">char</span>[][]&#123;</span><br><span class="line">            &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;B&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;C&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;E&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;F&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;E&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;D&#x27;</span>, <span class="string">&#x27;C&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;E&#x27;</span>, <span class="string">&#x27;B&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;E&#x27;</span>, <span class="string">&#x27;D&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;F&#x27;</span>, <span class="string">&#x27;G&#x27;</span>&#125;&#125;; </span><br><span class="line">        MatrixDG pG;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 自定义&quot;图&quot;(输入矩阵队列)</span></span><br><span class="line">        <span class="comment">//pG = new MatrixDG();</span></span><br><span class="line">        <span class="comment">// 采用已有的&quot;图&quot;</span></span><br><span class="line">        pG = <span class="keyword">new</span> <span class="title class_">MatrixDG</span>(vexs, edges);</span><br><span class="line"></span><br><span class="line">        pG.print();   <span class="comment">// 打印图</span></span><br><span class="line">        pG.DFS();     <span class="comment">// 深度优先遍历</span></span><br><span class="line">        pG.BFS();     <span class="comment">// 广度优先遍历</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    private char[] mVexs;       // 顶点集合
+    private int[][] mMatrix;    // 邻接矩阵
 
-<h3 id="邻接表实现的有向图"><a href="#邻接表实现的有向图" class="headerlink" title="邻接表实现的有向图"></a>邻接表实现的有向图</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.util.Scanner;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ListDG</span> &#123;</span><br><span class="line">    <span class="comment">// 邻接表中表对应的链表的顶点</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">ENode</span> &#123;</span><br><span class="line">        <span class="type">int</span> ivex;       <span class="comment">// 该边所指向的顶点的位置</span></span><br><span class="line">        ENode nextEdge; <span class="comment">// 指向下一条弧的指针</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 邻接表中表的顶点</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">VNode</span> &#123;</span><br><span class="line">        <span class="type">char</span> data;          <span class="comment">// 顶点信息</span></span><br><span class="line">        ENode firstEdge;    <span class="comment">// 指向第一条依附该顶点的弧</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> VNode[] mVexs;  <span class="comment">// 顶点数组</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* </span></span><br><span class="line"><span class="comment">     * 创建图(自己输入数据)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ListDG</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 输入&quot;顶点数&quot;和&quot;边数&quot;</span></span><br><span class="line">        System.out.printf(<span class="string">&quot;input vertex number: &quot;</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">vlen</span> <span class="operator">=</span> readInt();</span><br><span class="line">        System.out.printf(<span class="string">&quot;input edge number: &quot;</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">elen</span> <span class="operator">=</span> readInt();</span><br><span class="line">        <span class="keyword">if</span> ( vlen &lt; <span class="number">1</span> || elen &lt; <span class="number">1</span> || (elen &gt; (vlen*(vlen - <span class="number">1</span>)))) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;input error: invalid parameters!\n&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> ;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 初始化&quot;顶点&quot;</span></span><br><span class="line">        mVexs = <span class="keyword">new</span> <span class="title class_">VNode</span>[vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;vertex(%d): &quot;</span>, i);</span><br><span class="line">            mVexs[i] = <span class="keyword">new</span> <span class="title class_">VNode</span>();</span><br><span class="line">            mVexs[i].data = readChar();</span><br><span class="line">            mVexs[i].firstEdge = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;边&quot;</span></span><br><span class="line">        <span class="comment">//mMatrix = new int[vlen][vlen];</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; elen; i++) &#123;</span><br><span class="line">            <span class="comment">// 读取边的起始顶点和结束顶点</span></span><br><span class="line">            System.out.printf(<span class="string">&quot;edge(%d):&quot;</span>, i);</span><br><span class="line">            <span class="type">char</span> <span class="variable">c1</span> <span class="operator">=</span> readChar();</span><br><span class="line">            <span class="type">char</span> <span class="variable">c2</span> <span class="operator">=</span> readChar();</span><br><span class="line">            <span class="type">int</span> <span class="variable">p1</span> <span class="operator">=</span> getPosition(c1);</span><br><span class="line">            <span class="type">int</span> <span class="variable">p2</span> <span class="operator">=</span> getPosition(c2);</span><br><span class="line">            <span class="comment">// 初始化node1</span></span><br><span class="line">            <span class="type">ENode</span> <span class="variable">node1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ENode</span>();</span><br><span class="line">            node1.ivex = p2;</span><br><span class="line">            <span class="comment">// 将node1链接到&quot;p1所在链表的末尾&quot;</span></span><br><span class="line">            <span class="keyword">if</span>(mVexs[p1].firstEdge == <span class="literal">null</span>)</span><br><span class="line">              mVexs[p1].firstEdge = node1;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                linkLast(mVexs[p1].firstEdge, node1);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 创建图(用已提供的矩阵)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明：</span></span><br><span class="line"><span class="comment">     *     vexs  -- 顶点数组</span></span><br><span class="line"><span class="comment">     *     edges -- 边数组</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ListDG</span><span class="params">(<span class="type">char</span>[] vexs, <span class="type">char</span>[][] edges)</span> &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 初始化&quot;顶点数&quot;和&quot;边数&quot;</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">vlen</span> <span class="operator">=</span> vexs.length;</span><br><span class="line">        <span class="type">int</span> <span class="variable">elen</span> <span class="operator">=</span> edges.length;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;顶点&quot;</span></span><br><span class="line">        mVexs = <span class="keyword">new</span> <span class="title class_">VNode</span>[vlen];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            mVexs[i] = <span class="keyword">new</span> <span class="title class_">VNode</span>();</span><br><span class="line">            mVexs[i].data = vexs[i];</span><br><span class="line">            mVexs[i].firstEdge = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化&quot;边&quot;</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; elen; i++) &#123;</span><br><span class="line">            <span class="comment">// 读取边的起始顶点和结束顶点</span></span><br><span class="line">            <span class="type">char</span> <span class="variable">c1</span> <span class="operator">=</span> edges[i][<span class="number">0</span>];</span><br><span class="line">            <span class="type">char</span> <span class="variable">c2</span> <span class="operator">=</span> edges[i][<span class="number">1</span>];</span><br><span class="line">            <span class="comment">// 读取边的起始顶点和结束顶点</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">p1</span> <span class="operator">=</span> getPosition(edges[i][<span class="number">0</span>]);</span><br><span class="line">            <span class="type">int</span> <span class="variable">p2</span> <span class="operator">=</span> getPosition(edges[i][<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 初始化node1</span></span><br><span class="line">            <span class="type">ENode</span> <span class="variable">node1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ENode</span>();</span><br><span class="line">            node1.ivex = p2;</span><br><span class="line">            <span class="comment">// 将node1链接到&quot;p1所在链表的末尾&quot;</span></span><br><span class="line">            <span class="keyword">if</span>(mVexs[p1].firstEdge == <span class="literal">null</span>)</span><br><span class="line">              mVexs[p1].firstEdge = node1;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                linkLast(mVexs[p1].firstEdge, node1);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 将node节点链接到list的最后</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">linkLast</span><span class="params">(ENode list, ENode node)</span> &#123;</span><br><span class="line">        <span class="type">ENode</span> <span class="variable">p</span> <span class="operator">=</span> list;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(p.nextEdge!=<span class="literal">null</span>)</span><br><span class="line">            p = p.nextEdge;</span><br><span class="line">        p.nextEdge = node;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 返回ch位置</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">getPosition</span><span class="params">(<span class="type">char</span> ch)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;mVexs.length; i++)</span><br><span class="line">            <span class="keyword">if</span>(mVexs[i].data==ch)</span><br><span class="line">                <span class="keyword">return</span> i;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 读取一个输入字符</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">char</span> <span class="title function_">readChar</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">char</span> ch=<span class="string">&#x27;0&#x27;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                ch = (<span class="type">char</span>)System.in.read();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">while</span>(!((ch&gt;=<span class="string">&#x27;a&#x27;</span>&amp;&amp;ch&lt;=<span class="string">&#x27;z&#x27;</span>) || (ch&gt;=<span class="string">&#x27;A&#x27;</span>&amp;&amp;ch&lt;=<span class="string">&#x27;Z&#x27;</span>)));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ch;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 读取一个输入字符</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">readInt</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(System.in);</span><br><span class="line">        <span class="keyword">return</span> scanner.nextInt();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 深度优先搜索遍历图的递归实现</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">DFS</span><span class="params">(<span class="type">int</span> i, <span class="type">boolean</span>[] visited)</span> &#123;</span><br><span class="line">        ENode node;</span><br><span class="line"></span><br><span class="line">        visited[i] = <span class="literal">true</span>;</span><br><span class="line">        System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[i].data);</span><br><span class="line">        node = mVexs[i].firstEdge;</span><br><span class="line">        <span class="keyword">while</span> (node != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[node.ivex])</span><br><span class="line">                DFS(node.ivex, visited);</span><br><span class="line">            node = node.nextEdge;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 深度优先搜索遍历图</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">DFS</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">boolean</span>[] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[mVexs.length];       <span class="comment">// 顶点访问标记</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化所有顶点都没有被访问</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            visited[i] = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;DFS: &quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[i])</span><br><span class="line">                DFS(i, visited);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 广度优先搜索（类似于树的层次遍历）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">BFS</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">head</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">rear</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span>[] queue = <span class="keyword">new</span> <span class="title class_">int</span>[mVexs.length];            <span class="comment">// 辅组队列</span></span><br><span class="line">        <span class="type">boolean</span>[] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[mVexs.length];  <span class="comment">// 顶点访问标记</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++)</span><br><span class="line">            visited[i] = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;BFS: &quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!visited[i]) &#123;</span><br><span class="line">                visited[i] = <span class="literal">true</span>;</span><br><span class="line">                System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[i].data);</span><br><span class="line">                queue[rear++] = i;  <span class="comment">// 入队列</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> (head != rear) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> queue[head++];  <span class="comment">// 出队列</span></span><br><span class="line">                <span class="type">ENode</span> <span class="variable">node</span> <span class="operator">=</span> mVexs[j].firstEdge;</span><br><span class="line">                <span class="keyword">while</span> (node != <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> node.ivex;</span><br><span class="line">                    <span class="keyword">if</span> (!visited[k])</span><br><span class="line">                    &#123;</span><br><span class="line">                        visited[k] = <span class="literal">true</span>;</span><br><span class="line">                        System.out.printf(<span class="string">&quot;%c &quot;</span>, mVexs[k].data);</span><br><span class="line">                        queue[rear++] = k;</span><br><span class="line">                    &#125;</span><br><span class="line">                    node = node.nextEdge;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 打印矩阵队列图</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">print</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.printf(<span class="string">&quot;List Graph:\n&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; mVexs.length; i++) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;%d(%c): &quot;</span>, i, mVexs[i].data);</span><br><span class="line">            <span class="type">ENode</span> <span class="variable">node</span> <span class="operator">=</span> mVexs[i].firstEdge;</span><br><span class="line">            <span class="keyword">while</span> (node != <span class="literal">null</span>) &#123;</span><br><span class="line">                System.out.printf(<span class="string">&quot;%d(%c) &quot;</span>, node.ivex, mVexs[node.ivex].data);</span><br><span class="line">                node = node.nextEdge;</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">char</span>[] vexs = &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;D&#x27;</span>, <span class="string">&#x27;E&#x27;</span>, <span class="string">&#x27;F&#x27;</span>, <span class="string">&#x27;G&#x27;</span>&#125;;</span><br><span class="line">        <span class="type">char</span>[][] edges = <span class="keyword">new</span> <span class="title class_">char</span>[][]&#123;</span><br><span class="line">            &#123;<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;B&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;C&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;E&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;F&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;E&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;D&#x27;</span>, <span class="string">&#x27;C&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;E&#x27;</span>, <span class="string">&#x27;B&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;E&#x27;</span>, <span class="string">&#x27;D&#x27;</span>&#125;, </span><br><span class="line">            &#123;<span class="string">&#x27;F&#x27;</span>, <span class="string">&#x27;G&#x27;</span>&#125;&#125;; </span><br><span class="line">        ListDG pG;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 自定义&quot;图&quot;(输入矩阵队列)</span></span><br><span class="line">        <span class="comment">//pG = new ListDG();</span></span><br><span class="line">        <span class="comment">// 采用已有的&quot;图&quot;</span></span><br><span class="line">        pG = <span class="keyword">new</span> <span class="title class_">ListDG</span>(vexs, edges);</span><br><span class="line"></span><br><span class="line">        pG.print();   <span class="comment">// 打印图</span></span><br><span class="line">        pG.DFS();     <span class="comment">// 深度优先遍历</span></span><br><span class="line">        pG.BFS();     <span class="comment">// 广度优先遍历</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    /* 
+     * 创建图(自己输入数据)
+     */
+    public MatrixUDG() &#123;
 
+        // 输入&quot;顶点数&quot;和&quot;边数&quot;
+        System.out.printf(&quot;input vertex number: &quot;);
+        int vlen = readInt();
+        System.out.printf(&quot;input edge number: &quot;);
+        int elen = readInt();
+        if ( vlen &lt; 1 || elen &lt; 1 || (elen &gt; (vlen*(vlen - 1)))) &#123;
+            System.out.printf(&quot;input error: invalid parameters!\n&quot;);
+            return ;
+        &#125;
+        
+        // 初始化&quot;顶点&quot;
+        mVexs = new char[vlen];
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            System.out.printf(&quot;vertex(%d): &quot;, i);
+            mVexs[i] = readChar();
+        &#125;
+
+        // 初始化&quot;边&quot;
+        mMatrix = new int[vlen][vlen];
+        for (int i = 0; i &lt; elen; i++) &#123;
+            // 读取边的起始顶点和结束顶点
+            System.out.printf(&quot;edge(%d):&quot;, i);
+            char c1 = readChar();
+            char c2 = readChar();
+            int p1 = getPosition(c1);
+            int p2 = getPosition(c2);
+
+            if (p1==-1 || p2==-1) &#123;
+                System.out.printf(&quot;input error: invalid edge!\n&quot;);
+                return ;
+            &#125;
+
+            mMatrix[p1][p2] = 1;
+            mMatrix[p2][p1] = 1;
+        &#125;
+    &#125;
+
+    /*
+     * 创建图(用已提供的矩阵)
+     *
+     * 参数说明：
+     *     vexs  -- 顶点数组
+     *     edges -- 边数组
+     */
+    public MatrixUDG(char[] vexs, char[][] edges) &#123;
+        
+        // 初始化&quot;顶点数&quot;和&quot;边数&quot;
+        int vlen = vexs.length;
+        int elen = edges.length;
+
+        // 初始化&quot;顶点&quot;
+        mVexs = new char[vlen];
+        for (int i = 0; i &lt; mVexs.length; i++)
+            mVexs[i] = vexs[i];
+
+        // 初始化&quot;边&quot;
+        mMatrix = new int[vlen][vlen];
+        for (int i = 0; i &lt; elen; i++) &#123;
+            // 读取边的起始顶点和结束顶点
+            int p1 = getPosition(edges[i][0]);
+            int p2 = getPosition(edges[i][1]);
+
+            mMatrix[p1][p2] = 1;
+            mMatrix[p2][p1] = 1;
+        &#125;
+    &#125;
+
+    /*
+     * 返回ch位置
+     */
+    private int getPosition(char ch) &#123;
+        for(int i=0; i&lt;mVexs.length; i++)
+            if(mVexs[i]==ch)
+                return i;
+        return -1;
+    &#125;
+
+    /*
+     * 读取一个输入字符
+     */
+    private char readChar() &#123;
+        char ch=&#39;0&#39;;
+
+        do &#123;
+            try &#123;
+                ch = (char)System.in.read();
+            &#125; catch (IOException e) &#123;
+                e.printStackTrace();
+            &#125;
+        &#125; while(!((ch&gt;=&#39;a&#39;&amp;&amp;ch&lt;=&#39;z&#39;) || (ch&gt;=&#39;A&#39;&amp;&amp;ch&lt;=&#39;Z&#39;)));
+
+        return ch;
+    &#125;
+
+    /*
+     * 读取一个输入字符
+     */
+    private int readInt() &#123;
+        Scanner scanner = new Scanner(System.in);
+        return scanner.nextInt();
+    &#125;
+
+    /*
+     * 返回顶点v的第一个邻接顶点的索引，失败则返回-1
+     */
+    private int firstVertex(int v) &#123;
+
+        if (v&lt;0 || v&gt;(mVexs.length-1))
+            return -1;
+
+        for (int i = 0; i &lt; mVexs.length; i++)
+            if (mMatrix[v][i] == 1)
+                return i;
+
+        return -1;
+    &#125;
+
+    /*
+     * 返回顶点v相对于w的下一个邻接顶点的索引，失败则返回-1
+     */
+    private int nextVertex(int v, int w) &#123;
+
+        if (v&lt;0 || v&gt;(mVexs.length-1) || w&lt;0 || w&gt;(mVexs.length-1))
+            return -1;
+
+        for (int i = w + 1; i &lt; mVexs.length; i++)
+            if (mMatrix[v][i] == 1)
+                return i;
+
+        return -1;
+    &#125;
+
+    /*
+     * 深度优先搜索遍历图的递归实现
+     */
+    private void DFS(int i, boolean[] visited) &#123;
+
+        visited[i] = true;
+        System.out.printf(&quot;%c &quot;, mVexs[i]);
+        // 遍历该顶点的所有邻接顶点。若是没有访问过，那么继续往下走
+        for (int w = firstVertex(i); w &gt;= 0; w = nextVertex(i, w)) &#123;
+            if (!visited[w])
+                DFS(w, visited);
+        &#125;
+    &#125;
+
+    /*
+     * 深度优先搜索遍历图
+     */
+    public void DFS() &#123;
+        boolean[] visited = new boolean[mVexs.length];       // 顶点访问标记
+
+        // 初始化所有顶点都没有被访问
+        for (int i = 0; i &lt; mVexs.length; i++)
+            visited[i] = false;
+
+        System.out.printf(&quot;DFS: &quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            if (!visited[i])
+                DFS(i, visited);
+        &#125;
+        System.out.printf(&quot;\n&quot;);
+    &#125;
+
+    /*
+     * 广度优先搜索（类似于树的层次遍历）
+     */
+    public void BFS() &#123;
+        int head = 0;
+        int rear = 0;
+        int[] queue = new int[mVexs.length];            // 辅组队列
+        boolean[] visited = new boolean[mVexs.length];  // 顶点访问标记
+
+        for (int i = 0; i &lt; mVexs.length; i++)
+            visited[i] = false;
+
+        System.out.printf(&quot;BFS: &quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            if (!visited[i]) &#123;
+                visited[i] = true;
+                System.out.printf(&quot;%c &quot;, mVexs[i]);
+                queue[rear++] = i;  // 入队列
+            &#125;
+
+            while (head != rear) &#123;
+                int j = queue[head++];  // 出队列
+                for (int k = firstVertex(j); k &gt;= 0; k = nextVertex(j, k)) &#123; //k是为访问的邻接顶点
+                    if (!visited[k]) &#123;
+                        visited[k] = true;
+                        System.out.printf(&quot;%c &quot;, mVexs[k]);
+                        queue[rear++] = k;
+                    &#125;
+                &#125;
+            &#125;
+        &#125;
+        System.out.printf(&quot;\n&quot;);
+    &#125;
+
+    /*
+     * 打印矩阵队列图
+     */
+    public void print() &#123;
+        System.out.printf(&quot;Martix Graph:\n&quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            for (int j = 0; j &lt; mVexs.length; j++)
+                System.out.printf(&quot;%d &quot;, mMatrix[i][j]);
+            System.out.printf(&quot;\n&quot;);
+        &#125;
+    &#125;
+
+    public static void main(String[] args) &#123;
+        char[] vexs = &#123;&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;, &#39;F&#39;, &#39;G&#39;&#125;;
+        char[][] edges = new char[][]&#123;
+            &#123;&#39;A&#39;, &#39;C&#39;&#125;, 
+            &#123;&#39;A&#39;, &#39;D&#39;&#125;, 
+            &#123;&#39;A&#39;, &#39;F&#39;&#125;, 
+            &#123;&#39;B&#39;, &#39;C&#39;&#125;, 
+            &#123;&#39;C&#39;, &#39;D&#39;&#125;, 
+            &#123;&#39;E&#39;, &#39;G&#39;&#125;, 
+            &#123;&#39;F&#39;, &#39;G&#39;&#125;&#125;;
+        MatrixUDG pG;
+
+        // 自定义&quot;图&quot;(输入矩阵队列)
+        //pG = new MatrixUDG();
+        // 采用已有的&quot;图&quot;
+        pG = new MatrixUDG(vexs, edges);
+
+        pG.print();   // 打印图
+        pG.DFS();     // 深度优先遍历
+        pG.BFS();     // 广度优先遍历
+    &#125;
+&#125;
+</code></pre>
+<h3 id="邻接表实现的无向图"><a href="#邻接表实现的无向图" class="headerlink" title="邻接表实现的无向图"></a>邻接表实现的无向图</h3><pre><code class="java">import java.io.IOException;
+import java.util.Scanner;
+
+public class ListUDG &#123;
+    // 邻接表中表对应的链表的顶点
+    private class ENode &#123;
+        int ivex;       // 该边所指向的顶点的位置
+        ENode nextEdge; // 指向下一条弧的指针
+    &#125;
+
+    // 邻接表中表的顶点
+    private class VNode &#123;
+        char data;          // 顶点信息
+        ENode firstEdge;    // 指向第一条依附该顶点的弧
+    &#125;;
+
+    private VNode[] mVexs;  // 顶点数组
+
+
+    /* 
+     * 创建图(自己输入数据)
+     */
+    public ListUDG() &#123;
+
+        // 输入&quot;顶点数&quot;和&quot;边数&quot;
+        System.out.printf(&quot;input vertex number: &quot;);
+        int vlen = readInt();
+        System.out.printf(&quot;input edge number: &quot;);
+        int elen = readInt();
+        if ( vlen &lt; 1 || elen &lt; 1 || (elen &gt; (vlen*(vlen - 1)))) &#123;
+            System.out.printf(&quot;input error: invalid parameters!\n&quot;);
+            return ;
+        &#125;
+        
+        // 初始化&quot;顶点&quot;
+        mVexs = new VNode[vlen];
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            System.out.printf(&quot;vertex(%d): &quot;, i);
+            mVexs[i] = new VNode();
+            mVexs[i].data = readChar();
+            mVexs[i].firstEdge = null;
+        &#125;
+
+        // 初始化&quot;边&quot;
+        //mMatrix = new int[vlen][vlen];
+        for (int i = 0; i &lt; elen; i++) &#123;
+            // 读取边的起始顶点和结束顶点
+            System.out.printf(&quot;edge(%d):&quot;, i);
+            char c1 = readChar();
+            char c2 = readChar();
+            int p1 = getPosition(c1);
+            int p2 = getPosition(c2);
+            // 初始化node1
+            ENode node1 = new ENode();
+            node1.ivex = p2;
+            // 将node1链接到&quot;p1所在链表的末尾&quot;
+            if(mVexs[p1].firstEdge == null)
+              mVexs[p1].firstEdge = node1;
+            else
+                linkLast(mVexs[p1].firstEdge, node1);
+            // 初始化node2
+            ENode node2 = new ENode();
+            node2.ivex = p1;
+            // 将node2链接到&quot;p2所在链表的末尾&quot;
+            if(mVexs[p2].firstEdge == null)
+              mVexs[p2].firstEdge = node2;
+            else
+                linkLast(mVexs[p2].firstEdge, node2);
+        &#125;
+    &#125;
+
+    /*
+     * 创建图(用已提供的矩阵)
+     *
+     * 参数说明：
+     *     vexs  -- 顶点数组
+     *     edges -- 边数组
+     */
+    public ListUDG(char[] vexs, char[][] edges) &#123;
+        
+        // 初始化&quot;顶点数&quot;和&quot;边数&quot;
+        int vlen = vexs.length;
+        int elen = edges.length;
+
+        // 初始化&quot;顶点&quot;
+        mVexs = new VNode[vlen];
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            mVexs[i] = new VNode();
+            mVexs[i].data = vexs[i];
+            mVexs[i].firstEdge = null;
+        &#125;
+
+        // 初始化&quot;边&quot;
+        for (int i = 0; i &lt; elen; i++) &#123;
+            // 读取边的起始顶点和结束顶点
+            char c1 = edges[i][0];
+            char c2 = edges[i][1];
+            // 读取边的起始顶点和结束顶点
+            int p1 = getPosition(edges[i][0]);
+            int p2 = getPosition(edges[i][1]);
+
+            // 初始化node1
+            ENode node1 = new ENode();
+            node1.ivex = p2;
+            // 将node1链接到&quot;p1所在链表的末尾&quot;
+            if(mVexs[p1].firstEdge == null)
+              mVexs[p1].firstEdge = node1;
+            else
+                linkLast(mVexs[p1].firstEdge, node1);
+            // 初始化node2
+            ENode node2 = new ENode();
+            node2.ivex = p1;
+            // 将node2链接到&quot;p2所在链表的末尾&quot;
+            if(mVexs[p2].firstEdge == null)
+              mVexs[p2].firstEdge = node2;
+            else
+                linkLast(mVexs[p2].firstEdge, node2);
+        &#125;
+    &#125;
+
+    /*
+     * 将node节点链接到list的最后
+     */
+    private void linkLast(ENode list, ENode node) &#123;
+        ENode p = list;
+
+        while(p.nextEdge!=null)
+            p = p.nextEdge;
+        p.nextEdge = node;
+    &#125;
+
+    /*
+     * 返回ch位置
+     */
+    private int getPosition(char ch) &#123;
+        for(int i=0; i&lt;mVexs.length; i++)
+            if(mVexs[i].data==ch)
+                return i;
+        return -1;
+    &#125;
+
+    /*
+     * 读取一个输入字符
+     */
+    private char readChar() &#123;
+        char ch=&#39;0&#39;;
+
+        do &#123;
+            try &#123;
+                ch = (char)System.in.read();
+            &#125; catch (IOException e) &#123;
+                e.printStackTrace();
+            &#125;
+        &#125; while(!((ch&gt;=&#39;a&#39;&amp;&amp;ch&lt;=&#39;z&#39;) || (ch&gt;=&#39;A&#39;&amp;&amp;ch&lt;=&#39;Z&#39;)));
+
+        return ch;
+    &#125;
+
+    /*
+     * 读取一个输入字符
+     */
+    private int readInt() &#123;
+        Scanner scanner = new Scanner(System.in);
+        return scanner.nextInt();
+    &#125;
+
+    /*
+     * 深度优先搜索遍历图的递归实现
+     */
+    private void DFS(int i, boolean[] visited) &#123;
+        ENode node;
+
+        visited[i] = true;
+        System.out.printf(&quot;%c &quot;, mVexs[i].data);
+        node = mVexs[i].firstEdge;
+        while (node != null) &#123;
+            if (!visited[node.ivex])
+                DFS(node.ivex, visited);
+            node = node.nextEdge;
+        &#125;
+    &#125;
+
+    /*
+     * 深度优先搜索遍历图
+     */
+    public void DFS() &#123;
+        boolean[] visited = new boolean[mVexs.length];       // 顶点访问标记
+
+        // 初始化所有顶点都没有被访问
+        for (int i = 0; i &lt; mVexs.length; i++)
+            visited[i] = false;
+
+        System.out.printf(&quot;DFS: &quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            if (!visited[i])
+                DFS(i, visited);
+        &#125;
+        System.out.printf(&quot;\n&quot;);
+    &#125;
+
+    /*
+     * 广度优先搜索（类似于树的层次遍历）
+     */
+    public void BFS() &#123;
+        int head = 0;
+        int rear = 0;
+        int[] queue = new int[mVexs.length];            // 辅组队列
+        boolean[] visited = new boolean[mVexs.length];  // 顶点访问标记
+
+        for (int i = 0; i &lt; mVexs.length; i++)
+            visited[i] = false;
+
+        System.out.printf(&quot;BFS: &quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            if (!visited[i]) &#123;
+                visited[i] = true;
+                System.out.printf(&quot;%c &quot;, mVexs[i].data);
+                queue[rear++] = i;  // 入队列
+            &#125;
+
+            while (head != rear) &#123;
+                int j = queue[head++];  // 出队列
+                ENode node = mVexs[j].firstEdge;
+                while (node != null) &#123;
+                    int k = node.ivex;
+                    if (!visited[k])
+                    &#123;
+                        visited[k] = true;
+                        System.out.printf(&quot;%c &quot;, mVexs[k].data);
+                        queue[rear++] = k;
+                    &#125;
+                    node = node.nextEdge;
+                &#125;
+            &#125;
+        &#125;
+        System.out.printf(&quot;\n&quot;);
+    &#125;
+
+    /*
+     * 打印矩阵队列图
+     */
+    public void print() &#123;
+        System.out.printf(&quot;List Graph:\n&quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            System.out.printf(&quot;%d(%c): &quot;, i, mVexs[i].data);
+            ENode node = mVexs[i].firstEdge;
+            while (node != null) &#123;
+                System.out.printf(&quot;%d(%c) &quot;, node.ivex, mVexs[node.ivex].data);
+                node = node.nextEdge;
+            &#125;
+            System.out.printf(&quot;\n&quot;);
+        &#125;
+    &#125;
+
+    public static void main(String[] args) &#123;
+        char[] vexs = &#123;&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;, &#39;F&#39;, &#39;G&#39;&#125;;
+        char[][] edges = new char[][]&#123;
+            &#123;&#39;A&#39;, &#39;C&#39;&#125;, 
+            &#123;&#39;A&#39;, &#39;D&#39;&#125;, 
+            &#123;&#39;A&#39;, &#39;F&#39;&#125;, 
+            &#123;&#39;B&#39;, &#39;C&#39;&#125;, 
+            &#123;&#39;C&#39;, &#39;D&#39;&#125;, 
+            &#123;&#39;E&#39;, &#39;G&#39;&#125;, 
+            &#123;&#39;F&#39;, &#39;G&#39;&#125;&#125;;
+        ListUDG pG;
+
+        // 自定义&quot;图&quot;(输入矩阵队列)
+        //pG = new ListUDG();
+        // 采用已有的&quot;图&quot;
+        pG = new ListUDG(vexs, edges);
+
+        pG.print();   // 打印图
+        pG.DFS();     // 深度优先遍历
+        pG.BFS();     // 广度优先遍历
+    &#125;
+&#125;
+</code></pre>
+<h3 id="邻接矩阵实现的有向图"><a href="#邻接矩阵实现的有向图" class="headerlink" title="邻接矩阵实现的有向图"></a>邻接矩阵实现的有向图</h3><pre><code class="java">import java.io.IOException;
+import java.util.Scanner;
+
+public class MatrixDG &#123;
+
+    private char[] mVexs;       // 顶点集合
+    private int[][] mMatrix;    // 邻接矩阵
+
+    /* 
+     * 创建图(自己输入数据)
+     */
+    public MatrixDG() &#123;
+
+        // 输入&quot;顶点数&quot;和&quot;边数&quot;
+        System.out.printf(&quot;input vertex number: &quot;);
+        int vlen = readInt();
+        System.out.printf(&quot;input edge number: &quot;);
+        int elen = readInt();
+        if ( vlen &lt; 1 || elen &lt; 1 || (elen &gt; (vlen*(vlen - 1)))) &#123;
+            System.out.printf(&quot;input error: invalid parameters!\n&quot;);
+            return ;
+        &#125;
+        
+        // 初始化&quot;顶点&quot;
+        mVexs = new char[vlen];
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            System.out.printf(&quot;vertex(%d): &quot;, i);
+            mVexs[i] = readChar();
+        &#125;
+
+        // 初始化&quot;边&quot;
+        mMatrix = new int[vlen][vlen];
+        for (int i = 0; i &lt; elen; i++) &#123;
+            // 读取边的起始顶点和结束顶点
+            System.out.printf(&quot;edge(%d):&quot;, i);
+            char c1 = readChar();
+            char c2 = readChar();
+            int p1 = getPosition(c1);
+            int p2 = getPosition(c2);
+
+            if (p1==-1 || p2==-1) &#123;
+                System.out.printf(&quot;input error: invalid edge!\n&quot;);
+                return ;
+            &#125;
+
+            mMatrix[p1][p2] = 1;
+        &#125;
+    &#125;
+
+    /*
+     * 创建图(用已提供的矩阵)
+     *
+     * 参数说明：
+     *     vexs  -- 顶点数组
+     *     edges -- 边数组
+     */
+    public MatrixDG(char[] vexs, char[][] edges) &#123;
+        
+        // 初始化&quot;顶点数&quot;和&quot;边数&quot;
+        int vlen = vexs.length;
+        int elen = edges.length;
+
+        // 初始化&quot;顶点&quot;
+        mVexs = new char[vlen];
+        for (int i = 0; i &lt; mVexs.length; i++)
+            mVexs[i] = vexs[i];
+
+        // 初始化&quot;边&quot;
+        mMatrix = new int[vlen][vlen];
+        for (int i = 0; i &lt; elen; i++) &#123;
+            // 读取边的起始顶点和结束顶点
+            int p1 = getPosition(edges[i][0]);
+            int p2 = getPosition(edges[i][1]);
+
+            mMatrix[p1][p2] = 1;
+        &#125;
+    &#125;
+
+    /*
+     * 返回ch位置
+     */
+    private int getPosition(char ch) &#123;
+        for(int i=0; i&lt;mVexs.length; i++)
+            if(mVexs[i]==ch)
+                return i;
+        return -1;
+    &#125;
+
+    /*
+     * 读取一个输入字符
+     */
+    private char readChar() &#123;
+        char ch=&#39;0&#39;;
+
+        do &#123;
+            try &#123;
+                ch = (char)System.in.read();
+            &#125; catch (IOException e) &#123;
+                e.printStackTrace();
+            &#125;
+        &#125; while(!((ch&gt;=&#39;a&#39;&amp;&amp;ch&lt;=&#39;z&#39;) || (ch&gt;=&#39;A&#39;&amp;&amp;ch&lt;=&#39;Z&#39;)));
+
+        return ch;
+    &#125;
+
+    /*
+     * 读取一个输入字符
+     */
+    private int readInt() &#123;
+        Scanner scanner = new Scanner(System.in);
+        return scanner.nextInt();
+    &#125;
+
+    /*
+     * 返回顶点v的第一个邻接顶点的索引，失败则返回-1
+     */
+    private int firstVertex(int v) &#123;
+
+        if (v&lt;0 || v&gt;(mVexs.length-1))
+            return -1;
+
+        for (int i = 0; i &lt; mVexs.length; i++)
+            if (mMatrix[v][i] == 1)
+                return i;
+
+        return -1;
+    &#125;
+
+    /*
+     * 返回顶点v相对于w的下一个邻接顶点的索引，失败则返回-1
+     */
+    private int nextVertex(int v, int w) &#123;
+
+        if (v&lt;0 || v&gt;(mVexs.length-1) || w&lt;0 || w&gt;(mVexs.length-1))
+            return -1;
+
+        for (int i = w + 1; i &lt; mVexs.length; i++)
+            if (mMatrix[v][i] == 1)
+                return i;
+
+        return -1;
+    &#125;
+
+    /*
+     * 深度优先搜索遍历图的递归实现
+     */
+    private void DFS(int i, boolean[] visited) &#123;
+
+        visited[i] = true;
+        System.out.printf(&quot;%c &quot;, mVexs[i]);
+        // 遍历该顶点的所有邻接顶点。若是没有访问过，那么继续往下走
+        for (int w = firstVertex(i); w &gt;= 0; w = nextVertex(i, w)) &#123;
+            if (!visited[w])
+                DFS(w, visited);
+        &#125;
+    &#125;
+
+    /*
+     * 深度优先搜索遍历图
+     */
+    public void DFS() &#123;
+        boolean[] visited = new boolean[mVexs.length];       // 顶点访问标记
+
+        // 初始化所有顶点都没有被访问
+        for (int i = 0; i &lt; mVexs.length; i++)
+            visited[i] = false;
+
+        System.out.printf(&quot;DFS: &quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            if (!visited[i])
+                DFS(i, visited);
+        &#125;
+        System.out.printf(&quot;\n&quot;);
+    &#125;
+
+    /*
+     * 广度优先搜索（类似于树的层次遍历）
+     */
+    public void BFS() &#123;
+        int head = 0;
+        int rear = 0;
+        int[] queue = new int[mVexs.length];            // 辅组队列
+        boolean[] visited = new boolean[mVexs.length];  // 顶点访问标记
+
+        for (int i = 0; i &lt; mVexs.length; i++)
+            visited[i] = false;
+
+        System.out.printf(&quot;BFS: &quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            if (!visited[i]) &#123;
+                visited[i] = true;
+                System.out.printf(&quot;%c &quot;, mVexs[i]);
+                queue[rear++] = i;  // 入队列
+            &#125;
+
+            while (head != rear) &#123;
+                int j = queue[head++];  // 出队列
+                for (int k = firstVertex(j); k &gt;= 0; k = nextVertex(j, k)) &#123; //k是为访问的邻接顶点
+                    if (!visited[k]) &#123;
+                        visited[k] = true;
+                        System.out.printf(&quot;%c &quot;, mVexs[k]);
+                        queue[rear++] = k;
+                    &#125;
+                &#125;
+            &#125;
+        &#125;
+        System.out.printf(&quot;\n&quot;);
+    &#125;
+
+    /*
+     * 打印矩阵队列图
+     */
+    public void print() &#123;
+        System.out.printf(&quot;Martix Graph:\n&quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            for (int j = 0; j &lt; mVexs.length; j++)
+                System.out.printf(&quot;%d &quot;, mMatrix[i][j]);
+            System.out.printf(&quot;\n&quot;);
+        &#125;
+    &#125;
+
+    public static void main(String[] args) &#123;
+        char[] vexs = &#123;&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;, &#39;F&#39;, &#39;G&#39;&#125;;
+        char[][] edges = new char[][]&#123;
+            &#123;&#39;A&#39;, &#39;B&#39;&#125;, 
+            &#123;&#39;B&#39;, &#39;C&#39;&#125;, 
+            &#123;&#39;B&#39;, &#39;E&#39;&#125;, 
+            &#123;&#39;B&#39;, &#39;F&#39;&#125;, 
+            &#123;&#39;C&#39;, &#39;E&#39;&#125;, 
+            &#123;&#39;D&#39;, &#39;C&#39;&#125;, 
+            &#123;&#39;E&#39;, &#39;B&#39;&#125;, 
+            &#123;&#39;E&#39;, &#39;D&#39;&#125;, 
+            &#123;&#39;F&#39;, &#39;G&#39;&#125;&#125;; 
+        MatrixDG pG;
+
+        // 自定义&quot;图&quot;(输入矩阵队列)
+        //pG = new MatrixDG();
+        // 采用已有的&quot;图&quot;
+        pG = new MatrixDG(vexs, edges);
+
+        pG.print();   // 打印图
+        pG.DFS();     // 深度优先遍历
+        pG.BFS();     // 广度优先遍历
+    &#125;
+&#125;
+</code></pre>
+<h3 id="邻接表实现的有向图"><a href="#邻接表实现的有向图" class="headerlink" title="邻接表实现的有向图"></a>邻接表实现的有向图</h3><pre><code class="java">import java.io.IOException;
+import java.util.Scanner;
+
+public class ListDG &#123;
+    // 邻接表中表对应的链表的顶点
+    private class ENode &#123;
+        int ivex;       // 该边所指向的顶点的位置
+        ENode nextEdge; // 指向下一条弧的指针
+    &#125;
+
+    // 邻接表中表的顶点
+    private class VNode &#123;
+        char data;          // 顶点信息
+        ENode firstEdge;    // 指向第一条依附该顶点的弧
+    &#125;;
+
+    private VNode[] mVexs;  // 顶点数组
+
+
+    /* 
+     * 创建图(自己输入数据)
+     */
+    public ListDG() &#123;
+
+        // 输入&quot;顶点数&quot;和&quot;边数&quot;
+        System.out.printf(&quot;input vertex number: &quot;);
+        int vlen = readInt();
+        System.out.printf(&quot;input edge number: &quot;);
+        int elen = readInt();
+        if ( vlen &lt; 1 || elen &lt; 1 || (elen &gt; (vlen*(vlen - 1)))) &#123;
+            System.out.printf(&quot;input error: invalid parameters!\n&quot;);
+            return ;
+        &#125;
+        
+        // 初始化&quot;顶点&quot;
+        mVexs = new VNode[vlen];
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            System.out.printf(&quot;vertex(%d): &quot;, i);
+            mVexs[i] = new VNode();
+            mVexs[i].data = readChar();
+            mVexs[i].firstEdge = null;
+        &#125;
+
+        // 初始化&quot;边&quot;
+        //mMatrix = new int[vlen][vlen];
+        for (int i = 0; i &lt; elen; i++) &#123;
+            // 读取边的起始顶点和结束顶点
+            System.out.printf(&quot;edge(%d):&quot;, i);
+            char c1 = readChar();
+            char c2 = readChar();
+            int p1 = getPosition(c1);
+            int p2 = getPosition(c2);
+            // 初始化node1
+            ENode node1 = new ENode();
+            node1.ivex = p2;
+            // 将node1链接到&quot;p1所在链表的末尾&quot;
+            if(mVexs[p1].firstEdge == null)
+              mVexs[p1].firstEdge = node1;
+            else
+                linkLast(mVexs[p1].firstEdge, node1);
+        &#125;
+    &#125;
+
+    /*
+     * 创建图(用已提供的矩阵)
+     *
+     * 参数说明：
+     *     vexs  -- 顶点数组
+     *     edges -- 边数组
+     */
+    public ListDG(char[] vexs, char[][] edges) &#123;
+        
+        // 初始化&quot;顶点数&quot;和&quot;边数&quot;
+        int vlen = vexs.length;
+        int elen = edges.length;
+
+        // 初始化&quot;顶点&quot;
+        mVexs = new VNode[vlen];
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            mVexs[i] = new VNode();
+            mVexs[i].data = vexs[i];
+            mVexs[i].firstEdge = null;
+        &#125;
+
+        // 初始化&quot;边&quot;
+        for (int i = 0; i &lt; elen; i++) &#123;
+            // 读取边的起始顶点和结束顶点
+            char c1 = edges[i][0];
+            char c2 = edges[i][1];
+            // 读取边的起始顶点和结束顶点
+            int p1 = getPosition(edges[i][0]);
+            int p2 = getPosition(edges[i][1]);
+
+            // 初始化node1
+            ENode node1 = new ENode();
+            node1.ivex = p2;
+            // 将node1链接到&quot;p1所在链表的末尾&quot;
+            if(mVexs[p1].firstEdge == null)
+              mVexs[p1].firstEdge = node1;
+            else
+                linkLast(mVexs[p1].firstEdge, node1);
+        &#125;
+    &#125;
+
+    /*
+     * 将node节点链接到list的最后
+     */
+    private void linkLast(ENode list, ENode node) &#123;
+        ENode p = list;
+
+        while(p.nextEdge!=null)
+            p = p.nextEdge;
+        p.nextEdge = node;
+    &#125;
+
+    /*
+     * 返回ch位置
+     */
+    private int getPosition(char ch) &#123;
+        for(int i=0; i&lt;mVexs.length; i++)
+            if(mVexs[i].data==ch)
+                return i;
+        return -1;
+    &#125;
+
+    /*
+     * 读取一个输入字符
+     */
+    private char readChar() &#123;
+        char ch=&#39;0&#39;;
+
+        do &#123;
+            try &#123;
+                ch = (char)System.in.read();
+            &#125; catch (IOException e) &#123;
+                e.printStackTrace();
+            &#125;
+        &#125; while(!((ch&gt;=&#39;a&#39;&amp;&amp;ch&lt;=&#39;z&#39;) || (ch&gt;=&#39;A&#39;&amp;&amp;ch&lt;=&#39;Z&#39;)));
+
+        return ch;
+    &#125;
+
+    /*
+     * 读取一个输入字符
+     */
+    private int readInt() &#123;
+        Scanner scanner = new Scanner(System.in);
+        return scanner.nextInt();
+    &#125;
+
+    /*
+     * 深度优先搜索遍历图的递归实现
+     */
+    private void DFS(int i, boolean[] visited) &#123;
+        ENode node;
+
+        visited[i] = true;
+        System.out.printf(&quot;%c &quot;, mVexs[i].data);
+        node = mVexs[i].firstEdge;
+        while (node != null) &#123;
+            if (!visited[node.ivex])
+                DFS(node.ivex, visited);
+            node = node.nextEdge;
+        &#125;
+    &#125;
+
+    /*
+     * 深度优先搜索遍历图
+     */
+    public void DFS() &#123;
+        boolean[] visited = new boolean[mVexs.length];       // 顶点访问标记
+
+        // 初始化所有顶点都没有被访问
+        for (int i = 0; i &lt; mVexs.length; i++)
+            visited[i] = false;
+
+        System.out.printf(&quot;DFS: &quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            if (!visited[i])
+                DFS(i, visited);
+        &#125;
+        System.out.printf(&quot;\n&quot;);
+    &#125;
+
+    /*
+     * 广度优先搜索（类似于树的层次遍历）
+     */
+    public void BFS() &#123;
+        int head = 0;
+        int rear = 0;
+        int[] queue = new int[mVexs.length];            // 辅组队列
+        boolean[] visited = new boolean[mVexs.length];  // 顶点访问标记
+
+        for (int i = 0; i &lt; mVexs.length; i++)
+            visited[i] = false;
+
+        System.out.printf(&quot;BFS: &quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            if (!visited[i]) &#123;
+                visited[i] = true;
+                System.out.printf(&quot;%c &quot;, mVexs[i].data);
+                queue[rear++] = i;  // 入队列
+            &#125;
+
+            while (head != rear) &#123;
+                int j = queue[head++];  // 出队列
+                ENode node = mVexs[j].firstEdge;
+                while (node != null) &#123;
+                    int k = node.ivex;
+                    if (!visited[k])
+                    &#123;
+                        visited[k] = true;
+                        System.out.printf(&quot;%c &quot;, mVexs[k].data);
+                        queue[rear++] = k;
+                    &#125;
+                    node = node.nextEdge;
+                &#125;
+            &#125;
+        &#125;
+        System.out.printf(&quot;\n&quot;);
+    &#125;
+
+    /*
+     * 打印矩阵队列图
+     */
+    public void print() &#123;
+        System.out.printf(&quot;List Graph:\n&quot;);
+        for (int i = 0; i &lt; mVexs.length; i++) &#123;
+            System.out.printf(&quot;%d(%c): &quot;, i, mVexs[i].data);
+            ENode node = mVexs[i].firstEdge;
+            while (node != null) &#123;
+                System.out.printf(&quot;%d(%c) &quot;, node.ivex, mVexs[node.ivex].data);
+                node = node.nextEdge;
+            &#125;
+            System.out.printf(&quot;\n&quot;);
+        &#125;
+    &#125;
+
+    public static void main(String[] args) &#123;
+        char[] vexs = &#123;&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;, &#39;F&#39;, &#39;G&#39;&#125;;
+        char[][] edges = new char[][]&#123;
+            &#123;&#39;A&#39;, &#39;B&#39;&#125;, 
+            &#123;&#39;B&#39;, &#39;C&#39;&#125;, 
+            &#123;&#39;B&#39;, &#39;E&#39;&#125;, 
+            &#123;&#39;B&#39;, &#39;F&#39;&#125;, 
+            &#123;&#39;C&#39;, &#39;E&#39;&#125;, 
+            &#123;&#39;D&#39;, &#39;C&#39;&#125;, 
+            &#123;&#39;E&#39;, &#39;B&#39;&#125;, 
+            &#123;&#39;E&#39;, &#39;D&#39;&#125;, 
+            &#123;&#39;F&#39;, &#39;G&#39;&#125;&#125;; 
+        ListDG pG;
+
+        // 自定义&quot;图&quot;(输入矩阵队列)
+        //pG = new ListDG();
+        // 采用已有的&quot;图&quot;
+        pG = new ListDG(vexs, edges);
+
+        pG.print();   // 打印图
+        pG.DFS();     // 深度优先遍历
+        pG.BFS();     // 广度优先遍历
+    &#125;
+&#125;
+</code></pre>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p>本文主要参考至 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/skywang12345/p/3711483.html">https://www.cnblogs.com/skywang12345/p/3711483.html</a>, 在此基础上做了内容的增改。</p>
 
                 

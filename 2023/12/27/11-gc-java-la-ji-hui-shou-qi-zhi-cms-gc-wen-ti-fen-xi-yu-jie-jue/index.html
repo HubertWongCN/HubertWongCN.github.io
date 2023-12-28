@@ -508,8 +508,95 @@
 <h4 id="3-1-2-读懂-GC-Cause"><a href="#3-1-2-读懂-GC-Cause" class="headerlink" title="3.1.2 读懂 GC Cause"></a>3.1.2 读懂 GC Cause</h4><p>拿到 GC 日志，我们就可以简单分析 GC 情况了，通过一些工具，我们可以比较直观地看到 Cause 的分布情况，如下图就是使用 gceasy 绘制的图表：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271445325.png" alt="img"></p>
 <p>如上图所示，我们很清晰的就能知道是什么原因引起的 GC，以及每次的时间花费情况，但是要分析 GC 的问题，先要读懂 GC Cause，即 JVM 什么样的条件下选择进行 GC 操作，具体 Cause 的分类可以看一下 Hotspot 源码：<code>src/share/vm/gc/shared/gcCause.hpp 和 src/share/vm/gc/shared/gcCause.cpp</code> 中。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">const</span> <span class="type">char</span>* <span class="title">GCCause::to_string</span><span class="params">(GCCause::Cause cause)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (cause) &#123;</span><br><span class="line">    <span class="keyword">case</span> _java_lang_system_gc:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;System.gc()&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _full_gc_alot:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;FullGCAlot&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _scavenge_alot:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;ScavengeAlot&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _allocation_profiler:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Allocation Profiler&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _jvmti_force_gc:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;JvmtiEnv ForceGarbageCollection&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _gc_locker:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;GCLocker Initiated GC&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _heap_inspection:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Heap Inspection Initiated GC&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _heap_dump:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Heap Dump Initiated GC&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _wb_young_gc:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;WhiteBox Initiated Young GC&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _wb_conc_mark:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;WhiteBox Initiated Concurrent Mark&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _wb_full_gc:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;WhiteBox Initiated Full GC&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _no_gc:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;No GC&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _allocation_failure:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Allocation Failure&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _tenured_generation_full:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Tenured Generation Full&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _metadata_GC_threshold:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Metadata GC Threshold&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _metadata_GC_clear_soft_refs:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Metadata GC Clear Soft References&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _cms_generation_full:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;CMS Generation Full&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _cms_initial_mark:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;CMS Initial Mark&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _cms_final_remark:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;CMS Final Remark&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _cms_concurrent_mark:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;CMS Concurrent Mark&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _old_generation_expanded_on_last_scavenge:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Old Generation Expanded On Last Scavenge&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _old_generation_too_full_to_scavenge:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Old Generation Too Full To Scavenge&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _adaptive_size_policy:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Ergonomics&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _g1_inc_collection_pause:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;G1 Evacuation Pause&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _g1_humongous_allocation:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;G1 Humongous Allocation&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _dcmd_gc_run:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;Diagnostic Command&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> _last_gc_cause:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;ILLEGAL VALUE - last gc cause - ILLEGAL VALUE&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;unknown GCCause&quot;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">ShouldNotReachHere</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">const char* GCCause::to_string(GCCause::Cause cause) &#123;
+  switch (cause) &#123;
+    case _java_lang_system_gc:
+      return &quot;System.gc()&quot;;
 
+    case _full_gc_alot:
+      return &quot;FullGCAlot&quot;;
+
+    case _scavenge_alot:
+      return &quot;ScavengeAlot&quot;;
+
+    case _allocation_profiler:
+      return &quot;Allocation Profiler&quot;;
+
+    case _jvmti_force_gc:
+      return &quot;JvmtiEnv ForceGarbageCollection&quot;;
+
+    case _gc_locker:
+      return &quot;GCLocker Initiated GC&quot;;
+
+    case _heap_inspection:
+      return &quot;Heap Inspection Initiated GC&quot;;
+
+    case _heap_dump:
+      return &quot;Heap Dump Initiated GC&quot;;
+
+    case _wb_young_gc:
+      return &quot;WhiteBox Initiated Young GC&quot;;
+
+    case _wb_conc_mark:
+      return &quot;WhiteBox Initiated Concurrent Mark&quot;;
+
+    case _wb_full_gc:
+      return &quot;WhiteBox Initiated Full GC&quot;;
+
+    case _no_gc:
+      return &quot;No GC&quot;;
+
+    case _allocation_failure:
+      return &quot;Allocation Failure&quot;;
+
+    case _tenured_generation_full:
+      return &quot;Tenured Generation Full&quot;;
+
+    case _metadata_GC_threshold:
+      return &quot;Metadata GC Threshold&quot;;
+
+    case _metadata_GC_clear_soft_refs:
+      return &quot;Metadata GC Clear Soft References&quot;;
+
+    case _cms_generation_full:
+      return &quot;CMS Generation Full&quot;;
+
+    case _cms_initial_mark:
+      return &quot;CMS Initial Mark&quot;;
+
+    case _cms_final_remark:
+      return &quot;CMS Final Remark&quot;;
+
+    case _cms_concurrent_mark:
+      return &quot;CMS Concurrent Mark&quot;;
+
+    case _old_generation_expanded_on_last_scavenge:
+      return &quot;Old Generation Expanded On Last Scavenge&quot;;
+
+    case _old_generation_too_full_to_scavenge:
+      return &quot;Old Generation Too Full To Scavenge&quot;;
+
+    case _adaptive_size_policy:
+      return &quot;Ergonomics&quot;;
+
+    case _g1_inc_collection_pause:
+      return &quot;G1 Evacuation Pause&quot;;
+
+    case _g1_humongous_allocation:
+      return &quot;G1 Humongous Allocation&quot;;
+
+    case _dcmd_gc_run:
+      return &quot;Diagnostic Command&quot;;
+
+    case _last_gc_cause:
+      return &quot;ILLEGAL VALUE - last gc cause - ILLEGAL VALUE&quot;;
+
+    default:
+      return &quot;unknown GCCause&quot;;
+  &#125;
+  ShouldNotReachHere();
+&#125;
+</code></pre>
 <p>重点需要关注的几个GC Cause：</p>
 <ul>
 <li><code>System.gc()</code>： 手动触发GC操作。</li>
@@ -519,8 +606,93 @@
 <li><code>GCLocker Initiated GC</code>： 如果线程执行在 JNI 临界区时，刚好需要进行 GC，此时 GC Locker 将会阻止 GC 的发生，同时阻止其他线程进入 JNI 临界区，直到最后一个线程退出临界区时触发一次 GC。</li>
 </ul>
 <p>什么时机使用这些 Cause 触发回收，大家可以看一下 CMS 的代码，这里就不讨论了，具体在 <code>/src/hotspot/share/gc/cms/concurrentMarkSweepGeneration.cpp</code> 中。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">CMSCollector::shouldConcurrentCollect</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">LogTarget</span>(Trace, gc) log;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (_full_gc_requested) &#123;</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector: collect because of explicit  gc request (or GCLocker)&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function">FreelistLocker <span class="title">x</span><span class="params">(<span class="keyword">this</span>)</span></span>;</span><br><span class="line">  <span class="comment">// ------------------------------------------------------------------</span></span><br><span class="line">  <span class="comment">// Print out lots of information which affects the initiation of</span></span><br><span class="line">  <span class="comment">// a collection.</span></span><br><span class="line">  <span class="keyword">if</span> (log.<span class="built_in">is_enabled</span>() &amp;&amp; <span class="built_in">stats</span>().<span class="built_in">valid</span>()) &#123;</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector shouldConcurrentCollect: &quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function">LogStream <span class="title">out</span><span class="params">(log)</span></span>;</span><br><span class="line">    <span class="built_in">stats</span>().<span class="built_in">print_on</span>(&amp;out);</span><br><span class="line"></span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;time_until_cms_gen_full %3.7f&quot;</span>, <span class="built_in">stats</span>().<span class="built_in">time_until_cms_gen_full</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;free=&quot;</span> SIZE_FORMAT, _cmsGen-&gt;<span class="built_in">free</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;contiguous_available=&quot;</span> SIZE_FORMAT, _cmsGen-&gt;<span class="built_in">contiguous_available</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;promotion_rate=%g&quot;</span>, <span class="built_in">stats</span>().<span class="built_in">promotion_rate</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;cms_allocation_rate=%g&quot;</span>, <span class="built_in">stats</span>().<span class="built_in">cms_allocation_rate</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;occupancy=%3.7f&quot;</span>, _cmsGen-&gt;<span class="built_in">occupancy</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;initiatingOccupancy=%3.7f&quot;</span>, _cmsGen-&gt;<span class="built_in">initiating_occupancy</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;cms_time_since_begin=%3.7f&quot;</span>, <span class="built_in">stats</span>().<span class="built_in">cms_time_since_begin</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;cms_time_since_end=%3.7f&quot;</span>, <span class="built_in">stats</span>().<span class="built_in">cms_time_since_end</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;metadata initialized %d&quot;</span>, MetaspaceGC::<span class="built_in">should_concurrent_collect</span>());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ------------------------------------------------------------------</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// If the estimated time to complete a cms collection (cms_duration())</span></span><br><span class="line">  <span class="comment">// is less than the estimated time remaining until the cms generation</span></span><br><span class="line">  <span class="comment">// is full, start a collection.</span></span><br><span class="line">  <span class="keyword">if</span> (!UseCMSInitiatingOccupancyOnly) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">stats</span>().<span class="built_in">valid</span>()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">stats</span>().<span class="built_in">time_until_cms_start</span>() == <span class="number">0.0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">   </span><br><span class="line">      <span class="keyword">if</span> (_cmsGen-&gt;<span class="built_in">occupancy</span>() &gt;= _bootstrap_occupancy) &#123;</span><br><span class="line">        log.<span class="built_in">print</span>(<span class="string">&quot; CMSCollector: collect for bootstrapping statistics: occupancy = %f, boot occupancy = %f&quot;</span>,</span><br><span class="line">                  _cmsGen-&gt;<span class="built_in">occupancy</span>(), _bootstrap_occupancy);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (_cmsGen-&gt;<span class="built_in">should_concurrent_collect</span>()) &#123;</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;CMS old gen initiated&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  CMSHeap* heap = CMSHeap::<span class="built_in">heap</span>();</span><br><span class="line">  <span class="keyword">if</span> (heap-&gt;<span class="built_in">incremental_collection_will_fail</span>(<span class="literal">true</span> <span class="comment">/* consult_young */</span>)) &#123;</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector: collect because incremental collection will fail &quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (MetaspaceGC::<span class="built_in">should_concurrent_collect</span>()) &#123;</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector: collect for metadata allocation &quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// CMSTriggerInterval starts a CMS cycle if enough time has passed.</span></span><br><span class="line">  <span class="keyword">if</span> (CMSTriggerInterval &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (CMSTriggerInterval == <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// Trigger always</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Check the CMS time since begin (we do not check the stats validity</span></span><br><span class="line">    <span class="comment">// as we want to be able to trigger the first CMS cycle as well)</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">stats</span>().<span class="built_in">cms_time_since_begin</span>() &gt;= (CMSTriggerInterval / ((<span class="type">double</span>) MILLIUNITS))) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">stats</span>().<span class="built_in">valid</span>()) &#123;</span><br><span class="line">        log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector: collect because of trigger interval (time since last begin %3.7f secs)&quot;</span>,</span><br><span class="line">                  <span class="built_in">stats</span>().<span class="built_in">cms_time_since_begin</span>());</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector: collect because of trigger interval (first collection)&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">bool CMSCollector::shouldConcurrentCollect() &#123;
+  LogTarget(Trace, gc) log;
 
+  if (_full_gc_requested) &#123;
+    log.print(&quot;CMSCollector: collect because of explicit  gc request (or GCLocker)&quot;);
+    return true;
+  &#125;
+
+  FreelistLocker x(this);
+  // ------------------------------------------------------------------
+  // Print out lots of information which affects the initiation of
+  // a collection.
+  if (log.is_enabled() &amp;&amp; stats().valid()) &#123;
+    log.print(&quot;CMSCollector shouldConcurrentCollect: &quot;);
+
+    LogStream out(log);
+    stats().print_on(&amp;out);
+
+    log.print(&quot;time_until_cms_gen_full %3.7f&quot;, stats().time_until_cms_gen_full());
+    log.print(&quot;free=&quot; SIZE_FORMAT, _cmsGen-&gt;free());
+    log.print(&quot;contiguous_available=&quot; SIZE_FORMAT, _cmsGen-&gt;contiguous_available());
+    log.print(&quot;promotion_rate=%g&quot;, stats().promotion_rate());
+    log.print(&quot;cms_allocation_rate=%g&quot;, stats().cms_allocation_rate());
+    log.print(&quot;occupancy=%3.7f&quot;, _cmsGen-&gt;occupancy());
+    log.print(&quot;initiatingOccupancy=%3.7f&quot;, _cmsGen-&gt;initiating_occupancy());
+    log.print(&quot;cms_time_since_begin=%3.7f&quot;, stats().cms_time_since_begin());
+    log.print(&quot;cms_time_since_end=%3.7f&quot;, stats().cms_time_since_end());
+    log.print(&quot;metadata initialized %d&quot;, MetaspaceGC::should_concurrent_collect());
+  &#125;
+  // ------------------------------------------------------------------
+
+  // If the estimated time to complete a cms collection (cms_duration())
+  // is less than the estimated time remaining until the cms generation
+  // is full, start a collection.
+  if (!UseCMSInitiatingOccupancyOnly) &#123;
+    if (stats().valid()) &#123;
+      if (stats().time_until_cms_start() == 0.0) &#123;
+        return true;
+      &#125;
+    &#125; else &#123;
+   
+      if (_cmsGen-&gt;occupancy() &gt;= _bootstrap_occupancy) &#123;
+        log.print(&quot; CMSCollector: collect for bootstrapping statistics: occupancy = %f, boot occupancy = %f&quot;,
+                  _cmsGen-&gt;occupancy(), _bootstrap_occupancy);
+        return true;
+      &#125;
+    &#125;
+  &#125;
+  if (_cmsGen-&gt;should_concurrent_collect()) &#123;
+    log.print(&quot;CMS old gen initiated&quot;);
+    return true;
+  &#125;
+
+  CMSHeap* heap = CMSHeap::heap();
+  if (heap-&gt;incremental_collection_will_fail(true /* consult_young */)) &#123;
+    log.print(&quot;CMSCollector: collect because incremental collection will fail &quot;);
+    return true;
+  &#125;
+
+  if (MetaspaceGC::should_concurrent_collect()) &#123;
+    log.print(&quot;CMSCollector: collect for metadata allocation &quot;);
+    return true;
+  &#125;
+
+  // CMSTriggerInterval starts a CMS cycle if enough time has passed.
+  if (CMSTriggerInterval &gt;= 0) &#123;
+    if (CMSTriggerInterval == 0) &#123;
+      // Trigger always
+      return true;
+    &#125;
+
+    // Check the CMS time since begin (we do not check the stats validity
+    // as we want to be able to trigger the first CMS cycle as well)
+    if (stats().cms_time_since_begin() &gt;= (CMSTriggerInterval / ((double) MILLIUNITS))) &#123;
+      if (stats().valid()) &#123;
+        log.print(&quot;CMSCollector: collect because of trigger interval (time since last begin %3.7f secs)&quot;,
+                  stats().cms_time_since_begin());
+      &#125; else &#123;
+        log.print(&quot;CMSCollector: collect because of trigger interval (first collection)&quot;);
+      &#125;
+      return true;
+    &#125;
+  &#125;
+
+  return false;
+&#125;
+</code></pre>
 <h3 id="3-2-判断是不是-GC-引发的问题？"><a href="#3-2-判断是不是-GC-引发的问题？" class="headerlink" title="3.2 判断是不是 GC 引发的问题？"></a>3.2 判断是不是 GC 引发的问题？</h3><p>到底是结果（现象）还是原因，在一次 GC 问题处理的过程中，如何判断是 GC 导致的故障，还是系统本身引发 GC 问题。这里继续拿在本文开头提到的一个 Case：“GC 耗时增大、线程 Block 增多、慢查询增多、CPU 负载高等四个表象，如何判断哪个是根因？”，笔者这里根据自己的经验大致整理了四种判断方法供参考：</p>
 <ul>
 <li><strong>时序分析</strong>： 先发生的事件是根因的概率更大，通过监控手段分析各个指标的异常时间点，还原事件时间线，如先观察到 CPU 负载高（要有足够的时间 Gap），那么整个问题影响链就可能是：CPU 负载高 -&gt; 慢查询增多 -&gt; GC 耗时增大 -&gt; 线程Block增多 -&gt; RT 上涨。</li>
@@ -547,13 +719,19 @@
 <li><p><strong>Partial GC</strong>： 部分收集操作的 GC，只对某些分代&#x2F;分区进行回收。</p>
 <ul>
 <li><pre><code>Young GC
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  ： 分代收集里面的 Young 区收集动作，也可以叫做 Minor GC。 </span><br><span class="line"></span><br><span class="line">  - `ParNew`： Young GC 频繁，参见“场景四：过早晋升”。</span><br><span class="line"></span><br><span class="line">- ```</span><br><span class="line">  Old GC</span><br></pre></td></tr></table></figure>
-
-： 分代收集里面的 Old 区收集动作，也可以叫做 Major GC，有些也会叫做 Full GC，但其实这种叫法是不规范的，在 CMS 发生 Foreground GC 时才是 Full GC，CMSScavengeBeforeRemark 参数也只是在 Remark 前触发一次Young GC。 
-
-- CMS： Old GC 频繁，参见“场景五：CMS Old GC 频繁”。
-- CMS： Old GC 不频繁但单次耗时大，参见“场景六：单次 CMS Old GC 耗时长”。
 </code></pre>
+<p>： 分代收集里面的 Young 区收集动作，也可以叫做 Minor GC。 </p>
+<ul>
+<li><code>ParNew</code>： Young GC 频繁，参见“场景四：过早晋升”。</li>
+</ul>
+</li>
+<li><pre><code>Old GC
+</code></pre>
+<p>： 分代收集里面的 Old 区收集动作，也可以叫做 Major GC，有些也会叫做 Full GC，但其实这种叫法是不规范的，在 CMS 发生 Foreground GC 时才是 Full GC，CMSScavengeBeforeRemark 参数也只是在 Remark 前触发一次Young GC。 </p>
+<ul>
+<li>CMS： Old GC 频繁，参见“场景五：CMS Old GC 频繁”。</li>
+<li>CMS： Old GC 不频繁但单次耗时大，参见“场景六：单次 CMS Old GC 耗时长”。</li>
+</ul>
 </li>
 </ul>
 </li>
@@ -570,11 +748,43 @@
 <h2 id="4-常见场景分析与解决"><a href="#4-常见场景分析与解决" class="headerlink" title="4. 常见场景分析与解决"></a>4. 常见场景分析与解决</h2><h3 id="4-1-场景一：动态扩容引起的空间震荡"><a href="#4-1-场景一：动态扩容引起的空间震荡" class="headerlink" title="4.1 场景一：动态扩容引起的空间震荡"></a>4.1 场景一：动态扩容引起的空间震荡</h3><h4 id="4-1-1-现象"><a href="#4-1-1-现象" class="headerlink" title="4.1.1 现象"></a>4.1.1 现象</h4><p>服务刚刚启动时 GC 次数较多，最大空间剩余很多但是依然发生 GC，这种情况我们可以通过观察 GC 日志或者通过监控工具来观察堆的空间变化情况即可。GC Cause 一般为 Allocation Failure，且在 GC 日志中会观察到经历一次 GC ，堆内各个空间的大小会被调整，如下图所示：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271446345.png" alt="img"></p>
 <h4 id="4-1-2-原因"><a href="#4-1-2-原因" class="headerlink" title="4.1.2 原因"></a>4.1.2 原因</h4><p>在 JVM 的参数中 <code>-Xms</code> 和 <code>-Xmx</code> 设置的不一致，在初始化时只会初始 <code>-Xms</code> 大小的空间存储信息，每当空间不够用时再向操作系统申请，这样的话必然要进行一次 GC。具体是通过 <code>ConcurrentMarkSweepGeneration::compute_new_size()</code> 方法计算新的空间大小：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">ConcurrentMarkSweepGeneration::compute_new_size</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">assert_locked_or_safepoint</span>(Heap_lock);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// If incremental collection failed, we just want to expand</span></span><br><span class="line">  <span class="comment">// to the limit.</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">incremental_collection_failed</span>()) &#123;</span><br><span class="line">    <span class="built_in">clear_incremental_collection_failed</span>();</span><br><span class="line">    <span class="built_in">grow_to_reserved</span>();</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The heap has been compacted but not reset yet.</span></span><br><span class="line">  <span class="comment">// Any metric such as free() or used() will be incorrect.</span></span><br><span class="line"></span><br><span class="line">  CardGeneration::<span class="built_in">compute_new_size</span>();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Reset again after a possible resizing</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">did_compact</span>()) &#123;</span><br><span class="line">    <span class="built_in">cmsSpace</span>()-&gt;<span class="built_in">reset_after_compaction</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">void ConcurrentMarkSweepGeneration::compute_new_size() &#123;
+  assert_locked_or_safepoint(Heap_lock);
 
+  // If incremental collection failed, we just want to expand
+  // to the limit.
+  if (incremental_collection_failed()) &#123;
+    clear_incremental_collection_failed();
+    grow_to_reserved();
+    return;
+  &#125;
+
+  // The heap has been compacted but not reset yet.
+  // Any metric such as free() or used() will be incorrect.
+
+  CardGeneration::compute_new_size();
+
+  // Reset again after a possible resizing
+  if (did_compact()) &#123;
+    cmsSpace()-&gt;reset_after_compaction();
+  &#125;
+&#125;
+</code></pre>
 <p>另外，如果空间剩余很多时也会进行缩容操作，JVM 通过 <code>-XX:MinHeapFreeRatio</code> 和 <code>-XX:MaxHeapFreeRatio</code> 来控制扩容和缩容的比例，调节这两个值也可以控制伸缩的时机，例如扩容便是使用 <code>GenCollectedHeap::expand_heap_and_allocate()</code> 来完成的，代码如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">HeapWord* <span class="title">GenCollectedHeap::expand_heap_and_allocate</span><span class="params">(<span class="type">size_t</span> size, <span class="type">bool</span>   is_tlab)</span> </span>&#123;</span><br><span class="line">  HeapWord* result = <span class="literal">NULL</span>;</span><br><span class="line">  <span class="keyword">if</span> (_old_gen-&gt;<span class="built_in">should_allocate</span>(size, is_tlab)) &#123;</span><br><span class="line">    result = _old_gen-&gt;<span class="built_in">expand_and_allocate</span>(size, is_tlab);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (result == <span class="literal">NULL</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (_young_gen-&gt;<span class="built_in">should_allocate</span>(size, is_tlab)) &#123;</span><br><span class="line">      result = _young_gen-&gt;<span class="built_in">expand_and_allocate</span>(size, is_tlab);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">assert</span>(result == <span class="literal">NULL</span> || <span class="built_in">is_in_reserved</span>(result), <span class="string">&quot;result not in heap&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="cpp">HeapWord* GenCollectedHeap::expand_heap_and_allocate(size_t size, bool   is_tlab) &#123;
+  HeapWord* result = NULL;
+  if (_old_gen-&gt;should_allocate(size, is_tlab)) &#123;
+    result = _old_gen-&gt;expand_and_allocate(size, is_tlab);
+  &#125;
+  if (result == NULL) &#123;
+    if (_young_gen-&gt;should_allocate(size, is_tlab)) &#123;
+      result = _young_gen-&gt;expand_and_allocate(size, is_tlab);
+    &#125;
+  &#125;
+  assert(result == NULL || is_in_reserved(result), &quot;result not in heap&quot;);
+  return result;
+&#125;
+</code></pre>
 <p>整个伸缩的模型理解可以看这个图，当 committed 的空间大小超过了低水位&#x2F;高水位的大小，capacity 也会随之调整：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271447808.jpg" alt="img"></p>
 <h4 id="4-1-3-策略"><a href="#4-1-3-策略" class="headerlink" title="4.1.3 策略"></a>4.1.3 策略</h4><p><strong>定位</strong>：观察 CMS GC 触发时间点 <code>Old/MetaSpace </code>区的 committed 占比是不是一个固定的值，或者像上文提到的观察总的内存使用率也可以。</p>
@@ -583,15 +793,68 @@
 <p>这个问题虽然初级，但是发生的概率还真不小，尤其是在一些规范不太健全的情况下。</p>
 <h3 id="4-2-场景二：显式-GC-的去与留"><a href="#4-2-场景二：显式-GC-的去与留" class="headerlink" title="4.2 场景二：显式 GC 的去与留"></a>4.2 场景二：显式 GC 的去与留</h3><h4 id="4-2-1-现象"><a href="#4-2-1-现象" class="headerlink" title="4.2.1 现象"></a>4.2.1 现象</h4><p>除了扩容缩容会触发 CMS GC 之外，还有 Old 区达到回收阈值、MetaSpace 空间不足、Young 区晋升失败、大对象担保失败等几种触发条件，如果这些情况都没有发生却触发了 GC ？这种情况有可能是代码中手动调用了 System.gc 方法，此时可以找到 GC 日志中的 GC Cause 确认下。那么这种 GC 到底有没有问题，翻看网上的一些资料，有人说可以添加 <code>-XX:+DisableExplicitGC</code> 参数来避免这种 GC，也有人说不能加这个参数，加了就会影响 Native Memory 的回收。先说结论，笔者这里建议保留 System.gc，那为什么要保留？我们一起来分析下。</p>
 <h4 id="4-2-2-原因"><a href="#4-2-2-原因" class="headerlink" title="4.2.2 原因"></a>4.2.2 原因</h4><p>找到 System.gc 在 Hotspot 中的源码，可以发现增加 <code>-XX:+DisableExplicitGC</code> 参数后，这个方法变成了一个空方法，如果没有加的话便会调用 <code>Universe::heap()::collect</code> 方法，继续跟进到这个方法中，发现 System.gc 会引发一次 STW 的 Full GC，对整个堆做收集。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">JVM_ENTRY_NO_ENV</span>(<span class="type">void</span>, <span class="built_in">JVM_GC</span>(<span class="type">void</span>))</span><br><span class="line">  <span class="built_in">JVMWrapper</span>(<span class="string">&quot;JVM_GC&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> (!DisableExplicitGC) &#123;</span><br><span class="line">    Universe::<span class="built_in">heap</span>()-&gt;<span class="built_in">collect</span>(GCCause::_java_lang_system_gc);</span><br><span class="line">  &#125;</span><br><span class="line"><span class="function">JVM_END</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">GenCollectedHeap::collect</span><span class="params">(GCCause::Cause cause)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (cause == GCCause::_wb_young_gc) &#123;</span><br><span class="line">    <span class="comment">// Young collection for the WhiteBox API.</span></span><br><span class="line">    <span class="built_in">collect</span>(cause, YoungGen);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> ASSERT</span></span><br><span class="line">  <span class="keyword">if</span> (cause == GCCause::_scavenge_alot) &#123;</span><br><span class="line">    <span class="comment">// Young collection only.</span></span><br><span class="line">    <span class="built_in">collect</span>(cause, YoungGen);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Stop-the-world full collection.</span></span><br><span class="line">    <span class="built_in">collect</span>(cause, OldGen);</span><br><span class="line">  &#125;</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">    <span class="comment">// Stop-the-world full collection.</span></span><br><span class="line">    <span class="built_in">collect</span>(cause, OldGen);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="cpp">JVM_ENTRY_NO_ENV(void, JVM_GC(void))
+  JVMWrapper(&quot;JVM_GC&quot;);
+  if (!DisableExplicitGC) &#123;
+    Universe::heap()-&gt;collect(GCCause::_java_lang_system_gc);
+  &#125;
+JVM_END
+void GenCollectedHeap::collect(GCCause::Cause cause) &#123;
+  if (cause == GCCause::_wb_young_gc) &#123;
+    // Young collection for the WhiteBox API.
+    collect(cause, YoungGen);
+  &#125; else &#123;
+#ifdef ASSERT
+  if (cause == GCCause::_scavenge_alot) &#123;
+    // Young collection only.
+    collect(cause, YoungGen);
+  &#125; else &#123;
+    // Stop-the-world full collection.
+    collect(cause, OldGen);
+  &#125;
+#else
+    // Stop-the-world full collection.
+    collect(cause, OldGen);
+#endif
+  &#125;
+&#125;
+</code></pre>
 <p><strong>保留 System.gc</strong></p>
 <p>此处补充一个知识点，<strong>CMS GC 共分为 Background 和 Foreground 两种模式</strong>，前者就是我们常规理解中的并发收集，可以不影响正常的业务线程运行，但 Foreground Collector 却有很大的差异，他会进行一次压缩式 GC。此压缩式 GC 使用的是跟 Serial Old GC 一样的 Lisp2 算法，其使用 Mark-Compact 来做 Full GC，一般称之为 MSC（Mark-Sweep-Compact），它收集的范围是 Java 堆的 Young 区和 Old 区以及 MetaSpace。由上面的算法章节中我们知道 compact 的代价是巨大的，那么使用 Foreground Collector 时将会带来非常长的 STW。如果在应用程序中 System.gc 被频繁调用，那就非常危险了。</p>
 <p><strong>去掉 System.gc</strong></p>
 <p>如果禁用掉的话就会带来另外一个内存泄漏问题，此时就需要说一下 DirectByteBuffer，它有着零拷贝等特点，被 Netty 等各种 NIO 框架使用，会使用到堆外内存。堆内存由 JVM 自己管理，堆外内存必须要手动释放，DirectByteBuffer 没有 Finalizer，它的 Native Memory 的清理工作是通过 <code>sun.misc.Cleaner</code> 自动完成的，是一种基于 PhantomReference 的清理工具，比普通的 Finalizer 轻量些。</p>
 <p>为 DirectByteBuffer 分配空间过程中会显式调用 System.gc ，希望通过 Full GC 来强迫已经无用的 DirectByteBuffer 对象释放掉它们关联的 Native Memory，下面为代码实现：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// These methods should be called whenever direct memory is allocated or</span></span><br><span class="line"><span class="comment">// freed.  They allow the user to control the amount of direct memory</span></span><br><span class="line"><span class="comment">// which a process may access.  All sizes are specified in bytes.</span></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">reserveMemory</span><span class="params">(<span class="type">long</span> size)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">synchronized</span> (Bits.<span class="keyword">class</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!memoryLimitSet &amp;&amp; VM.<span class="built_in">isBooted</span>()) &#123;</span><br><span class="line">            maxMemory = VM.<span class="built_in">maxDirectMemory</span>();</span><br><span class="line">            memoryLimitSet = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (size &lt;= maxMemory - reservedMemory) &#123;</span><br><span class="line">            reservedMemory += size;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    System.<span class="built_in">gc</span>();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Thread.<span class="built_in">sleep</span>(<span class="number">100</span>);</span><br><span class="line">    &#125; <span class="built_in">catch</span> (InterruptedException x) &#123;</span><br><span class="line">        <span class="comment">// Restore interrupt status</span></span><br><span class="line">        Thread.<span class="built_in">currentThread</span>().<span class="built_in">interrupt</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">synchronized</span> (Bits.<span class="keyword">class</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (reservedMemory + size &gt; maxMemory)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">OutOfMemoryError</span>(<span class="string">&quot;Direct buffer memory&quot;</span>);</span><br><span class="line">        reservedMemory += size;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">// These methods should be called whenever direct memory is allocated or
+// freed.  They allow the user to control the amount of direct memory
+// which a process may access.  All sizes are specified in bytes.
+static void reserveMemory(long size) &#123;
 
+    synchronized (Bits.class) &#123;
+        if (!memoryLimitSet &amp;&amp; VM.isBooted()) &#123;
+            maxMemory = VM.maxDirectMemory();
+            memoryLimitSet = true;
+        &#125;
+        if (size &lt;= maxMemory - reservedMemory) &#123;
+            reservedMemory += size;
+            return;
+        &#125;
+    &#125;
+
+    System.gc();
+    try &#123;
+        Thread.sleep(100);
+    &#125; catch (InterruptedException x) &#123;
+        // Restore interrupt status
+        Thread.currentThread().interrupt();
+    &#125;
+    synchronized (Bits.class) &#123;
+        if (reservedMemory + size &gt; maxMemory)
+            throw new OutOfMemoryError(&quot;Direct buffer memory&quot;);
+        reservedMemory += size;
+    &#125;
+
+&#125;
+</code></pre>
 <p>HotSpot VM 只会在 Old GC 的时候才会对 Old 中的对象做 Reference Processing，而在 Young GC 时只会对 Young 里的对象做 Reference Processing。Young 中的 DirectByteBuffer 对象会在 Young GC 时被处理，也就是说，做 CMS GC 的话会对 Old 做 Reference Processing，进而能触发 Cleaner 对已死的 DirectByteBuffer 对象做清理工作。但如果很长一段时间里没做过 GC 或者只做了 Young GC 的话则不会在 Old 触发 Cleaner 的工作，那么就可能让本来已经死亡，但已经晋升到 Old 的 DirectByteBuffer 关联的 Native Memory 得不到及时释放。这几个实现特征使得依赖于 System.gc 触发 GC 来保证 DirectByteMemory 的清理工作能及时完成。如果打开了 -XX:+DisableExplicitGC，清理工作就可能得不到及时完成，于是就有发生 Direct Memory 的 OOM。</p>
 <h4 id="4-2-3-策略"><a href="#4-2-3-策略" class="headerlink" title="4.2.3 策略"></a>4.2.3 策略</h4><p>通过上面的分析看到，无论是保留还是去掉都会有一定的风险点，不过目前互联网中的 RPC 通信会大量使用 NIO，所以笔者在这里建议保留。此外 JVM 还提供了 -XX:+ExplicitGCInvokesConcurrent 和 -XX:+ExplicitGCInvokesConcurrentAndUnloadsClasses 参数来将 System.gc 的触发类型从 Foreground 改为 Background，同时 Background 也会做 Reference Processing，这样的话就能大幅降低了 STW 开销，同时也不会发生 NIO Direct Memory OOM。</p>
 <h4 id="4-2-4-小结"><a href="#4-2-4-小结" class="headerlink" title="4.2.4 小结"></a>4.2.4 小结</h4><p>不止 CMS，在 G1 或 ZGC中开启 <code>ExplicitGCInvokesConcurrent</code> 模式，都会采用高性能的并发收集方式进行收集，不过还是建议在代码规范方面也要做好约束，规范好 System.gc 的使用。</p>
@@ -606,19 +869,169 @@
 <li><code>Klass MetaSpace</code>： 就是用来存 Klass 的，就是 Class 文件在 JVM 里的运行时数据结构，这部分默认放在 Compressed Class Pointer Space 中，是一块连续的内存区域，紧接着 Heap。Compressed Class Pointer Space 不是必须有的，如果设置了 -XX:-UseCompressedClassPointers，或者 -Xmx 设置大于 32 G，就不会有这块内存，这种情况下 Klass 都会存在 NoKlass Metaspace 里。</li>
 <li><code>NoKlass MetaSpace</code>： 专门来存 Klass 相关的其他的内容，比如 Method，ConstantPool 等，可以由多块不连续的内存组成。虽然叫做 NoKlass Metaspace，但是也其实可以存 Klass 的内容，上面已经提到了对应场景。 具体的定义都可以在源码 <code>shared/vm/memory/metaspace.hpp</code> 中找到：</li>
 </ul>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Metaspace</span> : <span class="keyword">public</span> AllStatic &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">friend</span> <span class="keyword">class</span> <span class="title class_">MetaspaceShared</span>;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">enum</span> <span class="title class_">MetadataType</span> &#123;</span><br><span class="line">    ClassType,</span><br><span class="line">    NonClassType,</span><br><span class="line">    MetadataTypeCount</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">enum</span> <span class="title class_">MetaspaceType</span> &#123;</span><br><span class="line">    ZeroMetaspaceType = <span class="number">0</span>,</span><br><span class="line">    StandardMetaspaceType = ZeroMetaspaceType,</span><br><span class="line">    BootMetaspaceType = StandardMetaspaceType + <span class="number">1</span>,</span><br><span class="line">    AnonymousMetaspaceType = BootMetaspaceType + <span class="number">1</span>,</span><br><span class="line">    ReflectionMetaspaceType = AnonymousMetaspaceType + <span class="number">1</span>,</span><br><span class="line">    MetaspaceTypeCount</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Align up the word size to the allocation word size</span></span><br><span class="line">  <span class="function"><span class="type">static</span> <span class="type">size_t</span> <span class="title">align_word_size_up</span><span class="params">(<span class="type">size_t</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Aligned size of the metaspace.</span></span><br><span class="line">  <span class="type">static</span> <span class="type">size_t</span> _compressed_class_space_size;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="type">static</span> <span class="type">size_t</span> <span class="title">compressed_class_space_size</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> _compressed_class_space_size;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">set_compressed_class_space_size</span><span class="params">(<span class="type">size_t</span> size)</span> </span>&#123;</span><br><span class="line">    _compressed_class_space_size = size;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="type">static</span> <span class="type">size_t</span> _first_chunk_word_size;</span><br><span class="line">  <span class="type">static</span> <span class="type">size_t</span> _first_class_chunk_word_size;</span><br><span class="line"></span><br><span class="line">  <span class="type">static</span> <span class="type">size_t</span> _commit_alignment;</span><br><span class="line">  <span class="type">static</span> <span class="type">size_t</span> _reserve_alignment;</span><br><span class="line">  <span class="built_in">DEBUG_ONLY</span>(<span class="type">static</span> <span class="type">bool</span>   _frozen;)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Virtual Space lists for both classes and other metadata</span></span><br><span class="line">  <span class="type">static</span> metaspace::VirtualSpaceList* _space_list;</span><br><span class="line">  <span class="type">static</span> metaspace::VirtualSpaceList* _class_space_list;</span><br><span class="line"></span><br><span class="line">  <span class="type">static</span> metaspace::ChunkManager* _chunk_manager_metadata;</span><br><span class="line">  <span class="type">static</span> metaspace::ChunkManager* _chunk_manager_class;</span><br><span class="line"></span><br><span class="line">  <span class="type">static</span> <span class="type">const</span> MetaspaceTracer* _tracer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">class Metaspace : public AllStatic &#123;
 
+  friend class MetaspaceShared;
+
+ public:
+  enum MetadataType &#123;
+    ClassType,
+    NonClassType,
+    MetadataTypeCount
+  &#125;;
+  enum MetaspaceType &#123;
+    ZeroMetaspaceType = 0,
+    StandardMetaspaceType = ZeroMetaspaceType,
+    BootMetaspaceType = StandardMetaspaceType + 1,
+    AnonymousMetaspaceType = BootMetaspaceType + 1,
+    ReflectionMetaspaceType = AnonymousMetaspaceType + 1,
+    MetaspaceTypeCount
+  &#125;;
+
+ private:
+
+  // Align up the word size to the allocation word size
+  static size_t align_word_size_up(size_t);
+
+  // Aligned size of the metaspace.
+  static size_t _compressed_class_space_size;
+
+  static size_t compressed_class_space_size() &#123;
+    return _compressed_class_space_size;
+  &#125;
+
+  static void set_compressed_class_space_size(size_t size) &#123;
+    _compressed_class_space_size = size;
+  &#125;
+
+  static size_t _first_chunk_word_size;
+  static size_t _first_class_chunk_word_size;
+
+  static size_t _commit_alignment;
+  static size_t _reserve_alignment;
+  DEBUG_ONLY(static bool   _frozen;)
+
+  // Virtual Space lists for both classes and other metadata
+  static metaspace::VirtualSpaceList* _space_list;
+  static metaspace::VirtualSpaceList* _class_space_list;
+
+  static metaspace::ChunkManager* _chunk_manager_metadata;
+  static metaspace::ChunkManager* _chunk_manager_class;
+
+  static const MetaspaceTracer* _tracer;
+&#125;
+</code></pre>
 <p>MetaSpace 的对象为什么无法释放，我们看下面两点：</p>
 <ul>
 <li><strong>MetaSpace 内存管理</strong>： 类和其元数据的生命周期与其对应的类加载器相同，只要类的类加载器是存活的，在 Metaspace 中的类元数据也是存活的，不能被回收。每个加载器有单独的存储空间，通过 ClassLoaderMetaspace 来进行管理 SpaceManager* 的指针，相互隔离的。</li>
 <li><strong>MetaSpace 弹性伸缩</strong>： 由于 MetaSpace 空间和 Heap 并不在一起，所以这块的空间可以不用设置或者单独设置，一般情况下避免 MetaSpace 耗尽 VM 内存都会设置一个 MaxMetaSpaceSize，在运行过程中，如果实际大小小于这个值，JVM 就会通过 <code>-XX:MinMetaspaceFreeRatio</code> 和 <code>-XX:MaxMetaspaceFreeRatio</code> 两个参数动态控制整个 MetaSpace 的大小，具体使用可以看 <code>MetaSpaceGC::compute_new_size()</code> 方法（下方代码），这个方法会在 CMSCollector 和 G1CollectorHeap 等几个收集器执行 GC 时调用。这个里面会根据 <code>used_after_gc</code>，<code>MinMetaspaceFreeRatio</code> 和 <code>MaxMetaspaceFreeRatio</code> 这三个值计算出来一个新的 <code>_capacity_until_GC</code> 值（水位线）。然后根据实际的 _capacity_until_GC 值使用 <code>MetaspaceGC::inc_capacity_until_GC()</code> 和 <code>MetaspaceGC::dec_capacity_until_GC()</code> 进行 expand 或 shrink，这个过程也可以参照场景一中的伸缩模型进行理解。</li>
 </ul>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">MetaspaceGC::compute_new_size</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">assert</span>(_shrink_factor &lt;= <span class="number">100</span>, <span class="string">&quot;invalid shrink factor&quot;</span>);</span><br><span class="line">  uint current_shrink_factor = _shrink_factor;</span><br><span class="line">  _shrink_factor = <span class="number">0</span>;</span><br><span class="line">  <span class="type">const</span> <span class="type">size_t</span> used_after_gc = MetaspaceUtils::<span class="built_in">committed_bytes</span>();</span><br><span class="line">  <span class="type">const</span> <span class="type">size_t</span> capacity_until_GC = MetaspaceGC::<span class="built_in">capacity_until_GC</span>();</span><br><span class="line"></span><br><span class="line">  <span class="type">const</span> <span class="type">double</span> minimum_free_percentage = MinMetaspaceFreeRatio / <span class="number">100.0</span>;</span><br><span class="line">  <span class="type">const</span> <span class="type">double</span> maximum_used_percentage = <span class="number">1.0</span> - minimum_free_percentage;</span><br><span class="line"></span><br><span class="line">  <span class="type">const</span> <span class="type">double</span> min_tmp = used_after_gc / maximum_used_percentage;</span><br><span class="line">  <span class="type">size_t</span> minimum_desired_capacity =</span><br><span class="line">    (<span class="type">size_t</span>)<span class="built_in">MIN2</span>(min_tmp, <span class="built_in">double</span>(max_uintx));</span><br><span class="line">  <span class="comment">// Don&#x27;t shrink less than the initial generation size</span></span><br><span class="line">  minimum_desired_capacity = <span class="built_in">MAX2</span>(minimum_desired_capacity,</span><br><span class="line">                                  MetaspaceSize);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">log_trace</span>(gc, metaspace)(<span class="string">&quot;MetaspaceGC::compute_new_size: &quot;</span>);</span><br><span class="line">  <span class="built_in">log_trace</span>(gc, metaspace)(<span class="string">&quot;    minimum_free_percentage: %6.2f  maximum_used_percentage: %6.2f&quot;</span>,</span><br><span class="line">                           minimum_free_percentage, maximum_used_percentage);</span><br><span class="line">  <span class="built_in">log_trace</span>(gc, metaspace)(<span class="string">&quot;     used_after_gc       : %6.1fKB&quot;</span>, used_after_gc / (<span class="type">double</span>) K);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  <span class="type">size_t</span> shrink_bytes = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> (capacity_until_GC &lt; minimum_desired_capacity) &#123;</span><br><span class="line">    <span class="comment">// If we have less capacity below the metaspace HWM, then</span></span><br><span class="line">    <span class="comment">// increment the HWM.</span></span><br><span class="line">    <span class="type">size_t</span> expand_bytes = minimum_desired_capacity - capacity_until_GC;</span><br><span class="line">    expand_bytes = <span class="built_in">align_up</span>(expand_bytes, Metaspace::<span class="built_in">commit_alignment</span>());</span><br><span class="line">    <span class="comment">// Don&#x27;t expand unless it&#x27;s significant</span></span><br><span class="line">    <span class="keyword">if</span> (expand_bytes &gt;= MinMetaspaceExpansion) &#123;</span><br><span class="line">      <span class="type">size_t</span> new_capacity_until_GC = <span class="number">0</span>;</span><br><span class="line">      <span class="type">bool</span> succeeded = MetaspaceGC::<span class="built_in">inc_capacity_until_GC</span>(expand_bytes, &amp;new_capacity_until_GC);</span><br><span class="line">      <span class="built_in">assert</span>(succeeded, <span class="string">&quot;Should always succesfully increment HWM when at safepoint&quot;</span>);</span><br><span class="line"></span><br><span class="line">      Metaspace::<span class="built_in">tracer</span>()-&gt;<span class="built_in">report_gc_threshold</span>(capacity_until_GC,</span><br><span class="line">                                               new_capacity_until_GC,</span><br><span class="line">                                               MetaspaceGCThresholdUpdater::ComputeNewSize);</span><br><span class="line">      <span class="built_in">log_trace</span>(gc, metaspace)(<span class="string">&quot;    expanding:  minimum_desired_capacity: %6.1fKB  expand_bytes: %6.1fKB  MinMetaspaceExpansion: %6.1fKB  new metaspace HWM:  %6.1fKB&quot;</span>,</span><br><span class="line">                               minimum_desired_capacity / (<span class="type">double</span>) K,</span><br><span class="line">                               expand_bytes / (<span class="type">double</span>) K,</span><br><span class="line">                               MinMetaspaceExpansion / (<span class="type">double</span>) K,</span><br><span class="line">                               new_capacity_until_GC / (<span class="type">double</span>) K);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// No expansion, now see if we want to shrink</span></span><br><span class="line">  <span class="comment">// We would never want to shrink more than this</span></span><br><span class="line">  <span class="built_in">assert</span>(capacity_until_GC &gt;= minimum_desired_capacity,</span><br><span class="line">         SIZE_FORMAT <span class="string">&quot; &gt;= &quot;</span> SIZE_FORMAT,</span><br><span class="line">         capacity_until_GC, minimum_desired_capacity);</span><br><span class="line">  <span class="type">size_t</span> max_shrink_bytes = capacity_until_GC - minimum_desired_capacity;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Should shrinking be considered?</span></span><br><span class="line">  <span class="keyword">if</span> (MaxMetaspaceFreeRatio &lt; <span class="number">100</span>) &#123;</span><br><span class="line">    <span class="type">const</span> <span class="type">double</span> maximum_free_percentage = MaxMetaspaceFreeRatio / <span class="number">100.0</span>;</span><br><span class="line">    <span class="type">const</span> <span class="type">double</span> minimum_used_percentage = <span class="number">1.0</span> - maximum_free_percentage;</span><br><span class="line">    <span class="type">const</span> <span class="type">double</span> max_tmp = used_after_gc / minimum_used_percentage;</span><br><span class="line">    <span class="type">size_t</span> maximum_desired_capacity = (<span class="type">size_t</span>)<span class="built_in">MIN2</span>(max_tmp, <span class="built_in">double</span>(max_uintx));</span><br><span class="line">    maximum_desired_capacity = <span class="built_in">MAX2</span>(maximum_desired_capacity,</span><br><span class="line">                                    MetaspaceSize);</span><br><span class="line">    <span class="built_in">log_trace</span>(gc, metaspace)(<span class="string">&quot;    maximum_free_percentage: %6.2f  minimum_used_percentage: %6.2f&quot;</span>,</span><br><span class="line">                             maximum_free_percentage, minimum_used_percentage);</span><br><span class="line">    <span class="built_in">log_trace</span>(gc, metaspace)(<span class="string">&quot;    minimum_desired_capacity: %6.1fKB  maximum_desired_capacity: %6.1fKB&quot;</span>,</span><br><span class="line">                             minimum_desired_capacity / (<span class="type">double</span>) K, maximum_desired_capacity / (<span class="type">double</span>) K);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">assert</span>(minimum_desired_capacity &lt;= maximum_desired_capacity,</span><br><span class="line">           <span class="string">&quot;sanity check&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (capacity_until_GC &gt; maximum_desired_capacity) &#123;</span><br><span class="line">      <span class="comment">// Capacity too large, compute shrinking size</span></span><br><span class="line">      shrink_bytes = capacity_until_GC - maximum_desired_capacity;</span><br><span class="line">      shrink_bytes = shrink_bytes / <span class="number">100</span> * current_shrink_factor;</span><br><span class="line"></span><br><span class="line">      shrink_bytes = <span class="built_in">align_down</span>(shrink_bytes, Metaspace::<span class="built_in">commit_alignment</span>());</span><br><span class="line"></span><br><span class="line">      <span class="built_in">assert</span>(shrink_bytes &lt;= max_shrink_bytes,</span><br><span class="line">             <span class="string">&quot;invalid shrink size &quot;</span> SIZE_FORMAT <span class="string">&quot; not &lt;= &quot;</span> SIZE_FORMAT,</span><br><span class="line">             shrink_bytes, max_shrink_bytes);</span><br><span class="line">      <span class="keyword">if</span> (current_shrink_factor == <span class="number">0</span>) &#123;</span><br><span class="line">        _shrink_factor = <span class="number">10</span>;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        _shrink_factor = <span class="built_in">MIN2</span>(current_shrink_factor * <span class="number">4</span>, (uint) <span class="number">100</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="built_in">log_trace</span>(gc, metaspace)(<span class="string">&quot;    shrinking:  initThreshold: %.1fK  maximum_desired_capacity: %.1fK&quot;</span>,</span><br><span class="line">                               MetaspaceSize / (<span class="type">double</span>) K, maximum_desired_capacity / (<span class="type">double</span>) K);</span><br><span class="line">      <span class="built_in">log_trace</span>(gc, metaspace)(<span class="string">&quot;    shrink_bytes: %.1fK  current_shrink_factor: %d  new shrink factor: %d  MinMetaspaceExpansion: %.1fK&quot;</span>,</span><br><span class="line">                               shrink_bytes / (<span class="type">double</span>) K, current_shrink_factor, _shrink_factor, MinMetaspaceExpansion / (<span class="type">double</span>) K);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Don&#x27;t shrink unless it&#x27;s significant</span></span><br><span class="line">  <span class="keyword">if</span> (shrink_bytes &gt;= MinMetaspaceExpansion &amp;&amp;</span><br><span class="line">      ((capacity_until_GC - shrink_bytes) &gt;= MetaspaceSize)) &#123;</span><br><span class="line">    <span class="type">size_t</span> new_capacity_until_GC = MetaspaceGC::<span class="built_in">dec_capacity_until_GC</span>(shrink_bytes);</span><br><span class="line">    Metaspace::<span class="built_in">tracer</span>()-&gt;<span class="built_in">report_gc_threshold</span>(capacity_until_GC,</span><br><span class="line">                                             new_capacity_until_GC,</span><br><span class="line">                                             MetaspaceGCThresholdUpdater::ComputeNewSize);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">void MetaspaceGC::compute_new_size() &#123;
+  assert(_shrink_factor &lt;= 100, &quot;invalid shrink factor&quot;);
+  uint current_shrink_factor = _shrink_factor;
+  _shrink_factor = 0;
+  const size_t used_after_gc = MetaspaceUtils::committed_bytes();
+  const size_t capacity_until_GC = MetaspaceGC::capacity_until_GC();
 
+  const double minimum_free_percentage = MinMetaspaceFreeRatio / 100.0;
+  const double maximum_used_percentage = 1.0 - minimum_free_percentage;
+
+  const double min_tmp = used_after_gc / maximum_used_percentage;
+  size_t minimum_desired_capacity =
+    (size_t)MIN2(min_tmp, double(max_uintx));
+  // Don&#39;t shrink less than the initial generation size
+  minimum_desired_capacity = MAX2(minimum_desired_capacity,
+                                  MetaspaceSize);
+
+  log_trace(gc, metaspace)(&quot;MetaspaceGC::compute_new_size: &quot;);
+  log_trace(gc, metaspace)(&quot;    minimum_free_percentage: %6.2f  maximum_used_percentage: %6.2f&quot;,
+                           minimum_free_percentage, maximum_used_percentage);
+  log_trace(gc, metaspace)(&quot;     used_after_gc       : %6.1fKB&quot;, used_after_gc / (double) K);
+
+
+  size_t shrink_bytes = 0;
+  if (capacity_until_GC &lt; minimum_desired_capacity) &#123;
+    // If we have less capacity below the metaspace HWM, then
+    // increment the HWM.
+    size_t expand_bytes = minimum_desired_capacity - capacity_until_GC;
+    expand_bytes = align_up(expand_bytes, Metaspace::commit_alignment());
+    // Don&#39;t expand unless it&#39;s significant
+    if (expand_bytes &gt;= MinMetaspaceExpansion) &#123;
+      size_t new_capacity_until_GC = 0;
+      bool succeeded = MetaspaceGC::inc_capacity_until_GC(expand_bytes, &amp;new_capacity_until_GC);
+      assert(succeeded, &quot;Should always succesfully increment HWM when at safepoint&quot;);
+
+      Metaspace::tracer()-&gt;report_gc_threshold(capacity_until_GC,
+                                               new_capacity_until_GC,
+                                               MetaspaceGCThresholdUpdater::ComputeNewSize);
+      log_trace(gc, metaspace)(&quot;    expanding:  minimum_desired_capacity: %6.1fKB  expand_bytes: %6.1fKB  MinMetaspaceExpansion: %6.1fKB  new metaspace HWM:  %6.1fKB&quot;,
+                               minimum_desired_capacity / (double) K,
+                               expand_bytes / (double) K,
+                               MinMetaspaceExpansion / (double) K,
+                               new_capacity_until_GC / (double) K);
+    &#125;
+    return;
+  &#125;
+
+  // No expansion, now see if we want to shrink
+  // We would never want to shrink more than this
+  assert(capacity_until_GC &gt;= minimum_desired_capacity,
+         SIZE_FORMAT &quot; &gt;= &quot; SIZE_FORMAT,
+         capacity_until_GC, minimum_desired_capacity);
+  size_t max_shrink_bytes = capacity_until_GC - minimum_desired_capacity;
+
+  // Should shrinking be considered?
+  if (MaxMetaspaceFreeRatio &lt; 100) &#123;
+    const double maximum_free_percentage = MaxMetaspaceFreeRatio / 100.0;
+    const double minimum_used_percentage = 1.0 - maximum_free_percentage;
+    const double max_tmp = used_after_gc / minimum_used_percentage;
+    size_t maximum_desired_capacity = (size_t)MIN2(max_tmp, double(max_uintx));
+    maximum_desired_capacity = MAX2(maximum_desired_capacity,
+                                    MetaspaceSize);
+    log_trace(gc, metaspace)(&quot;    maximum_free_percentage: %6.2f  minimum_used_percentage: %6.2f&quot;,
+                             maximum_free_percentage, minimum_used_percentage);
+    log_trace(gc, metaspace)(&quot;    minimum_desired_capacity: %6.1fKB  maximum_desired_capacity: %6.1fKB&quot;,
+                             minimum_desired_capacity / (double) K, maximum_desired_capacity / (double) K);
+
+    assert(minimum_desired_capacity &lt;= maximum_desired_capacity,
+           &quot;sanity check&quot;);
+
+    if (capacity_until_GC &gt; maximum_desired_capacity) &#123;
+      // Capacity too large, compute shrinking size
+      shrink_bytes = capacity_until_GC - maximum_desired_capacity;
+      shrink_bytes = shrink_bytes / 100 * current_shrink_factor;
+
+      shrink_bytes = align_down(shrink_bytes, Metaspace::commit_alignment());
+
+      assert(shrink_bytes &lt;= max_shrink_bytes,
+             &quot;invalid shrink size &quot; SIZE_FORMAT &quot; not &lt;= &quot; SIZE_FORMAT,
+             shrink_bytes, max_shrink_bytes);
+      if (current_shrink_factor == 0) &#123;
+        _shrink_factor = 10;
+      &#125; else &#123;
+        _shrink_factor = MIN2(current_shrink_factor * 4, (uint) 100);
+      &#125;
+      log_trace(gc, metaspace)(&quot;    shrinking:  initThreshold: %.1fK  maximum_desired_capacity: %.1fK&quot;,
+                               MetaspaceSize / (double) K, maximum_desired_capacity / (double) K);
+      log_trace(gc, metaspace)(&quot;    shrink_bytes: %.1fK  current_shrink_factor: %d  new shrink factor: %d  MinMetaspaceExpansion: %.1fK&quot;,
+                               shrink_bytes / (double) K, current_shrink_factor, _shrink_factor, MinMetaspaceExpansion / (double) K);
+    &#125;
+  &#125;
+
+  // Don&#39;t shrink unless it&#39;s significant
+  if (shrink_bytes &gt;= MinMetaspaceExpansion &amp;&amp;
+      ((capacity_until_GC - shrink_bytes) &gt;= MetaspaceSize)) &#123;
+    size_t new_capacity_until_GC = MetaspaceGC::dec_capacity_until_GC(shrink_bytes);
+    Metaspace::tracer()-&gt;report_gc_threshold(capacity_until_GC,
+                                             new_capacity_until_GC,
+                                             MetaspaceGCThresholdUpdater::ComputeNewSize);
+  &#125;
+&#125;
+</code></pre>
 <p>由场景一可知，为了避免弹性伸缩带来的额外 GC 消耗，我们会将 <code>-XX:MetaSpaceSize</code> 和 <code>-XX:MaxMetaSpaceSize</code> 两个值设置为固定的，但是这样也会导致在空间不够的时候无法扩容，然后频繁地触发 GC，最终 OOM。所以关键原因就是 ClassLoader 不停地在内存中 load 了新的 Class ，一般这种问题都发生在动态类加载等情况上。</p>
 <h4 id="4-3-3-策略"><a href="#4-3-3-策略" class="headerlink" title="4.3.3 策略"></a>4.3.3 策略</h4><p>了解大概什么原因后，如何定位和解决就很简单了，可以 dump 快照之后通过 JProfiler 或 MAT 观察 Classes 的 Histogram（直方图） 即可，或者直接通过命令即可定位， jcmd 打几次 Histogram 的图，看一下具体是哪个包下的 Class 增加较多就可以定位了。不过有时候也要结合InstBytes、KlassBytes、Bytecodes、MethodAll 等几项指标综合来看下。如下图便是笔者使用 jcmd 排查到一个 Orika 的问题。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jcmd &lt;PID&gt; GC.class_stats|awk <span class="string">&#x27;&#123;print$13&#125;&#x27;</span>|sed  <span class="string">&#x27;s/\(.*\)\.\(.*\)/\1/g&#x27;</span>|<span class="built_in">sort</span> |<span class="built_in">uniq</span> -c|<span class="built_in">sort</span> -nrk1</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">jcmd &lt;PID&gt; GC.class_stats|awk &#39;&#123;print$13&#125;&#39;|sed  &#39;s/\(.*\)\.\(.*\)/\1/g&#39;|sort |uniq -c|sort -nrk1
+</code></pre>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271450227.png" alt="img"></p>
 <p>如果无法从整体的角度定位，可以添加 <code>-XX:+TraceClassLoading</code> 和 <code>-XX:+TraceClassUnLoading</code> 参数观察详细的类加载和卸载信息。</p>
 <h4 id="4-3-4-小结"><a href="#4-3-4-小结" class="headerlink" title="4.3.4 小结"></a>4.3.4 小结</h4><p>原理理解比较复杂，但定位和解决问题会比较简单，经常会出问题的几个点有 Orika 的 classMap、JSON 的 ASMSerializer、Groovy 动态加载类等，基本都集中在反射、Javasisit 字节码增强、CGLIB 动态代理、OSGi 自定义类加载器等的技术点上。另外就是及时给 MetaSpace 区的使用率加一个监控，如果指标有波动提前发现并解决问题。</p>
@@ -646,8 +1059,57 @@
 </ul>
 <p>相同应用在不同时间的表现不同，特殊任务的执行或者流量成分的变化，都会导致对象的生命周期分布发生波动，那么固定的阈值设定，因为无法动态适应变化，会造成和上面问题，所以 Hotspot 会使用动态计算的方式来调整晋升的阈值。</p>
 <p>具体动态计算可以看一下 Hotspot 源码，具体在 <code>/src/hotspot/share/gc/shared/ageTable.cpp</code> 的 <code>compute_tenuring_threshold</code>方法中：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">uint <span class="title">ageTable::compute_tenuring_threshold</span><span class="params">(<span class="type">size_t</span> survivor_capacity)</span> </span>&#123;</span><br><span class="line">  <span class="comment">//TargetSurvivorRatio默认50，意思是：在回收之后希望survivor区的占用率达到这个比例</span></span><br><span class="line">  <span class="type">size_t</span> desired_survivor_size = (<span class="type">size_t</span>)((((<span class="type">double</span>) survivor_capacity)*TargetSurvivorRatio)/<span class="number">100</span>);</span><br><span class="line">  <span class="type">size_t</span> total = <span class="number">0</span>;</span><br><span class="line">  uint age = <span class="number">1</span>;</span><br><span class="line">  <span class="built_in">assert</span>(sizes[<span class="number">0</span>] == <span class="number">0</span>, <span class="string">&quot;no objects with age zero should be recorded&quot;</span>);</span><br><span class="line">  <span class="keyword">while</span> (age &lt; table_size) &#123;<span class="comment">//table_size=16</span></span><br><span class="line">    total += sizes[age];</span><br><span class="line">    <span class="comment">//如果加上这个年龄的所有对象的大小之后，占用量&gt;期望的大小，就设置age为新的晋升阈值</span></span><br><span class="line">    <span class="keyword">if</span> (total &gt; desired_survivor_size) <span class="keyword">break</span>;</span><br><span class="line">    age++;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  uint result = age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;</span><br><span class="line">  <span class="keyword">if</span> (PrintTenuringDistribution || UsePerfData) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//打印期望的survivor的大小以及新计算出来的阈值，和设置的最大阈值</span></span><br><span class="line">    <span class="keyword">if</span> (PrintTenuringDistribution) &#123;</span><br><span class="line">      gclog_or_tty-&gt;<span class="built_in">cr</span>();</span><br><span class="line">      gclog_or_tty-&gt;<span class="built_in">print_cr</span>(<span class="string">&quot;Desired survivor size &quot;</span> SIZE_FORMAT <span class="string">&quot; bytes, new threshold %u (max %u)&quot;</span>,</span><br><span class="line">        desired_survivor_size*oopSize, result, (<span class="type">int</span>) MaxTenuringThreshold);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    total = <span class="number">0</span>;</span><br><span class="line">    age = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (age &lt; table_size) &#123;</span><br><span class="line">      total += sizes[age];</span><br><span class="line">      <span class="keyword">if</span> (sizes[age] &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (PrintTenuringDistribution) &#123;</span><br><span class="line">          gclog_or_tty-&gt;<span class="built_in">print_cr</span>(<span class="string">&quot;- age %3u: &quot;</span> <span class="built_in">SIZE_FORMAT_W</span>(<span class="number">10</span>) <span class="string">&quot; bytes, &quot;</span> <span class="built_in">SIZE_FORMAT_W</span>(<span class="number">10</span>) <span class="string">&quot; total&quot;</span>,</span><br><span class="line">                                        age,    sizes[age]*oopSize,          total*oopSize);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (UsePerfData) &#123;</span><br><span class="line">        _perf_sizes[age]-&gt;<span class="built_in">set_value</span>(sizes[age]*oopSize);</span><br><span class="line">      &#125;</span><br><span class="line">      age++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (UsePerfData) &#123;</span><br><span class="line">      SharedHeap* sh = SharedHeap::<span class="built_in">heap</span>();</span><br><span class="line">      CollectorPolicy* policy = sh-&gt;<span class="built_in">collector_policy</span>();</span><br><span class="line">      GCPolicyCounters* gc_counters = policy-&gt;<span class="built_in">counters</span>();</span><br><span class="line">      gc_counters-&gt;<span class="built_in">tenuring_threshold</span>()-&gt;<span class="built_in">set_value</span>(result);</span><br><span class="line">      gc_counters-&gt;<span class="built_in">desired_survivor_size</span>()-&gt;<span class="built_in">set_value</span>(</span><br><span class="line">        desired_survivor_size*oopSize);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">uint ageTable::compute_tenuring_threshold(size_t survivor_capacity) &#123;
+  //TargetSurvivorRatio默认50，意思是：在回收之后希望survivor区的占用率达到这个比例
+  size_t desired_survivor_size = (size_t)((((double) survivor_capacity)*TargetSurvivorRatio)/100);
+  size_t total = 0;
+  uint age = 1;
+  assert(sizes[0] == 0, &quot;no objects with age zero should be recorded&quot;);
+  while (age &lt; table_size) &#123;//table_size=16
+    total += sizes[age];
+    //如果加上这个年龄的所有对象的大小之后，占用量&gt;期望的大小，就设置age为新的晋升阈值
+    if (total &gt; desired_survivor_size) break;
+    age++;
+  &#125;
 
+  uint result = age &lt; MaxTenuringThreshold ? age : MaxTenuringThreshold;
+  if (PrintTenuringDistribution || UsePerfData) &#123;
+
+    //打印期望的survivor的大小以及新计算出来的阈值，和设置的最大阈值
+    if (PrintTenuringDistribution) &#123;
+      gclog_or_tty-&gt;cr();
+      gclog_or_tty-&gt;print_cr(&quot;Desired survivor size &quot; SIZE_FORMAT &quot; bytes, new threshold %u (max %u)&quot;,
+        desired_survivor_size*oopSize, result, (int) MaxTenuringThreshold);
+    &#125;
+
+    total = 0;
+    age = 1;
+    while (age &lt; table_size) &#123;
+      total += sizes[age];
+      if (sizes[age] &gt; 0) &#123;
+        if (PrintTenuringDistribution) &#123;
+          gclog_or_tty-&gt;print_cr(&quot;- age %3u: &quot; SIZE_FORMAT_W(10) &quot; bytes, &quot; SIZE_FORMAT_W(10) &quot; total&quot;,
+                                        age,    sizes[age]*oopSize,          total*oopSize);
+        &#125;
+      &#125;
+      if (UsePerfData) &#123;
+        _perf_sizes[age]-&gt;set_value(sizes[age]*oopSize);
+      &#125;
+      age++;
+    &#125;
+    if (UsePerfData) &#123;
+      SharedHeap* sh = SharedHeap::heap();
+      CollectorPolicy* policy = sh-&gt;collector_policy();
+      GCPolicyCounters* gc_counters = policy-&gt;counters();
+      gc_counters-&gt;tenuring_threshold()-&gt;set_value(result);
+      gc_counters-&gt;desired_survivor_size()-&gt;set_value(
+        desired_survivor_size*oopSize);
+    &#125;
+  &#125;
+
+  return result;
+&#125;
+</code></pre>
 <p>可以看到 Hotspot 遍历所有对象时，从所有年龄为 0 的对象占用的空间开始累加，如果加上年龄等于 n 的所有对象的空间之后，使用 Survivor 区的条件值（TargetSurvivorRatio &#x2F; 100，TargetSurvivorRatio 默认值为 50）进行判断，若大于这个值则结束循环，将 n 和 MaxTenuringThreshold 比较，若 n 小，则阈值为 n，若 n 大，则只能去设置最大阈值为 MaxTenuringThreshold。<strong>动态年龄触发后导致更多的对象进入了 Old 区，造成资源浪费</strong>。</p>
 <h4 id="4-4-3-策略"><a href="#4-4-3-策略" class="headerlink" title="4.4.3 策略"></a>4.4.3 策略</h4><p>知道问题原因后我们就有解决的方向，如果是 <strong>Young&#x2F;Eden 区过小</strong>，我们可以在总的 Heap 内存不变的情况下适当增大 Young 区，具体怎么增加？一般情况下 Old 的大小应当为活跃对象的 2~3 倍左右，考虑到浮动垃圾问题最好在 3 倍左右，剩下的都可以分给 Young 区。</p>
 <p>拿笔者的一次典型过早晋升优化来看，原配置为 Young 1.2G + Old 2.8G，通过观察 CMS GC 的情况找到存活对象大概为 300~400M，于是调整 Old 1.5G 左右，剩下 2.5G 分给 Young 区。仅仅调了一个 Young 区大小参数（-Xmn），整个 JVM 一分钟 Young GC 从 26 次降低到了 11 次，单次时间也没有增加，总的 GC 时间从 1100ms 降低到了 500ms，CMS GC 次数也从 40 分钟左右一次降低到了 7 小时 30 分钟一次。</p>
@@ -670,11 +1132,130 @@
 <h3 id="4-5-场景五：CMS-Old-GC-频繁"><a href="#4-5-场景五：CMS-Old-GC-频繁" class="headerlink" title="4.5 场景五：CMS Old GC 频繁"></a>4.5 场景五：CMS Old GC 频繁</h3><h4 id="4-5-1-现象"><a href="#4-5-1-现象" class="headerlink" title="4.5.1 现象"></a>4.5.1 现象</h4><p>Old 区频繁的做 CMS GC，但是每次耗时不是特别长，整体最大 STW 也在可接受范围内，但由于 GC 太频繁导致吞吐下降比较多。</p>
 <h4 id="4-5-2-原因"><a href="#4-5-2-原因" class="headerlink" title="4.5.2 原因"></a>4.5.2 原因</h4><p>这种情况比较常见，基本都是一次 Young GC 完成后，负责处理 CMS GC 的一个后台线程 concurrentMarkSweepThread 会不断地轮询，使用 shouldConcurrentCollect() 方法做一次检测，判断是否达到了回收条件。如果达到条件，使用 collect_in_background() 启动一次 Background 模式 GC。轮询的判断是使用 sleepBeforeNextCycle() 方法，间隔周期为 -XX:CMSWaitDuration 决定，默认为2s。</p>
 <p>具体代码在： src&#x2F;hotspot&#x2F;share&#x2F;gc&#x2F;cms&#x2F;concurrentMarkSweepThread.cpp。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">ConcurrentMarkSweepThread::run_service</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">assert</span>(<span class="keyword">this</span> == <span class="built_in">cmst</span>(), <span class="string">&quot;just checking&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (BindCMSThreadToCPU &amp;&amp; !os::<span class="built_in">bind_to_processor</span>(CPUForCMSThread)) &#123;</span><br><span class="line">    <span class="built_in">log_warning</span>(gc)(<span class="string">&quot;Couldn&#x27;t bind CMS thread to processor &quot;</span> UINTX_FORMAT, CPUForCMSThread);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (!<span class="built_in">should_terminate</span>()) &#123;</span><br><span class="line">    <span class="built_in">sleepBeforeNextCycle</span>();</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">should_terminate</span>()) <span class="keyword">break</span>;</span><br><span class="line">    GCIdMark gc_id_mark;</span><br><span class="line">    GCCause::Cause cause = _collector-&gt;_full_gc_requested ?</span><br><span class="line">      _collector-&gt;_full_gc_cause : GCCause::_cms_concurrent_mark;</span><br><span class="line">    _collector-&gt;<span class="built_in">collect_in_background</span>(cause);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">verify_ok_to_terminate</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">ConcurrentMarkSweepThread::sleepBeforeNextCycle</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (!<span class="built_in">should_terminate</span>()) &#123;</span><br><span class="line">    <span class="keyword">if</span>(CMSWaitDuration &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// Wait until the next synchronous GC, a concurrent full gc</span></span><br><span class="line">      <span class="comment">// request or a timeout, whichever is earlier.</span></span><br><span class="line">      <span class="built_in">wait_on_cms_lock_for_scavenge</span>(CMSWaitDuration);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// Wait until any cms_lock event or check interval not to call shouldConcurrentCollect permanently</span></span><br><span class="line">      <span class="built_in">wait_on_cms_lock</span>(CMSCheckInterval);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Check if we should start a CMS collection cycle</span></span><br><span class="line">    <span class="keyword">if</span> (_collector-&gt;<span class="built_in">shouldConcurrentCollect</span>()) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// .. collection criterion not yet met, let&#x27;s go back</span></span><br><span class="line">    <span class="comment">// and wait some more</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">void ConcurrentMarkSweepThread::run_service() &#123;
+  assert(this == cmst(), &quot;just checking&quot;);
 
+  if (BindCMSThreadToCPU &amp;&amp; !os::bind_to_processor(CPUForCMSThread)) &#123;
+    log_warning(gc)(&quot;Couldn&#39;t bind CMS thread to processor &quot; UINTX_FORMAT, CPUForCMSThread);
+  &#125;
+
+  while (!should_terminate()) &#123;
+    sleepBeforeNextCycle();
+    if (should_terminate()) break;
+    GCIdMark gc_id_mark;
+    GCCause::Cause cause = _collector-&gt;_full_gc_requested ?
+      _collector-&gt;_full_gc_cause : GCCause::_cms_concurrent_mark;
+    _collector-&gt;collect_in_background(cause);
+  &#125;
+  verify_ok_to_terminate();
+&#125;
+void ConcurrentMarkSweepThread::sleepBeforeNextCycle() &#123;
+  while (!should_terminate()) &#123;
+    if(CMSWaitDuration &gt;= 0) &#123;
+      // Wait until the next synchronous GC, a concurrent full gc
+      // request or a timeout, whichever is earlier.
+      wait_on_cms_lock_for_scavenge(CMSWaitDuration);
+    &#125; else &#123;
+      // Wait until any cms_lock event or check interval not to call shouldConcurrentCollect permanently
+      wait_on_cms_lock(CMSCheckInterval);
+    &#125;
+    // Check if we should start a CMS collection cycle
+    if (_collector-&gt;shouldConcurrentCollect()) &#123;
+      return;
+    &#125;
+    // .. collection criterion not yet met, let&#39;s go back
+    // and wait some more
+  &#125;
+&#125;
+</code></pre>
 <p>判断是否进行回收的代码在：&#x2F;src&#x2F;hotspot&#x2F;share&#x2F;gc&#x2F;cms&#x2F;concurrentMarkSweepGeneration.cpp。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">CMSCollector::shouldConcurrentCollect</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">LogTarget</span>(Trace, gc) log;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (_full_gc_requested) &#123;</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector: collect because of explicit  gc request (or GCLocker)&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function">FreelistLocker <span class="title">x</span><span class="params">(<span class="keyword">this</span>)</span></span>;</span><br><span class="line">  <span class="comment">// ------------------------------------------------------------------</span></span><br><span class="line">  <span class="comment">// Print out lots of information which affects the initiation of</span></span><br><span class="line">  <span class="comment">// a collection.</span></span><br><span class="line">  <span class="keyword">if</span> (log.<span class="built_in">is_enabled</span>() &amp;&amp; <span class="built_in">stats</span>().<span class="built_in">valid</span>()) &#123;</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector shouldConcurrentCollect: &quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function">LogStream <span class="title">out</span><span class="params">(log)</span></span>;</span><br><span class="line">    <span class="built_in">stats</span>().<span class="built_in">print_on</span>(&amp;out);</span><br><span class="line"></span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;time_until_cms_gen_full %3.7f&quot;</span>, <span class="built_in">stats</span>().<span class="built_in">time_until_cms_gen_full</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;free=&quot;</span> SIZE_FORMAT, _cmsGen-&gt;<span class="built_in">free</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;contiguous_available=&quot;</span> SIZE_FORMAT, _cmsGen-&gt;<span class="built_in">contiguous_available</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;promotion_rate=%g&quot;</span>, <span class="built_in">stats</span>().<span class="built_in">promotion_rate</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;cms_allocation_rate=%g&quot;</span>, <span class="built_in">stats</span>().<span class="built_in">cms_allocation_rate</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;occupancy=%3.7f&quot;</span>, _cmsGen-&gt;<span class="built_in">occupancy</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;initiatingOccupancy=%3.7f&quot;</span>, _cmsGen-&gt;<span class="built_in">initiating_occupancy</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;cms_time_since_begin=%3.7f&quot;</span>, <span class="built_in">stats</span>().<span class="built_in">cms_time_since_begin</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;cms_time_since_end=%3.7f&quot;</span>, <span class="built_in">stats</span>().<span class="built_in">cms_time_since_end</span>());</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;metadata initialized %d&quot;</span>, MetaspaceGC::<span class="built_in">should_concurrent_collect</span>());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ------------------------------------------------------------------</span></span><br><span class="line">  <span class="keyword">if</span> (!UseCMSInitiatingOccupancyOnly) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">stats</span>().<span class="built_in">valid</span>()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">stats</span>().<span class="built_in">time_until_cms_start</span>() == <span class="number">0.0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  </span><br><span class="line">      <span class="keyword">if</span> (_cmsGen-&gt;<span class="built_in">occupancy</span>() &gt;= _bootstrap_occupancy) &#123;</span><br><span class="line">        log.<span class="built_in">print</span>(<span class="string">&quot; CMSCollector: collect for bootstrapping statistics: occupancy = %f, boot occupancy = %f&quot;</span>,</span><br><span class="line">                  _cmsGen-&gt;<span class="built_in">occupancy</span>(), _bootstrap_occupancy);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (_cmsGen-&gt;<span class="built_in">should_concurrent_collect</span>()) &#123;</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;CMS old gen initiated&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// We start a collection if we believe an incremental collection may fail;</span></span><br><span class="line">  <span class="comment">// this is not likely to be productive in practice because it&#x27;s probably too</span></span><br><span class="line">  <span class="comment">// late anyway.</span></span><br><span class="line">  CMSHeap* heap = CMSHeap::<span class="built_in">heap</span>();</span><br><span class="line">  <span class="keyword">if</span> (heap-&gt;<span class="built_in">incremental_collection_will_fail</span>(<span class="literal">true</span> <span class="comment">/* consult_young */</span>)) &#123;</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector: collect because incremental collection will fail &quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (MetaspaceGC::<span class="built_in">should_concurrent_collect</span>()) &#123;</span><br><span class="line">    log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector: collect for metadata allocation &quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// CMSTriggerInterval starts a CMS cycle if enough time has passed.</span></span><br><span class="line">  <span class="keyword">if</span> (CMSTriggerInterval &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (CMSTriggerInterval == <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// Trigger always</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Check the CMS time since begin (we do not check the stats validity</span></span><br><span class="line">    <span class="comment">// as we want to be able to trigger the first CMS cycle as well)</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">stats</span>().<span class="built_in">cms_time_since_begin</span>() &gt;= (CMSTriggerInterval / ((<span class="type">double</span>) MILLIUNITS))) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">stats</span>().<span class="built_in">valid</span>()) &#123;</span><br><span class="line">        log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector: collect because of trigger interval (time since last begin %3.7f secs)&quot;</span>,</span><br><span class="line">                  <span class="built_in">stats</span>().<span class="built_in">cms_time_since_begin</span>());</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        log.<span class="built_in">print</span>(<span class="string">&quot;CMSCollector: collect because of trigger interval (first collection)&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">bool CMSCollector::shouldConcurrentCollect() &#123;
+  LogTarget(Trace, gc) log;
 
+  if (_full_gc_requested) &#123;
+    log.print(&quot;CMSCollector: collect because of explicit  gc request (or GCLocker)&quot;);
+    return true;
+  &#125;
+
+  FreelistLocker x(this);
+  // ------------------------------------------------------------------
+  // Print out lots of information which affects the initiation of
+  // a collection.
+  if (log.is_enabled() &amp;&amp; stats().valid()) &#123;
+    log.print(&quot;CMSCollector shouldConcurrentCollect: &quot;);
+
+    LogStream out(log);
+    stats().print_on(&amp;out);
+
+    log.print(&quot;time_until_cms_gen_full %3.7f&quot;, stats().time_until_cms_gen_full());
+    log.print(&quot;free=&quot; SIZE_FORMAT, _cmsGen-&gt;free());
+    log.print(&quot;contiguous_available=&quot; SIZE_FORMAT, _cmsGen-&gt;contiguous_available());
+    log.print(&quot;promotion_rate=%g&quot;, stats().promotion_rate());
+    log.print(&quot;cms_allocation_rate=%g&quot;, stats().cms_allocation_rate());
+    log.print(&quot;occupancy=%3.7f&quot;, _cmsGen-&gt;occupancy());
+    log.print(&quot;initiatingOccupancy=%3.7f&quot;, _cmsGen-&gt;initiating_occupancy());
+    log.print(&quot;cms_time_since_begin=%3.7f&quot;, stats().cms_time_since_begin());
+    log.print(&quot;cms_time_since_end=%3.7f&quot;, stats().cms_time_since_end());
+    log.print(&quot;metadata initialized %d&quot;, MetaspaceGC::should_concurrent_collect());
+  &#125;
+  // ------------------------------------------------------------------
+  if (!UseCMSInitiatingOccupancyOnly) &#123;
+    if (stats().valid()) &#123;
+      if (stats().time_until_cms_start() == 0.0) &#123;
+        return true;
+      &#125;
+    &#125; else &#123;
+  
+      if (_cmsGen-&gt;occupancy() &gt;= _bootstrap_occupancy) &#123;
+        log.print(&quot; CMSCollector: collect for bootstrapping statistics: occupancy = %f, boot occupancy = %f&quot;,
+                  _cmsGen-&gt;occupancy(), _bootstrap_occupancy);
+        return true;
+      &#125;
+    &#125;
+  &#125;
+
+  if (_cmsGen-&gt;should_concurrent_collect()) &#123;
+    log.print(&quot;CMS old gen initiated&quot;);
+    return true;
+  &#125;
+
+  // We start a collection if we believe an incremental collection may fail;
+  // this is not likely to be productive in practice because it&#39;s probably too
+  // late anyway.
+  CMSHeap* heap = CMSHeap::heap();
+  if (heap-&gt;incremental_collection_will_fail(true /* consult_young */)) &#123;
+    log.print(&quot;CMSCollector: collect because incremental collection will fail &quot;);
+    return true;
+  &#125;
+
+  if (MetaspaceGC::should_concurrent_collect()) &#123;
+    log.print(&quot;CMSCollector: collect for metadata allocation &quot;);
+    return true;
+  &#125;
+
+  // CMSTriggerInterval starts a CMS cycle if enough time has passed.
+  if (CMSTriggerInterval &gt;= 0) &#123;
+    if (CMSTriggerInterval == 0) &#123;
+      // Trigger always
+      return true;
+    &#125;
+
+    // Check the CMS time since begin (we do not check the stats validity
+    // as we want to be able to trigger the first CMS cycle as well)
+    if (stats().cms_time_since_begin() &gt;= (CMSTriggerInterval / ((double) MILLIUNITS))) &#123;
+      if (stats().valid()) &#123;
+        log.print(&quot;CMSCollector: collect because of trigger interval (time since last begin %3.7f secs)&quot;,
+                  stats().cms_time_since_begin());
+      &#125; else &#123;
+        log.print(&quot;CMSCollector: collect because of trigger interval (first collection)&quot;);
+      &#125;
+      return true;
+    &#125;
+  &#125;
+
+  return false;
+&#125;
+</code></pre>
 <p>分析其中逻辑判断是否触发 GC，分为以下几种情况：</p>
 <ul>
 <li><strong>触发 CMS GC</strong>： 通过调用 <code>_collector-&gt;collect_in_background()</code> 进行触发 Background GC 。<ul>
@@ -710,28 +1291,272 @@
 <ul>
 <li>CMS Init Mark执行步骤，实现在 CMSCollector::checkpointRootsInitialWork() 和 CMSParInitialMarkTask::work 中，整体步骤和代码如下：</li>
 </ul>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">CMSCollector::checkpointRootsInitialWork</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">assert</span>(SafepointSynchronize::<span class="built_in">is_at_safepoint</span>(), <span class="string">&quot;world should be stopped&quot;</span>);</span><br><span class="line">  <span class="built_in">assert</span>(_collectorState == InitialMarking, <span class="string">&quot;just checking&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Already have locks.</span></span><br><span class="line">  <span class="built_in">assert_lock_strong</span>(<span class="built_in">bitMapLock</span>());</span><br><span class="line">  <span class="built_in">assert</span>(_markBitMap.<span class="built_in">isAllClear</span>(), <span class="string">&quot;was reset at end of previous cycle&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Setup the verification and class unloading state for this</span></span><br><span class="line">  <span class="comment">// CMS collection cycle.</span></span><br><span class="line">  <span class="built_in">setup_cms_unloading_and_verification_state</span>();</span><br><span class="line"></span><br><span class="line">  <span class="built_in">GCTraceTime</span>(Trace, gc, phases) <span class="built_in">ts</span>(<span class="string">&quot;checkpointRootsInitialWork&quot;</span>, _gc_timer_cm);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Reset all the PLAB chunk arrays if necessary.</span></span><br><span class="line">  <span class="keyword">if</span> (_survivor_plab_array != <span class="literal">NULL</span> &amp;&amp; !CMSPLABRecordAlways) &#123;</span><br><span class="line">    <span class="built_in">reset_survivor_plab_arrays</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  ResourceMark rm;</span><br><span class="line">  HandleMark  hm;</span><br><span class="line"></span><br><span class="line">  <span class="function">MarkRefsIntoClosure <span class="title">notOlder</span><span class="params">(_span, &amp;_markBitMap)</span></span>;</span><br><span class="line">  CMSHeap* heap = CMSHeap::<span class="built_in">heap</span>();</span><br><span class="line"></span><br><span class="line">  <span class="built_in">verify_work_stacks_empty</span>();</span><br><span class="line">  <span class="built_in">verify_overflow_empty</span>();</span><br><span class="line"></span><br><span class="line">  heap-&gt;<span class="built_in">ensure_parsability</span>(<span class="literal">false</span>);  <span class="comment">// fill TLABs, but no need to retire them</span></span><br><span class="line">  <span class="comment">// Update the saved marks which may affect the root scans.</span></span><br><span class="line">  heap-&gt;<span class="built_in">save_marks</span>();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// weak reference processing has not started yet.</span></span><br><span class="line">  <span class="built_in">ref_processor</span>()-&gt;<span class="built_in">set_enqueuing_is_done</span>(<span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Need to remember all newly created CLDs,</span></span><br><span class="line">  <span class="comment">// so that we can guarantee that the remark finds them.</span></span><br><span class="line">  ClassLoaderDataGraph::<span class="built_in">remember_new_clds</span>(<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Whenever a CLD is found, it will be claimed before proceeding to mark</span></span><br><span class="line">  <span class="comment">// the klasses. The claimed marks need to be cleared before marking starts.</span></span><br><span class="line">  ClassLoaderDataGraph::<span class="built_in">clear_claimed_marks</span>();</span><br><span class="line"></span><br><span class="line">  <span class="built_in">print_eden_and_survivor_chunk_arrays</span>();</span><br><span class="line"></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (CMSParallelInitialMarkEnabled) &#123;</span><br><span class="line">      <span class="comment">// The parallel version.</span></span><br><span class="line">      WorkGang* workers = heap-&gt;<span class="built_in">workers</span>();</span><br><span class="line">      <span class="built_in">assert</span>(workers != <span class="literal">NULL</span>, <span class="string">&quot;Need parallel worker threads.&quot;</span>);</span><br><span class="line">      uint n_workers = workers-&gt;<span class="built_in">active_workers</span>();</span><br><span class="line"></span><br><span class="line">      <span class="function">StrongRootsScope <span class="title">srs</span><span class="params">(n_workers)</span></span>;</span><br><span class="line"></span><br><span class="line">      <span class="function">CMSParInitialMarkTask <span class="title">tsk</span><span class="params">(<span class="keyword">this</span>, &amp;srs, n_workers)</span></span>;</span><br><span class="line">      <span class="built_in">initialize_sequential_subtasks_for_young_gen_rescan</span>(n_workers);</span><br><span class="line">      <span class="comment">// If the total workers is greater than 1, then multiple workers</span></span><br><span class="line">      <span class="comment">// may be used at some time and the initialization has been set</span></span><br><span class="line">      <span class="comment">// such that the single threaded path cannot be used.</span></span><br><span class="line">      <span class="keyword">if</span> (workers-&gt;<span class="built_in">total_workers</span>() &gt; <span class="number">1</span>) &#123;</span><br><span class="line">        workers-&gt;<span class="built_in">run_task</span>(&amp;tsk);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        tsk.<span class="built_in">work</span>(<span class="number">0</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// The serial version.</span></span><br><span class="line">      CLDToOopClosure <span class="built_in">cld_closure</span>(&amp;notOlder, <span class="literal">true</span>);</span><br><span class="line">      heap-&gt;<span class="built_in">rem_set</span>()-&gt;<span class="built_in">prepare_for_younger_refs_iterate</span>(<span class="literal">false</span>); <span class="comment">// Not parallel.</span></span><br><span class="line"></span><br><span class="line">      <span class="function">StrongRootsScope <span class="title">srs</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">      heap-&gt;<span class="built_in">cms_process_roots</span>(&amp;srs,</span><br><span class="line">                             <span class="literal">true</span>,   <span class="comment">// young gen as roots</span></span><br><span class="line">                             GenCollectedHeap::<span class="built_in">ScanningOption</span>(<span class="built_in">roots_scanning_options</span>()),</span><br><span class="line">                             <span class="built_in">should_unload_classes</span>(),</span><br><span class="line">                             &amp;notOlder,</span><br><span class="line">                             &amp;cld_closure);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Clear mod-union table; it will be dirtied in the prologue of</span></span><br><span class="line">  <span class="comment">// CMS generation per each young generation collection.</span></span><br><span class="line">  <span class="built_in">assert</span>(_modUnionTable.<span class="built_in">isAllClear</span>(),</span><br><span class="line">       <span class="string">&quot;Was cleared in most recent final checkpoint phase&quot;</span></span><br><span class="line">       <span class="string">&quot; or no bits are set in the gc_prologue before the start of the next &quot;</span></span><br><span class="line">       <span class="string">&quot;subsequent marking phase.&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">assert</span>(_ct-&gt;<span class="built_in">cld_rem_set</span>()-&gt;<span class="built_in">mod_union_is_clear</span>(), <span class="string">&quot;Must be&quot;</span>);</span><br><span class="line">  <span class="comment">// Save the end of the used_region of the constituent generations</span></span><br><span class="line">  <span class="comment">// to be used to limit the extent of sweep in each generation.</span></span><br><span class="line">  <span class="built_in">save_sweep_limits</span>();</span><br><span class="line">  <span class="built_in">verify_overflow_empty</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">CMSParInitialMarkTask::work</span><span class="params">(uint worker_id)</span> </span>&#123;</span><br><span class="line">  elapsedTimer _timer;</span><br><span class="line">  ResourceMark rm;</span><br><span class="line">  HandleMark   hm;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ---------- scan from roots --------------</span></span><br><span class="line">  _timer.<span class="built_in">start</span>();</span><br><span class="line">  CMSHeap* heap = CMSHeap::<span class="built_in">heap</span>();</span><br><span class="line">  <span class="function">ParMarkRefsIntoClosure <span class="title">par_mri_cl</span><span class="params">(_collector-&gt;_span, &amp;(_collector-&gt;_markBitMap))</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ---------- young gen roots --------------</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">work_on_young_gen_roots</span>(&amp;par_mri_cl);</span><br><span class="line">    _timer.<span class="built_in">stop</span>();</span><br><span class="line">    <span class="built_in">log_trace</span>(gc, task)(<span class="string">&quot;Finished young gen initial mark scan work in %dth thread: %3.3f sec&quot;</span>, worker_id, _timer.<span class="built_in">seconds</span>());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ---------- remaining roots --------------</span></span><br><span class="line">  _timer.<span class="built_in">reset</span>();</span><br><span class="line">  _timer.<span class="built_in">start</span>();</span><br><span class="line"></span><br><span class="line">  <span class="function">CLDToOopClosure <span class="title">cld_closure</span><span class="params">(&amp;par_mri_cl, <span class="literal">true</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">  heap-&gt;<span class="built_in">cms_process_roots</span>(_strong_roots_scope,</span><br><span class="line">                          <span class="literal">false</span>,     <span class="comment">// yg was scanned above</span></span><br><span class="line">                          GenCollectedHeap::<span class="built_in">ScanningOption</span>(_collector-&gt;CMSCollector::<span class="built_in">roots_scanning_options</span>()),</span><br><span class="line">                          _collector-&gt;<span class="built_in">should_unload_classes</span>(),</span><br><span class="line">                          &amp;par_mri_cl,</span><br><span class="line">                          &amp;cld_closure,</span><br><span class="line">                          &amp;_par_state_string);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">assert</span>(_collector-&gt;<span class="built_in">should_unload_classes</span>()</span><br><span class="line">         || (_collector-&gt;CMSCollector::<span class="built_in">roots_scanning_options</span>() &amp; GenCollectedHeap::SO_AllCodeCache),</span><br><span class="line">         <span class="string">&quot;if we didn&#x27;t scan the code cache, we have to be ready to drop nmethods with expired weak oops&quot;</span>);</span><br><span class="line">  _timer.<span class="built_in">stop</span>();</span><br><span class="line">  <span class="built_in">log_trace</span>(gc, task)(<span class="string">&quot;Finished remaining root initial mark scan work in %dth thread: %3.3f sec&quot;</span>, worker_id, _timer.<span class="built_in">seconds</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">void CMSCollector::checkpointRootsInitialWork() &#123;
+  assert(SafepointSynchronize::is_at_safepoint(), &quot;world should be stopped&quot;);
+  assert(_collectorState == InitialMarking, &quot;just checking&quot;);
 
+  // Already have locks.
+  assert_lock_strong(bitMapLock());
+  assert(_markBitMap.isAllClear(), &quot;was reset at end of previous cycle&quot;);
+
+  // Setup the verification and class unloading state for this
+  // CMS collection cycle.
+  setup_cms_unloading_and_verification_state();
+
+  GCTraceTime(Trace, gc, phases) ts(&quot;checkpointRootsInitialWork&quot;, _gc_timer_cm);
+
+  // Reset all the PLAB chunk arrays if necessary.
+  if (_survivor_plab_array != NULL &amp;&amp; !CMSPLABRecordAlways) &#123;
+    reset_survivor_plab_arrays();
+  &#125;
+
+  ResourceMark rm;
+  HandleMark  hm;
+
+  MarkRefsIntoClosure notOlder(_span, &amp;_markBitMap);
+  CMSHeap* heap = CMSHeap::heap();
+
+  verify_work_stacks_empty();
+  verify_overflow_empty();
+
+  heap-&gt;ensure_parsability(false);  // fill TLABs, but no need to retire them
+  // Update the saved marks which may affect the root scans.
+  heap-&gt;save_marks();
+
+  // weak reference processing has not started yet.
+  ref_processor()-&gt;set_enqueuing_is_done(false);
+
+  // Need to remember all newly created CLDs,
+  // so that we can guarantee that the remark finds them.
+  ClassLoaderDataGraph::remember_new_clds(true);
+
+  // Whenever a CLD is found, it will be claimed before proceeding to mark
+  // the klasses. The claimed marks need to be cleared before marking starts.
+  ClassLoaderDataGraph::clear_claimed_marks();
+
+  print_eden_and_survivor_chunk_arrays();
+
+  &#123;
+    if (CMSParallelInitialMarkEnabled) &#123;
+      // The parallel version.
+      WorkGang* workers = heap-&gt;workers();
+      assert(workers != NULL, &quot;Need parallel worker threads.&quot;);
+      uint n_workers = workers-&gt;active_workers();
+
+      StrongRootsScope srs(n_workers);
+
+      CMSParInitialMarkTask tsk(this, &amp;srs, n_workers);
+      initialize_sequential_subtasks_for_young_gen_rescan(n_workers);
+      // If the total workers is greater than 1, then multiple workers
+      // may be used at some time and the initialization has been set
+      // such that the single threaded path cannot be used.
+      if (workers-&gt;total_workers() &gt; 1) &#123;
+        workers-&gt;run_task(&amp;tsk);
+      &#125; else &#123;
+        tsk.work(0);
+      &#125;
+    &#125; else &#123;
+      // The serial version.
+      CLDToOopClosure cld_closure(&amp;notOlder, true);
+      heap-&gt;rem_set()-&gt;prepare_for_younger_refs_iterate(false); // Not parallel.
+
+      StrongRootsScope srs(1);
+
+      heap-&gt;cms_process_roots(&amp;srs,
+                             true,   // young gen as roots
+                             GenCollectedHeap::ScanningOption(roots_scanning_options()),
+                             should_unload_classes(),
+                             &amp;notOlder,
+                             &amp;cld_closure);
+    &#125;
+  &#125;
+
+  // Clear mod-union table; it will be dirtied in the prologue of
+  // CMS generation per each young generation collection.
+  assert(_modUnionTable.isAllClear(),
+       &quot;Was cleared in most recent final checkpoint phase&quot;
+       &quot; or no bits are set in the gc_prologue before the start of the next &quot;
+       &quot;subsequent marking phase.&quot;);
+
+  assert(_ct-&gt;cld_rem_set()-&gt;mod_union_is_clear(), &quot;Must be&quot;);
+  // Save the end of the used_region of the constituent generations
+  // to be used to limit the extent of sweep in each generation.
+  save_sweep_limits();
+  verify_overflow_empty();
+&#125;
+void CMSParInitialMarkTask::work(uint worker_id) &#123;
+  elapsedTimer _timer;
+  ResourceMark rm;
+  HandleMark   hm;
+
+  // ---------- scan from roots --------------
+  _timer.start();
+  CMSHeap* heap = CMSHeap::heap();
+  ParMarkRefsIntoClosure par_mri_cl(_collector-&gt;_span, &amp;(_collector-&gt;_markBitMap));
+
+  // ---------- young gen roots --------------
+  &#123;
+    work_on_young_gen_roots(&amp;par_mri_cl);
+    _timer.stop();
+    log_trace(gc, task)(&quot;Finished young gen initial mark scan work in %dth thread: %3.3f sec&quot;, worker_id, _timer.seconds());
+  &#125;
+
+  // ---------- remaining roots --------------
+  _timer.reset();
+  _timer.start();
+
+  CLDToOopClosure cld_closure(&amp;par_mri_cl, true);
+
+  heap-&gt;cms_process_roots(_strong_roots_scope,
+                          false,     // yg was scanned above
+                          GenCollectedHeap::ScanningOption(_collector-&gt;CMSCollector::roots_scanning_options()),
+                          _collector-&gt;should_unload_classes(),
+                          &amp;par_mri_cl,
+                          &amp;cld_closure,
+                          &amp;_par_state_string);
+
+  assert(_collector-&gt;should_unload_classes()
+         || (_collector-&gt;CMSCollector::roots_scanning_options() &amp; GenCollectedHeap::SO_AllCodeCache),
+         &quot;if we didn&#39;t scan the code cache, we have to be ready to drop nmethods with expired weak oops&quot;);
+  _timer.stop();
+  log_trace(gc, task)(&quot;Finished remaining root initial mark scan work in %dth thread: %3.3f sec&quot;, worker_id, _timer.seconds());
+&#125;
+</code></pre>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271454620.jpg" alt="img"></p>
 <p>整个过程比较简单，从 GC Root 出发标记 Old 中的对象，处理完成后借助 BitMap 处理下 Young 区对 Old 区的引用，整个过程基本都比较快，很少会有较大的停顿。</p>
 <ul>
 <li>CMS Final Remark 执行步骤，实现在 <code>CMSCollector::checkpointRootsFinalWork()</code> 中，整体代码和步骤如下：</li>
 </ul>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">CMSCollector::checkpointRootsFinalWork</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">GCTraceTime</span>(Trace, gc, phases) <span class="built_in">tm</span>(<span class="string">&quot;checkpointRootsFinalWork&quot;</span>, _gc_timer_cm);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">assert</span>(<span class="built_in">haveFreelistLocks</span>(), <span class="string">&quot;must have free list locks&quot;</span>);</span><br><span class="line">  <span class="built_in">assert_lock_strong</span>(<span class="built_in">bitMapLock</span>());</span><br><span class="line"></span><br><span class="line">  ResourceMark rm;</span><br><span class="line">  HandleMark   hm;</span><br><span class="line"></span><br><span class="line">  CMSHeap* heap = CMSHeap::<span class="built_in">heap</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">should_unload_classes</span>()) &#123;</span><br><span class="line">    CodeCache::<span class="built_in">gc_prologue</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">assert</span>(<span class="built_in">haveFreelistLocks</span>(), <span class="string">&quot;must have free list locks&quot;</span>);</span><br><span class="line">  <span class="built_in">assert_lock_strong</span>(<span class="built_in">bitMapLock</span>());</span><br><span class="line"></span><br><span class="line">  heap-&gt;<span class="built_in">ensure_parsability</span>(<span class="literal">false</span>);  <span class="comment">// fill TLAB&#x27;s, but no need to retire them</span></span><br><span class="line">  <span class="comment">// Update the saved marks which may affect the root scans.</span></span><br><span class="line">  heap-&gt;<span class="built_in">save_marks</span>();</span><br><span class="line"></span><br><span class="line">  <span class="built_in">print_eden_and_survivor_chunk_arrays</span>();</span><br><span class="line"></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (CMSParallelRemarkEnabled) &#123;</span><br><span class="line">      <span class="built_in">GCTraceTime</span>(Debug, gc, phases) <span class="built_in">t</span>(<span class="string">&quot;Rescan (parallel)&quot;</span>, _gc_timer_cm);</span><br><span class="line">      <span class="built_in">do_remark_parallel</span>();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="built_in">GCTraceTime</span>(Debug, gc, phases) <span class="built_in">t</span>(<span class="string">&quot;Rescan (non-parallel)&quot;</span>, _gc_timer_cm);</span><br><span class="line">      <span class="built_in">do_remark_non_parallel</span>();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">verify_work_stacks_empty</span>();</span><br><span class="line">  <span class="built_in">verify_overflow_empty</span>();</span><br><span class="line"></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">GCTraceTime</span>(Trace, gc, phases) <span class="built_in">ts</span>(<span class="string">&quot;refProcessingWork&quot;</span>, _gc_timer_cm);</span><br><span class="line">    <span class="built_in">refProcessingWork</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">verify_work_stacks_empty</span>();</span><br><span class="line">  <span class="built_in">verify_overflow_empty</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">should_unload_classes</span>()) &#123;</span><br><span class="line">    CodeCache::<span class="built_in">gc_epilogue</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  JvmtiExport::<span class="built_in">gc_epilogue</span>();</span><br><span class="line">  <span class="built_in">assert</span>(_markStack.<span class="built_in">isEmpty</span>(), <span class="string">&quot;No grey objects&quot;</span>);</span><br><span class="line">  <span class="type">size_t</span> ser_ovflw = _ser_pmc_remark_ovflw + _ser_pmc_preclean_ovflw +</span><br><span class="line">                     _ser_kac_ovflw        + _ser_kac_preclean_ovflw;</span><br><span class="line">  <span class="keyword">if</span> (ser_ovflw &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">log_trace</span>(gc)(<span class="string">&quot;Marking stack overflow (benign) (pmc_pc=&quot;</span> SIZE_FORMAT <span class="string">&quot;, pmc_rm=&quot;</span> SIZE_FORMAT <span class="string">&quot;, kac=&quot;</span> SIZE_FORMAT <span class="string">&quot;, kac_preclean=&quot;</span> SIZE_FORMAT <span class="string">&quot;)&quot;</span>,</span><br><span class="line">                         _ser_pmc_preclean_ovflw, _ser_pmc_remark_ovflw, _ser_kac_ovflw, _ser_kac_preclean_ovflw);</span><br><span class="line">    _markStack.<span class="built_in">expand</span>();</span><br><span class="line">    _ser_pmc_remark_ovflw = <span class="number">0</span>;</span><br><span class="line">    _ser_pmc_preclean_ovflw = <span class="number">0</span>;</span><br><span class="line">    _ser_kac_preclean_ovflw = <span class="number">0</span>;</span><br><span class="line">    _ser_kac_ovflw = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (_par_pmc_remark_ovflw &gt; <span class="number">0</span> || _par_kac_ovflw &gt; <span class="number">0</span>) &#123;</span><br><span class="line">     <span class="built_in">log_trace</span>(gc)(<span class="string">&quot;Work queue overflow (benign) (pmc_rm=&quot;</span> SIZE_FORMAT <span class="string">&quot;, kac=&quot;</span> SIZE_FORMAT <span class="string">&quot;)&quot;</span>,</span><br><span class="line">                          _par_pmc_remark_ovflw, _par_kac_ovflw);</span><br><span class="line">     _par_pmc_remark_ovflw = <span class="number">0</span>;</span><br><span class="line">    _par_kac_ovflw = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">   <span class="keyword">if</span> (_markStack._hit_limit &gt; <span class="number">0</span>) &#123;</span><br><span class="line">     <span class="built_in">log_trace</span>(gc)(<span class="string">&quot; (benign) Hit max stack size limit (&quot;</span> SIZE_FORMAT <span class="string">&quot;)&quot;</span>,</span><br><span class="line">                          _markStack._hit_limit);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">if</span> (_markStack._failed_double &gt; <span class="number">0</span>) &#123;</span><br><span class="line">     <span class="built_in">log_trace</span>(gc)(<span class="string">&quot; (benign) Failed stack doubling (&quot;</span> SIZE_FORMAT <span class="string">&quot;), current capacity &quot;</span> SIZE_FORMAT,</span><br><span class="line">                          _markStack._failed_double, _markStack.<span class="built_in">capacity</span>());</span><br><span class="line">   &#125;</span><br><span class="line">  _markStack._hit_limit = <span class="number">0</span>;</span><br><span class="line">  _markStack._failed_double = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((VerifyAfterGC || VerifyDuringGC) &amp;&amp;</span><br><span class="line">      CMSHeap::<span class="built_in">heap</span>()-&gt;<span class="built_in">total_collections</span>() &gt;= VerifyGCStartAt) &#123;</span><br><span class="line">    <span class="built_in">verify_after_remark</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  _gc_tracer_cm-&gt;<span class="built_in">report_object_count_after_gc</span>(&amp;_is_alive_closure);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Change under the freelistLocks.</span></span><br><span class="line">  _collectorState = Sweeping;</span><br><span class="line">  <span class="comment">// Call isAllClear() under bitMapLock</span></span><br><span class="line">  <span class="built_in">assert</span>(_modUnionTable.<span class="built_in">isAllClear</span>(),</span><br><span class="line">      <span class="string">&quot;Should be clear by end of the final marking&quot;</span>);</span><br><span class="line">  <span class="built_in">assert</span>(_ct-&gt;<span class="built_in">cld_rem_set</span>()-&gt;<span class="built_in">mod_union_is_clear</span>(),</span><br><span class="line">      <span class="string">&quot;Should be clear by end of the final marking&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">void CMSCollector::checkpointRootsFinalWork() &#123;
+  GCTraceTime(Trace, gc, phases) tm(&quot;checkpointRootsFinalWork&quot;, _gc_timer_cm);
 
+  assert(haveFreelistLocks(), &quot;must have free list locks&quot;);
+  assert_lock_strong(bitMapLock());
+
+  ResourceMark rm;
+  HandleMark   hm;
+
+  CMSHeap* heap = CMSHeap::heap();
+
+  if (should_unload_classes()) &#123;
+    CodeCache::gc_prologue();
+  &#125;
+  assert(haveFreelistLocks(), &quot;must have free list locks&quot;);
+  assert_lock_strong(bitMapLock());
+
+  heap-&gt;ensure_parsability(false);  // fill TLAB&#39;s, but no need to retire them
+  // Update the saved marks which may affect the root scans.
+  heap-&gt;save_marks();
+
+  print_eden_and_survivor_chunk_arrays();
+
+  &#123;
+    if (CMSParallelRemarkEnabled) &#123;
+      GCTraceTime(Debug, gc, phases) t(&quot;Rescan (parallel)&quot;, _gc_timer_cm);
+      do_remark_parallel();
+    &#125; else &#123;
+      GCTraceTime(Debug, gc, phases) t(&quot;Rescan (non-parallel)&quot;, _gc_timer_cm);
+      do_remark_non_parallel();
+    &#125;
+  &#125;
+  verify_work_stacks_empty();
+  verify_overflow_empty();
+
+  &#123;
+    GCTraceTime(Trace, gc, phases) ts(&quot;refProcessingWork&quot;, _gc_timer_cm);
+    refProcessingWork();
+  &#125;
+  verify_work_stacks_empty();
+  verify_overflow_empty();
+
+  if (should_unload_classes()) &#123;
+    CodeCache::gc_epilogue();
+  &#125;
+  JvmtiExport::gc_epilogue();
+  assert(_markStack.isEmpty(), &quot;No grey objects&quot;);
+  size_t ser_ovflw = _ser_pmc_remark_ovflw + _ser_pmc_preclean_ovflw +
+                     _ser_kac_ovflw        + _ser_kac_preclean_ovflw;
+  if (ser_ovflw &gt; 0) &#123;
+    log_trace(gc)(&quot;Marking stack overflow (benign) (pmc_pc=&quot; SIZE_FORMAT &quot;, pmc_rm=&quot; SIZE_FORMAT &quot;, kac=&quot; SIZE_FORMAT &quot;, kac_preclean=&quot; SIZE_FORMAT &quot;)&quot;,
+                         _ser_pmc_preclean_ovflw, _ser_pmc_remark_ovflw, _ser_kac_ovflw, _ser_kac_preclean_ovflw);
+    _markStack.expand();
+    _ser_pmc_remark_ovflw = 0;
+    _ser_pmc_preclean_ovflw = 0;
+    _ser_kac_preclean_ovflw = 0;
+    _ser_kac_ovflw = 0;
+  &#125;
+  if (_par_pmc_remark_ovflw &gt; 0 || _par_kac_ovflw &gt; 0) &#123;
+     log_trace(gc)(&quot;Work queue overflow (benign) (pmc_rm=&quot; SIZE_FORMAT &quot;, kac=&quot; SIZE_FORMAT &quot;)&quot;,
+                          _par_pmc_remark_ovflw, _par_kac_ovflw);
+     _par_pmc_remark_ovflw = 0;
+    _par_kac_ovflw = 0;
+  &#125;
+   if (_markStack._hit_limit &gt; 0) &#123;
+     log_trace(gc)(&quot; (benign) Hit max stack size limit (&quot; SIZE_FORMAT &quot;)&quot;,
+                          _markStack._hit_limit);
+   &#125;
+   if (_markStack._failed_double &gt; 0) &#123;
+     log_trace(gc)(&quot; (benign) Failed stack doubling (&quot; SIZE_FORMAT &quot;), current capacity &quot; SIZE_FORMAT,
+                          _markStack._failed_double, _markStack.capacity());
+   &#125;
+  _markStack._hit_limit = 0;
+  _markStack._failed_double = 0;
+
+  if ((VerifyAfterGC || VerifyDuringGC) &amp;&amp;
+      CMSHeap::heap()-&gt;total_collections() &gt;= VerifyGCStartAt) &#123;
+    verify_after_remark();
+  &#125;
+
+  _gc_tracer_cm-&gt;report_object_count_after_gc(&amp;_is_alive_closure);
+
+  // Change under the freelistLocks.
+  _collectorState = Sweeping;
+  // Call isAllClear() under bitMapLock
+  assert(_modUnionTable.isAllClear(),
+      &quot;Should be clear by end of the final marking&quot;);
+  assert(_ct-&gt;cld_rem_set()-&gt;mod_union_is_clear(),
+      &quot;Should be clear by end of the final marking&quot;);
+&#125;
+</code></pre>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271454149.jpg" alt="img"></p>
 <p>Final Remark 是最终的第二次标记，这种情况只有在 Background GC 执行了 InitialMarking 步骤的情形下才会执行，如果是 Foreground GC 执行的 InitialMarking 步骤则不需要再次执行 FinalRemark。Final Remark 的开始阶段与 Init Mark 处理的流程相同，但是后续多了 Card Table 遍历、Reference 实例的清理并将其加入到 Reference 维护的 pend_list 中，如果要收集元数据信息，还要清理 SystemDictionary、CodeCache、SymbolTable、StringTable 等组件中不再使用的资源。</p>
 <h4 id="4-6-3-策略"><a href="#4-6-3-策略" class="headerlink" title="4.6.3 策略"></a>4.6.3 策略</h4><p>知道了两个 STW 过程执行流程，我们分析解决就比较简单了，由于大部分问题都出在 Final Remark 过程，这里我们也拿这个场景来举例，主要步骤：</p>
 <p>+【<strong>方向</strong>】 观察详细 GC 日志，找到出问题时 Final Remark 日志，分析下 Reference 处理和元数据处理 real 耗时是否正常，详细信息需要通过 -XX:+PrintReferenceGC 参数开启。基本在日志里面就能定位到大概是哪个方向出了问题，耗时超过 10% 的就需要关注。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2019-02-27T19:55:37.920+0800: 516952.915: [GC (CMS Final Remark) 516952.915: [ParNew516952.939: [SoftReference, 0 refs, 0.0003857 secs]516952.939: [WeakReference, 1362 refs, 0.0002415 secs]516952.940: [FinalReference, 146 refs, 0.0001233 secs]516952.940: [PhantomReference, 0 refs, 57 refs, 0.0002369 secs]516952.940: [JNI Weak Reference, 0.0000662 secs]</span><br><span class="line">[class unloading, 0.1770490 secs]516953.329: [scrub symbol table, 0.0442567 secs]516953.373: [scrub string table, 0.0036072 secs][1 CMS-remark: 1638504K(2048000K)] 1667558K(4352000K), 0.5269311 secs] [Times: user=1.20 sys=0.03, real=0.53 secs]</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">2019-02-27T19:55:37.920+0800: 516952.915: [GC (CMS Final Remark) 516952.915: [ParNew516952.939: [SoftReference, 0 refs, 0.0003857 secs]516952.939: [WeakReference, 1362 refs, 0.0002415 secs]516952.940: [FinalReference, 146 refs, 0.0001233 secs]516952.940: [PhantomReference, 0 refs, 57 refs, 0.0002369 secs]516952.940: [JNI Weak Reference, 0.0000662 secs]
+[class unloading, 0.1770490 secs]516953.329: [scrub symbol table, 0.0442567 secs]516953.373: [scrub string table, 0.0036072 secs][1 CMS-remark: 1638504K(2048000K)] 1667558K(4352000K), 0.5269311 secs] [Times: user=1.20 sys=0.03, real=0.53 secs]
+</code></pre>
 <p>+【<strong>根因</strong>】 有了具体的方向我们就可以进行深入的分析，一般来说最容易出问题的地方就是 Reference 中的 FinalReference 和元数据信息处理中的 scrub symbol table 两个阶段，想要找到具体问题代码就需要内存分析工具 MAT 或 JProfiler 了，注意要 dump 即将开始 CMS GC 的堆。在用 MAT 等工具前也可以先用命令行看下对象 Histogram，有可能直接就能定位问题。</p>
 <ul>
 <li>对 FinalReference 的分析主要观察 <code>java.lang.ref.Finalizer</code> 对象的 dominator tree，找到泄漏的来源。经常会出现问题的几个点有 Socket 的 SocksSocketImpl 、Jersey 的 ClientRuntime、MySQL 的 ConnectionImpl 等等。</li>
 <li>scrub symbol table 表示清理元数据符号引用耗时，符号引用是 Java 代码被编译成字节码时，方法在 JVM 中的表现形式，生命周期一般与 Class 一致，当 <code>_should_unload_classes</code> 被设置为 true 时在 <code>CMSCollector::refProcessingWork()</code> 中与 Class Unload、String Table 一起被处理。</li>
 </ul>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="built_in">should_unload_classes</span>()) &#123;</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="built_in">GCTraceTime</span>(Debug, gc, phases) <span class="built_in">t</span>(<span class="string">&quot;Class Unloading&quot;</span>, _gc_timer_cm);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// Unload classes and purge the SystemDictionary.</span></span><br><span class="line">      <span class="type">bool</span> purged_class = SystemDictionary::<span class="built_in">do_unloading</span>(_gc_timer_cm);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// Unload nmethods.</span></span><br><span class="line">      CodeCache::<span class="built_in">do_unloading</span>(&amp;_is_alive_closure, purged_class);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// Prune dead klasses from subklass/sibling/implementor lists.</span></span><br><span class="line">      Klass::<span class="built_in">clean_weak_klass_links</span>(purged_class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="built_in">GCTraceTime</span>(Debug, gc, phases) <span class="built_in">t</span>(<span class="string">&quot;Scrub Symbol Table&quot;</span>, _gc_timer_cm);</span><br><span class="line">      <span class="comment">// Clean up unreferenced symbols in symbol table.</span></span><br><span class="line">      SymbolTable::<span class="built_in">unlink</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="built_in">GCTraceTime</span>(Debug, gc, phases) <span class="built_in">t</span>(<span class="string">&quot;Scrub String Table&quot;</span>, _gc_timer_cm);</span><br><span class="line">      <span class="comment">// Delete entries for dead interned strings.</span></span><br><span class="line">      StringTable::<span class="built_in">unlink</span>(&amp;_is_alive_closure);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="cpp">if (should_unload_classes()) &#123;
+    &#123;
+      GCTraceTime(Debug, gc, phases) t(&quot;Class Unloading&quot;, _gc_timer_cm);
 
+      // Unload classes and purge the SystemDictionary.
+      bool purged_class = SystemDictionary::do_unloading(_gc_timer_cm);
+
+      // Unload nmethods.
+      CodeCache::do_unloading(&amp;_is_alive_closure, purged_class);
+
+      // Prune dead klasses from subklass/sibling/implementor lists.
+      Klass::clean_weak_klass_links(purged_class);
+    &#125;
+
+    &#123;
+      GCTraceTime(Debug, gc, phases) t(&quot;Scrub Symbol Table&quot;, _gc_timer_cm);
+      // Clean up unreferenced symbols in symbol table.
+      SymbolTable::unlink();
+    &#125;
+
+    &#123;
+      GCTraceTime(Debug, gc, phases) t(&quot;Scrub String Table&quot;, _gc_timer_cm);
+      // Delete entries for dead interned strings.
+      StringTable::unlink(&amp;_is_alive_closure);
+    &#125;
+  &#125;
+</code></pre>
 <p>+【<strong>策略</strong>】 知道 GC 耗时的根因就比较好处理了，这种问题不会大面积同时爆发，不过有很多时候单台 STW 的时间会比较长，如果业务影响比较大，及时摘掉流量，具体后续优化策略如下：</p>
 <ul>
 <li>FinalReference：找到内存来源后通过优化代码的方式来解决，如果短时间无法定位可以增加 -XX:+ParallelRefProcEnabled 对 Reference 进行并行处理。</li>
@@ -801,8 +1626,9 @@
 <h4 id="4-8-4-小结"><a href="#4-8-4-小结" class="headerlink" title="4.8.4 小结"></a>4.8.4 小结</h4><p>首先可以使用 NMT + jcmd 分析泄漏的堆外内存是哪里申请，确定原因后，使用不同的手段，进行原因定位。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271457983.png" alt="img"></p>
 <h3 id="4-9-场景九：JNI-引发的-GC-问题"><a href="#4-9-场景九：JNI-引发的-GC-问题" class="headerlink" title="4.9 场景九：JNI 引发的 GC 问题"></a>4.9 场景九：JNI 引发的 GC 问题</h3><h4 id="4-9-1-现象"><a href="#4-9-1-现象" class="headerlink" title="4.9.1 现象"></a>4.9.1 现象</h4><p>在 GC 日志中，出现 GC Cause 为 GCLocker Initiated GC。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2020-09-23T16:49:09.727+0800: 504426.742: [GC (GCLocker Initiated GC) 504426.742: [ParNew (promotion failed): 209716K-&gt;6042K(1887488K), 0.0843330 secs] 1449487K-&gt;1347626K(3984640K), 0.0848963 secs] [Times: user=0.19 sys=0.00, real=0.09 secs]</span><br><span class="line">2020-09-23T16:49:09.812+0800: 504426.827: [Full GC (GCLocker Initiated GC) 504426.827: [CMS: 1341583K-&gt;419699K(2097152K), 1.8482275 secs] 1347626K-&gt;419699K(3984640K), [Metaspace: 297780K-&gt;297780K(1329152K)], 1.8490564 secs] [Times: user=1.62 sys=0.20, real=1.85 secs]</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">2020-09-23T16:49:09.727+0800: 504426.742: [GC (GCLocker Initiated GC) 504426.742: [ParNew (promotion failed): 209716K-&gt;6042K(1887488K), 0.0843330 secs] 1449487K-&gt;1347626K(3984640K), 0.0848963 secs] [Times: user=0.19 sys=0.00, real=0.09 secs]
+2020-09-23T16:49:09.812+0800: 504426.827: [Full GC (GCLocker Initiated GC) 504426.827: [CMS: 1341583K-&gt;419699K(2097152K), 1.8482275 secs] 1347626K-&gt;419699K(3984640K), [Metaspace: 297780K-&gt;297780K(1329152K)], 1.8490564 secs] [Times: user=1.62 sys=0.20, real=1.85 secs]
+</code></pre>
 <h4 id="4-9-2-原因"><a href="#4-9-2-原因" class="headerlink" title="4.9.2 原因"></a>4.9.2 原因</h4><p>JNI（Java Native Interface）意为 Java 本地调用，它允许 Java 代码和其他语言写的 Native 代码进行交互。</p>
 <p>JNI 如果需要获取 JVM 中的 String 或者数组，有两种方式：</p>
 <ul>
@@ -811,10 +1637,51 @@
 </ul>
 <p>由于 Native 代码直接使用了 JVM 堆区的指针，如果这时发生 GC，就会导致数据错误。因此，在发生此类 JNI 调用时，禁止 GC 的发生，同时阻止其他线程进入 JNI 临界区，直到最后一个线程退出临界区时触发一次 GC。</p>
 <p>GC Locker 实验：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">GCLockerTest</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">ITERS</span> <span class="operator">=</span> <span class="number">100</span>;</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">ARR_SIZE</span> <span class="operator">=</span>  <span class="number">10000</span>;</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">WINDOW</span> <span class="operator">=</span> <span class="number">10000000</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">acquire</span><span class="params">(<span class="type">int</span>[] arr)</span>;</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">release</span><span class="params">(<span class="type">int</span>[] arr)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">final</span> Object[] window = <span class="keyword">new</span> <span class="title class_">Object</span>[WINDOW];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String... args)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">    System.loadLibrary(<span class="string">&quot;GCLockerTest&quot;</span>);</span><br><span class="line">    <span class="type">int</span>[] arr = <span class="keyword">new</span> <span class="title class_">int</span>[ARR_SIZE];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; ITERS; i++) &#123;</span><br><span class="line">      acquire(arr);</span><br><span class="line">      System.out.println(<span class="string">&quot;Acquired&quot;</span>);</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> <span class="number">0</span>; c &lt; WINDOW; c++) &#123;</span><br><span class="line">          window[c] = <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">        <span class="comment">// omit</span></span><br><span class="line">      &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Releasing&quot;</span>);</span><br><span class="line">        release(arr);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class GCLockerTest &#123;
 
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;jni.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;GCLockerTest.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> jbyte* sink;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL <span class="title">Java_GCLockerTest_acquire</span><span class="params">(JNIEnv* env, jclass klass, jintArray arr)</span> </span>&#123;</span><br><span class="line">sink = (*env)-&gt;<span class="built_in">GetPrimitiveArrayCritical</span>(env, arr, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL <span class="title">Java_GCLockerTest_release</span><span class="params">(JNIEnv* env, jclass klass, jintArray arr)</span> </span>&#123;</span><br><span class="line">(*env)-&gt;<span class="built_in">ReleasePrimitiveArrayCritical</span>(env, arr, sink, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  static final int ITERS = 100;
+  static final int ARR_SIZE =  10000;
+  static final int WINDOW = 10000000;
 
+  static native void acquire(int[] arr);
+  static native void release(int[] arr);
+
+  static final Object[] window = new Object[WINDOW];
+
+  public static void main(String... args) throws Throwable &#123;
+    System.loadLibrary(&quot;GCLockerTest&quot;);
+    int[] arr = new int[ARR_SIZE];
+
+    for (int i = 0; i &lt; ITERS; i++) &#123;
+      acquire(arr);
+      System.out.println(&quot;Acquired&quot;);
+      try &#123;
+        for (int c = 0; c &lt; WINDOW; c++) &#123;
+          window[c] = new Object();
+        &#125;
+      &#125; catch (Throwable t) &#123;
+        // omit
+      &#125; finally &#123;
+        System.out.println(&quot;Releasing&quot;);
+        release(arr);
+      &#125;
+    &#125;
+  &#125;
+&#125;
+</code></pre>
+<pre><code class="cpp">#include &lt;jni.h&gt;
+#include &quot;GCLockerTest.h&quot;
+
+static jbyte* sink;
+
+JNIEXPORT void JNICALL Java_GCLockerTest_acquire(JNIEnv* env, jclass klass, jintArray arr) &#123;
+sink = (*env)-&gt;GetPrimitiveArrayCritical(env, arr, 0);
+&#125;
+
+JNIEXPORT void JNICALL Java_GCLockerTest_release(JNIEnv* env, jclass klass, jintArray arr) &#123;
+(*env)-&gt;ReleasePrimitiveArrayCritical(env, arr, sink, 0);
+&#125;
+</code></pre>
 <p>运行该 JNI 程序，可以看到发生的 GC 都是 GCLocker Initiated GC，并且注意在 “Acquired” 和 “Released” 时不可能发生 GC。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271457438.png" alt="img"></p>
 <p>GC Locker 可能导致的不良后果有：</p>

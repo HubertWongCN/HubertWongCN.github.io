@@ -441,12 +441,22 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <li><strong><code>throws</code></strong> – 用在方法签名中，用于声明该方法可能抛出的异常。</li>
 </ul>
 <h3 id="异常的申明-throws"><a href="#异常的申明-throws" class="headerlink" title="异常的申明(throws)"></a>异常的申明(<code>throws</code>)</h3><p>在Java中，当前执行的语句必属于某个方法，Java解释器调用<code>main</code>方法执行开始执行程序。若方法中存在检查异常，如果不对其捕获，那必须在方法头中显式声明该异常，以便于告知方法调用者此方法有异常，需要进行处理。 在方法中声明一个异常，方法头中使用关键字<code>throws</code>，后面接上要声明的异常。若声明多个异常，则使用逗号分割。如下所示：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">method</span><span class="params">()</span> <span class="keyword">throws</span> IOException, FileNotFoundException&#123;</span><br><span class="line">    <span class="comment">//something statements</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static void method() throws IOException, FileNotFoundException&#123;
+    //something statements
+&#125;
+</code></pre>
 <p>注意：若是父类的方法没有声明异常，则子类继承方法后，也不能声明异常。</p>
 <p>通常，应该捕获那些知道如何处理的异常，将不知道如何处理的异常继续传递下去。传递异常可以在方法签名处使用 <code>throws</code> 关键字声明可能会抛出的异常。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">readFile</span><span class="params">(String filePath)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(filePath);</span><br><span class="line">    String result;</span><br><span class="line">    <span class="type">BufferedReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">FileReader</span>(file));</span><br><span class="line">    <span class="keyword">while</span>((result = reader.readLine())!=<span class="literal">null</span>) &#123;</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line">    reader.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">private static void readFile(String filePath) throws IOException &#123;
+    File file = new File(filePath);
+    String result;
+    BufferedReader reader = new BufferedReader(new FileReader(file));
+    while((result = reader.readLine())!=null) &#123;
+        System.out.println(result);
+    &#125;
+    reader.close();
+&#125;
+</code></pre>
 <p><code>Throws</code>抛出异常的规则：</p>
 <ul>
 <li>如果是不可查异常（unchecked exception），即<code>Error</code>、<code>RuntimeException</code>或它们的子类，那么可以不使用<code>throws</code>关键字来声明要抛出的异常，编译仍能顺利通过，但在运行时会被系统抛出。</li>
@@ -455,15 +465,34 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <li>调用方法必须遵循任何可查异常的处理和声明规则。若覆盖一个方法，则不能声明与覆盖方法不同的异常。声明的任何异常必须是被覆盖方法所声明异常的同类或子类。</li>
 </ul>
 <h3 id="异常的抛出-throw"><a href="#异常的抛出-throw" class="headerlink" title="异常的抛出(throw)"></a>异常的抛出(<code>throw</code>)</h3><p>如果代码可能会引发某种错误，可以创建一个合适的异常类实例并抛出它，这就是抛出异常。如下所示：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">double</span> <span class="title function_">method</span><span class="params">(<span class="type">int</span> value)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span>(value == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ArithmeticException</span>(<span class="string">&quot;参数不能为0&quot;</span>); <span class="comment">//抛出一个运行时异常</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">5.0</span> / value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static double method(int value) &#123;
+    if(value == 0) &#123;
+        throw new ArithmeticException(&quot;参数不能为0&quot;); //抛出一个运行时异常
+    &#125;
+    return 5.0 / value;
+&#125;
+</code></pre>
 <p>大部分情况下都不需要手动抛出异常，因为Java的大部分方法要么已经处理异常，要么已声明异常。所以一般都是捕获异常或者再往上抛。</p>
 <p>有时我们会从 <code>catch</code> 中抛出一个异常，目的是为了改变异常的类型。多用于在多系统集成时，当某个子系统故障，异常类型可能有多种，可以用统一的异常类型向外暴露，不需暴露太多内部异常细节。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">readFile</span><span class="params">(String filePath)</span> <span class="keyword">throws</span> MyException &#123;    </span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// code</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        <span class="type">MyException</span> <span class="variable">ex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyException</span>(<span class="string">&quot;read file failed.&quot;</span>);</span><br><span class="line">        ex.initCause(e);</span><br><span class="line">        <span class="keyword">throw</span> ex;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">private static void readFile(String filePath) throws MyException &#123;    
+    try &#123;
+        // code
+    &#125; catch (IOException e) &#123;
+        MyException ex = new MyException(&quot;read file failed.&quot;);
+        ex.initCause(e);
+        throw ex;
+    &#125;
+&#125;
+</code></pre>
 <h3 id="异常的自定义"><a href="#异常的自定义" class="headerlink" title="异常的自定义"></a>异常的自定义</h3><p>习惯上，定义一个异常类应包含两个构造函数，一个无参构造函数和一个带有详细描述信息的构造函数（<code>Throwable</code> 的 <code>toString</code> 方法会打印这些详细信息，调试时很有用）, 比如上面用到的自定义<code>MyException</code>：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyException</span> <span class="keyword">extends</span> <span class="title class_">Exception</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MyException</span><span class="params">()</span>&#123; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MyException</span><span class="params">(String msg)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(msg);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public class MyException extends Exception &#123;
+    public MyException()&#123; &#125;
+    public MyException(String msg)&#123;
+        super(msg);
+    &#125;
+    // ...
+&#125;
+</code></pre>
 <h3 id="异常的捕获"><a href="#异常的捕获" class="headerlink" title="异常的捕获"></a>异常的捕获</h3><p>异常捕获处理的方法通常有：</p>
 <ul>
 <li><code>try-catch</code></li>
@@ -472,16 +501,38 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <li><code>try-with-resource</code></li>
 </ul>
 <h4 id="try-catch"><a href="#try-catch" class="headerlink" title="try-catch"></a><code>try-catch</code></h4><p>在一个 <code>try-catch</code> 语句块中可以捕获多个异常类型，并对不同类型的异常做出不同的处理</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">readFile</span><span class="params">(String filePath)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// code</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (FileNotFoundException e) &#123;</span><br><span class="line">        <span class="comment">// handle FileNotFoundException</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e)&#123;</span><br><span class="line">        <span class="comment">// handle IOException</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">private static void readFile(String filePath) &#123;
+    try &#123;
+        // code
+    &#125; catch (FileNotFoundException e) &#123;
+        // handle FileNotFoundException
+    &#125; catch (IOException e)&#123;
+        // handle IOException
+    &#125;
+&#125;
+</code></pre>
 <p>同一个 <code>catch</code> 也可以捕获多种类型异常，用 <code>|</code> 隔开</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">readFile</span><span class="params">(String filePath)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// code</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (FileNotFoundException | UnknownHostException e) &#123;</span><br><span class="line">        <span class="comment">// handle FileNotFoundException or UnknownHostException</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e)&#123;</span><br><span class="line">        <span class="comment">// handle IOException</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">private static void readFile(String filePath) &#123;
+    try &#123;
+        // code
+    &#125; catch (FileNotFoundException | UnknownHostException e) &#123;
+        // handle FileNotFoundException or UnknownHostException
+    &#125; catch (IOException e)&#123;
+        // handle IOException
+    &#125;
+&#125;
+</code></pre>
 <h4 id="try-catch-finally"><a href="#try-catch-finally" class="headerlink" title="try-catch-finally"></a><code>try-catch-finally</code></h4><ul>
 <li>常规语法</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;                        </span><br><span class="line">    <span class="comment">//执行程序代码，可能会出现异常                 </span></span><br><span class="line">&#125; <span class="keyword">catch</span>(Exception e) &#123;   </span><br><span class="line">    <span class="comment">//捕获异常并处理   </span></span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">//必执行的代码</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">try &#123;                        
+    //执行程序代码，可能会出现异常                 
+&#125; catch(Exception e) &#123;   
+    //捕获异常并处理   
+&#125; finally &#123;
+    //必执行的代码
+&#125;
+</code></pre>
 <ul>
 <li>执行的顺序 <ul>
 <li>当<code>try</code>没有捕获到异常时：<code>try</code>语句块中的语句逐一被执行，程序将跳过<code>catch</code>语句块，执行<code>finally</code>语句块和其后的语句；</li>
@@ -494,15 +545,45 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <ul>
 <li>一个完整的例子</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">readFile</span><span class="params">(String filePath)</span> <span class="keyword">throws</span> MyException &#123;</span><br><span class="line">    <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(filePath);</span><br><span class="line">    String result;</span><br><span class="line">    <span class="type">BufferedReader</span> <span class="variable">reader</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        reader = <span class="keyword">new</span> <span class="title class_">BufferedReader</span>(<span class="keyword">new</span> <span class="title class_">FileReader</span>(file));</span><br><span class="line">        <span class="keyword">while</span>((result = reader.readLine())!=<span class="literal">null</span>) &#123;</span><br><span class="line">            System.out.println(result);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;readFile method catch block.&quot;</span>);</span><br><span class="line">        <span class="type">MyException</span> <span class="variable">ex</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyException</span>(<span class="string">&quot;read file failed.&quot;</span>);</span><br><span class="line">        ex.initCause(e);</span><br><span class="line">        <span class="keyword">throw</span> ex;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;readFile method finally block.&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="literal">null</span> != reader) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                reader.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">private static void readFile(String filePath) throws MyException &#123;
+    File file = new File(filePath);
+    String result;
+    BufferedReader reader = null;
+    try &#123;
+        reader = new BufferedReader(new FileReader(file));
+        while((result = reader.readLine())!=null) &#123;
+            System.out.println(result);
+        &#125;
+    &#125; catch (IOException e) &#123;
+        System.out.println(&quot;readFile method catch block.&quot;);
+        MyException ex = new MyException(&quot;read file failed.&quot;);
+        ex.initCause(e);
+        throw ex;
+    &#125; finally &#123;
+        System.out.println(&quot;readFile method finally block.&quot;);
+        if (null != reader) &#123;
+            try &#123;
+                reader.close();
+            &#125; catch (IOException e) &#123;
+                e.printStackTrace();
+            &#125;
+        &#125;
+    &#125;
+&#125;
+</code></pre>
 <h4 id="try-finally"><a href="#try-finally" class="headerlink" title="try-finally"></a><code>try-finally</code></h4><blockquote>
 <p>可以直接用<code>try-finally</code>吗？ 可以。</p>
 </blockquote>
 <p><code>try</code>块中引起异常，异常代码之后的语句不再执行，直接执行<code>finally</code>语句。 <code>try</code>块没有引发异常，则执行完<code>try</code>块就执行<code>finally</code>语句。</p>
 <p><code>try-finally</code>可用在不需要捕获异常的代码，可以保证资源在使用后被关闭。例如IO流中执行完相应操作后，关闭相应资源；使用<code>Lock</code>对象保证线程同步，通过<code>finally</code>可以保证锁会被释放；数据库连接代码时，关闭连接操作等等。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//以Lock加锁为例，演示try-finally</span></span><br><span class="line"><span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantLock</span>();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">//需要加锁的代码</span></span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    lock.unlock(); <span class="comment">//保证锁一定被释放</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">//以Lock加锁为例，演示try-finally
+ReentrantLock lock = new ReentrantLock();
+try &#123;
+    //需要加锁的代码
+&#125; finally &#123;
+    lock.unlock(); //保证锁一定被释放
+&#125;
+</code></pre>
 <p><code>finally</code>遇见如下情况不会执行</p>
 <ul>
 <li>在前面的代码中用了<code>System.exit()</code>退出程序。</li>
@@ -517,13 +598,24 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <ul>
 <li>代码实现</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>  <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">tryWithResourceTest</span><span class="params">()</span>&#123;</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="string">&quot;c:/abc&quot;</span>),<span class="string">&quot;UTF-8&quot;</span>))&#123;</span><br><span class="line">        <span class="comment">// code</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e)&#123;</span><br><span class="line">        <span class="comment">// handle exception</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">private  static void tryWithResourceTest()&#123;
+    try (Scanner scanner = new Scanner(new FileInputStream(&quot;c:/abc&quot;),&quot;UTF-8&quot;))&#123;
+        // code
+    &#125; catch (IOException e)&#123;
+        // handle exception
+    &#125;
+&#125;
+</code></pre>
 <ul>
 <li>看下<code>Scanner</code></li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">Scanner</span> <span class="keyword">implements</span> <span class="title class_">Iterator</span>&lt;String&gt;, Closeable &#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Closeable</span> <span class="keyword">extends</span> <span class="title class_">AutoCloseable</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public final class Scanner implements Iterator&lt;String&gt;, Closeable &#123;
+  // ...
+&#125;
+public interface Closeable extends AutoCloseable &#123;
+    public void close() throws IOException;
+&#125;
+</code></pre>
 <p><code>try</code> 代码块退出时，会自动调用 <code>scanner.close</code> 方法，和把 <code>scanner.close</code> 方法放在 <code>finally</code> 代码块中不同的是，若 <code>scanner.close</code> 抛出异常，则会被抑制，抛出的仍然为原始异常。被抑制的异常会由 <code>addSusppressed</code> 方法添加到原来的异常，如果想要获取被抑制的异常列表，可以调用 <code>getSuppressed</code> 方法来获取。</p>
 <h3 id="异常基础总结"><a href="#异常基础总结" class="headerlink" title="异常基础总结"></a>异常基础总结</h3><ul>
 <li><code>try</code>、<code>catch</code>和<code>finally</code>都不能单独使用，只能是<code>try-catch</code>、<code>try-finally</code>或者<code>try-catch-finally</code>。</li>
@@ -588,13 +680,19 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <ul>
 <li>代码1</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (obj != <span class="literal">null</span>) &#123;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">if (obj != null) &#123;
+  //...
+&#125;
+</code></pre>
 <ul>
 <li>代码2</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123; </span><br><span class="line">  obj.method(); </span><br><span class="line">&#125; <span class="keyword">catch</span> (NullPointerException e) &#123;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">try &#123; 
+  obj.method(); 
+&#125; catch (NullPointerException e) &#123;
+  //...
+&#125;
+</code></pre>
 <p>主要原因有三点：</p>
 <ul>
 <li>异常机制的设计初衷是用于不正常的情况，所以很少会会JVM实现试图对它们的性能进行优化。所以，创建、抛出和捕获异常的开销是很昂贵的。</li>
@@ -605,22 +703,61 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <ul>
 <li>错误示例</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doNotCloseResourceInTry</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">FileInputStream</span> <span class="variable">inputStream</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;./tmp.txt&quot;</span>);</span><br><span class="line">        inputStream = <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file);</span><br><span class="line">        <span class="comment">// use the inputStream to read a file</span></span><br><span class="line">        <span class="comment">// do NOT do this</span></span><br><span class="line">        inputStream.close();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (FileNotFoundException e) &#123;</span><br><span class="line">        log.error(e);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        log.error(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public void doNotCloseResourceInTry() &#123;
+    FileInputStream inputStream = null;
+    try &#123;
+        File file = new File(&quot;./tmp.txt&quot;);
+        inputStream = new FileInputStream(file);
+        // use the inputStream to read a file
+        // do NOT do this
+        inputStream.close();
+    &#125; catch (FileNotFoundException e) &#123;
+        log.error(e);
+    &#125; catch (IOException e) &#123;
+        log.error(e);
+    &#125;
+&#125;
+</code></pre>
 <p>问题就是，只有没有异常抛出的时候，这段代码才可以正常工作。<code>try</code> 代码块内代码会正常执行，并且资源可以正常关闭。但是，使用 <code>try</code> 代码块是有原因的，一般调用一个或多个可能抛出异常的方法，而且，你自己也可能会抛出一个异常，这意味着代码可能不会执行到 <code>try</code> 代码块的最后部分。结果就是，你并没有关闭资源。</p>
 <p>所以，你应该把清理工作的代码放到 <code>finally</code> 里去，或者使用 <code>try-with-resource</code> 特性。</p>
 <ul>
 <li>方法一：使用 <code>finally</code> 代码块</li>
 </ul>
 <p>与前面几行 <code>try</code> 代码块不同，<code>finally</code> 代码块总是会被执行。不管 <code>try</code> 代码块成功执行之后还是你在 <code>catch</code> 代码块中处理完异常后都会执行。因此，你可以确保你清理了所有打开的资源。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">closeResourceInFinally</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">FileInputStream</span> <span class="variable">inputStream</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;./tmp.txt&quot;</span>);</span><br><span class="line">        inputStream = <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file);</span><br><span class="line">        <span class="comment">// use the inputStream to read a file</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (FileNotFoundException e) &#123;</span><br><span class="line">        log.error(e);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (inputStream != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                inputStream.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                log.error(e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public void closeResourceInFinally() &#123;
+    FileInputStream inputStream = null;
+    try &#123;
+        File file = new File(&quot;./tmp.txt&quot;);
+        inputStream = new FileInputStream(file);
+        // use the inputStream to read a file
+    &#125; catch (FileNotFoundException e) &#123;
+        log.error(e);
+    &#125; finally &#123;
+        if (inputStream != null) &#123;
+            try &#123;
+                inputStream.close();
+            &#125; catch (IOException e) &#123;
+                log.error(e);
+            &#125;
+        &#125;
+    &#125;
+&#125;
+</code></pre>
 <ul>
 <li>方法二：Java 7 的 <code>try-with-resource</code> 语法</li>
 </ul>
 <p>如果你的资源实现了 <code>AutoCloseable</code> 接口，你可以使用这个语法。大多数的 Java 标准资源都继承了这个接口。当你在 <code>try</code> 子句中打开资源，资源会在 <code>try</code> 代码块执行后或异常处理后自动关闭。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">automaticallyCloseResource</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;./tmp.txt&quot;</span>);</span><br><span class="line">    <span class="keyword">try</span> (<span class="type">FileInputStream</span> <span class="variable">inputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file);) &#123;</span><br><span class="line">        <span class="comment">// use the inputStream to read a file</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (FileNotFoundException e) &#123;</span><br><span class="line">        log.error(e);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">        log.error(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public void automaticallyCloseResource() &#123;
+    File file = new File(&quot;./tmp.txt&quot;);
+    try (FileInputStream inputStream = new FileInputStream(file);) &#123;
+        // use the inputStream to read a file
+    &#125; catch (FileNotFoundException e) &#123;
+        log.error(e);
+    &#125; catch (IOException e) &#123;
+        log.error(e);
+    &#125;
+&#125;
+</code></pre>
 <h3 id="尽量使用标准的异常"><a href="#尽量使用标准的异常" class="headerlink" title="尽量使用标准的异常"></a>尽量使用标准的异常</h3><blockquote>
 <p>代码重用是值得提倡的，这是一条通用规则，异常也不例外。</p>
 </blockquote>
@@ -669,8 +806,15 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <p>当在方法上声明抛出异常时，也需要进行文档说明。目的是为了给调用者提供尽可能多的信息，从而可以更好地避免或处理异常。</p>
 </blockquote>
 <p>在 Javadoc 添加 <code>@throws</code> 声明，并且描述抛出异常的场景。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Method description</span></span><br><span class="line"><span class="comment">* </span></span><br><span class="line"><span class="comment">* <span class="doctag">@throws</span> MyBusinessException - businuess exception description</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doSomething</span><span class="params">(String input)</span> <span class="keyword">throws</span> MyBusinessException &#123;</span><br><span class="line">   <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">/**
+* Method description
+* 
+* @throws MyBusinessException - businuess exception description
+*/
+public void doSomething(String input) throws MyBusinessException &#123;
+   // ...
+&#125;
+</code></pre>
 <p>同时，在抛出<code>MyBusinessException</code> 异常时，需要尽可能精确地描述问题和相关信息，这样无论是打印到日志中还是在监控工具中，都能够更容易被人阅读，从而可以更好地定位具体错误信息、错误的严重程度等。</p>
 <h3 id="优先捕获最具体的异常"><a href="#优先捕获最具体的异常" class="headerlink" title="优先捕获最具体的异常"></a>优先捕获最具体的异常</h3><blockquote>
 <p>大多数 IDE 都可以帮助你实现这个最佳实践。当你尝试首先捕获较不具体的异常时，它们会报告无法访问的代码块。</p>
@@ -678,58 +822,133 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <p>但问题在于，只有匹配异常的第一个 catch 块会被执行。 因此，如果首先捕获 <code>IllegalArgumentException</code> ，则永远不会到达应该处理更具体的 <code>NumberFormatException</code> 的 catch 块，因为它是 <code>IllegalArgumentException</code> 的子类。</p>
 <p>总是优先捕获最具体的异常类，并将不太具体的 <code>catch</code> 块添加到列表的末尾。</p>
 <p>你可以在下面的代码片断中看到这样一个 <code>try-catch</code> 语句的例子。 第一个 <code>catch</code> 块处理所有 <code>NumberFormatException</code> 异常，第二个处理所有非 <code>NumberFormatException</code> 异常的<code>IllegalArgumentException</code> 异常。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">catchMostSpecificExceptionFirst</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        doSomething(<span class="string">&quot;A message&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NumberFormatException e) &#123;</span><br><span class="line">        log.error(e);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (IllegalArgumentException e) &#123;</span><br><span class="line">        log.error(e)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public void catchMostSpecificExceptionFirst() &#123;
+    try &#123;
+        doSomething(&quot;A message&quot;);
+    &#125; catch (NumberFormatException e) &#123;
+        log.error(e);
+    &#125; catch (IllegalArgumentException e) &#123;
+        log.error(e)
+    &#125;
+&#125;
+</code></pre>
 <h3 id="不要捕获-Throwable-类"><a href="#不要捕获-Throwable-类" class="headerlink" title="不要捕获 Throwable 类"></a>不要捕获 <code>Throwable</code> 类</h3><blockquote>
 <p><code>Throwable</code> 是所有异常和错误的超类。你可以在 <code>catch</code> 子句中使用它，但是你永远不应该这样做！</p>
 </blockquote>
 <p>如果在 <code>catch</code> 子句中使用 <code>Throwable</code> ，它不仅会捕获所有异常，也将捕获所有的错误。JVM 抛出错误，指出不应该由应用程序处理的严重问题。 典型的例子是 <code>OutOfMemoryError</code> 或者 <code>StackOverflowError</code> 。两者都是由应用程序控制之外的情况引起的，无法处理。</p>
 <p>所以，最好不要捕获 <code>Throwable</code> ，除非你确定自己处于一种特殊的情况下能够处理错误。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doNotCatchThrowable</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// do something</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">        <span class="comment">// don&#x27;t do this!</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public void doNotCatchThrowable() &#123;
+    try &#123;
+        // do something
+    &#125; catch (Throwable t) &#123;
+        // don&#39;t do this!
+    &#125;
+&#125;
+</code></pre>
 <h3 id="不要忽略异常"><a href="#不要忽略异常" class="headerlink" title="不要忽略异常"></a>不要忽略异常</h3><blockquote>
 <p>很多时候，开发者很有自信不会抛出异常，因此写了一个<code>catch</code>块，但是没有做任何处理或者记录日志。</p>
 </blockquote>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doNotIgnoreExceptions</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// do something</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (NumberFormatException e) &#123;</span><br><span class="line">        <span class="comment">// this will never happen</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public void doNotIgnoreExceptions() &#123;
+    try &#123;
+        // do something
+    &#125; catch (NumberFormatException e) &#123;
+        // this will never happen
+    &#125;
+&#125;
+</code></pre>
 <p>但现实是经常会出现无法预料的异常，或者无法确定这里的代码未来是不是会改动(删除了阻止异常抛出的代码)，而此时由于异常被捕获，使得无法拿到足够的错误信息来定位问题。</p>
 <p>合理的做法是至少要记录异常的信息。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">logAnException</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// do something</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (NumberFormatException e) &#123;</span><br><span class="line">        log.error(<span class="string">&quot;This should never happen: &quot;</span> + e); <span class="comment">// see this line</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public void logAnException() &#123;
+    try &#123;
+        // do something
+    &#125; catch (NumberFormatException e) &#123;
+        log.error(&quot;This should never happen: &quot; + e); // see this line
+    &#125;
+&#125;
+</code></pre>
 <h3 id="不要记录并抛出异常"><a href="#不要记录并抛出异常" class="headerlink" title="不要记录并抛出异常"></a>不要记录并抛出异常</h3><blockquote>
 <p>这可能是本文中最常被忽略的最佳实践。</p>
 </blockquote>
 <p>可以发现很多代码甚至类库中都会有捕获异常、记录日志并再次抛出的逻辑。如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Long</span>(<span class="string">&quot;xyz&quot;</span>);</span><br><span class="line">&#125; <span class="keyword">catch</span> (NumberFormatException e) &#123;</span><br><span class="line">    log.error(e);</span><br><span class="line">    <span class="keyword">throw</span> e;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">try &#123;
+    new Long(&quot;xyz&quot;);
+&#125; catch (NumberFormatException e) &#123;
+    log.error(e);
+    throw e;
+&#125;
+</code></pre>
 <p>这个处理逻辑看着是合理的。但这经常会给同一个异常输出多条日志。如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">17</span>:<span class="number">44</span>:<span class="number">28</span>,<span class="number">945</span> ERROR TestExceptionHandling:<span class="number">65</span> - java.lang.NumberFormatException: For input string: <span class="string">&quot;xyz&quot;</span></span><br><span class="line">Exception in thread <span class="string">&quot;main&quot;</span> java.lang.NumberFormatException: For input string: <span class="string">&quot;xyz&quot;</span></span><br><span class="line">at java.lang.NumberFormatException.forInputString(NumberFormatException.java:<span class="number">65</span>)</span><br><span class="line">at java.lang.Long.parseLong(Long.java:<span class="number">589</span>)</span><br><span class="line">at java.lang.Long.(Long.java:<span class="number">965</span>)</span><br><span class="line">at com.stackify.example.TestExceptionHandling.logAndThrowException(TestExceptionHandling.java:<span class="number">63</span>)</span><br><span class="line">at com.stackify.example.TestExceptionHandling.main(TestExceptionHandling.java:<span class="number">58</span>)</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">17:44:28,945 ERROR TestExceptionHandling:65 - java.lang.NumberFormatException: For input string: &quot;xyz&quot;
+Exception in thread &quot;main&quot; java.lang.NumberFormatException: For input string: &quot;xyz&quot;
+at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
+at java.lang.Long.parseLong(Long.java:589)
+at java.lang.Long.(Long.java:965)
+at com.stackify.example.TestExceptionHandling.logAndThrowException(TestExceptionHandling.java:63)
+at com.stackify.example.TestExceptionHandling.main(TestExceptionHandling.java:58)
+</code></pre>
 <p>如上所示，后面的日志也没有附加更有用的信息。如果想要提供更加有用的信息，那么可以将异常包装为自定义异常。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">wrapException</span><span class="params">(String input)</span> <span class="keyword">throws</span> MyBusinessException &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// do something</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (NumberFormatException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">MyBusinessException</span>(<span class="string">&quot;A message that describes the error.&quot;</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public void wrapException(String input) throws MyBusinessException &#123;
+    try &#123;
+        // do something
+    &#125; catch (NumberFormatException e) &#123;
+        throw new MyBusinessException(&quot;A message that describes the error.&quot;, e);
+    &#125;
+&#125;
+</code></pre>
 <p>因此，仅仅当想要处理异常时才去捕获，否则只需要在方法签名中声明让调用者去处理。</p>
 <h3 id="包装异常时不要抛弃原始的异常"><a href="#包装异常时不要抛弃原始的异常" class="headerlink" title="包装异常时不要抛弃原始的异常"></a>包装异常时不要抛弃原始的异常</h3><p>捕获标准异常并包装为自定义异常是一个很常见的做法。这样可以添加更为具体的异常信息并能够做针对的异常处理。 在你这样做时，请确保将原始异常设置为原因（注：参考下方代码 <code>NumberFormatException e</code> 中的原始异常 <code>e</code> ）。<code>Exception</code> 类提供了特殊的构造函数方法，它接受一个 <code>Throwable</code> 作为参数。否则，你将会丢失堆栈跟踪和原始异常的消息，这将会使分析导致异常的异常事件变得困难。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">wrapException</span><span class="params">(String input)</span> <span class="keyword">throws</span> MyBusinessException &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// do something</span></span><br><span class="line">    &#125; <span class="keyword">catch</span> (NumberFormatException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">MyBusinessException</span>(<span class="string">&quot;A message that describes the error.&quot;</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public void wrapException(String input) throws MyBusinessException &#123;
+    try &#123;
+        // do something
+    &#125; catch (NumberFormatException e) &#123;
+        throw new MyBusinessException(&quot;A message that describes the error.&quot;, e);
+    &#125;
+&#125;
+</code></pre>
 <h3 id="不要使用异常控制程序的流程"><a href="#不要使用异常控制程序的流程" class="headerlink" title="不要使用异常控制程序的流程"></a>不要使用异常控制程序的流程</h3><p>不应该使用异常控制应用的执行流程，例如，本应该使用<code>if</code>语句进行条件判断的情况下，你却使用异常处理，这是非常不好的习惯，会严重影响应用的性能。</p>
 <h3 id="不要在finally块中使用return。"><a href="#不要在finally块中使用return。" class="headerlink" title="不要在finally块中使用return。"></a>不要在<code>finally</code>块中使用<code>return</code>。</h3><p><code>try</code>块中的<code>return</code>语句执行成功后，并不马上返回，而是继续执行<code>finally</code>块中的语句，如果此处存在<code>return</code>语句，则在此直接返回，无情丢弃掉<code>try</code>块中的返回点。</p>
 <p>如下是一个反例：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">checkReturn</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// x等于1，此处不返回</span></span><br><span class="line">        <span class="keyword">return</span> ++x;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">// 返回的结果是2</span></span><br><span class="line">        <span class="keyword">return</span> ++x;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">private int x = 0;
+public int checkReturn() &#123;
+    try &#123;
+        // x等于1，此处不返回
+        return ++x;
+    &#125; finally &#123;
+        // 返回的结果是2
+        return ++x;
+    &#125;
+&#125;
+</code></pre>
 <h2 id="深入理解异常"><a href="#深入理解异常" class="headerlink" title="深入理解异常"></a>深入理解异常</h2><blockquote>
 <p>提示</p>
 <p>我们再深入理解下异常，看下底层实现。</p>
 </blockquote>
 <h3 id="JVM处理异常的机制？"><a href="#JVM处理异常的机制？" class="headerlink" title="JVM处理异常的机制？"></a>JVM处理异常的机制？</h3><p>提到JVM处理异常的机制，就需要提及<code>Exception Table</code>，以下称为异常表。我们暂且不急于介绍异常表，先看一个简单的 Java 处理异常的小例子。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">simpleTryCatch</span><span class="params">()</span> &#123;</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">       testNPE();</span><br><span class="line">   &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">       e.printStackTrace();</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static void simpleTryCatch() &#123;
+   try &#123;
+       testNPE();
+   &#125; catch (Exception e) &#123;
+       e.printStackTrace();
+   &#125;
+&#125;
+</code></pre>
 <p>上面的代码是一个很简单的例子，用来捕获处理一个潜在的空指针异常。</p>
 <p>当然如果只是看简简单单的代码，我们很难看出什么高深之处，更没有了今天文章要谈论的内容。</p>
 <p>所以这里我们需要借助一把神兵利器，它就是javap,一个用来拆解class文件的工具，和javac一样由JDK提供。</p>
 <p>然后我们使用javap来分析这段代码（需要先使用javac编译）</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//javap -c Main</span></span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">simpleTryCatch</span><span class="params">()</span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: invokestatic  #<span class="number">3</span>                  <span class="comment">// Method testNPE:()V</span></span><br><span class="line">       <span class="number">3</span>: goto          <span class="number">11</span></span><br><span class="line">       <span class="number">6</span>: astore_0</span><br><span class="line">       <span class="number">7</span>: aload_0</span><br><span class="line">       <span class="number">8</span>: invokevirtual #<span class="number">5</span>                  <span class="comment">// Method java/lang/Exception.printStackTrace:()V</span></span><br><span class="line">      <span class="number">11</span>: <span class="keyword">return</span></span><br><span class="line">    Exception table:</span><br><span class="line">       from    to  target type</span><br><span class="line">           <span class="number">0</span>     <span class="number">3</span>     <span class="number">6</span>   Class java/lang/Exception</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">//javap -c Main
+ public static void simpleTryCatch();
+    Code:
+       0: invokestatic  #3                  // Method testNPE:()V
+       3: goto          11
+       6: astore_0
+       7: aload_0
+       8: invokevirtual #5                  // Method java/lang/Exception.printStackTrace:()V
+      11: return
+    Exception table:
+       from    to  target type
+           0     3     6   Class java/lang/Exception
+</code></pre>
 <p>看到上面的代码，应该会有会心一笑，因为终于看到了<code>Exception table</code>，也就是我们要研究的异常表。</p>
 <p>异常表中包含了一个或多个异常处理者(<code>Exception Handler</code>)的信息，这些信息包含如下</p>
 <ul>
@@ -751,11 +970,44 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <p>以上就是JVM处理异常的一些机制。</p>
 <p><strong><code>try-catch -finally</code></strong></p>
 <p>除了简单的<code>try-catch</code>外，我们还常常和<code>finally</code>做结合使用。比如这样的代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">simpleTryCatchFinally</span><span class="params">()</span> &#123;</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">       testNPE();</span><br><span class="line">   &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">       e.printStackTrace();</span><br><span class="line">   &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">       System.out.println(<span class="string">&quot;Finally&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static void simpleTryCatchFinally() &#123;
+   try &#123;
+       testNPE();
+   &#125; catch (Exception e) &#123;
+       e.printStackTrace();
+   &#125; finally &#123;
+       System.out.println(&quot;Finally&quot;);
+   &#125;
+&#125;
+</code></pre>
 <p>同样我们使用javap分析一下代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">simpleTryCatchFinally</span><span class="params">()</span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: invokestatic  #<span class="number">3</span>                  <span class="comment">// Method testNPE:()V</span></span><br><span class="line">       <span class="number">3</span>: getstatic     #<span class="number">6</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">       <span class="number">6</span>: ldc           #<span class="number">7</span>                  <span class="comment">// String Finally</span></span><br><span class="line">       <span class="number">8</span>: invokevirtual #<span class="number">8</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">      <span class="number">11</span>: goto          <span class="number">41</span></span><br><span class="line">      <span class="number">14</span>: astore_0</span><br><span class="line">      <span class="number">15</span>: aload_0</span><br><span class="line">      <span class="number">16</span>: invokevirtual #<span class="number">5</span>                  <span class="comment">// Method java/lang/Exception.printStackTrace:()V</span></span><br><span class="line">      <span class="number">19</span>: getstatic     #<span class="number">6</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">      <span class="number">22</span>: ldc           #<span class="number">7</span>                  <span class="comment">// String Finally</span></span><br><span class="line">      <span class="number">24</span>: invokevirtual #<span class="number">8</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">      <span class="number">27</span>: goto          <span class="number">41</span></span><br><span class="line">      <span class="number">30</span>: astore_1</span><br><span class="line">      <span class="number">31</span>: getstatic     #<span class="number">6</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">      <span class="number">34</span>: ldc           #<span class="number">7</span>                  <span class="comment">// String Finally</span></span><br><span class="line">      <span class="number">36</span>: invokevirtual #<span class="number">8</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">      <span class="number">39</span>: aload_1</span><br><span class="line">      <span class="number">40</span>: athrow</span><br><span class="line">      <span class="number">41</span>: <span class="keyword">return</span></span><br><span class="line">    Exception table:</span><br><span class="line">       from    to  target type</span><br><span class="line">           <span class="number">0</span>     <span class="number">3</span>    <span class="number">14</span>   Class java/lang/Exception</span><br><span class="line">           <span class="number">0</span>     <span class="number">3</span>    <span class="number">30</span>   any</span><br><span class="line">          <span class="number">14</span>    <span class="number">19</span>    <span class="number">30</span>   any</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static void simpleTryCatchFinally();
+    Code:
+       0: invokestatic  #3                  // Method testNPE:()V
+       3: getstatic     #6                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       6: ldc           #7                  // String Finally
+       8: invokevirtual #8                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      11: goto          41
+      14: astore_0
+      15: aload_0
+      16: invokevirtual #5                  // Method java/lang/Exception.printStackTrace:()V
+      19: getstatic     #6                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      22: ldc           #7                  // String Finally
+      24: invokevirtual #8                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      27: goto          41
+      30: astore_1
+      31: getstatic     #6                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      34: ldc           #7                  // String Finally
+      36: invokevirtual #8                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      39: aload_1
+      40: athrow
+      41: return
+    Exception table:
+       from    to  target type
+           0     3    14   Class java/lang/Exception
+           0     3    30   any
+          14    19    30   any
+</code></pre>
 <p>和之前有所不同，这次异常表中，有三条数据，而我们仅仅捕获了一个<code>Exception</code>, 异常表的后两个item的type为any; 上面的三条异常表item的意思为:</p>
 <ul>
 <li>如果0到3之间，发生了<code>Exception</code>类型的异常，调用14位置的异常处理者。</li>
@@ -763,26 +1015,134 @@ Java异常是Java提供的一种识别及响应错误的一致性机制，java�
 <li>如果14到19之间（即catch部分），不论发生什么异常，都调用30位置的处理者。</li>
 </ul>
 <p>再次分析上面的Java代码，<code>finally</code>里面的部分已经被提取到了<code>try</code>部分和<code>catch</code>部分。我们再次调一下代码来看一下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">simpleTryCatchFinally</span><span class="params">()</span>;</span><br><span class="line">    Code:</span><br><span class="line">      <span class="comment">//try 部分提取finally代码，如果没有异常发生，则执行输出finally操作，直至goto到41位置，执行返回操作。  </span></span><br><span class="line"></span><br><span class="line">       <span class="number">0</span>: invokestatic  #<span class="number">3</span>                  <span class="comment">// Method testNPE:()V</span></span><br><span class="line">       <span class="number">3</span>: getstatic     #<span class="number">6</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">       <span class="number">6</span>: ldc           #<span class="number">7</span>                  <span class="comment">// String Finally</span></span><br><span class="line">       <span class="number">8</span>: invokevirtual #<span class="number">8</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">      <span class="number">11</span>: goto          <span class="number">41</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">//catch部分提取finally代码，如果没有异常发生，则执行输出finally操作，直至执行got到41位置，执行返回操作。</span></span><br><span class="line">      <span class="number">14</span>: astore_0</span><br><span class="line">      <span class="number">15</span>: aload_0</span><br><span class="line">      <span class="number">16</span>: invokevirtual #<span class="number">5</span>                  <span class="comment">// Method java/lang/Exception.printStackTrace:()V</span></span><br><span class="line">      <span class="number">19</span>: getstatic     #<span class="number">6</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">      <span class="number">22</span>: ldc           #<span class="number">7</span>                  <span class="comment">// String Finally</span></span><br><span class="line">      <span class="number">24</span>: invokevirtual #<span class="number">8</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">      <span class="number">27</span>: goto          <span class="number">41</span></span><br><span class="line">      <span class="comment">//finally部分的代码如果被调用，有可能是try部分，也有可能是catch部分发生异常。</span></span><br><span class="line">      <span class="number">30</span>: astore_1</span><br><span class="line">      <span class="number">31</span>: getstatic     #<span class="number">6</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">      <span class="number">34</span>: ldc           #<span class="number">7</span>                  <span class="comment">// String Finally</span></span><br><span class="line">      <span class="number">36</span>: invokevirtual #<span class="number">8</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">      <span class="number">39</span>: aload_1</span><br><span class="line">      <span class="number">40</span>: athrow     <span class="comment">//如果异常没有被catch捕获，而是到了这里，执行完finally的语句后，仍然要把这个异常抛出去，传递给调用处。</span></span><br><span class="line">      <span class="number">41</span>: <span class="keyword">return</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">public static void simpleTryCatchFinally();
+    Code:
+      //try 部分提取finally代码，如果没有异常发生，则执行输出finally操作，直至goto到41位置，执行返回操作。  
 
+       0: invokestatic  #3                  // Method testNPE:()V
+       3: getstatic     #6                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       6: ldc           #7                  // String Finally
+       8: invokevirtual #8                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      11: goto          41
+
+      //catch部分提取finally代码，如果没有异常发生，则执行输出finally操作，直至执行got到41位置，执行返回操作。
+      14: astore_0
+      15: aload_0
+      16: invokevirtual #5                  // Method java/lang/Exception.printStackTrace:()V
+      19: getstatic     #6                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      22: ldc           #7                  // String Finally
+      24: invokevirtual #8                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      27: goto          41
+      //finally部分的代码如果被调用，有可能是try部分，也有可能是catch部分发生异常。
+      30: astore_1
+      31: getstatic     #6                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      34: ldc           #7                  // String Finally
+      36: invokevirtual #8                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      39: aload_1
+      40: athrow     //如果异常没有被catch捕获，而是到了这里，执行完finally的语句后，仍然要把这个异常抛出去，传递给调用处。
+      41: return
+</code></pre>
 <p><strong><code>Catch</code>先后顺序的问题</strong></p>
 <p>我们在代码中的<code>catch</code>的顺序决定了异常处理者在异常表的位置，所以，越是具体的异常要先处理，否则就会出现下面的问题</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">misuseCatchException</span><span class="params">()</span> &#123;</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">       testNPE();</span><br><span class="line">   &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">       t.printStackTrace();</span><br><span class="line">   &#125; <span class="keyword">catch</span> (Exception e) &#123; <span class="comment">//error occurs during compilings with tips Exception Java.lang.Exception has already benn caught.</span></span><br><span class="line">       e.printStackTrace();</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">private static void misuseCatchException() &#123;
+   try &#123;
+       testNPE();
+   &#125; catch (Throwable t) &#123;
+       t.printStackTrace();
+   &#125; catch (Exception e) &#123; //error occurs during compilings with tips Exception Java.lang.Exception has already benn caught.
+       e.printStackTrace();
+   &#125;
+&#125;
+</code></pre>
 <p>这段代码会导致编译失败，因为先捕获<code>Throwable</code>后捕获<code>Exception</code>，会导致后面的<code>catch</code>永远无法被执行。</p>
 <p><strong><code>Return</code> 和<code>finally</code>的问题</strong></p>
 <p>这算是我们扩展的一个相对比较极端的问题，就是类似这样的代码，既有<code>return</code>，又有<code>finally</code>，那么<code>finally</code>导致会不会执行</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">tryCatchReturn</span><span class="params">()</span> &#123;</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">       testNPE();</span><br><span class="line">       <span class="keyword">return</span>  <span class="string">&quot;OK&quot;</span>;</span><br><span class="line">   &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">       <span class="keyword">return</span> <span class="string">&quot;ERROR&quot;</span>;</span><br><span class="line">   &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">       System.out.println(<span class="string">&quot;tryCatchReturn&quot;</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static String tryCatchReturn() &#123;
+   try &#123;
+       testNPE();
+       return  &quot;OK&quot;;
+   &#125; catch (Exception e) &#123;
+       return &quot;ERROR&quot;;
+   &#125; finally &#123;
+       System.out.println(&quot;tryCatchReturn&quot;);
+   &#125;
+&#125;
+</code></pre>
 <p>答案是<code>finally</code>会执行，那么还是使用上面的方法，我们来看一下为什么<code>finally</code>会执行。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> java.lang.String <span class="title function_">tryCatchReturn</span><span class="params">()</span>;</span><br><span class="line">    Code:</span><br><span class="line">       <span class="number">0</span>: invokestatic  #<span class="number">3</span>                  <span class="comment">// Method testNPE:()V</span></span><br><span class="line">       <span class="number">3</span>: ldc           #<span class="number">6</span>                  <span class="comment">// String OK</span></span><br><span class="line">       <span class="number">5</span>: astore_0</span><br><span class="line">       <span class="number">6</span>: getstatic     #<span class="number">7</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">       <span class="number">9</span>: ldc           #<span class="number">8</span>                  <span class="comment">// String tryCatchReturn</span></span><br><span class="line">      <span class="number">11</span>: invokevirtual #<span class="number">9</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">      <span class="number">14</span>: aload_0</span><br><span class="line">      <span class="number">15</span>: areturn       返回OK字符串，areturn意思为<span class="keyword">return</span> a reference from a method</span><br><span class="line">      <span class="number">16</span>: astore_0</span><br><span class="line">      <span class="number">17</span>: ldc           #<span class="number">10</span>                 <span class="comment">// String ERROR</span></span><br><span class="line">      <span class="number">19</span>: astore_1</span><br><span class="line">      <span class="number">20</span>: getstatic     #<span class="number">7</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">      <span class="number">23</span>: ldc           #<span class="number">8</span>                  <span class="comment">// String tryCatchReturn</span></span><br><span class="line">      <span class="number">25</span>: invokevirtual #<span class="number">9</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">      <span class="number">28</span>: aload_1</span><br><span class="line">      <span class="number">29</span>: areturn  <span class="comment">//返回ERROR字符串</span></span><br><span class="line">      <span class="number">30</span>: astore_2</span><br><span class="line">      <span class="number">31</span>: getstatic     #<span class="number">7</span>                  <span class="comment">// Field java/lang/System.out:Ljava/io/PrintStream;</span></span><br><span class="line">      <span class="number">34</span>: ldc           #<span class="number">8</span>                  <span class="comment">// String tryCatchReturn</span></span><br><span class="line">      <span class="number">36</span>: invokevirtual #<span class="number">9</span>                  <span class="comment">// Method java/io/PrintStream.println:(Ljava/lang/String;)V</span></span><br><span class="line">      <span class="number">39</span>: aload_2</span><br><span class="line">      <span class="number">40</span>: athrow  如果<span class="keyword">catch</span>有未处理的异常，抛出去。</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static java.lang.String tryCatchReturn();
+    Code:
+       0: invokestatic  #3                  // Method testNPE:()V
+       3: ldc           #6                  // String OK
+       5: astore_0
+       6: getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       9: ldc           #8                  // String tryCatchReturn
+      11: invokevirtual #9                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      14: aload_0
+      15: areturn       返回OK字符串，areturn意思为return a reference from a method
+      16: astore_0
+      17: ldc           #10                 // String ERROR
+      19: astore_1
+      20: getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      23: ldc           #8                  // String tryCatchReturn
+      25: invokevirtual #9                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      28: aload_1
+      29: areturn  //返回ERROR字符串
+      30: astore_2
+      31: getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      34: ldc           #8                  // String tryCatchReturn
+      36: invokevirtual #9                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      39: aload_2
+      40: athrow  如果catch有未处理的异常，抛出去。
+</code></pre>
 <h3 id="异常是否耗时？为什么会耗时？"><a href="#异常是否耗时？为什么会耗时？" class="headerlink" title="异常是否耗时？为什么会耗时？"></a>异常是否耗时？为什么会耗时？</h3><p>说用异常慢，首先来看看异常慢在哪里？有多慢？下面的测试用例简单的测试了建立对象、建立异常对象、抛出并接住异常对象三者的耗时对比：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ExceptionTest</span> &#123;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> testTimes;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ExceptionTest</span><span class="params">(<span class="type">int</span> testTimes)</span> &#123;  </span><br><span class="line">        <span class="built_in">this</span>.testTimes = testTimes;  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">newObject</span><span class="params">()</span> &#123;  </span><br><span class="line">        <span class="type">long</span> <span class="variable">l</span> <span class="operator">=</span> System.nanoTime();  </span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; testTimes; i++) &#123;  </span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Object</span>();  </span><br><span class="line">        &#125;  </span><br><span class="line">        System.out.println(<span class="string">&quot;建立对象：&quot;</span> + (System.nanoTime() - l));  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">newException</span><span class="params">()</span> &#123;  </span><br><span class="line">        <span class="type">long</span> <span class="variable">l</span> <span class="operator">=</span> System.nanoTime();  </span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; testTimes; i++) &#123;  </span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Exception</span>();  </span><br><span class="line">        &#125;  </span><br><span class="line">        System.out.println(<span class="string">&quot;建立异常对象：&quot;</span> + (System.nanoTime() - l));  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">catchException</span><span class="params">()</span> &#123;  </span><br><span class="line">        <span class="type">long</span> <span class="variable">l</span> <span class="operator">=</span> System.nanoTime();  </span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; testTimes; i++) &#123;  </span><br><span class="line">            <span class="keyword">try</span> &#123;  </span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Exception</span>();  </span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;  </span><br><span class="line">            &#125;  </span><br><span class="line">        &#125;  </span><br><span class="line">        System.out.println(<span class="string">&quot;建立、抛出并接住异常对象：&quot;</span> + (System.nanoTime() - l));  </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;  </span><br><span class="line">        <span class="type">ExceptionTest</span> <span class="variable">test</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ExceptionTest</span>(<span class="number">10000</span>);  </span><br><span class="line">        test.newObject();  </span><br><span class="line">        test.newException();  </span><br><span class="line">        test.catchException();  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public class ExceptionTest &#123;  
+  
+    private int testTimes;  
+  
+    public ExceptionTest(int testTimes) &#123;  
+        this.testTimes = testTimes;  
+    &#125;  
+  
+    public void newObject() &#123;  
+        long l = System.nanoTime();  
+        for (int i = 0; i &lt; testTimes; i++) &#123;  
+            new Object();  
+        &#125;  
+        System.out.println(&quot;建立对象：&quot; + (System.nanoTime() - l));  
+    &#125;  
+  
+    public void newException() &#123;  
+        long l = System.nanoTime();  
+        for (int i = 0; i &lt; testTimes; i++) &#123;  
+            new Exception();  
+        &#125;  
+        System.out.println(&quot;建立异常对象：&quot; + (System.nanoTime() - l));  
+    &#125;  
+  
+    public void catchException() &#123;  
+        long l = System.nanoTime();  
+        for (int i = 0; i &lt; testTimes; i++) &#123;  
+            try &#123;  
+                throw new Exception();  
+            &#125; catch (Exception e) &#123;  
+            &#125;  
+        &#125;  
+        System.out.println(&quot;建立、抛出并接住异常对象：&quot; + (System.nanoTime() - l));  
+    &#125;  
+  
+    public static void main(String[] args) &#123;  
+        ExceptionTest test = new ExceptionTest(10000);  
+        test.newObject();  
+        test.newException();  
+        test.catchException();  
+    &#125;  
+&#125;  
+</code></pre>
 <p>运行结果：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">建立对象：<span class="number">575817</span>  </span><br><span class="line">建立异常对象：<span class="number">9589080</span>  </span><br><span class="line">建立、抛出并接住异常对象：<span class="number">47394475</span>  </span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">建立对象：575817  
+建立异常对象：9589080  
+建立、抛出并接住异常对象：47394475  
+</code></pre>
 <p>建立一个异常对象，是建立一个普通<code>Object</code>耗时的约20倍（实际上差距会比这个数字更大一些，因为循环也占用了时间，追求精确的读者可以再测一下空循环的耗时然后在对比前减掉这部分），而抛出、接住一个异常对象，所花费时间大约是建立异常对象的4倍。</p>
 <p>那占用时间的“大头”：抛出、接住异常，系统到底做了什么事情？请参考这篇文章：</p>
 <ul>

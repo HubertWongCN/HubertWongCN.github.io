@@ -402,20 +402,174 @@ Stat">
 <p>State：抽象状态接口（也可以定义成抽象类），该接口封装了所有状态所对应的行为。<br>ConcreteStateA&#x2F;B：具体状态类，该类实现了抽象状态接口，会根据自身对应的状态来实现接口中定义的方法，还有另一个功能是指明如何过渡到下一个状态。<br>Context：环境（上下文）角色，该类负责状态的切换，还持有一个State实例，代表当前环境所处状态。</p>
 </blockquote>
 <h2 id="案例讲解"><a href="#案例讲解" class="headerlink" title="案例讲解"></a>案例讲解</h2><p>案例：通过状态模式来实现自助售卖机的功能。</p>
-<h3 id="状态接口"><a href="#状态接口" class="headerlink" title="状态接口"></a><strong>状态接口</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">State</span> &#123;</span><br><span class="line">  <span class="comment">// 挑选商品</span></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">choose</span><span class="params">()</span>;</span><br><span class="line">  <span class="comment">// 付款</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">payment</span><span class="params">()</span>;</span><br><span class="line">  <span class="comment">// 分发商品</span></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">dispenseCommodity</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="状态接口"><a href="#状态接口" class="headerlink" title="状态接口"></a><strong>状态接口</strong></h3><pre><code class="java">public interface State &#123;
+  // 挑选商品
+  void choose();
+  // 付款
+  boolean payment();
+  // 分发商品
+  void dispenseCommodity();
+&#125;
+</code></pre>
+<h3 id="挑选商品状态类"><a href="#挑选商品状态类" class="headerlink" title="挑选商品状态类"></a><strong>挑选商品状态类</strong></h3><pre><code class="java">public class ChooseGoods implements State &#123;
 
-<h3 id="挑选商品状态类"><a href="#挑选商品状态类" class="headerlink" title="挑选商品状态类"></a><strong>挑选商品状态类</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ChooseGoods</span> <span class="keyword">implements</span> <span class="title class_">State</span> &#123;</span><br><span class="line"></span><br><span class="line">  VendingMachine machine;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">ChooseGoods</span><span class="params">(VendingMachine machine)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.machine = machine;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">choose</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (machine.getCount() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;商品挑选成功，请及时付款！&quot;</span>);</span><br><span class="line">      machine.setState(machine.getPaymentState());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;很遗憾，商品售罄了！&quot;</span>);</span><br><span class="line">      machine.setState(machine.getEmptyState());</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">payment</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;请先挑选商品！&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">dispenseCommodity</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;请先挑选商品！&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  VendingMachine machine;
 
-<h3 id="付款状态类"><a href="#付款状态类" class="headerlink" title="付款状态类"></a><strong>付款状态类</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PaymentState</span> <span class="keyword">implements</span> <span class="title class_">State</span> &#123;</span><br><span class="line"></span><br><span class="line">  VendingMachine machine;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">PaymentState</span><span class="params">(VendingMachine machine)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.machine = machine;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">choose</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;商品已选购完成请勿重复挑选&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">payment</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">Random</span> <span class="variable">random</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line">    <span class="type">int</span> <span class="variable">num</span> <span class="operator">=</span> random.nextInt(<span class="number">10</span>);</span><br><span class="line">    <span class="keyword">if</span>(num % <span class="number">2</span> == <span class="number">0</span>)&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;付款成功！&quot;</span>);</span><br><span class="line">      machine.setState(machine.getDispenseCommodityState());</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println(<span class="string">&quot;付款失败，请重新支付！&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">dispenseCommodity</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;请先完成支付！&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  public ChooseGoods(VendingMachine machine) &#123;
+    this.machine = machine;
+  &#125;
 
-<h3 id="商品售罄状态类"><a href="#商品售罄状态类" class="headerlink" title="商品售罄状态类"></a><strong>商品售罄状态类</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EmptyState</span> <span class="keyword">implements</span> <span class="title class_">State</span> &#123;</span><br><span class="line"></span><br><span class="line">  VendingMachine machine;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">EmptyState</span><span class="params">(VendingMachine machine)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.machine = machine;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">choose</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;对不起商品已售罄！&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">payment</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;对不起商品已售罄！&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">dispenseCommodity</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;对不起商品已售罄！&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  @Override
+  public void choose() &#123;
+    if (machine.getCount() &gt; 0) &#123;
+      System.out.println(&quot;商品挑选成功，请及时付款！&quot;);
+      machine.setState(machine.getPaymentState());
+    &#125; else &#123;
+      System.out.println(&quot;很遗憾，商品售罄了！&quot;);
+      machine.setState(machine.getEmptyState());
+    &#125;
+  &#125;
 
-<h3 id="分发商品状态类"><a href="#分发商品状态类" class="headerlink" title="分发商品状态类"></a><strong>分发商品状态类</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DispenseCommodityState</span> <span class="keyword">implements</span> <span class="title class_">State</span> &#123;</span><br><span class="line"></span><br><span class="line">  VendingMachine machine;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">DispenseCommodityState</span><span class="params">(VendingMachine machine)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.machine = machine;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">choose</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;请及时取走您的商品！&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">payment</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;请及时取走您的商品！&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">dispenseCommodity</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;请及时取走您的商品！&quot;</span>);</span><br><span class="line">    machine.setState(machine.getChooseGoods());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  @Override
+  public boolean payment() &#123;
+    System.out.println(&quot;请先挑选商品！&quot;);
+    return false;
+  &#125;
 
-<h3 id="自动售货机-Context角色"><a href="#自动售货机-Context角色" class="headerlink" title="自动售货机 &#x3D;&gt; Context角色"></a><strong>自动售货机 &#x3D;&gt; Context角色</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">VendingMachine</span> &#123;</span><br><span class="line">  <span class="comment">// 表示当前状态</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">State</span> <span class="variable">state</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">  <span class="comment">// 商品数量</span></span><br><span class="line">  <span class="keyword">private</span> <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="type">State</span> <span class="variable">chooseGoods</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChooseGoods</span>(<span class="built_in">this</span>);</span><br><span class="line">  <span class="keyword">private</span> <span class="type">State</span> <span class="variable">paymentState</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PaymentState</span>(<span class="built_in">this</span>);</span><br><span class="line">  <span class="keyword">private</span> <span class="type">State</span> <span class="variable">dispenseCommodityState</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DispenseCommodityState</span>(<span class="built_in">this</span>);</span><br><span class="line">  <span class="keyword">private</span> <span class="type">State</span> <span class="variable">emptyState</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">EmptyState</span>(<span class="built_in">this</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">VendingMachine</span><span class="params">(<span class="type">int</span> count)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.count = count;</span><br><span class="line">    <span class="built_in">this</span>.state = <span class="built_in">this</span>.getChooseGoods();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 购买商品</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">purchase</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 挑选商品</span></span><br><span class="line">    state.choose();</span><br><span class="line">    <span class="comment">// 支付成功</span></span><br><span class="line">    <span class="keyword">if</span> (state.payment()) &#123;</span><br><span class="line">      <span class="comment">// 分发商品</span></span><br><span class="line">      state.dispenseCommodity();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 获取商品后将商品减一</span></span><br><span class="line">  <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getCount</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> count--;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// get和set方法 ... </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  @Override
+  public void dispenseCommodity() &#123;
+    System.out.println(&quot;请先挑选商品！&quot;);
+  &#125;
+&#125;
+</code></pre>
+<h3 id="付款状态类"><a href="#付款状态类" class="headerlink" title="付款状态类"></a><strong>付款状态类</strong></h3><pre><code class="java">public class PaymentState implements State &#123;
 
-<h3 id="客户端测试类"><a href="#客户端测试类" class="headerlink" title="客户端测试类"></a><strong>客户端测试类</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">    <span class="type">VendingMachine</span> <span class="variable">machine</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">VendingMachine</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; <span class="number">4</span>; i++) &#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;第&quot;</span> + i + <span class="string">&quot;次购买。&quot;</span>);</span><br><span class="line">      machine.purchase();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  VendingMachine machine;
 
+  public PaymentState(VendingMachine machine) &#123;
+    this.machine = machine;
+  &#125;
+
+  @Override
+  public void choose() &#123;
+    System.out.println(&quot;商品已选购完成请勿重复挑选&quot;);
+  &#125;
+
+  @Override
+  public boolean payment() &#123;
+    Random random = new Random();
+    int num = random.nextInt(10);
+    if(num % 2 == 0)&#123;
+      System.out.println(&quot;付款成功！&quot;);
+      machine.setState(machine.getDispenseCommodityState());
+      return true;
+    &#125;
+    System.out.println(&quot;付款失败，请重新支付！&quot;);
+    return false;
+  &#125;
+
+  @Override
+  public void dispenseCommodity() &#123;
+    System.out.println(&quot;请先完成支付！&quot;);
+  &#125;
+&#125;
+</code></pre>
+<h3 id="商品售罄状态类"><a href="#商品售罄状态类" class="headerlink" title="商品售罄状态类"></a><strong>商品售罄状态类</strong></h3><pre><code class="java">public class EmptyState implements State &#123;
+
+  VendingMachine machine;
+
+  public EmptyState(VendingMachine machine) &#123;
+    this.machine = machine;
+  &#125;
+
+  @Override
+  public void choose() &#123;
+    System.out.println(&quot;对不起商品已售罄！&quot;);
+  &#125;
+
+  @Override
+  public boolean payment() &#123;
+    System.out.println(&quot;对不起商品已售罄！&quot;);
+    return false;
+  &#125;
+
+  @Override
+  public void dispenseCommodity() &#123;
+    System.out.println(&quot;对不起商品已售罄！&quot;);
+  &#125;
+&#125;
+</code></pre>
+<h3 id="分发商品状态类"><a href="#分发商品状态类" class="headerlink" title="分发商品状态类"></a><strong>分发商品状态类</strong></h3><pre><code class="java">public class DispenseCommodityState implements State &#123;
+
+  VendingMachine machine;
+
+  public DispenseCommodityState(VendingMachine machine) &#123;
+    this.machine = machine;
+  &#125;
+
+  @Override
+  public void choose() &#123;
+    System.out.println(&quot;请及时取走您的商品！&quot;);
+  &#125;
+
+  @Override
+  public boolean payment() &#123;
+    System.out.println(&quot;请及时取走您的商品！&quot;);
+    return false;
+  &#125;
+
+  @Override
+  public void dispenseCommodity() &#123;
+    System.out.println(&quot;请及时取走您的商品！&quot;);
+    machine.setState(machine.getChooseGoods());
+  &#125;
+&#125;
+</code></pre>
+<h3 id="自动售货机-Context角色"><a href="#自动售货机-Context角色" class="headerlink" title="自动售货机 &#x3D;&gt; Context角色"></a><strong>自动售货机 &#x3D;&gt; Context角色</strong></h3><pre><code class="java">public class VendingMachine &#123;
+  // 表示当前状态
+  private State state = null;
+  // 商品数量
+  private int count = 0;
+  private State chooseGoods = new ChooseGoods(this);
+  private State paymentState = new PaymentState(this);
+  private State dispenseCommodityState = new DispenseCommodityState(this);
+  private State emptyState = new EmptyState(this);
+
+  public VendingMachine(int count) &#123;
+    this.count = count;
+    this.state = this.getChooseGoods();
+  &#125;
+
+  // 购买商品
+  public void purchase() &#123;
+    // 挑选商品
+    state.choose();
+    // 支付成功
+    if (state.payment()) &#123;
+      // 分发商品
+      state.dispenseCommodity();
+    &#125;
+  &#125;
+
+  // 获取商品后将商品减一
+  public int getCount() &#123;
+    return count--;
+  &#125;
+
+  // get和set方法 ... 
+&#125;
+</code></pre>
+<h3 id="客户端测试类"><a href="#客户端测试类" class="headerlink" title="客户端测试类"></a><strong>客户端测试类</strong></h3><pre><code class="java">public class Client &#123;
+
+  public static void main(String[] args) &#123;
+    VendingMachine machine = new VendingMachine(1);
+    for (int i = 1; i &lt; 4; i++) &#123;
+      System.out.println(&quot;第&quot; + i + &quot;次购买。&quot;);
+      machine.purchase();
+    &#125;
+  &#125;
+&#125;
+</code></pre>
 <h3 id="执行结果"><a href="#执行结果" class="headerlink" title="执行结果"></a><strong>执行结果</strong></h3><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>1、状态模式将每个状态所对应的行为封装到一个类中，大大提高了代码的可读性。并且通过这样的设计还可以消除多余的if-else语句，方便代码的维护。</p>
 <p>2、状态模式符合“开闭原则”，容易增加和删除状态。</p>
 <p>3、任何事情都有利弊，状态模式也不例外。其最显著的问题是，每个状态都要对应一个类，当状态过多时会产生大量的类，从而加大维护成本。</p>

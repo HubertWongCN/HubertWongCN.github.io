@@ -596,19 +596,19 @@ Debug用来追踪代码的运行流程，通常在程序运行过程中出现异
 <p>有时候，本地调试的时候没有问题，打包部署到测试环境的时候却爆出一堆莫名其妙的问题，这时该怎么办呢？</p>
 </blockquote>
 <h3 id="使用特定JVM参数运行服务端代码"><a href="#使用特定JVM参数运行服务端代码" class="headerlink" title="使用特定JVM参数运行服务端代码"></a>使用特定JVM参数运行服务端代码</h3><p>要让远程服务器运行的代码支持远程调试，则启动的时候必须加上特定的JVM参数，这些参数是：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Xdebug -Xrunjdwp:transport=dt_socket,<span class="built_in">suspend</span>=n,server=y,address=<span class="variable">$&#123;debug_port&#125;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">-Xdebug -Xrunjdwp:transport=dt_socket,suspend=n,server=y,address=$&#123;debug_port&#125;
+</code></pre>
 <p>其中的<code>$&#123;debug_port&#125;</code>是用户自定义的，为debug端口，本例以5555端口为例。</p>
 <p>本人在这里踩过一个坑，必须要说一下。在使用公司内部的自动化部署平台NDP进行应用部署时，该平台号称支持远程调试，只需要在某个配置页面配置一下调试端口号（没有填写任何IP相关的信息），并且重新发布一下应用即可。事实上也可以发现，上述JVM参数中唯一可变的就是${debug_port}。但是实际在本地连接时发现却始终连不上5555 的调试端口，仔细排查才发现，下面截取了NDP发布的应用所有JVM参数列表中与远程调试相关的JVM启动参数如下：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Xdebug -Xrunjdwp:transport=dt_socket,<span class="built_in">suspend</span>=n,server=y,address=127.0.0.1:5555</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">-Xdebug -Xrunjdwp:transport=dt_socket,suspend=n,server=y,address=127.0.0.1:5555
+</code></pre>
 <p>将address设置为127.0.0.1:5555，表示将调试端口限制为本地访问，远程无法访问，这个应该是NDP平台的一个bug，我们在自己设置JVM的启动参数时也需要格外注意。</p>
 <p>如果只是临时调试，在端口号前面不要加上限制访问的IP地址，调试完成之后，将上述JVM参数去除掉之后重新发布下，防范开放远程调试端口可能带来的安全风险。</p>
 <h3 id="本地连接远程服务器debug端口"><a href="#本地连接远程服务器debug端口" class="headerlink" title="本地连接远程服务器debug端口"></a>本地连接远程服务器debug端口</h3><p>打开Intellij IDEA，在顶部靠右的地方选择”Edit Configurations…”，进去之后点击+号，选择”Remote”，按照下图的只是填写红框内的内容，其中Name填写名称，这里为remote webserver，host为远程代码运行的机器的ip&#x2F;hostname，port为上一步指定的debug_port，本例是5555。然后点击Apply，最后点击OK即可</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271601917.png" alt="img"></p>
 <p>现在在上一步选择”Edit Configurations…”的下拉框的位置选择上一步创建的remote webserver，然后点击右边的debug按钮(长的像臭虫那个)，看控制台日志，如果出现类似“Connected to the target VM, address: ‘xx.xx.xx.xx:5555’, transport: ‘socket’”的字样，就表示连接成功过了。我这里实际显示的内容如下：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Connected to the target VM, address: <span class="string">&#x27;10.185.0.192:15555&#x27;</span>, transport: <span class="string">&#x27;socket&#x27;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">Connected to the target VM, address: &#39;10.185.0.192:15555&#39;, transport: &#39;socket&#39;
+</code></pre>
 <h3 id="设置断点，开始调试"><a href="#设置断点，开始调试" class="headerlink" title="设置断点，开始调试"></a>设置断点，开始调试</h3><p>远程debug模式已经开启，现在可以在需要调试的代码中打断点了，比如：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271602004.png" alt="img"></p>
 <p>如图中所示，如果断点内有√，则表示选取的断点正确。</p>

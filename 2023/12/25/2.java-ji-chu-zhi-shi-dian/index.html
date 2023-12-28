@@ -425,24 +425,64 @@ float&amp;#x2F;32
 <li><code>double</code>&#x2F;64</li>
 </ul>
 <p>基本类型都有对应的包装类型，基本类型与其对应的包装类型之间的赋值使用自动装箱与拆箱完成。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Integer</span> <span class="variable">x</span> <span class="operator">=</span> <span class="number">2</span>;     <span class="comment">// 装箱</span></span><br><span class="line"><span class="type">int</span> <span class="variable">y</span> <span class="operator">=</span> x;         <span class="comment">// 拆箱</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Integer x = 2;     // 装箱
+int y = x;         // 拆箱
+</code></pre>
 <h3 id="缓存池"><a href="#缓存池" class="headerlink" title="缓存池"></a>缓存池</h3><p><code>new Integer(123)</code> 与 <code>Integer.valueOf(123)</code> 的区别在于:</p>
 <ul>
 <li><code>new Integer(123)</code> 每次都会新建一个对象</li>
 <li><code>Integer.valueOf(123)</code> 会使用缓存池中的对象，多次调用会取得同一个对象的引用。</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Integer</span> <span class="variable">x</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">123</span>);</span><br><span class="line"><span class="type">Integer</span> <span class="variable">y</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">123</span>);</span><br><span class="line">System.out.println(x == y);    <span class="comment">// false</span></span><br><span class="line"><span class="type">Integer</span> <span class="variable">z</span> <span class="operator">=</span> Integer.valueOf(<span class="number">123</span>);</span><br><span class="line"><span class="type">Integer</span> <span class="variable">k</span> <span class="operator">=</span> Integer.valueOf(<span class="number">123</span>);</span><br><span class="line">System.out.println(z == k);   <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Integer x = new Integer(123);
+Integer y = new Integer(123);
+System.out.println(x == y);    // false
+Integer z = Integer.valueOf(123);
+Integer k = Integer.valueOf(123);
+System.out.println(z == k);   // true
+</code></pre>
 <p><code>valueOf()</code> 方法的实现比较简单，就是先判断值是否在缓存池中，如果在的话就直接返回缓存池的内容。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Integer <span class="title function_">valueOf</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (i &gt;= IntegerCache.low &amp;&amp; i &lt;= IntegerCache.high)</span><br><span class="line">        <span class="keyword">return</span> IntegerCache.cache[i + (-IntegerCache.low)];</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Integer</span>(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static Integer valueOf(int i) &#123;
+    if (i &gt;= IntegerCache.low &amp;&amp; i &lt;= IntegerCache.high)
+        return IntegerCache.cache[i + (-IntegerCache.low)];
+    return new Integer(i);
+&#125;
+</code></pre>
 <p>在 Java 8 中，<code>Integer</code> 缓存池的大小默认为 <strong>-128~127</strong>。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">low</span> <span class="operator">=</span> -<span class="number">128</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> high;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> Integer cache[];</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    <span class="comment">// high value may be configured by property</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> <span class="number">127</span>;</span><br><span class="line">    <span class="type">String</span> <span class="variable">integerCacheHighPropValue</span> <span class="operator">=</span></span><br><span class="line">        sun.misc.VM.getSavedProperty(<span class="string">&quot;java.lang.Integer.IntegerCache.high&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (integerCacheHighPropValue != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> parseInt(integerCacheHighPropValue);</span><br><span class="line">            i = Math.max(i, <span class="number">127</span>);</span><br><span class="line">            <span class="comment">// Maximum array size is Integer.MAX_VALUE</span></span><br><span class="line">            h = Math.min(i, Integer.MAX_VALUE - (-low) -<span class="number">1</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span>( NumberFormatException nfe) &#123;</span><br><span class="line">            <span class="comment">// If the property cannot be parsed into an int, ignore it.</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    high = h;</span><br><span class="line"></span><br><span class="line">    cache = <span class="keyword">new</span> <span class="title class_">Integer</span>[(high - low) + <span class="number">1</span>];</span><br><span class="line">    <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> low;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> <span class="number">0</span>; k &lt; cache.length; k++)</span><br><span class="line">        cache[k] = <span class="keyword">new</span> <span class="title class_">Integer</span>(j++);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// range [-128, 127] must be interned (JLS7 5.1.7)</span></span><br><span class="line">    <span class="keyword">assert</span> IntegerCache.high &gt;= <span class="number">127</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">static final int low = -128;
+static final int high;
+static final Integer cache[];
 
+static &#123;
+    // high value may be configured by property
+    int h = 127;
+    String integerCacheHighPropValue =
+        sun.misc.VM.getSavedProperty(&quot;java.lang.Integer.IntegerCache.high&quot;);
+    if (integerCacheHighPropValue != null) &#123;
+        try &#123;
+            int i = parseInt(integerCacheHighPropValue);
+            i = Math.max(i, 127);
+            // Maximum array size is Integer.MAX_VALUE
+            h = Math.min(i, Integer.MAX_VALUE - (-low) -1);
+        &#125; catch( NumberFormatException nfe) &#123;
+            // If the property cannot be parsed into an int, ignore it.
+        &#125;
+    &#125;
+    high = h;
+
+    cache = new Integer[(high - low) + 1];
+    int j = low;
+    for(int k = 0; k &lt; cache.length; k++)
+        cache[k] = new Integer(j++);
+
+    // range [-128, 127] must be interned (JLS7 5.1.7)
+    assert IntegerCache.high &gt;= 127;
+&#125;
+</code></pre>
 <p>编译器会<strong>在缓冲池范围内的基本类型</strong>自动装箱过程调用 <code>valueOf()</code> 方法，因此多个 <code>Integer</code> 实例使用自动装箱来创建并且值相同，那么就会引用相同的对象。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Integer</span> <span class="variable">m</span> <span class="operator">=</span> <span class="number">123</span>;</span><br><span class="line"><span class="type">Integer</span> <span class="variable">n</span> <span class="operator">=</span> <span class="number">123</span>;</span><br><span class="line">System.out.println(m == n); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Integer m = 123;
+Integer n = 123;
+System.out.println(m == n); // true
+</code></pre>
 <p>基本类型对应的缓冲池如下:</p>
 <ul>
 <li><code>boolean</code> values true and false</li>
@@ -453,12 +493,17 @@ float&amp;#x2F;32
 </ul>
 <p>在使用这些基本类型对应的包装类型时，就可以直接使用缓冲池中的对象。</p>
 <p>如果在缓冲池之外：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Integer</span> <span class="variable">m</span> <span class="operator">=</span> <span class="number">323</span>;</span><br><span class="line"><span class="type">Integer</span> <span class="variable">n</span> <span class="operator">=</span> <span class="number">323</span>;</span><br><span class="line">System.out.println(m == n); <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Integer m = 323;
+Integer n = 323;
+System.out.println(m == n); // false
+</code></pre>
 <h2 id="String"><a href="#String" class="headerlink" title="String"></a>String</h2><h3 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h3><p><code>String</code> 被声明为 <code>final</code>，因此它不可被继承。</p>
 <p>内部使用 <code>char</code> 数组存储数据**(Java 9 之后，<code>String</code> 类的实现改用 <code>byte</code> 数组存储字符串)**，该数组被声明为 <code>final</code>，这意味着 <code>value</code> 数组初始化之后就不能再引用其它数组。并且 <code>String</code> 内部没有改变 <code>value</code> 数组的方法，因此可以保证 <code>String</code> 不可变。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">String</span></span><br><span class="line">    <span class="keyword">implements</span> <span class="title class_">java</span>.io.Serializable, Comparable&lt;String&gt;, CharSequence &#123;</span><br><span class="line">    <span class="comment">/** The value is used for character storage. */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">char</span> value[];</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public final class String
+    implements java.io.Serializable, Comparable&lt;String&gt;, CharSequence &#123;
+    /** The value is used for character storage. */
+    private final char value[];
+</code></pre>
 <h3 id="不可变的好处"><a href="#不可变的好处" class="headerlink" title="不可变的好处"></a>不可变的好处</h3><p><strong>1. 可以缓存 <code>hash</code> 值</strong></p>
 <p>因为 <code>String</code> 的 <code>hash</code> 值经常被使用，例如 <code>String</code> 用做 <code>HashMap</code> 的 <code>key</code>。不可变的特性可以使得 <code>hash</code> 值也不可变，因此只需要进行一次计算。</p>
 <p><strong>2. <code>String Pool</code> 的需要</strong></p>
@@ -483,11 +528,17 @@ float&amp;#x2F;32
 <p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/2971315/string-stringbuffer-and-stringbuilder">StackOverflow : String, StringBuffer, and StringBuilder</a></p>
 <h3 id="String-intern"><a href="#String-intern" class="headerlink" title="String.intern()"></a><code>String.intern()</code></h3><p>使用 <code>String.intern()</code> 可以保证相同内容的字符串变量引用同一的内存对象。</p>
 <p>下面示例中，s1 和 s2 采用 <code>new String()</code> 的方式新建了两个不同对象，而 s3 是通过 <code>s1.intern()</code> 方法取得一个对象引用。<code>intern()</code> 首先把 s1 引用的对象放到 <code>String Pool</code>(字符串常量池)中，然后返回这个对象引用。因此 s3 和 s1 引用的是同一个字符串常量池的对象。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;aaa&quot;</span>);</span><br><span class="line"><span class="type">String</span> <span class="variable">s2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;aaa&quot;</span>);</span><br><span class="line">System.out.println(s1 == s2);           <span class="comment">// false</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s3</span> <span class="operator">=</span> s1.intern();</span><br><span class="line">System.out.println(s1.intern() == s3);  <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">String s1 = new String(&quot;aaa&quot;);
+String s2 = new String(&quot;aaa&quot;);
+System.out.println(s1 == s2);           // false
+String s3 = s1.intern();
+System.out.println(s1.intern() == s3);  // true
+</code></pre>
 <p>如果是采用 “bbb” 这种使用双引号的形式创建字符串实例，会自动地将新建的对象放入 <code>String Pool</code> 中。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">s4</span> <span class="operator">=</span> <span class="string">&quot;bbb&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">s5</span> <span class="operator">=</span> <span class="string">&quot;bbb&quot;</span>;</span><br><span class="line">System.out.println(s4 == s5);  <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">String s4 = &quot;bbb&quot;;
+String s5 = &quot;bbb&quot;;
+System.out.println(s4 == s5);  // true
+</code></pre>
 <ul>
 <li><strong><code>HotSpot</code>中字符串常量池保存哪里？永久代？方法区还是堆区</strong>？</li>
 </ul>
@@ -522,34 +573,95 @@ float&amp;#x2F;32
 </tbody></table>
 <h2 id="运算"><a href="#运算" class="headerlink" title="运算"></a>运算</h2><h3 id="参数传递"><a href="#参数传递" class="headerlink" title="参数传递"></a>参数传递</h3><p>Java 的参数是以值传递的形式传入方法中，而不是引用传递。</p>
 <p>以下代码中 <code>Dog dog</code> 的 <code>dog</code> 是一个指针，存储的是对象的地址。在将一个参数传入一个方法时，本质上是将对象的地址以值的方式传递到形参中。因此在方法中改变指针引用的对象，那么这两个指针此时指向的是完全不同的对象，一方改变其所指向对象的内容对另一方没有影响。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Dog</span> &#123;</span><br><span class="line">    String name;</span><br><span class="line"></span><br><span class="line">    Dog(String name) &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">setName</span><span class="params">(String name)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String <span class="title function_">getObjectAddress</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">PassByValueExample</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Dog</span> <span class="variable">dog</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Dog</span>(<span class="string">&quot;A&quot;</span>);</span><br><span class="line">        System.out.println(dog.getObjectAddress()); <span class="comment">// Dog@4554617c</span></span><br><span class="line">        func(dog);</span><br><span class="line">        System.out.println(dog.getObjectAddress()); <span class="comment">// Dog@4554617c</span></span><br><span class="line">        System.out.println(dog.getName());          <span class="comment">// A</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">func</span><span class="params">(Dog dog)</span> &#123;</span><br><span class="line">        System.out.println(dog.getObjectAddress()); <span class="comment">// Dog@4554617c</span></span><br><span class="line">        dog = <span class="keyword">new</span> <span class="title class_">Dog</span>(<span class="string">&quot;B&quot;</span>);</span><br><span class="line">        System.out.println(dog.getObjectAddress()); <span class="comment">// Dog@74a14482</span></span><br><span class="line">        System.out.println(dog.getName());          <span class="comment">// B</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class Dog &#123;
+    String name;
 
+    Dog(String name) &#123;
+        this.name = name;
+    &#125;
+
+    String getName() &#123;
+        return this.name;
+    &#125;
+
+    void setName(String name) &#123;
+        this.name = name;
+    &#125;
+
+    String getObjectAddress() &#123;
+        return super.toString();
+    &#125;
+&#125;
+public class PassByValueExample &#123;
+    public static void main(String[] args) &#123;
+        Dog dog = new Dog(&quot;A&quot;);
+        System.out.println(dog.getObjectAddress()); // Dog@4554617c
+        func(dog);
+        System.out.println(dog.getObjectAddress()); // Dog@4554617c
+        System.out.println(dog.getName());          // A
+    &#125;
+
+    private static void func(Dog dog) &#123;
+        System.out.println(dog.getObjectAddress()); // Dog@4554617c
+        dog = new Dog(&quot;B&quot;);
+        System.out.println(dog.getObjectAddress()); // Dog@74a14482
+        System.out.println(dog.getName());          // B
+    &#125;
+&#125;
+</code></pre>
 <p>但是如果在方法中改变对象的字段值会改变原对象该字段值，因为改变的是同一个地址指向的内容。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">PassByValueExample</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Dog</span> <span class="variable">dog</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Dog</span>(<span class="string">&quot;A&quot;</span>);</span><br><span class="line">        func(dog);</span><br><span class="line">        System.out.println(dog.getName());          <span class="comment">// B</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">func</span><span class="params">(Dog dog)</span> &#123;</span><br><span class="line">        dog.setName(<span class="string">&quot;B&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">class PassByValueExample &#123;
+    public static void main(String[] args) &#123;
+        Dog dog = new Dog(&quot;A&quot;);
+        func(dog);
+        System.out.println(dog.getName());          // B
+    &#125;
 
+    private static void func(Dog dog) &#123;
+        dog.setName(&quot;B&quot;);
+    &#125;
+&#125;
+</code></pre>
 <p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/40480/is-java-pass-by-reference-or-pass-by-value">StackOverflow: Is Java “pass-by-reference” or “pass-by-value”?</a></p>
 <h3 id="float-与-double"><a href="#float-与-double" class="headerlink" title="float 与 double"></a><code>float</code> 与 <code>double</code></h3><p>1.1 字面量属于 <code>double</code> 类型，不能直接将 1.1 直接赋值给 <code>float</code> 变量，因为这是向下转型。Java 不能隐式执行向下转型，因为这会使得精度降低。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// float f = 1.1;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">// float f = 1.1;
+</code></pre>
 <p>1.1f 字面量才是 <code>float</code> 类型。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">float</span> <span class="variable">f</span> <span class="operator">=</span> <span class="number">1.1f</span>;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">float f = 1.1f;
+</code></pre>
 <h3 id="隐式类型转换"><a href="#隐式类型转换" class="headerlink" title="隐式类型转换"></a>隐式类型转换</h3><p>因为字面量 1 是 <code>int</code> 类型，它比 <code>short</code> 类型精度要高，因此不能隐式地将 <code>int</code> 类型下转型为 <code>short</code> 类型。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">short</span> <span class="variable">s1</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="comment">// s1 = s1 + 1;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">short s1 = 1;
+// s1 = s1 + 1;
+</code></pre>
 <p>但是使用 <code>+=</code> 运算符可以执行隐式类型转换。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s1 += <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">s1 += 1;
+</code></pre>
 <p>上面的语句相当于将 <code>s1 + 1</code> 的计算结果进行了向下转型:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s1 = (<span class="type">short</span>) (s1 + <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">s1 = (short) (s1 + 1);
+</code></pre>
 <p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/8710619/why-dont-javas-compound-assignment-operators-require-casting">StackOverflow : Why don’t Java’s +&#x3D;, -&#x3D;, *&#x3D;, &#x2F;&#x3D; compound assignment operators require casting?</a></p>
 <h3 id="switch"><a href="#switch" class="headerlink" title="switch"></a><code>switch</code></h3><p>从 Java 7 开始，可以在 <code>switch</code> 条件判断语句中使用 <code>String</code> 对象。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> <span class="string">&quot;a&quot;</span>;</span><br><span class="line"><span class="keyword">switch</span> (s) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;a&quot;</span>:</span><br><span class="line">        System.out.println(<span class="string">&quot;aaa&quot;</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;b&quot;</span>:</span><br><span class="line">        System.out.println(<span class="string">&quot;bbb&quot;</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">String s = &quot;a&quot;;
+switch (s) &#123;
+    case &quot;a&quot;:
+        System.out.println(&quot;aaa&quot;);
+        break;
+    case &quot;b&quot;:
+        System.out.println(&quot;bbb&quot;);
+        break;
+&#125;
+</code></pre>
 <p><code>switch</code> 不支持 <code>long</code>，是因为 <code>switch</code> 的设计初衷是对那些只有少数的几个值进行等值判断，如果值过于复杂，那么还是用 <code>if</code> 比较合适。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// long x = 111;</span></span><br><span class="line"><span class="comment">// switch (x) &#123; // Incompatible types. Found: &#x27;long&#x27;, required: &#x27;char, byte, short, int, Character, Byte, Short, Integer, String, or an enum&#x27;</span></span><br><span class="line"><span class="comment">//     case 111:</span></span><br><span class="line"><span class="comment">//         System.out.println(111);</span></span><br><span class="line"><span class="comment">//         break;</span></span><br><span class="line"><span class="comment">//     case 222:</span></span><br><span class="line"><span class="comment">//         System.out.println(222);</span></span><br><span class="line"><span class="comment">//         break;</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">// long x = 111;
+// switch (x) &#123; // Incompatible types. Found: &#39;long&#39;, required: &#39;char, byte, short, int, Character, Byte, Short, Integer, String, or an enum&#39;
+//     case 111:
+//         System.out.println(111);
+//         break;
+//     case 222:
+//         System.out.println(222);
+//         break;
+// &#125;
+</code></pre>
 <p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/2676210/why-cant-your-switch-statement-data-type-be-long-java">StackOverflow : Why can’t your switch statement data type be long, Java?</a></p>
 <h2 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h2><h3 id="访问权限"><a href="#访问权限" class="headerlink" title="访问权限"></a>访问权限</h3><p>Java 中有三个访问权限修饰符: <code>private</code>、<code>protected</code> 以及 <code>public</code>，如果不加访问修饰符，表示包级可见。</p>
 <p>可以对类或类中的成员(字段以及方法)加上访问修饰符。</p>
@@ -561,26 +673,95 @@ float&amp;#x2F;32
 <p>设计良好的模块会隐藏所有的实现细节，把它的 API 与它的实现清晰地隔离开来。模块之间只通过它们的 API 进行通信，一个模块不需要知道其他模块的内部工作情况，这个概念被称为信息隐藏或封装。因此访问权限应当尽可能地使每个类或者成员不被外界访问。</p>
 <p>如果子类的方法重写了父类的方法，那么子类中该方法的访问级别不允许低于父类的访问级别。这是为了确保可以使用父类实例的地方都可以使用子类实例，也就是确保满足里氏替换原则。</p>
 <p>字段决不能是公有的，因为这么做的话就失去了对这个字段修改行为的控制，客户端可以对其随意修改。例如下面的例子中，<code>AccessExample</code> 拥有 <code>id</code> 共有字段，如果在某个时刻，我们想要使用 <code>int</code> 去存储 <code>id</code> 字段，那么就需要去修改所有的客户端代码。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AccessExample</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> String id;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public class AccessExample &#123;
+    public String id;
+&#125;
+</code></pre>
 <p>可以使用公有的 <code>getter</code> 和 <code>setter</code> 方法来替换公有字段，这样的话就可以控制对字段的修改行为。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AccessExample</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> id;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getId</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> id + <span class="string">&quot;&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setId</span><span class="params">(String id)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.id = Integer.valueOf(id);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class AccessExample &#123;
 
+    private int id;
+
+    public String getId() &#123;
+        return id + &quot;&quot;;
+    &#125;
+
+    public void setId(String id) &#123;
+        this.id = Integer.valueOf(id);
+    &#125;
+&#125;
+</code></pre>
 <p>但是也有例外，如果是包级私有的类或者私有的嵌套类，那么直接暴露成员不会有特别大的影响。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AccessWithInnerClassExample</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">InnerClass</span> &#123;</span><br><span class="line">        <span class="type">int</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> InnerClass innerClass;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">AccessWithInnerClassExample</span><span class="params">()</span> &#123;</span><br><span class="line">        innerClass = <span class="keyword">new</span> <span class="title class_">InnerClass</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getValue</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> innerClass.x;  <span class="comment">// 直接访问</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class AccessWithInnerClassExample &#123;
+    private class InnerClass &#123;
+        int x;
+    &#125;
 
+    private InnerClass innerClass;
+
+    public AccessWithInnerClassExample() &#123;
+        innerClass = new InnerClass();
+    &#125;
+
+    public int getValue() &#123;
+        return innerClass.x;  // 直接访问
+    &#125;
+&#125;
+</code></pre>
 <h3 id="抽象类与接口"><a href="#抽象类与接口" class="headerlink" title="抽象类与接口"></a>抽象类与接口</h3><p><strong>1. 抽象类</strong></p>
 <p>抽象类和抽象方法都使用 <code>abstract</code> 关键字进行声明。抽象类一般会包含抽象方法，抽象方法一定位于抽象类中。</p>
 <p>抽象类和普通类最大的区别是，抽象类不能被实例化，需要继承抽象类才能实例化其子类。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractClassExample</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="type">int</span> x;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> y;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">func1</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">func2</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;func2&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AbstractExtendClassExample</span> <span class="keyword">extends</span> <span class="title class_">AbstractClassExample</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">func1</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;func1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// AbstractClassExample ac1 = new AbstractClassExample(); // &#x27;AbstractClassExample&#x27; is abstract; cannot be instantiated</span></span><br><span class="line"><span class="type">AbstractClassExample</span> <span class="variable">ac2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AbstractExtendClassExample</span>();</span><br><span class="line">ac2.func1();</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public abstract class AbstractClassExample &#123;
 
+    protected int x;
+    private int y;
+
+    public abstract void func1();
+
+    public void func2() &#123;
+        System.out.println(&quot;func2&quot;);
+    &#125;
+&#125;
+public class AbstractExtendClassExample extends AbstractClassExample &#123;
+    @Override
+    public void func1() &#123;
+        System.out.println(&quot;func1&quot;);
+    &#125;
+&#125;
+// AbstractClassExample ac1 = new AbstractClassExample(); // &#39;AbstractClassExample&#39; is abstract; cannot be instantiated
+AbstractClassExample ac2 = new AbstractExtendClassExample();
+ac2.func1();
+</code></pre>
 <p><strong>2. 接口</strong></p>
 <p>接口是抽象类的延伸，在 Java 8 之前，它可以看成是一个完全抽象的类，也就是说它不能有任何的方法实现。</p>
 <p>从 Java 8 开始，接口也可以拥有默认的方法实现，这是因为不支持默认方法的接口的维护成本太高了。在 Java 8 之前，如果一个接口想要添加新的方法，那么要修改所有实现了该接口的类。</p>
 <p>接口的成员(字段 + 方法)默认都是 <code>public</code> 的，并且不允许定义为 <code>private</code> 或者 <code>protected</code>。</p>
 <p>接口的字段默认都是 <code>static</code> 和 <code>final</code> 的。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">InterfaceExample</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">func1</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">default</span> <span class="keyword">void</span> <span class="title function_">func2</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;func2&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> <span class="number">123</span>;</span><br><span class="line">    <span class="comment">// int y;               // Variable &#x27;y&#x27; might not have been initialized</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="variable">z</span> <span class="operator">=</span> <span class="number">0</span>;       <span class="comment">// Modifier &#x27;public&#x27; is redundant for interface fields</span></span><br><span class="line">    <span class="comment">// private int k = 0;   // Modifier &#x27;private&#x27; not allowed here</span></span><br><span class="line">    <span class="comment">// protected int l = 0; // Modifier &#x27;protected&#x27; not allowed here</span></span><br><span class="line">    <span class="comment">// private void fun3(); // Modifier &#x27;private&#x27; not allowed here</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InterfaceImplementExample</span> <span class="keyword">implements</span> <span class="title class_">InterfaceExample</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">func1</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;func1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// InterfaceExample ie1 = new InterfaceExample(); // &#x27;InterfaceExample&#x27; is abstract; cannot be instantiated</span></span><br><span class="line"><span class="type">InterfaceExample</span> <span class="variable">ie2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InterfaceImplementExample</span>();</span><br><span class="line">ie2.func1();</span><br><span class="line">System.out.println(InterfaceExample.x);</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public interface InterfaceExample &#123;
+    void func1();
 
+    default void func2()&#123;
+        System.out.println(&quot;func2&quot;);
+    &#125;
+
+    int x = 123;
+    // int y;               // Variable &#39;y&#39; might not have been initialized
+    public int z = 0;       // Modifier &#39;public&#39; is redundant for interface fields
+    // private int k = 0;   // Modifier &#39;private&#39; not allowed here
+    // protected int l = 0; // Modifier &#39;protected&#39; not allowed here
+    // private void fun3(); // Modifier &#39;private&#39; not allowed here
+&#125;
+public class InterfaceImplementExample implements InterfaceExample &#123;
+    @Override
+    public void func1() &#123;
+        System.out.println(&quot;func1&quot;);
+    &#125;
+&#125;
+// InterfaceExample ie1 = new InterfaceExample(); // &#39;InterfaceExample&#39; is abstract; cannot be instantiated
+InterfaceExample ie2 = new InterfaceImplementExample();
+ie2.func1();
+System.out.println(InterfaceExample.x);
+</code></pre>
 <p><strong>3. 比较</strong></p>
 <ul>
 <li>从设计层面上看，抽象类提供了一种 IS-A 关系，那么就必须满足里式替换原则，即子类对象必须能够替换掉所有父类对象。而接口更像是一种 LIKE-A 关系，它只是提供一种方法实现契约，并不要求接口和实现接口的类具有 IS-A 关系。</li>
@@ -609,8 +790,38 @@ float&amp;#x2F;32
 <li>访问父类的构造函数: 可以使用 <code>super()</code> 函数访问父类的构造函数，从而委托父类完成一些初始化的工作。</li>
 <li>访问父类的成员: 如果子类重写了父类的中某个方法的实现，可以通过使用 <code>super</code> 关键字来引用父类的方法实现。</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SuperExample</span> &#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="type">int</span> x;</span><br><span class="line">    <span class="keyword">protected</span> <span class="type">int</span> y;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SuperExample</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.x = x;</span><br><span class="line">        <span class="built_in">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">func</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;SuperExample.func()&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SuperExtendExample</span> <span class="keyword">extends</span> <span class="title class_">SuperExample</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> z;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">SuperExtendExample</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y, <span class="type">int</span> z)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(x, y);</span><br><span class="line">        <span class="built_in">this</span>.z = z;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">func</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.func();</span><br><span class="line">        System.out.println(<span class="string">&quot;SuperExtendExample.func()&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">SuperExample</span> <span class="variable">e</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SuperExtendExample</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">e.func();</span><br><span class="line">SuperExample.func()</span><br><span class="line">SuperExtendExample.func()</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class SuperExample &#123;
+    protected int x;
+    protected int y;
 
+    public SuperExample(int x, int y) &#123;
+        this.x = x;
+        this.y = y;
+    &#125;
+
+    public void func() &#123;
+        System.out.println(&quot;SuperExample.func()&quot;);
+    &#125;
+&#125;
+public class SuperExtendExample extends SuperExample &#123;
+    private int z;
+
+    public SuperExtendExample(int x, int y, int z) &#123;
+        super(x, y);
+        this.z = z;
+    &#125;
+
+    @Override
+    public void func() &#123;
+        super.func();
+        System.out.println(&quot;SuperExtendExample.func()&quot;);
+    &#125;
+&#125;
+SuperExample e = new SuperExtendExample(1, 2, 3);
+e.func();
+SuperExample.func()
+SuperExtendExample.func()
+</code></pre>
 <p><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/java/IandI/super.html">Using the Keyword super</a></p>
 <h3 id="重写与重载"><a href="#重写与重载" class="headerlink" title="重写与重载"></a>重写与重载</h3><p><strong>1. 重写(Override)</strong></p>
 <p>存在于继承体系中，指子类实现了一个与父类在方法声明上完全相同的一个方法。</p>
@@ -623,33 +834,57 @@ float&amp;#x2F;32
 <p><strong>2. 重载(Overload)</strong></p>
 <p>存在于同一个类中，指一个方法与已经存在的方法名称上相同，但是参数类型、个数、顺序至少有一个不同。</p>
 <p>应该注意的是，返回值不同，其它都相同不算是重载。</p>
-<h2 id="Object-通用方法"><a href="#Object-通用方法" class="headerlink" title="Object 通用方法"></a><code>Object</code> 通用方法</h2><h3 id="概览-1"><a href="#概览-1" class="headerlink" title="概览"></a>概览</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> Class&lt;?&gt; getClass()</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">native</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(Object obj)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">native</span> Object <span class="title function_">clone</span><span class="params">()</span> <span class="keyword">throws</span> CloneNotSupportedException</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">notify</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">notifyAll</span><span class="params">()</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title function_">wait</span><span class="params">(<span class="type">long</span> timeout)</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">wait</span><span class="params">(<span class="type">long</span> timeout, <span class="type">int</span> nanos)</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title function_">wait</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">finalize</span><span class="params">()</span> <span class="keyword">throws</span> Throwable &#123;&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Object-通用方法"><a href="#Object-通用方法" class="headerlink" title="Object 通用方法"></a><code>Object</code> 通用方法</h2><h3 id="概览-1"><a href="#概览-1" class="headerlink" title="概览"></a>概览</h3><pre><code class="java">public final native Class&lt;?&gt; getClass()
 
+public native int hashCode()
+
+public boolean equals(Object obj)
+
+protected native Object clone() throws CloneNotSupportedException
+
+public String toString()
+
+public final native void notify()
+
+public final native void notifyAll()
+
+public final native void wait(long timeout) throws InterruptedException
+
+public final void wait(long timeout, int nanos) throws InterruptedException
+
+public final void wait() throws InterruptedException
+
+protected void finalize() throws Throwable &#123;&#125;
+</code></pre>
 <h3 id="equals"><a href="#equals" class="headerlink" title="equals()"></a><code>equals()</code></h3><p><strong>1. 等价关系</strong></p>
 <p>(一)自反性</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x.equals(x); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">x.equals(x); // true
+</code></pre>
 <p>(二)对称性</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x.equals(y) == y.equals(x); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">x.equals(y) == y.equals(x); // true
+</code></pre>
 <p>(三)传递性</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (x.equals(y) &amp;&amp; y.equals(z))</span><br><span class="line">    x.equals(z); <span class="comment">// true;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">if (x.equals(y) &amp;&amp; y.equals(z))
+    x.equals(z); // true;
+</code></pre>
 <p>(四)一致性</p>
 <p>多次调用 <code>equals()</code> 方法结果不变</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x.equals(y) == x.equals(y); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">x.equals(y) == x.equals(y); // true
+</code></pre>
 <p>(五)与 <code>null</code> 的比较</p>
 <p>对任何不是 <code>null</code> 的对象 <code>x</code> 调用 <code>x.equals(null)</code> 结果都为 <code>false</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x.equals(<span class="literal">null</span>); <span class="comment">// false;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">x.equals(null); // false;
+</code></pre>
 <p><strong>2. <code>equals()</code> 与 <code>==</code></strong></p>
 <ul>
 <li>对于基本类型，<code>==</code> 判断两个值是否相等，基本类型没有 <code>equals()</code> 方法。</li>
 <li>对于引用类型，<code>==</code> 判断两个变量是否引用同一个对象，而 <code>equals()</code> 判断引用的对象是否等价。</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Integer</span> <span class="variable">x</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">1</span>);</span><br><span class="line"><span class="type">Integer</span> <span class="variable">y</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Integer</span>(<span class="number">1</span>);</span><br><span class="line">System.out.println(x.equals(y)); <span class="comment">// true</span></span><br><span class="line">System.out.println(x == y);      <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">Integer x = new Integer(1);
+Integer y = new Integer(1);
+System.out.println(x.equals(y)); // true
+System.out.println(x == y);      // false
+</code></pre>
 <p><strong>3. 实现</strong></p>
 <ul>
 <li>检查是否为同一个对象的引用，如果是直接返回 <code>true</code>；</li>
@@ -657,51 +892,221 @@ float&amp;#x2F;32
 <li>将 <code>Object</code> 对象进行转型；</li>
 <li>判断每个关键域是否相等。</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EqualExample</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> x;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> y;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> z;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">EqualExample</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y, <span class="type">int</span> z)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.x = x;</span><br><span class="line">        <span class="built_in">this</span>.y = y;</span><br><span class="line">        <span class="built_in">this</span>.z = z;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(Object o)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span> == o) <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (o == <span class="literal">null</span> || getClass() != o.getClass()) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        <span class="type">EqualExample</span> <span class="variable">that</span> <span class="operator">=</span> (EqualExample) o;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (x != that.x) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (y != that.y) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">return</span> z == that.z;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class EqualExample &#123;
+    private int x;
+    private int y;
+    private int z;
 
+    public EqualExample(int x, int y, int z) &#123;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    &#125;
+
+    @Override
+    public boolean equals(Object o) &#123;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        EqualExample that = (EqualExample) o;
+
+        if (x != that.x) return false;
+        if (y != that.y) return false;
+        return z == that.z;
+    &#125;
+&#125;
+</code></pre>
 <h3 id="hashCode"><a href="#hashCode" class="headerlink" title="hashCode()"></a><code>hashCode()</code></h3><p><code>hashCode()</code> 返回散列值，而 <code>equals()</code> 是用来判断两个对象是否等价。等价的两个对象散列值一定相同，但是散列值相同的两个对象不一定等价。</p>
 <p>在覆盖 <code>equals()</code> 方法时应当总是覆盖 <code>hashCode()</code> 方法，保证等价的两个对象散列值也相等。</p>
 <p>下面的代码中，新建了两个等价的对象，并将它们添加到 <code>HashSet</code> 中。我们希望将这两个对象当成一样的，只在集合中添加一个对象，但是因为 <code>EqualExample</code> 没有实现 <code>hasCode()</code> 方法，因此这两个对象的散列值是不同的，最终导致集合添加了两个等价的对象。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">EqualExample</span> <span class="variable">e1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">EqualExample</span>(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line"><span class="type">EqualExample</span> <span class="variable">e2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">EqualExample</span>(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">System.out.println(e1.equals(e2)); <span class="comment">// true</span></span><br><span class="line">HashSet&lt;EqualExample&gt; set = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">set.add(e1);</span><br><span class="line">set.add(e2);</span><br><span class="line">System.out.println(set.size());   <span class="comment">// 2</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">EqualExample e1 = new EqualExample(1, 1, 1);
+EqualExample e2 = new EqualExample(1, 1, 1);
+System.out.println(e1.equals(e2)); // true
+HashSet&lt;EqualExample&gt; set = new HashSet&lt;&gt;();
+set.add(e1);
+set.add(e2);
+System.out.println(set.size());   // 2
+</code></pre>
 <p>理想的散列函数应当具有均匀性，即不相等的对象应当均匀分布到所有可能的散列值上。这就要求了散列函数要把所有域的值都考虑进来，可以将每个域都当成 R 进制的某一位，然后组成一个 R 进制的整数。R 一般取 31，因为它是一个奇素数，如果是偶数的话，当出现乘法溢出，信息就会丢失，因为与 2 相乘相当于向左移一位。</p>
 <p>一个数与 31 相乘可以转换成移位和减法: <code>31*x == (x&lt;&lt;5)-x</code>，编译器会自动进行这个优化。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">result</span> <span class="operator">=</span> <span class="number">17</span>;</span><br><span class="line">    result = <span class="number">31</span> * result + x;</span><br><span class="line">    result = <span class="number">31</span> * result + y;</span><br><span class="line">    result = <span class="number">31</span> * result + z;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">@Override
+public int hashCode() &#123;
+    int result = 17;
+    result = 31 * result + x;
+    result = 31 * result + y;
+    result = 31 * result + z;
+    return result;
+&#125;
+</code></pre>
 <h3 id="toString-NaN"><a href="#toString-NaN" class="headerlink" title="toString()"></a><code>toString()</code></h3><p>默认返回 <code>ToStringExample@4554617c</code> 这种形式，其中 <code>@</code> 后面的数值为散列码的无符号十六进制表示。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ToStringExample</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> number;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ToStringExample</span><span class="params">(<span class="type">int</span> number)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.number = number;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">ToStringExample</span> <span class="variable">example</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ToStringExample</span>(<span class="number">123</span>);</span><br><span class="line">System.out.println(example.toString());</span><br><span class="line">ToStringExample@4554617c</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class ToStringExample &#123;
+    private int number;
 
+    public ToStringExample(int number) &#123;
+        this.number = number;
+    &#125;
+&#125;
+ToStringExample example = new ToStringExample(123);
+System.out.println(example.toString());
+ToStringExample@4554617c
+</code></pre>
 <h3 id="clone"><a href="#clone" class="headerlink" title="clone()"></a><code>clone()</code></h3><p><strong>1. <code>cloneable</code></strong></p>
 <p><code>clone()</code> 是 <code>Object</code> 的 <code>protected</code> 方法，它不是 <code>public</code>，一个类不显式去重写 <code>clone()</code>，其它类就不能直接去调用该类实例的 <code>clone()</code> 方法。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CloneExample</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> a;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">CloneExample</span> <span class="variable">e1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CloneExample</span>();</span><br><span class="line"><span class="comment">// CloneExample e2 = e1.clone(); // &#x27;clone()&#x27; has protected access in &#x27;java.lang.Object&#x27;</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public class CloneExample &#123;
+    private int a;
+    private int b;
+&#125;
+CloneExample e1 = new CloneExample();
+// CloneExample e2 = e1.clone(); // &#39;clone()&#39; has protected access in &#39;java.lang.Object&#39;
+</code></pre>
 <p>重写 <code>clone()</code> 得到以下实现:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CloneExample</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> a;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> b;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> CloneExample <span class="title function_">clone</span><span class="params">()</span> <span class="keyword">throws</span> CloneNotSupportedException &#123;</span><br><span class="line">        <span class="keyword">return</span> (CloneExample)<span class="built_in">super</span>.clone();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">CloneExample</span> <span class="variable">e1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CloneExample</span>();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="type">CloneExample</span> <span class="variable">e2</span> <span class="operator">=</span> e1.clone();</span><br><span class="line">&#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line">java.lang.CloneNotSupportedException: CloneExample</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class CloneExample &#123;
+    private int a;
+    private int b;
 
+    @Override
+    protected CloneExample clone() throws CloneNotSupportedException &#123;
+        return (CloneExample)super.clone();
+    &#125;
+&#125;
+CloneExample e1 = new CloneExample();
+try &#123;
+    CloneExample e2 = e1.clone();
+&#125; catch (CloneNotSupportedException e) &#123;
+    e.printStackTrace();
+&#125;
+java.lang.CloneNotSupportedException: CloneExample
+</code></pre>
 <p>以上抛出了 <code>CloneNotSupportedException</code>，这是因为 <code>CloneExample</code> 没有实现 <code>Cloneable</code> 接口。</p>
 <p>应该注意的是，<code>clone()</code> 方法并不是 <code>Cloneable</code> 接口的方法，而是 <code>Object</code> 的一个 <code>protected</code> 方法。<code>Cloneable</code> 接口只是规定，如果一个类没有实现 <code>Cloneable</code> 接口又调用了 <code>clone()</code> 方法，就会抛出 <code>CloneNotSupportedException</code>。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CloneExample</span> <span class="keyword">implements</span> <span class="title class_">Cloneable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> a;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> b;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Object <span class="title function_">clone</span><span class="params">()</span> <span class="keyword">throws</span> CloneNotSupportedException &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.clone();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class CloneExample implements Cloneable &#123;
+    private int a;
+    private int b;
 
+    @Override
+    protected Object clone() throws CloneNotSupportedException &#123;
+        return super.clone();
+    &#125;
+&#125;
+</code></pre>
 <p><strong>2. 浅拷贝</strong></p>
 <p>拷贝对象和原始对象的引用类型引用同一个对象。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ShallowCloneExample</span> <span class="keyword">implements</span> <span class="title class_">Cloneable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[] arr;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ShallowCloneExample</span><span class="params">()</span> &#123;</span><br><span class="line">        arr = <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">10</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">            arr[i] = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">set</span><span class="params">(<span class="type">int</span> index, <span class="type">int</span> value)</span> &#123;</span><br><span class="line">        arr[index] = value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">(<span class="type">int</span> index)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> arr[index];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> ShallowCloneExample <span class="title function_">clone</span><span class="params">()</span> <span class="keyword">throws</span> CloneNotSupportedException &#123;</span><br><span class="line">        <span class="keyword">return</span> (ShallowCloneExample) <span class="built_in">super</span>.clone();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">ShallowCloneExample</span> <span class="variable">e1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ShallowCloneExample</span>();</span><br><span class="line"><span class="type">ShallowCloneExample</span> <span class="variable">e2</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    e2 = e1.clone();</span><br><span class="line">&#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line">e1.set(<span class="number">2</span>, <span class="number">222</span>);</span><br><span class="line">System.out.println(e2.get(<span class="number">2</span>)); <span class="comment">// 222</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class ShallowCloneExample implements Cloneable &#123;
+    private int[] arr;
 
+    public ShallowCloneExample() &#123;
+        arr = new int[10];
+        for (int i = 0; i &lt; arr.length; i++) &#123;
+            arr[i] = i;
+        &#125;
+    &#125;
+
+    public void set(int index, int value) &#123;
+        arr[index] = value;
+    &#125;
+
+    public int get(int index) &#123;
+        return arr[index];
+    &#125;
+
+    @Override
+    protected ShallowCloneExample clone() throws CloneNotSupportedException &#123;
+        return (ShallowCloneExample) super.clone();
+    &#125;
+&#125;
+ShallowCloneExample e1 = new ShallowCloneExample();
+ShallowCloneExample e2 = null;
+try &#123;
+    e2 = e1.clone();
+&#125; catch (CloneNotSupportedException e) &#123;
+    e.printStackTrace();
+&#125;
+e1.set(2, 222);
+System.out.println(e2.get(2)); // 222
+</code></pre>
 <p><strong>3. 深拷贝</strong></p>
 <p>拷贝对象和原始对象的引用类型引用不同对象。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeepCloneExample</span> <span class="keyword">implements</span> <span class="title class_">Cloneable</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[] arr;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">DeepCloneExample</span><span class="params">()</span> &#123;</span><br><span class="line">        arr = <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">10</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">            arr[i] = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">set</span><span class="params">(<span class="type">int</span> index, <span class="type">int</span> value)</span> &#123;</span><br><span class="line">        arr[index] = value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">(<span class="type">int</span> index)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> arr[index];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> DeepCloneExample <span class="title function_">clone</span><span class="params">()</span> <span class="keyword">throws</span> CloneNotSupportedException &#123;</span><br><span class="line">        <span class="type">DeepCloneExample</span> <span class="variable">result</span> <span class="operator">=</span> (DeepCloneExample) <span class="built_in">super</span>.clone();</span><br><span class="line">        result.arr = <span class="keyword">new</span> <span class="title class_">int</span>[arr.length];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">            result.arr[i] = arr[i];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">DeepCloneExample</span> <span class="variable">e1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DeepCloneExample</span>();</span><br><span class="line"><span class="type">DeepCloneExample</span> <span class="variable">e2</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    e2 = e1.clone();</span><br><span class="line">&#125; <span class="keyword">catch</span> (CloneNotSupportedException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line">e1.set(<span class="number">2</span>, <span class="number">222</span>);</span><br><span class="line">System.out.println(e2.get(<span class="number">2</span>)); <span class="comment">// 2</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class DeepCloneExample implements Cloneable &#123;
+    private int[] arr;
 
+    public DeepCloneExample() &#123;
+        arr = new int[10];
+        for (int i = 0; i &lt; arr.length; i++) &#123;
+            arr[i] = i;
+        &#125;
+    &#125;
+
+    public void set(int index, int value) &#123;
+        arr[index] = value;
+    &#125;
+
+    public int get(int index) &#123;
+        return arr[index];
+    &#125;
+
+    @Override
+    protected DeepCloneExample clone() throws CloneNotSupportedException &#123;
+        DeepCloneExample result = (DeepCloneExample) super.clone();
+        result.arr = new int[arr.length];
+        for (int i = 0; i &lt; arr.length; i++) &#123;
+            result.arr[i] = arr[i];
+        &#125;
+        return result;
+    &#125;
+&#125;
+DeepCloneExample e1 = new DeepCloneExample();
+DeepCloneExample e2 = null;
+try &#123;
+    e2 = e1.clone();
+&#125; catch (CloneNotSupportedException e) &#123;
+    e.printStackTrace();
+&#125;
+e1.set(2, 222);
+System.out.println(e2.get(2)); // 2
+</code></pre>
 <p><strong>4. <code>clone()</code> 的替代方案</strong></p>
 <p>使用 <code>clone()</code> 方法来拷贝一个对象即复杂又有风险，它会抛出异常，并且还需要类型转换。Effective Java 书上讲到，最好不要去使用 <code>clone()</code>，可以使用拷贝构造函数或者拷贝工厂来拷贝一个对象。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CloneConstructorExample</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[] arr;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">CloneConstructorExample</span><span class="params">()</span> &#123;</span><br><span class="line">        arr = <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">10</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">            arr[i] = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">CloneConstructorExample</span><span class="params">(CloneConstructorExample original)</span> &#123;</span><br><span class="line">        arr = <span class="keyword">new</span> <span class="title class_">int</span>[original.arr.length];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; original.arr.length; i++) &#123;</span><br><span class="line">            arr[i] = original.arr[i];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">set</span><span class="params">(<span class="type">int</span> index, <span class="type">int</span> value)</span> &#123;</span><br><span class="line">        arr[index] = value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">get</span><span class="params">(<span class="type">int</span> index)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> arr[index];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">CloneConstructorExample</span> <span class="variable">e1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CloneConstructorExample</span>();</span><br><span class="line"><span class="type">CloneConstructorExample</span> <span class="variable">e2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CloneConstructorExample</span>(e1);</span><br><span class="line">e1.set(<span class="number">2</span>, <span class="number">222</span>);</span><br><span class="line">System.out.println(e2.get(<span class="number">2</span>)); <span class="comment">// 2</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class CloneConstructorExample &#123;
+    private int[] arr;
 
+    public CloneConstructorExample() &#123;
+        arr = new int[10];
+        for (int i = 0; i &lt; arr.length; i++) &#123;
+            arr[i] = i;
+        &#125;
+    &#125;
+
+    public CloneConstructorExample(CloneConstructorExample original) &#123;
+        arr = new int[original.arr.length];
+        for (int i = 0; i &lt; original.arr.length; i++) &#123;
+            arr[i] = original.arr[i];
+        &#125;
+    &#125;
+
+    public void set(int index, int value) &#123;
+        arr[index] = value;
+    &#125;
+
+    public int get(int index) &#123;
+        return arr[index];
+    &#125;
+&#125;
+CloneConstructorExample e1 = new CloneConstructorExample();
+CloneConstructorExample e2 = new CloneConstructorExample(e1);
+e1.set(2, 222);
+System.out.println(e2.get(2)); // 2
+</code></pre>
 <h2 id="关键字"><a href="#关键字" class="headerlink" title="关键字"></a>关键字</h2><h3 id="final"><a href="#final" class="headerlink" title="final"></a><code>final</code></h3><p><strong>1. 数据</strong></p>
 <p>声明数据为常量，可以是编译时常量，也可以是在运行时被初始化后不能被改变的常量。</p>
 <ul>
 <li>对于基本类型，<code>final</code> 使数值不变；</li>
 <li>对于引用类型，<code>final</code> 使引用不变，也就不能引用其它对象，但是被引用的对象本身是可以修改的。</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="comment">// x = 2;  // cannot assign value to final variable &#x27;x&#x27;</span></span><br><span class="line"><span class="keyword">final</span> <span class="type">A</span> <span class="variable">y</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">A</span>();</span><br><span class="line">y.a = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">final int x = 1;
+// x = 2;  // cannot assign value to final variable &#39;x&#39;
+final A y = new A();
+y.a = 1;
+</code></pre>
 <p><strong>2. 方法</strong></p>
 <p>声明方法不能被子类重写。</p>
 <p><code>private</code> 方法隐式地被指定为 <code>final</code>，如果在子类中定义的方法和基类中的一个 <code>private</code> 方法签名相同，此时子类的方法不是重写基类方法，而是在子类中定义了一个新的方法。</p>
@@ -712,35 +1117,90 @@ float&amp;#x2F;32
 <li>静态变量: 又称为类变量，也就是说这个变量属于类的，类所有的实例都共享静态变量，可以直接通过类名来访问它；静态变量在内存中只存在一份。</li>
 <li>实例变量: 每创建一个实例就会产生一个实例变量，它与该实例同生共死。</li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> x;         <span class="comment">// 实例变量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> y;  <span class="comment">// 静态变量</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// int x = A.x;  // Non-static field &#x27;x&#x27; cannot be referenced from a static context</span></span><br><span class="line">        <span class="type">A</span> <span class="variable">a</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">A</span>();</span><br><span class="line">        <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> a.x;</span><br><span class="line">        <span class="type">int</span> <span class="variable">y</span> <span class="operator">=</span> A.y;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class A &#123;
+    private int x;         // 实例变量
+    private static int y;  // 静态变量
 
+    public static void main(String[] args) &#123;
+        // int x = A.x;  // Non-static field &#39;x&#39; cannot be referenced from a static context
+        A a = new A();
+        int x = a.x;
+        int y = A.y;
+    &#125;
+&#125;
+</code></pre>
 <p><strong>2. 静态方法</strong></p>
 <p>静态方法在类加载的时候就存在了，它不依赖于任何实例。所以静态方法必须有实现，也就是说它不能是抽象方法(<code>abstract</code>)。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">func1</span><span class="params">()</span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// public abstract static void func2();  // Illegal combination of modifiers: &#x27;abstract&#x27; and &#x27;static&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public abstract class A &#123;
+    public static void func1()&#123;
+    &#125;
+    // public abstract static void func2();  // Illegal combination of modifiers: &#39;abstract&#39; and &#39;static&#39;
+&#125;
+</code></pre>
 <p>只能访问所属类的静态字段和静态方法，方法中不能有 <code>this</code> 和 <code>super</code> 关键字。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">int</span> x;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> y;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">func1</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> x;</span><br><span class="line">        <span class="comment">// int b = y;  // Non-static field &#x27;y&#x27; cannot be referenced from a static context</span></span><br><span class="line">        <span class="comment">// int b = this.y;     // &#x27;A.this&#x27; cannot be referenced from a static context</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class A &#123;
+    private static int x;
+    private int y;
 
+    public static void func1()&#123;
+        int a = x;
+        // int b = y;  // Non-static field &#39;y&#39; cannot be referenced from a static context
+        // int b = this.y;     // &#39;A.this&#39; cannot be referenced from a static context
+    &#125;
+&#125;
+</code></pre>
 <p><strong>3. 静态语句块</strong></p>
 <p>静态语句块在类初始化时运行一次。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;123&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">A</span> <span class="variable">a1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">A</span>();</span><br><span class="line">        <span class="type">A</span> <span class="variable">a2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">A</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="number">123</span></span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class A &#123;
+    static &#123;
+        System.out.println(&quot;123&quot;);
+    &#125;
 
+    public static void main(String[] args) &#123;
+        A a1 = new A();
+        A a2 = new A();
+    &#125;
+&#125;
+123
+</code></pre>
 <p><strong>4. 静态内部类</strong></p>
 <p>非静态内部类依赖于外部类的实例，而静态内部类不需要。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OuterClass</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">InnerClass</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">StaticInnerClass</span> &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">// InnerClass innerClass = new InnerClass(); // &#x27;OuterClass.this&#x27; cannot be referenced from a static context</span></span><br><span class="line">        <span class="type">OuterClass</span> <span class="variable">outerClass</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">OuterClass</span>();</span><br><span class="line">        <span class="type">InnerClass</span> <span class="variable">innerClass</span> <span class="operator">=</span> outerClass.<span class="keyword">new</span> <span class="title class_">InnerClass</span>();</span><br><span class="line">        <span class="type">StaticInnerClass</span> <span class="variable">staticInnerClass</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StaticInnerClass</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="java">public class OuterClass &#123;
+    class InnerClass &#123;
+    &#125;
 
+    static class StaticInnerClass &#123;
+    &#125;
+
+    public static void main(String[] args) &#123;
+        // InnerClass innerClass = new InnerClass(); // &#39;OuterClass.this&#39; cannot be referenced from a static context
+        OuterClass outerClass = new OuterClass();
+        InnerClass innerClass = outerClass.new InnerClass();
+        StaticInnerClass staticInnerClass = new StaticInnerClass();
+    &#125;
+&#125;
+</code></pre>
 <p>静态内部类不能访问外部类的非静态的变量和方法。</p>
 <p><strong>5. 静态导包</strong></p>
 <p>在使用静态变量和方法时不用再指明 <code>ClassName</code>，从而简化代码，但可读性大大降低。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> com.xxx.ClassName.*</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">import static com.xxx.ClassName.*
+</code></pre>
 <p><strong>6. 初始化顺序</strong></p>
 <p>静态变量和静态语句块优先于实例变量和普通语句块，静态变量和静态语句块的初始化顺序取决于它们在代码中的顺序。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">String</span> <span class="variable">staticField</span> <span class="operator">=</span> <span class="string">&quot;静态变量&quot;</span>;</span><br><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;静态语句块&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="type">String</span> <span class="variable">field</span> <span class="operator">=</span> <span class="string">&quot;实例变量&quot;</span>;</span><br><span class="line">&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;普通语句块&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public static String staticField = &quot;静态变量&quot;;
+static &#123;
+    System.out.println(&quot;静态语句块&quot;);
+&#125;
+public String field = &quot;实例变量&quot;;
+&#123;
+    System.out.println(&quot;普通语句块&quot;);
+&#125;
+</code></pre>
 <p>最后才是构造函数的初始化。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">InitialOrderTest</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;构造函数&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public InitialOrderTest() &#123;
+    System.out.println(&quot;构造函数&quot;);
+&#125;
+</code></pre>
 <p>存在继承的情况下，初始化顺序为:</p>
 <ul>
 <li>父类(静态变量、静态语句块)</li>
@@ -780,8 +1240,13 @@ float&amp;#x2F;32
 </ul>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261752691.png" alt="img"></p>
 <p>相关文章：<a href="/2023/12/25/6.java-ji-chu-yi-chang-ji-zhi-xiang-jie/" title="6.Java 基础 - 异常机制详解">Java 基础 - 异常机制详解</a></p>
-<h2 id="泛型"><a href="#泛型" class="headerlink" title="泛型"></a>泛型</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Box</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="comment">// T stands for &quot;Type&quot;</span></span><br><span class="line">    <span class="keyword">private</span> T t;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">set</span><span class="params">(T t)</span> &#123; <span class="built_in">this</span>.t = t; &#125;</span><br><span class="line">    <span class="keyword">public</span> T <span class="title function_">get</span><span class="params">()</span> &#123; <span class="keyword">return</span> t; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<h2 id="泛型"><a href="#泛型" class="headerlink" title="泛型"></a>泛型</h2><pre><code class="java">public class Box&lt;T&gt; &#123;
+    // T stands for &quot;Type&quot;
+    private T t;
+    public void set(T t) &#123; this.t = t; &#125;
+    public T get() &#123; return t; &#125;
+&#125;
+</code></pre>
 <p>相关文章：<a href="/2023/12/25/4.java-ji-chu-fan-xing-ji-zhi-xiang-jie/" title="4.Java 基础 - 泛型机制详解">Java 基础 - 泛型机制详解</a></p>
 <h2 id="注解"><a href="#注解" class="headerlink" title="注解"></a>注解</h2><p>Java 注解是附加在代码中的一些元信息，用于一些工具在编译、运行时进行解析和使用，起到说明、配置的功能。注解不会也不能影响代码的实际逻辑，仅仅起到辅助性的作用。</p>
 <p>相关文章：<a href="/2023/12/25/5.java-ji-chu-zhu-jie-ji-zhi-xiang-jie/" title="5.Java 基础 - 注解机制详解">Java 基础 - 注解机制详解</a></p>

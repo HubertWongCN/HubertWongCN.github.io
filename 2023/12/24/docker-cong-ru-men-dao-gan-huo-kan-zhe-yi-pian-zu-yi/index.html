@@ -444,170 +444,321 @@
 </ul>
 <p>每一个容器，他都有自己的文件系统rootfs.</p>
 <h2 id="3-安装Docker"><a href="#3-安装Docker" class="headerlink" title="3. 安装Docker"></a>3. <strong>安装Docker</strong></h2><p>环境说明</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">需要两台几点进行安装</span></span><br><span class="line">[root@docker01 ~]# cat /etc/redhat-release </span><br><span class="line">CentOS Linux release 7.2.1511 (Core) </span><br><span class="line">[root@docker01 ~]# uname  -r </span><br><span class="line">3.10.0-327.el7.x86_64</span><br><span class="line">[root@docker01 ~]# hostname -I</span><br><span class="line">10.0.0.100 172.16.1.100 </span><br><span class="line">[root@docker02 ~]# hostname -I</span><br><span class="line">10.0.0.101 172.16.1.101</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell"># 需要两台几点进行安装
+[root@docker01 ~]# cat /etc/redhat-release 
+CentOS Linux release 7.2.1511 (Core) 
+[root@docker01 ~]# uname  -r 
+3.10.0-327.el7.x86_64
+[root@docker01 ~]# hostname -I
+10.0.0.100 172.16.1.100 
+[root@docker02 ~]# hostname -I
+10.0.0.101 172.16.1.101
+</code></pre>
 <p>在<strong>两个节点</strong>上都进行操作</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget -O /etc/yum.repos.d/docker-ce.repo https://mirrors.ustc.edu.cn/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line">sed -i &#x27;s#download.docker.com#mirrors.ustc.edu.cn/docker-ce#g&#x27; /etc/yum.repos.d/docker-ce.repo</span><br><span class="line">yum install docker-ce -y</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">wget -O /etc/yum.repos.d/docker-ce.repo https://mirrors.ustc.edu.cn/docker-ce/linux/centos/docker-ce.repo
+sed -i &#39;s#download.docker.com#mirrors.ustc.edu.cn/docker-ce#g&#39; /etc/yum.repos.d/docker-ce.repo
+yum install docker-ce -y
+</code></pre>
 <p>修改在<em>docker01</em>配置：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改启动文件，监听远程端口</span></span><br><span class="line">vim /usr/lib/systemd/system/docker.service</span><br><span class="line">ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock -H tcp://10.0.0.100:2375</span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl enable docker.service </span><br><span class="line">systemctl restart docker.service</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">ps -ef检查进行，是否启动</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell"># 修改启动文件，监听远程端口
+vim /usr/lib/systemd/system/docker.service
+ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock -H tcp://10.0.0.100:2375
+systemctl daemon-reload
+systemctl enable docker.service 
+systemctl restart docker.service
+# ps -ef检查进行，是否启动
+</code></pre>
 <p>在<em>docker02</em>测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@docker02 ~]# docker -H 10.0.0.100 info</span><br><span class="line">Containers: 0</span><br><span class="line"> Running: 0</span><br><span class="line"> Paused: 0</span><br><span class="line"> Stopped: 0</span><br><span class="line">Images: 0</span><br><span class="line">Server Version: 17.12.0-ce</span><br><span class="line">Storage Driver: devicemapper</span><br><span class="line">···</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell">[root@docker02 ~]# docker -H 10.0.0.100 info
+Containers: 0
+ Running: 0
+ Paused: 0
+ Stopped: 0
+Images: 0
+Server Version: 17.12.0-ce
+Storage Driver: devicemapper
+···
+</code></pre>
 <h3 id="3-1-Docker基础命令操作"><a href="#3-1-Docker基础命令操作" class="headerlink" title="3.1. Docker基础命令操作"></a>3.1. <strong>Docker基础命令操作</strong></h3><p>查看docker相关信息</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]#  docker version  </span><br><span class="line">Client:</span><br><span class="line"> Version:    17.12.0-ce</span><br><span class="line"> API version:    1.35</span><br><span class="line"> Go version:    go1.9.2</span><br><span class="line"> Git commit:    c97c6d6</span><br><span class="line"> Built:    Wed Dec 27 20:10:14 2017</span><br><span class="line"> OS/Arch:    linux/amd64</span><br><span class="line">Server:</span><br><span class="line"> Engine:</span><br><span class="line">  Version:    17.12.0-ce</span><br><span class="line">  API version:    1.35 (minimum version 1.12)</span><br><span class="line">  Go version:    go1.9.2</span><br><span class="line">  Git commit:    c97c6d6</span><br><span class="line">  Built:    Wed Dec 27 20:12:46 2017</span><br><span class="line">  OS/Arch:    linux/amd64</span><br><span class="line">  Experimental:    false</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]#  docker version  
+Client:
+ Version:    17.12.0-ce
+ API version:    1.35
+ Go version:    go1.9.2
+ Git commit:    c97c6d6
+ Built:    Wed Dec 27 20:10:14 2017
+ OS/Arch:    linux/amd64
+Server:
+ Engine:
+  Version:    17.12.0-ce
+  API version:    1.35 (minimum version 1.12)
+  Go version:    go1.9.2
+  Git commit:    c97c6d6
+  Built:    Wed Dec 27 20:12:46 2017
+  OS/Arch:    linux/amd64
+  Experimental:    false
+</code></pre>
 <p>配置docker镜像加速</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123;</span><br><span class="line">  &quot;registry-mirrors&quot;: [&quot;https://registry.docker-cn.com&quot;]</span><br><span class="line">&#125;   </span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="3-2-启动第一个容器"><a href="#3-2-启动第一个容器" class="headerlink" title="3.2. 启动第一个容器"></a>3.2. <strong>启动第一个容器</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run -d -p 80:80 nginx</span><br><span class="line">Unable to find image &#x27;nginx:latest&#x27; locally</span><br><span class="line">latest: Pulling from library/nginx</span><br><span class="line">e7bb522d92ff: Pull complete </span><br><span class="line">6edc05228666: Pull complete </span><br><span class="line">cd866a17e81f: Pull complete </span><br><span class="line">Digest: sha256:285b49d42c703fdf257d1e2422765c4ba9d3e37768d6ea83d7fe2043dad6e63d</span><br><span class="line">Status: Downloaded newer image for nginx:latest</span><br><span class="line">8d8f81da12b5c10af6ba1a5d07f4abc041cb95b01f3d632c3d638922800b0b4d</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">容器启动后，在浏览器进行访问测试</span> </span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">vi /etc/docker/daemon.json
+&#123;
+  &quot;registry-mirrors&quot;: [&quot;https://registry.docker-cn.com&quot;]
+&#125;   
+</code></pre>
+<h3 id="3-2-启动第一个容器"><a href="#3-2-启动第一个容器" class="headerlink" title="3.2. 启动第一个容器"></a>3.2. <strong>启动第一个容器</strong></h3><pre><code class="shell">[root@docker01 ~]# docker run -d -p 80:80 nginx
+Unable to find image &#39;nginx:latest&#39; locally
+latest: Pulling from library/nginx
+e7bb522d92ff: Pull complete 
+6edc05228666: Pull complete 
+cd866a17e81f: Pull complete 
+Digest: sha256:285b49d42c703fdf257d1e2422765c4ba9d3e37768d6ea83d7fe2043dad6e63d
+Status: Downloaded newer image for nginx:latest
+8d8f81da12b5c10af6ba1a5d07f4abc041cb95b01f3d632c3d638922800b0b4d
+# 容器启动后，在浏览器进行访问测试 
+</code></pre>
 <p>参数说明</p>
 <p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231224194736648.png" alt="img"></p>
 <h3 id="3-3-Docker镜像生命周期"><a href="#3-3-Docker镜像生命周期" class="headerlink" title="3.3. Docker镜像生命周期"></a>3.3. <strong>Docker镜像生命周期</strong></h3><p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231224194737059.png" alt="img"></p>
-<h2 id="4-Docker镜像相关操作"><a href="#4-Docker镜像相关操作" class="headerlink" title="4. Docker镜像相关操作"></a>4. <strong>Docker镜像相关操作</strong></h2><h3 id="4-1-搜索官方仓库镜像"><a href="#4-1-搜索官方仓库镜像" class="headerlink" title="4.1. 搜索官方仓库镜像"></a>4.1. <strong>搜索官方仓库镜像</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]#  docker search centos</span><br><span class="line">NAME                      DESCRIPTION                    STARS    OFFICIAL               AUTOMATED</span><br><span class="line">centos                    The official build of CentOS.  3992     [OK]      </span><br><span class="line">ansible/centos7-ansible   Ansible on Centos7             105                              [OK]</span><br></pre></td></tr></table></figure>
-
+<h2 id="4-Docker镜像相关操作"><a href="#4-Docker镜像相关操作" class="headerlink" title="4. Docker镜像相关操作"></a>4. <strong>Docker镜像相关操作</strong></h2><h3 id="4-1-搜索官方仓库镜像"><a href="#4-1-搜索官方仓库镜像" class="headerlink" title="4.1. 搜索官方仓库镜像"></a>4.1. <strong>搜索官方仓库镜像</strong></h3><pre><code class="shell">[root@docker01 ~]#  docker search centos
+NAME                      DESCRIPTION                    STARS    OFFICIAL               AUTOMATED
+centos                    The official build of CentOS.  3992     [OK]      
+ansible/centos7-ansible   Ansible on Centos7             105                              [OK]
+</code></pre>
 <p>列表说明</p>
 <p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231224194737205.png" alt="img"></p>
 <h3 id="4-2-获取镜像"><a href="#4-2-获取镜像" class="headerlink" title="4.2. 获取镜像"></a>4.2. <strong>获取镜像</strong></h3><p>根据镜像名称拉取镜像</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker pull centos</span><br><span class="line">Using default tag: latest</span><br><span class="line">latest: Pulling from library/centos</span><br><span class="line">af4b0a2388c6: Downloading  34.65MB/73.67MB</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker pull centos
+Using default tag: latest
+latest: Pulling from library/centos
+af4b0a2388c6: Downloading  34.65MB/73.67MB
+</code></pre>
 <p>查看当前主机镜像列表</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker image list </span><br><span class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">centos              latest              ff426288ea90        3 weeks ago         207MB</span><br><span class="line">nginx               latest              3f8a4339aadd        5 weeks ago         108MB</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker image list 
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+centos              latest              ff426288ea90        3 weeks ago         207MB
+nginx               latest              3f8a4339aadd        5 weeks ago         108MB
+</code></pre>
 <p>拉第三方镜像方法</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull index.tenxcloud.com/tenxcloud/httpd</span><br></pre></td></tr></table></figure>
-
-<h3 id="4-3-导出镜像"><a href="#4-3-导出镜像" class="headerlink" title="4.3. 导出镜像"></a>4.3. <strong>导出镜像</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker image list </span><br><span class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">centos              latest              ff426288ea90        3 weeks ago         207MB</span><br><span class="line">nginx               latest              3f8a4339aadd        5 weeks ago         108MB</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">导出</span></span><br><span class="line">[root@docker01 ~]# docker image save centos &gt; docker-centos.tar.gz</span><br></pre></td></tr></table></figure>
-
-<h3 id="4-4-删除镜像"><a href="#4-4-删除镜像" class="headerlink" title="4.4. 删除镜像"></a>4.4. <strong>删除镜像</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker image rm centos:latest</span><br><span class="line">[root@docker01 ~]# docker image list </span><br><span class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">nginx               latest              3f8a4339aadd        5 weeks ago         108MB</span><br></pre></td></tr></table></figure>
-
-<h3 id="4-5-导入镜像"><a href="#4-5-导入镜像" class="headerlink" title="4.5. 导入镜像"></a>4.5. <strong>导入镜像</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker image load -i docker-centos.tar.gz  </span><br><span class="line">e15afa4858b6: Loading layer  215.8MB/215.8MB</span><br><span class="line">Loaded image: centos:latest</span><br><span class="line">[root@docker01 ~]# docker image list </span><br><span class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">centos              latest              ff426288ea90        3 weeks ago         207MB</span><br><span class="line">nginx               latest              3f8a4339aadd        5 weeks ago         108MB</span><br></pre></td></tr></table></figure>
-
-<h3 id="4-6-查看镜像的详细信息"><a href="#4-6-查看镜像的详细信息" class="headerlink" title="4.6. 查看镜像的详细信息"></a>4.6. <strong>查看镜像的详细信息</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker image inspect centos</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell">docker pull index.tenxcloud.com/tenxcloud/httpd
+</code></pre>
+<h3 id="4-3-导出镜像"><a href="#4-3-导出镜像" class="headerlink" title="4.3. 导出镜像"></a>4.3. <strong>导出镜像</strong></h3><pre><code class="shell">[root@docker01 ~]# docker image list 
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+centos              latest              ff426288ea90        3 weeks ago         207MB
+nginx               latest              3f8a4339aadd        5 weeks ago         108MB
+# 导出
+[root@docker01 ~]# docker image save centos &gt; docker-centos.tar.gz
+</code></pre>
+<h3 id="4-4-删除镜像"><a href="#4-4-删除镜像" class="headerlink" title="4.4. 删除镜像"></a>4.4. <strong>删除镜像</strong></h3><pre><code class="shell">[root@docker01 ~]# docker image rm centos:latest
+[root@docker01 ~]# docker image list 
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+nginx               latest              3f8a4339aadd        5 weeks ago         108MB
+</code></pre>
+<h3 id="4-5-导入镜像"><a href="#4-5-导入镜像" class="headerlink" title="4.5. 导入镜像"></a>4.5. <strong>导入镜像</strong></h3><pre><code class="shell">[root@docker01 ~]# docker image load -i docker-centos.tar.gz  
+e15afa4858b6: Loading layer  215.8MB/215.8MB
+Loaded image: centos:latest
+[root@docker01 ~]# docker image list 
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+centos              latest              ff426288ea90        3 weeks ago         207MB
+nginx               latest              3f8a4339aadd        5 weeks ago         108MB
+</code></pre>
+<h3 id="4-6-查看镜像的详细信息"><a href="#4-6-查看镜像的详细信息" class="headerlink" title="4.6. 查看镜像的详细信息"></a>4.6. <strong>查看镜像的详细信息</strong></h3><pre><code class="shell">[root@docker01 ~]# docker image inspect centos
+</code></pre>
 <h2 id="5-容器的日常管理"><a href="#5-容器的日常管理" class="headerlink" title="5. 容器的日常管理"></a>5. <strong>容器的日常管理</strong></h2><h3 id="5-1-容器的起-停"><a href="#5-1-容器的起-停" class="headerlink" title="5.1. 容器的起&#x2F;停"></a>5.1. <strong>容器的起&#x2F;停</strong></h3><p>最简单的运行一个容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run nginx</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run nginx
+</code></pre>
 <p>创建容器，两步走（不常用）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker create centos:latest  /bin/bash</span><br><span class="line">bb7f32368ecf0492adb59e20032ab2e6cf6a563a0e6751e58930ee5f7aaef204</span><br><span class="line">[root@docker01 ~]# docker start stupefied_nobel</span><br><span class="line">stupefied_nobel</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker create centos:latest  /bin/bash
+bb7f32368ecf0492adb59e20032ab2e6cf6a563a0e6751e58930ee5f7aaef204
+[root@docker01 ~]# docker start stupefied_nobel
+stupefied_nobel
+</code></pre>
 <p>快速启动容器方法</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run  centos:latest  /usr/bin/sleep 20;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run  centos:latest  /usr/bin/sleep 20;
+</code></pre>
 <p><strong>容器内的第一个进程必须一直处于运行的状态，否则这个容器，就会处于退出状态！</strong></p>
 <p>查看正在运行的容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker container ls</span><br><span class="line">    或</span><br><span class="line">[root@docker01 ~]# docker ps </span><br><span class="line">CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES</span><br><span class="line">8708e93fd767        nginx               &quot;nginx -g &#x27;daemon of…&quot;   6 seconds ago       Up 4 seconds        80/tcp              keen_lewin</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker container ls
+    或
+[root@docker01 ~]# docker ps 
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
+8708e93fd767        nginx               &quot;nginx -g &#39;daemon of…&quot;   6 seconds ago       Up 4 seconds        80/tcp              keen_lewin
+</code></pre>
 <p>查看你容器详细信息&#x2F;ip</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker container  inspect  容器名称/id</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker container  inspect  容器名称/id
+</code></pre>
 <p>查看你所有容器（包括未运行的）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker ps -a</span><br><span class="line">CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                      PORTS               NAMES</span><br><span class="line">8708e93fd767        nginx               &quot;nginx -g &#x27;daemon of…&quot;   4 minutes ago       Exited (0) 59 seconds ago                       keen_lewin</span><br><span class="line">f9f3e6af7508        nginx               &quot;nginx -g &#x27;daemon of…&quot;   5 minutes ago       Exited (0) 5 minutes ago                        optimistic_haibt</span><br><span class="line">8d8f81da12b5        nginx               &quot;nginx -g &#x27;daemon of…&quot;   3 hours ago         Exited (0) 3 hours ago                          lucid_bohr</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker ps -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                      PORTS               NAMES
+8708e93fd767        nginx               &quot;nginx -g &#39;daemon of…&quot;   4 minutes ago       Exited (0) 59 seconds ago                       keen_lewin
+f9f3e6af7508        nginx               &quot;nginx -g &#39;daemon of…&quot;   5 minutes ago       Exited (0) 5 minutes ago                        optimistic_haibt
+8d8f81da12b5        nginx               &quot;nginx -g &#39;daemon of…&quot;   3 hours ago         Exited (0) 3 hours ago                          lucid_bohr
+</code></pre>
 <p>停止容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker stop 容器名称/id </span><br><span class="line">或</span><br><span class="line">[root@docker01 ~]# docker container  kill  容器名称/id</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker stop 容器名称/id 
+或
+[root@docker01 ~]# docker container  kill  容器名称/id
+</code></pre>
 <h3 id="5-2-进入容器方法"><a href="#5-2-进入容器方法" class="headerlink" title="5.2. 进入容器方法"></a>5.2. <strong>进入容器方法</strong></h3><p>启动时进去方法</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run -it #参数：-it 可交互终端</span><br><span class="line">[root@docker01 ~]# docker run -it nginx:latest  /bin/bash</span><br><span class="line">root@79241093859e:/#</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run -it #参数：-it 可交互终端
+[root@docker01 ~]# docker run -it nginx:latest  /bin/bash
+root@79241093859e:/#
+</code></pre>
 <p>退出&#x2F;离开容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ctrl+p &amp; ctrl+q</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell">ctrl+p &amp; ctrl+q
+</code></pre>
 <p><strong>启动后进入容器的方法</strong></p>
 <p>启动一个docker</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run -it centos:latest </span><br><span class="line">[root@1bf0f43c4d2f /]# ps -ef </span><br><span class="line">UID         PID   PPID  C STIME TTY          TIME CMD</span><br><span class="line">root          1      0  0 15:47 pts/0    00:00:00 /bin/bash</span><br><span class="line">root         13      1  0 15:47 pts/0    00:00:00 ps -ef</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run -it centos:latest 
+[root@1bf0f43c4d2f /]# ps -ef 
+UID         PID   PPID  C STIME TTY          TIME CMD
+root          1      0  0 15:47 pts/0    00:00:00 /bin/bash
+root         13      1  0 15:47 pts/0    00:00:00 ps -ef
+</code></pre>
 <p>attach进入容器，使用pts&#x2F;0 ，会让所用通过此方法进如放入用户看到同样的操作。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker attach 1bf0f43c4d2f</span><br><span class="line">[root@1bf0f43c4d2f /]# ps -ef </span><br><span class="line">UID         PID   PPID  C STIME TTY          TIME CMD</span><br><span class="line">root          1      0  0 15:47 pts/0    00:00:00 /bin/bash</span><br><span class="line">root         14      1  0 15:49 pts/0    00:00:00 ps -ef</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker attach 1bf0f43c4d2f
+[root@1bf0f43c4d2f /]# ps -ef 
+UID         PID   PPID  C STIME TTY          TIME CMD
+root          1      0  0 15:47 pts/0    00:00:00 /bin/bash
+root         14      1  0 15:49 pts/0    00:00:00 ps -ef
+</code></pre>
 <p>自命名启动一个容器 –name</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker attach 1bf0f43c4d2f</span><br><span class="line">[root@1bf0f43c4d2f /]# ps -ef </span><br><span class="line">UID         PID   PPID  C STIME TTY          TIME CMD</span><br><span class="line">root          1      0  0 15:47 pts/0    00:00:00 /bin/bash</span><br><span class="line">root         14      1  0 15:49 pts/0    00:00:00 ps -ef</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker attach 1bf0f43c4d2f
+[root@1bf0f43c4d2f /]# ps -ef 
+UID         PID   PPID  C STIME TTY          TIME CMD
+root          1      0  0 15:47 pts/0    00:00:00 /bin/bash
+root         14      1  0 15:49 pts/0    00:00:00 ps -ef
+</code></pre>
 <p>exec 进入容器方法（推荐使用）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker exec -it clsn1  /bin/bash </span><br><span class="line">[root@b20fa75b4b40 /]# 重新分配一个终端</span><br><span class="line">[root@b20fa75b4b40 /]# ps -ef </span><br><span class="line">UID         PID   PPID  C STIME TTY          TIME CMD</span><br><span class="line">root          1      0  0 16:11 pts/0    00:00:00 /bin/bash</span><br><span class="line">root         13      0  0 16:14 pts/1    00:00:00 /bin/bash</span><br><span class="line">root         26     13  0 16:14 pts/1    00:00:00 ps -ef</span><br></pre></td></tr></table></figure>
-
-<h3 id="5-3-删除所有容器"><a href="#5-3-删除所有容器" class="headerlink" title="5.3. 删除所有容器"></a>5.3. <strong>删除所有容器</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker rm -f  `docker ps -a -q`</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">-f 强制删除</span></span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell">[root@docker01 ~]# docker exec -it clsn1  /bin/bash 
+[root@b20fa75b4b40 /]# 重新分配一个终端
+[root@b20fa75b4b40 /]# ps -ef 
+UID         PID   PPID  C STIME TTY          TIME CMD
+root          1      0  0 16:11 pts/0    00:00:00 /bin/bash
+root         13      0  0 16:14 pts/1    00:00:00 /bin/bash
+root         26     13  0 16:14 pts/1    00:00:00 ps -ef
+</code></pre>
+<h3 id="5-3-删除所有容器"><a href="#5-3-删除所有容器" class="headerlink" title="5.3. 删除所有容器"></a>5.3. <strong>删除所有容器</strong></h3><pre><code class="shell">[root@docker01 ~]# docker rm -f  `docker ps -a -q`
+# -f 强制删除
+</code></pre>
 <h3 id="5-4-启动时进行端口映射"><a href="#5-4-启动时进行端口映射" class="headerlink" title="5.4. 启动时进行端口映射"></a>5.4. <strong>启动时进行端口映射</strong></h3><p>-p参数端口映射</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run -d -p 8888:80  nginx:latest </span><br><span class="line">287bec5c60263166c03e1fc5b0b8262fe76507be3dfae4ce5cd2ee2d1e8a89a9</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run -d -p 8888:80  nginx:latest 
+287bec5c60263166c03e1fc5b0b8262fe76507be3dfae4ce5cd2ee2d1e8a89a9
+</code></pre>
 <p>不同指定映射方法</p>
 <p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231224194737613.png" alt="img"></p>
 <p>随机映射</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -P （大P）# 需要镜像支持</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">docker run -P （大P）# 需要镜像支持
+</code></pre>
 <h2 id="6-Docker-数据卷的管理"><a href="#6-Docker-数据卷的管理" class="headerlink" title="6. Docker 数据卷的管理"></a>6. <strong>Docker 数据卷的管理</strong></h2><h3 id="6-1-挂载时创建卷"><a href="#6-1-挂载时创建卷" class="headerlink" title="6.1. 挂载时创建卷"></a>6.1. <strong>挂载时创建卷</strong></h3><p>挂载卷</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run -d -p 80:80 -v /data:/usr/share/nginx/html nginx:latest</span><br><span class="line">079786c1e297b5c5031e7a841160c74e91d4ad06516505043c60dbb78a259d09</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run -d -p 80:80 -v /data:/usr/share/nginx/html nginx:latest
+079786c1e297b5c5031e7a841160c74e91d4ad06516505043c60dbb78a259d09
+</code></pre>
 <p>容器内站点目录: &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html</p>
 <p>在宿主机写入数据，查看</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# echo &quot;http://www.nmtui.com&quot; &gt;/data/index.html</span><br><span class="line">[root@docker01 ~]# curl 10.0.0.100</span><br><span class="line">http://www.nmtui.com</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# echo &quot;http://www.nmtui.com&quot; &gt;/data/index.html
+[root@docker01 ~]# curl 10.0.0.100
+http://www.nmtui.com
+</code></pre>
 <p>设置共享卷，使用同一个卷启动一个新的容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run -d -p 8080:80 -v /data:/usr/share/nginx/html nginx:latest </span><br><span class="line">351f0bd78d273604bd0971b186979aa0f3cbf45247274493d2490527babb4e42</span><br><span class="line">[root@docker01 ~]# curl 10.0.0.100:8080</span><br><span class="line">http://www.nmtui.com</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run -d -p 8080:80 -v /data:/usr/share/nginx/html nginx:latest 
+351f0bd78d273604bd0971b186979aa0f3cbf45247274493d2490527babb4e42
+[root@docker01 ~]# curl 10.0.0.100:8080
+http://www.nmtui.com
+</code></pre>
 <p>查看卷列表</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker volume ls</span><br><span class="line">DRIVER              VOLUME NAME</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker volume ls
+DRIVER              VOLUME NAME
+</code></pre>
 <h3 id="6-2-创建卷后挂载"><a href="#6-2-创建卷后挂载" class="headerlink" title="6.2. 创建卷后挂载"></a>6.2. <strong>创建卷后挂载</strong></h3><p>创建一个卷</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker volume create </span><br><span class="line">f3b95f7bd17da220e63d4e70850b8d7fb3e20f8ad02043423a39fdd072b83521</span><br><span class="line">[root@docker01 ~]# docker volume ls </span><br><span class="line">DRIVER              VOLUME NAME</span><br><span class="line">local               f3b95f7bd17da220e63d4e70850b8d7fb3e20f8ad02043423a39fdd072b83521</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker volume create 
+f3b95f7bd17da220e63d4e70850b8d7fb3e20f8ad02043423a39fdd072b83521
+[root@docker01 ~]# docker volume ls 
+DRIVER              VOLUME NAME
+local               f3b95f7bd17da220e63d4e70850b8d7fb3e20f8ad02043423a39fdd072b83521
+</code></pre>
 <p>指定卷名</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker volume ls </span><br><span class="line">DRIVER              VOLUME NAME</span><br><span class="line">local               clsn</span><br><span class="line">local               f3b95f7bd17da220e63d4e70850b8d7fb3e20f8ad02043423a39fdd072b83521</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker volume ls 
+DRIVER              VOLUME NAME
+local               clsn
+local               f3b95f7bd17da220e63d4e70850b8d7fb3e20f8ad02043423a39fdd072b83521
+</code></pre>
 <p>查看卷路径</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker volume inspect clsn </span><br><span class="line">[</span><br><span class="line">    &#123;</span><br><span class="line">        &quot;CreatedAt&quot;: &quot;2018-02-01T00:39:25+08:00&quot;,</span><br><span class="line">        &quot;Driver&quot;: &quot;local&quot;,</span><br><span class="line">        &quot;Labels&quot;: &#123;&#125;,</span><br><span class="line">        &quot;Mountpoint&quot;: &quot;/var/lib/docker/volumes/clsn/_data&quot;,</span><br><span class="line">        &quot;Name&quot;: &quot;clsn&quot;,</span><br><span class="line">        &quot;Options&quot;: &#123;&#125;,</span><br><span class="line">        &quot;Scope&quot;: &quot;local&quot;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker volume inspect clsn 
+[
+    &#123;
+        &quot;CreatedAt&quot;: &quot;2018-02-01T00:39:25+08:00&quot;,
+        &quot;Driver&quot;: &quot;local&quot;,
+        &quot;Labels&quot;: &#123;&#125;,
+        &quot;Mountpoint&quot;: &quot;/var/lib/docker/volumes/clsn/_data&quot;,
+        &quot;Name&quot;: &quot;clsn&quot;,
+        &quot;Options&quot;: &#123;&#125;,
+        &quot;Scope&quot;: &quot;local&quot;
+    &#125;
+]
+</code></pre>
 <p>使用卷创建</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run -d -p 9000:80 -v clsn:/usr/share/nginx/html nginx:latest </span><br><span class="line">1434559cff996162da7ce71820ed8f5937fb7c02113bbc84e965845c219d3503</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">宿主机测试</span></span><br><span class="line">[root@docker01 ~]# echo &#x27;blog.nmtui.com&#x27; &gt;/var/lib/docker/volumes/clsn/_data/index.html </span><br><span class="line">[root@docker01 ~]# curl 10.0.0.100:9000</span><br><span class="line">blog.nmtui.com</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run -d -p 9000:80 -v clsn:/usr/share/nginx/html nginx:latest 
+1434559cff996162da7ce71820ed8f5937fb7c02113bbc84e965845c219d3503
+# 宿主机测试
+[root@docker01 ~]# echo &#39;blog.nmtui.com&#39; &gt;/var/lib/docker/volumes/clsn/_data/index.html 
+[root@docker01 ~]# curl 10.0.0.100:9000
+blog.nmtui.com
+</code></pre>
 <p>设置卷</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run  -d  -P  --volumes-from 079786c1e297 nginx:latest </span><br><span class="line">b54b9c9930b417ab3257c6e4a8280b54fae57043c0b76b9dc60b4788e92369fb</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run  -d  -P  --volumes-from 079786c1e297 nginx:latest 
+b54b9c9930b417ab3257c6e4a8280b54fae57043c0b76b9dc60b4788e92369fb
+</code></pre>
 <p>查看使用的端口</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# netstat -lntup </span><br><span class="line">Active Internet connections (only servers)</span><br><span class="line">Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    </span><br><span class="line">tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1400/sshd           </span><br><span class="line">tcp        0      0 10.0.0.100:2375         0.0.0.0:*               LISTEN      26218/dockerd       </span><br><span class="line">tcp6       0      0 :::9000                 :::*                    LISTEN      32015/docker-proxy  </span><br><span class="line">tcp6       0      0 :::8080                 :::*                    LISTEN      31853/docker-proxy  </span><br><span class="line">tcp6       0      0 :::80                   :::*                    LISTEN      31752/docker-proxy  </span><br><span class="line">tcp6       0      0 :::22                   :::*                    LISTEN      1400/sshd           </span><br><span class="line">tcp6       0      0 :::32769                :::*                    LISTEN      32300/docker-proxy  </span><br><span class="line">[root@docker01 ~]# curl 10.0.0.100:32769</span><br><span class="line">http://www.nmtui.com</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell">[root@docker01 ~]# netstat -lntup 
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1400/sshd           
+tcp        0      0 10.0.0.100:2375         0.0.0.0:*               LISTEN      26218/dockerd       
+tcp6       0      0 :::9000                 :::*                    LISTEN      32015/docker-proxy  
+tcp6       0      0 :::8080                 :::*                    LISTEN      31853/docker-proxy  
+tcp6       0      0 :::80                   :::*                    LISTEN      31752/docker-proxy  
+tcp6       0      0 :::22                   :::*                    LISTEN      1400/sshd           
+tcp6       0      0 :::32769                :::*                    LISTEN      32300/docker-proxy  
+[root@docker01 ~]# curl 10.0.0.100:32769
+http://www.nmtui.com
+</code></pre>
 <h3 id="6-3-手动将容器保存为镜像"><a href="#6-3-手动将容器保存为镜像" class="headerlink" title="6.3. 手动将容器保存为镜像"></a>6.3. <strong>手动将容器保存为镜像</strong></h3><p>本次是基于docker官方centos 6.8 镜像创建</p>
 <p>官方镜像列表：</p>
 <p><a target="_blank" rel="noopener" href="https://hub.docker.com/explore/">https://hub.docker.com/explore/</a></p>
 <p>启动一个centos6.8的镜像</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker pull  centos:6.8</span><br><span class="line">[root@docker01 ~]# docker run -it -p 1022:22 centos:6.8  /bin/bash</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">在容器种安装sshd服务，并修改系统密码</span></span><br><span class="line">[root@582051b2b92b ~]# yum install  openssh-server -y </span><br><span class="line">[root@582051b2b92b ~]# echo &quot;root:123456&quot; |chpasswd</span><br><span class="line">[root@582051b2b92b ~]#  /etc/init.d/sshd start</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker pull  centos:6.8
+[root@docker01 ~]# docker run -it -p 1022:22 centos:6.8  /bin/bash
+# 在容器种安装sshd服务，并修改系统密码
+[root@582051b2b92b ~]# yum install  openssh-server -y 
+[root@582051b2b92b ~]# echo &quot;root:123456&quot; |chpasswd
+[root@582051b2b92b ~]#  /etc/init.d/sshd start
+</code></pre>
 <p>启动完成后镜像ssh连接测试</p>
 <p>将容器提交为镜像</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker commit brave_mcclintock  centos6-ssh</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker commit brave_mcclintock  centos6-ssh
+</code></pre>
 <p>使用新的镜像启动容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run -d  -p 1122:22  centos6-ssh:latest  /usr/sbin/sshd -D </span><br><span class="line">5b8161fda2a9f2c39c196c67e2eb9274977e7723fe51c4f08a0190217ae93094</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run -d  -p 1122:22  centos6-ssh:latest  /usr/sbin/sshd -D 
+5b8161fda2a9f2c39c196c67e2eb9274977e7723fe51c4f08a0190217ae93094
+</code></pre>
 <p>在容器安装httpd服务</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@5b8161fda2a9 /]#  yum install httpd -y</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@5b8161fda2a9 /]#  yum install httpd -y
+</code></pre>
 <p>编写启动脚本脚本</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@5b8161fda2a9 /]# cat  init.sh </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span> </span><br><span class="line">/etc/init.d/httpd start </span><br><span class="line">/usr/sbin/sshd -D</span><br><span class="line">[root@5b8161fda2a9 /]# chmod +x init.sh </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">注意执行权限</span></span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@5b8161fda2a9 /]# cat  init.sh 
+#!/bin/bash 
+/etc/init.d/httpd start 
+/usr/sbin/sshd -D
+[root@5b8161fda2a9 /]# chmod +x init.sh 
+# 注意执行权限
+</code></pre>
 <p>再次提交为新的镜像</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker commit  5b8161fda2a9 centos6-httpd </span><br><span class="line">sha256:705d67a786cac040800b8485cf046fd57b1828b805c515377fc3e9cea3a481c1</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker commit  5b8161fda2a9 centos6-httpd 
+sha256:705d67a786cac040800b8485cf046fd57b1828b805c515377fc3e9cea3a481c1
+</code></pre>
 <p>启动镜像，做好端口映射。并在浏览器中测试访问</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run -d -p 1222:22 -p 80:80  centos6-httpd /init.sh </span><br><span class="line">46fa6a06644e31701dc019fb3a8c3b6ef008d4c2c10d46662a97664f838d8c2c</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell">[root@docker01 ~]# docker run -d -p 1222:22 -p 80:80  centos6-httpd /init.sh 
+46fa6a06644e31701dc019fb3a8c3b6ef008d4c2c10d46662a97664f838d8c2c
+</code></pre>
 <h2 id="7-Dockerfile自动构建docker镜像"><a href="#7-Dockerfile自动构建docker镜像" class="headerlink" title="7. Dockerfile自动构建docker镜像"></a>7. <strong>Dockerfile自动构建docker镜像</strong></h2><p>官方构建dockerffile文件参考</p>
 <p><a target="_blank" rel="noopener" href="https://github.com/CentOS/CentOS-Dockerfiles">https://github.com/CentOS/CentOS-Dockerfiles</a></p>
 <h3 id="7-1-Dockerfile指令集"><a href="#7-1-Dockerfile指令集" class="headerlink" title="7.1. Dockerfile指令集"></a>7.1. <strong>Dockerfile指令集</strong></h3><p>dockerfile主要组成部分：</p>
@@ -637,19 +788,34 @@
 </li>
 </ul>
 <h3 id="7-2-创建一个Dockerfile"><a href="#7-2-创建一个Dockerfile" class="headerlink" title="7.2. 创建一个Dockerfile"></a>7.2. <strong>创建一个Dockerfile</strong></h3><p>创建第一个Dockerfile文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">创建目录</span></span><br><span class="line">[root@docker01 base]# cd /opt/base</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">创建Dcokerfile文件，注意大小写</span></span><br><span class="line">[root@docker01 base]# vim Dockerfile</span><br><span class="line">FROM centos:6.8</span><br><span class="line">RUN yum install openssh-server -y </span><br><span class="line">RUN echo &quot;root:123456&quot; |chpasswd</span><br><span class="line">RUN /etc/init.d/sshd start </span><br><span class="line">CMD [&quot;/usr/sbin/sshd&quot;,&quot;-D&quot;]</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell"># 创建目录
+[root@docker01 base]# cd /opt/base
+# 创建Dcokerfile文件，注意大小写
+[root@docker01 base]# vim Dockerfile
+FROM centos:6.8
+RUN yum install openssh-server -y 
+RUN echo &quot;root:123456&quot; |chpasswd
+RUN /etc/init.d/sshd start 
+CMD [&quot;/usr/sbin/sshd&quot;,&quot;-D&quot;]
+</code></pre>
 <p>使用自构建的镜像启动</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 base]# docker image build  -t centos6.8-ssh . </span><br><span class="line">-t 为镜像标签打标签  . 表示当前路径</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 base]# docker image build  -t centos6.8-ssh . 
+-t 为镜像标签打标签  . 表示当前路径
+</code></pre>
 <p>使用自构建的镜像启动</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 base]# docker run  -d -p 2022:22 centos6.8-ssh-b </span><br><span class="line">dc3027d3c15dac881e8e2aeff80724216f3ac725f142daa66484f7cb5d074e7a</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell">[root@docker01 base]# docker run  -d -p 2022:22 centos6.8-ssh-b 
+dc3027d3c15dac881e8e2aeff80724216f3ac725f142daa66484f7cb5d074e7a
+</code></pre>
 <h3 id="7-3-使用Dcokerfile安装kodexplorer"><a href="#7-3-使用Dcokerfile安装kodexplorer" class="headerlink" title="7.3. 使用Dcokerfile安装kodexplorer"></a>7.3. <strong>使用Dcokerfile安装kodexplorer</strong></h3><p>Dockerfile文件内容</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">FROM centos:6.8</span><br><span class="line">RUN yum install wget unzip php php-gd php-mbstring -y &amp;&amp; yum clean all</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置工作目录，之后的操作都在这个目录中</span></span><br><span class="line">WORKDIR /var/www/html/</span><br><span class="line">RUN wget -c http://static.kodcloud.com/update/download/kodexplorer4.25.zip</span><br><span class="line">RUN unzip kodexplorer4.25.zip &amp;&amp; rm -f kodexplorer4.25.zip</span><br><span class="line">RUN chown -R apache.apache .</span><br><span class="line">CMD [&quot;/usr/sbin/apachectl&quot;,&quot;-D&quot;,&quot;FOREGROUND&quot;]</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">FROM centos:6.8
+RUN yum install wget unzip php php-gd php-mbstring -y &amp;&amp; yum clean all
+# 设置工作目录，之后的操作都在这个目录中
+WORKDIR /var/www/html/
+RUN wget -c http://static.kodcloud.com/update/download/kodexplorer4.25.zip
+RUN unzip kodexplorer4.25.zip &amp;&amp; rm -f kodexplorer4.25.zip
+RUN chown -R apache.apache .
+CMD [&quot;/usr/sbin/apachectl&quot;,&quot;-D&quot;,&quot;FOREGROUND&quot;]
+</code></pre>
 <p>更多的Dockerfile可以参考官方方法。</p>
 <h2 id="8-Docker中的镜像分层"><a href="#8-Docker中的镜像分层" class="headerlink" title="8. Docker中的镜像分层"></a>8. <strong>Docker中的镜像分层</strong></h2><p>参考文档：</p>
 <p><a target="_blank" rel="noopener" href="http://www.maiziedu.com/wiki/cloud/dockerimage/">http://www.maiziedu.com/wiki/cloud/dockerimage/</a></p>
@@ -668,98 +834,295 @@
 <p>只有当需要修改时才复制一份数据，这种特性被称作 Copy-on-Write。可见，容器层保存的是镜像变化的部分，不会对镜像本身进行任何修改。</p>
 <p>这样就解释了我们前面提出的问题：容器层记录对镜像的修改，所有镜像层都是只读的，不会被容器修改，所以镜像可以被多个容器共享。</p>
 <h2 id="9-使用docker运行zabbix-server"><a href="#9-使用docker运行zabbix-server" class="headerlink" title="9. 使用docker运行zabbix-server"></a>9. <strong>使用docker运行zabbix-server</strong></h2><h3 id="9-1-容器间的互联"><a href="#9-1-容器间的互联" class="headerlink" title="9.1. 容器间的互联"></a>9.1. <strong>容器间的互联</strong></h3><p>在运行zabbix之前务必要了解容器间互联的方法</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">创建一个nginx容器</span></span><br><span class="line">docker run -d -p 80:80 nginx</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">创建容器，做<span class="built_in">link</span>，并进入容器中</span></span><br><span class="line">docker run -it --link quirky_brown:web01 centos-ssh /bin/bash</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">在容器中访问nginx容器可以ping通</span></span><br><span class="line">ping web01 </span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell"># 创建一个nginx容器
+docker run -d -p 80:80 nginx
+# 创建容器，做link，并进入容器中
+docker run -it --link quirky_brown:web01 centos-ssh /bin/bash
+# 在容器中访问nginx容器可以ping通
+ping web01 
+</code></pre>
 <p>命令执行过程</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启动apache容器</span></span><br><span class="line">[root@docker01 ~]# docker run -d httpd:2.4  </span><br><span class="line">3f1f7fc554720424327286bd2b04aeab1b084a3fb011a785b0deab6a34e56955</span><br><span class="line">^[[A[root@docker01 docker ps -a</span><br><span class="line">CONTAINER ID        IMAGE               COMMAND              CREATED             STATUS              PORTS               NAMES</span><br><span class="line">3f1f7fc55472        httpd:2.4           &quot;httpd-foreground&quot;   6 seconds ago       Up 5 seconds        80/tcp              determined_clarke</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">拉取一个busybox 镜像</span></span><br><span class="line">[root@docker01 ~]# docker pull busybox </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启动容器</span></span><br><span class="line">[root@docker01 ~]# docker run -it  --link determined_clarke:web busybox:latest   /bin/sh </span><br><span class="line">/ # </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">使用新的容器访问最初的web容器</span></span><br><span class="line">/ # ping web </span><br><span class="line">PING web (172.17.0.2): 56 data bytes</span><br><span class="line">64 bytes from 172.17.0.2: seq=0 ttl=64 time=0.058 ms</span><br><span class="line">^C</span><br><span class="line">--- web ping statistics ---</span><br><span class="line">1 packets transmitted, 1 packets received, 0% packet loss</span><br><span class="line">round-trip min/avg/max = 0.058/0.058/0.058 ms   </span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell"># 启动apache容器
+[root@docker01 ~]# docker run -d httpd:2.4  
+3f1f7fc554720424327286bd2b04aeab1b084a3fb011a785b0deab6a34e56955
+^[[A[root@docker01 docker ps -a
+CONTAINER ID        IMAGE               COMMAND              CREATED             STATUS              PORTS               NAMES
+3f1f7fc55472        httpd:2.4           &quot;httpd-foreground&quot;   6 seconds ago       Up 5 seconds        80/tcp              determined_clarke
+# 拉取一个busybox 镜像
+[root@docker01 ~]# docker pull busybox 
+# 启动容器
+[root@docker01 ~]# docker run -it  --link determined_clarke:web busybox:latest   /bin/sh 
+/ # 
+# 使用新的容器访问最初的web容器
+/ # ping web 
+PING web (172.17.0.2): 56 data bytes
+64 bytes from 172.17.0.2: seq=0 ttl=64 time=0.058 ms
+^C
+--- web ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.058/0.058/0.058 ms   
+</code></pre>
 <h3 id="9-2-启动zabbix容器"><a href="#9-2-启动zabbix容器" class="headerlink" title="9.2. 启动zabbix容器"></a>9.2. <strong>启动zabbix容器</strong></h3><p>1、启动一个mysql的容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker run --name mysql-server -t \</span><br><span class="line">      -e MYSQL_DATABASE=&quot;zabbix&quot; \</span><br><span class="line">      -e MYSQL_USER=&quot;zabbix&quot; \</span><br><span class="line">      -e MYSQL_PASSWORD=&quot;zabbix_pwd&quot; \</span><br><span class="line">      -e MYSQL_ROOT_PASSWORD=&quot;root_pwd&quot; \</span><br><span class="line">      -d mysql:5.7 \</span><br><span class="line">      --character-set-server=utf8 --collation-server=utf8_bin </span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">docker run --name mysql-server -t \
+      -e MYSQL_DATABASE=&quot;zabbix&quot; \
+      -e MYSQL_USER=&quot;zabbix&quot; \
+      -e MYSQL_PASSWORD=&quot;zabbix_pwd&quot; \
+      -e MYSQL_ROOT_PASSWORD=&quot;root_pwd&quot; \
+      -d mysql:5.7 \
+      --character-set-server=utf8 --collation-server=utf8_bin 
+</code></pre>
 <p>2、启动java-gateway容器监控java服务</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker run --name zabbix-java-gateway -t \</span><br><span class="line">      -d zabbix/zabbix-java-gateway:latest</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">docker run --name zabbix-java-gateway -t \
+      -d zabbix/zabbix-java-gateway:latest
+</code></pre>
 <p>3、启动zabbix-mysql容器使用link连接mysql与java-gateway。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">docker run --name zabbix-server-mysql -t \</span><br><span class="line">      -e DB_SERVER_HOST=&quot;mysql-server&quot; \</span><br><span class="line">      -e MYSQL_DATABASE=&quot;zabbix&quot; \</span><br><span class="line">      -e MYSQL_USER=&quot;zabbix&quot; \</span><br><span class="line">      -e MYSQL_PASSWORD=&quot;zabbix_pwd&quot; \</span><br><span class="line">      -e MYSQL_ROOT_PASSWORD=&quot;root_pwd&quot; \</span><br><span class="line">      -e ZBX_JAVAGATEWAY=&quot;zabbix-java-gateway&quot; \</span><br><span class="line">      --link mysql-server:mysql \</span><br><span class="line">      --link zabbix-java-gateway:zabbix-java-gateway \</span><br><span class="line">      -p 10051:10051 \</span><br><span class="line">      -d zabbix/zabbix-server-mysql:latest</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">docker run --name zabbix-server-mysql -t \
+      -e DB_SERVER_HOST=&quot;mysql-server&quot; \
+      -e MYSQL_DATABASE=&quot;zabbix&quot; \
+      -e MYSQL_USER=&quot;zabbix&quot; \
+      -e MYSQL_PASSWORD=&quot;zabbix_pwd&quot; \
+      -e MYSQL_ROOT_PASSWORD=&quot;root_pwd&quot; \
+      -e ZBX_JAVAGATEWAY=&quot;zabbix-java-gateway&quot; \
+      --link mysql-server:mysql \
+      --link zabbix-java-gateway:zabbix-java-gateway \
+      -p 10051:10051 \
+      -d zabbix/zabbix-server-mysql:latest
+</code></pre>
 <p>4、启动zabbix web显示，使用link连接zabbix-mysql与mysql。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">docker run --name zabbix-web-nginx-mysql -t \</span><br><span class="line">      -e DB_SERVER_HOST=&quot;mysql-server&quot; \</span><br><span class="line">      -e MYSQL_DATABASE=&quot;zabbix&quot; \</span><br><span class="line">      -e MYSQL_USER=&quot;zabbix&quot; \</span><br><span class="line">      -e MYSQL_PASSWORD=&quot;zabbix_pwd&quot; \</span><br><span class="line">      -e MYSQL_ROOT_PASSWORD=&quot;root_pwd&quot; \</span><br><span class="line">      --link mysql-server:mysql \</span><br><span class="line">      --link zabbix-server-mysql:zabbix-server \</span><br><span class="line">      -p 80:80 \</span><br><span class="line">      -d zabbix/zabbix-web-nginx-mysql:latest</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell">docker run --name zabbix-web-nginx-mysql -t \
+      -e DB_SERVER_HOST=&quot;mysql-server&quot; \
+      -e MYSQL_DATABASE=&quot;zabbix&quot; \
+      -e MYSQL_USER=&quot;zabbix&quot; \
+      -e MYSQL_PASSWORD=&quot;zabbix_pwd&quot; \
+      -e MYSQL_ROOT_PASSWORD=&quot;root_pwd&quot; \
+      --link mysql-server:mysql \
+      --link zabbix-server-mysql:zabbix-server \
+      -p 80:80 \
+      -d zabbix/zabbix-web-nginx-mysql:latest
+</code></pre>
 <h3 id="9-3-关于zabbix-API"><a href="#9-3-关于zabbix-API" class="headerlink" title="9.3. 关于zabbix API"></a>9.3. <strong>关于zabbix API</strong></h3><p>关于zabbix API可以参考官方文档：</p>
 <p><a target="_blank" rel="noopener" href="https://www.zabbix.com/documentation/3.4/zh/manual/api">https://www.zabbix.com/documentation/3.4/zh/manual/api</a></p>
 <p>1、获取token方法</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">获取token</span></span><br><span class="line">[root@docker02 ~]# curl -s -X POST -H &#x27;Content-Type:application/json&#x27; -d &#x27;</span><br><span class="line">&#123;</span><br><span class="line">&quot;jsonrpc&quot;: &quot;2.0&quot;,</span><br><span class="line">&quot;method&quot;: &quot;user.login&quot;,</span><br><span class="line">&quot;params&quot;: &#123;</span><br><span class="line">&quot;user&quot;: &quot;Admin&quot;,</span><br><span class="line">&quot;password&quot;: &quot;zabbix&quot;</span><br><span class="line">&#125;,</span><br><span class="line">&quot;id&quot;: 1</span><br><span class="line">&#125;&#x27; http://10.0.0.100/api_jsonrpc.php</span><br><span class="line">&#123;&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;result&quot;:&quot;d3be707f9e866ec5d0d1c242292cbebd&quot;,&quot;id&quot;:1&#125;</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell"># 获取token
+[root@docker02 ~]# curl -s -X POST -H &#39;Content-Type:application/json&#39; -d &#39;
+&#123;
+&quot;jsonrpc&quot;: &quot;2.0&quot;,
+&quot;method&quot;: &quot;user.login&quot;,
+&quot;params&quot;: &#123;
+&quot;user&quot;: &quot;Admin&quot;,
+&quot;password&quot;: &quot;zabbix&quot;
+&#125;,
+&quot;id&quot;: 1
+&#125;&#39; http://10.0.0.100/api_jsonrpc.php
+&#123;&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;result&quot;:&quot;d3be707f9e866ec5d0d1c242292cbebd&quot;,&quot;id&quot;:1&#125;
+</code></pre>
 <h2 id="10-docker-仓库（registry）"><a href="#10-docker-仓库（registry）" class="headerlink" title="10. docker 仓库（registry）"></a>10. <strong>docker 仓库（registry）</strong></h2><h3 id="10-1-创建一个普通仓库"><a href="#10-1-创建一个普通仓库" class="headerlink" title="10.1. 创建一个普通仓库"></a>10.1. <strong>创建一个普通仓库</strong></h3><p>1、创建仓库</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 5000:5000 --restart=always --name registry -v /opt/myregistry:/var/lib/registry  registry </span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">docker run -d -p 5000:5000 --restart=always --name registry -v /opt/myregistry:/var/lib/registry  registry 
+</code></pre>
 <p>2、修改配置文件，使之支持http</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# cat  /etc/docker/daemon.json </span><br><span class="line">&#123;</span><br><span class="line">  &quot;registry-mirrors&quot;: [&quot;https://registry.docker-cn.com&quot;],</span><br><span class="line">  &quot;insecure-registries&quot;: [&quot;10.0.0.100:5000&quot;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# cat  /etc/docker/daemon.json 
+&#123;
+  &quot;registry-mirrors&quot;: [&quot;https://registry.docker-cn.com&quot;],
+  &quot;insecure-registries&quot;: [&quot;10.0.0.100:5000&quot;]
+&#125;
+</code></pre>
 <p>重启docker让修改生效</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# systemctl restart  docker.service</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# systemctl restart  docker.service
+</code></pre>
 <p>3、修改镜像标签</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker tag  busybox:latest  10.0.0.100:5000/clsn/busybox:1.0</span><br><span class="line">[root@docker01 ~]# docker images</span><br><span class="line">REPOSITORY                      TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">centos6-ssh                     latest              3c2b1e57a0f5        18 hours ago        393MB</span><br><span class="line">httpd                           2.4                 2e202f453940        6 days ago          179MB</span><br><span class="line">10.0.0.100:5000/clsn/busybox    1.0                 5b0d59026729        8 days ago          1.15MB</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker tag  busybox:latest  10.0.0.100:5000/clsn/busybox:1.0
+[root@docker01 ~]# docker images
+REPOSITORY                      TAG                 IMAGE ID            CREATED             SIZE
+centos6-ssh                     latest              3c2b1e57a0f5        18 hours ago        393MB
+httpd                           2.4                 2e202f453940        6 days ago          179MB
+10.0.0.100:5000/clsn/busybox    1.0                 5b0d59026729        8 days ago          1.15MB
+</code></pre>
 <p>4、将新打标签的镜像上传镜像到仓库</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker push   10.0.0.100:5000/clsn/busybox</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker push   10.0.0.100:5000/clsn/busybox
+</code></pre>
 <h3 id="10-2-带basic认证的仓库"><a href="#10-2-带basic认证的仓库" class="headerlink" title="10.2. 带basic认证的仓库"></a>10.2. <strong>带basic认证的仓库</strong></h3><p>1、安装加密工具</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 clsn]# yum install httpd-tools  -y</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 clsn]# yum install httpd-tools  -y
+</code></pre>
 <p>2、设置认证密码</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir /opt/registry-var/auth/ -p</span><br><span class="line">htpasswd  -Bbn clsn 123456  &gt; /opt/registry-var/auth/htpasswd</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">mkdir /opt/registry-var/auth/ -p
+htpasswd  -Bbn clsn 123456  &gt; /opt/registry-var/auth/htpasswd
+</code></pre>
 <p>3、启动容器，在启动时传入认证参数</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 5000:5000 -v /opt/registry-var/auth/:/auth/ -e &quot;REGISTRY_AUTH=htpasswd&quot; -e &quot;REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm&quot; -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd registry</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">docker run -d -p 5000:5000 -v /opt/registry-var/auth/:/auth/ -e &quot;REGISTRY_AUTH=htpasswd&quot; -e &quot;REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm&quot; -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd registry
+</code></pre>
 <p>4、使用验证用户测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">登陆用户</span></span><br><span class="line">[root@docker01 ~]# docker login 10.0.0.100:5000 </span><br><span class="line">Username: clsn  </span><br><span class="line">Password: 123456</span><br><span class="line">Login Succeeded</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">推送镜像到仓库</span></span><br><span class="line">[root@docker01 ~]# docker push 10.0.0.100:5000/clsn/busybox </span><br><span class="line">The push refers to repository [10.0.0.100:5000/clsn/busybox]</span><br><span class="line">4febd3792a1f: Pushed </span><br><span class="line">1.0: digest: sha256:4cee1979ba0bf7db9fc5d28fb7b798ca69ae95a47c5fecf46327720df4ff352d size: 527</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">认证文件的保存位置</span></span><br><span class="line">[root@docker01 ~]# cat .docker/config.json </span><br><span class="line">&#123;</span><br><span class="line">    &quot;auths&quot;: &#123;</span><br><span class="line">        &quot;10.0.0.100:5000&quot;: &#123;</span><br><span class="line">            &quot;auth&quot;: &quot;Y2xzbjoxMjM0NTY=&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;https://index.docker.io/v1/&quot;: &#123;</span><br><span class="line">            &quot;auth&quot;: &quot;Y2xzbjpIenNAMTk5Ng==&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;HttpHeaders&quot;: &#123;</span><br><span class="line">        &quot;User-Agent&quot;: &quot;Docker-Client/17.12.0-ce (linux)&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell"># 登陆用户
+[root@docker01 ~]# docker login 10.0.0.100:5000 
+Username: clsn  
+Password: 123456
+Login Succeeded
+# 推送镜像到仓库
+[root@docker01 ~]# docker push 10.0.0.100:5000/clsn/busybox 
+The push refers to repository [10.0.0.100:5000/clsn/busybox]
+4febd3792a1f: Pushed 
+1.0: digest: sha256:4cee1979ba0bf7db9fc5d28fb7b798ca69ae95a47c5fecf46327720df4ff352d size: 527
+#认证文件的保存位置
+[root@docker01 ~]# cat .docker/config.json 
+&#123;
+    &quot;auths&quot;: &#123;
+        &quot;10.0.0.100:5000&quot;: &#123;
+            &quot;auth&quot;: &quot;Y2xzbjoxMjM0NTY=&quot;
+        &#125;,
+        &quot;https://index.docker.io/v1/&quot;: &#123;
+            &quot;auth&quot;: &quot;Y2xzbjpIenNAMTk5Ng==&quot;
+        &#125;
+    &#125;,
+    &quot;HttpHeaders&quot;: &#123;
+        &quot;User-Agent&quot;: &quot;Docker-Client/17.12.0-ce (linux)&quot;
+    &#125;
+&#125;
+</code></pre>
 <p>至此，一个简单的docker镜像仓库搭建完成</p>
-<h2 id="11-docker-compose编排工具"><a href="#11-docker-compose编排工具" class="headerlink" title="11. docker-compose编排工具"></a>11. <strong>docker-compose编排工具</strong></h2><h3 id="11-1-安装docker-compose"><a href="#11-1-安装docker-compose" class="headerlink" title="11.1. 安装docker-compose"></a>11.1. <strong>安装docker-compose</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">下载pip软件</span></span><br><span class="line">yum install -y python2-pip</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">下载 docker-compose</span></span><br><span class="line">pip install docker-compose</span><br></pre></td></tr></table></figure>
-
+<h2 id="11-docker-compose编排工具"><a href="#11-docker-compose编排工具" class="headerlink" title="11. docker-compose编排工具"></a>11. <strong>docker-compose编排工具</strong></h2><h3 id="11-1-安装docker-compose"><a href="#11-1-安装docker-compose" class="headerlink" title="11.1. 安装docker-compose"></a>11.1. <strong>安装docker-compose</strong></h3><pre><code class="shell"># 下载pip软件
+yum install -y python2-pip
+# 下载 docker-compose
+pip install docker-compose
+</code></pre>
 <p>国内开启pip 下载加速：</p>
 <p><a target="_blank" rel="noopener" href="http://mirrors.aliyun.com/help/pypi">http://mirrors.aliyun.com/help/pypi</a></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mkdir ~/.pip/</span><br><span class="line">cat &gt; ~/.pip/pip.conf &lt;&lt;&#x27;EOF&#x27;</span><br><span class="line">[global]</span><br><span class="line">index-url = https://mirrors.aliyun.com/pypi/simple/</span><br><span class="line">[install]</span><br><span class="line">trusted-host=mirrors.aliyun.com</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">mkdir ~/.pip/
+cat &gt; ~/.pip/pip.conf &lt;&lt;&#39;EOF&#39;
+[global]
+index-url = https://mirrors.aliyun.com/pypi/simple/
+[install]
+trusted-host=mirrors.aliyun.com
+EOF
+</code></pre>
 <h3 id="11-2-编排启动镜像"><a href="#11-2-编排启动镜像" class="headerlink" title="11.2. 编排启动镜像"></a>11.2. <strong>编排启动镜像</strong></h3><p>1、创建文件目录</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# mkdir /opt/my_wordpress/</span><br><span class="line">[root@docker01 ~]# cd /opt/my_wordpress/</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# mkdir /opt/my_wordpress/
+[root@docker01 ~]# cd /opt/my_wordpress/
+</code></pre>
 <p>2、编写编排文件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 my_wordpress]# vim docker-compose.yml</span><br><span class="line">version: &#x27;3&#x27;</span><br><span class="line">services:</span><br><span class="line">   db:</span><br><span class="line">     image: mysql:5.7</span><br><span class="line">     volumes:</span><br><span class="line">       - /data/db_data:/var/lib/mysql</span><br><span class="line">     restart: always</span><br><span class="line">     environment:</span><br><span class="line">       MYSQL_ROOT_PASSWORD: somewordpress</span><br><span class="line">       MYSQL_DATABASE: wordpress</span><br><span class="line">       MYSQL_USER: wordpress</span><br><span class="line">       MYSQL_PASSWORD: wordpress</span><br><span class="line">   wordpress:</span><br><span class="line">     depends_on:</span><br><span class="line">       - db</span><br><span class="line">     image: wordpress:latest</span><br><span class="line">     volumes:</span><br><span class="line">       - /data/web_data:/var/www/html</span><br><span class="line">     ports: </span><br><span class="line">       - &quot;8000:80&quot;</span><br><span class="line">     restart: always</span><br><span class="line">     environment:</span><br><span class="line">       WORDPRESS_DB_HOST: db:3306</span><br><span class="line">       WORDPRESS_DB_USER: wordpress</span><br><span class="line">       WORDPRESS_DB_PASSWORD: wordpress</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 my_wordpress]# vim docker-compose.yml
+version: &#39;3&#39;
+services:
+   db:
+     image: mysql:5.7
+     volumes:
+       - /data/db_data:/var/lib/mysql
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: somewordpress
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: wordpress
+       MYSQL_PASSWORD: wordpress
+   wordpress:
+     depends_on:
+       - db
+     image: wordpress:latest
+     volumes:
+       - /data/web_data:/var/www/html
+     ports: 
+       - &quot;8000:80&quot;
+     restart: always
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+       WORDPRESS_DB_USER: wordpress
+       WORDPRESS_DB_PASSWORD: wordpress
+</code></pre>
 <p>3、启动</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 my_wordpress]# docker-compose up</span><br><span class="line"><span class="meta prompt_">　　#</span><span class="language-bash">启动方法：docker-compose up</span></span><br><span class="line"><span class="meta prompt_">　　#</span><span class="language-bash">后台启动方法：docker-compose up -d</span></span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell">[root@docker01 my_wordpress]# docker-compose up
+　　#启动方法：docker-compose up
+　　#后台启动方法：docker-compose up -d
+</code></pre>
 <p>4、浏览器上访问<a target="_blank" rel="noopener" href="http://10.0.0.100:8000/">http://10.0.0.100:8000</a></p>
 <p>进行wordpress的安装即可</p>
 <h3 id="11-3-haproxy代理后端docker容器"><a href="#11-3-haproxy代理后端docker容器" class="headerlink" title="11.3. haproxy代理后端docker容器"></a>11.3. <strong>haproxy代理后端docker容器</strong></h3><p>1、修改编排脚本</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 my_wordpress]# cat docker-compose.yml </span><br><span class="line">version: &#x27;3&#x27;</span><br><span class="line">services:</span><br><span class="line">   db:</span><br><span class="line">     image: mysql:5.7</span><br><span class="line">     volumes:</span><br><span class="line">       - /data/db_data:/var/lib/mysql</span><br><span class="line">     restart: always</span><br><span class="line">     environment:</span><br><span class="line">       MYSQL_ROOT_PASSWORD: somewordpress</span><br><span class="line">       MYSQL_DATABASE: wordpress</span><br><span class="line">       MYSQL_USER: wordpress</span><br><span class="line">       MYSQL_PASSWORD: wordpress</span><br><span class="line">   wordpress:</span><br><span class="line">     depends_on:</span><br><span class="line">       - db</span><br><span class="line">     image: wordpress:latest</span><br><span class="line">     volumes:</span><br><span class="line">       - /data/web_data:/var/www/html</span><br><span class="line">     ports: </span><br><span class="line">       - &quot;80&quot;</span><br><span class="line">     restart: always</span><br><span class="line">     environment:</span><br><span class="line">       WORDPRESS_DB_HOST: db:3306</span><br><span class="line">       WORDPRESS_DB_USER: wordpress</span><br><span class="line">       WORDPRESS_DB_PASSWORD: wordpress</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 my_wordpress]# cat docker-compose.yml 
+version: &#39;3&#39;
+services:
+   db:
+     image: mysql:5.7
+     volumes:
+       - /data/db_data:/var/lib/mysql
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: somewordpress
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: wordpress
+       MYSQL_PASSWORD: wordpress
+   wordpress:
+     depends_on:
+       - db
+     image: wordpress:latest
+     volumes:
+       - /data/web_data:/var/www/html
+     ports: 
+       - &quot;80&quot;
+     restart: always
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+       WORDPRESS_DB_USER: wordpress
+       WORDPRESS_DB_PASSWORD: wordpress
+</code></pre>
 <p>2、同时启动两台wordpress</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 my_wordpress]# docker-compose scale wordpress=2 </span><br><span class="line">WARNING: The scale command is deprecated. Use the up command with the --scale flag instead.</span><br><span class="line">Starting mywordpress_wordpress_1 ... done</span><br><span class="line">Creating mywordpress_wordpress_2 ... done</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 my_wordpress]# docker-compose scale wordpress=2 
+WARNING: The scale command is deprecated. Use the up command with the --scale flag instead.
+Starting mywordpress_wordpress_1 ... done
+Creating mywordpress_wordpress_2 ... done
+</code></pre>
 <p>3、安装haproxy</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# yum install haproxy -y</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# yum install haproxy -y
+</code></pre>
 <p>4、修改haproxy配置文件</p>
 <p>关于配置文件的详细说明，参考：</p>
 <p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/MacoLee/p/5853413.html">https://www.cnblogs.com/MacoLee/p/5853413.html</a></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]#cp /etc/haproxy/haproxy.cfg&#123;,.bak&#125;</span><br><span class="line">[root@docker01 ~]# vim /etc/haproxy/haproxy.cfg</span><br><span class="line">global</span><br><span class="line">    log         127.0.0.1 local2</span><br><span class="line">    chroot      /var/lib/haproxy</span><br><span class="line">    pidfile     /var/run/haproxy.pid</span><br><span class="line">    maxconn     4000</span><br><span class="line">    user        haproxy</span><br><span class="line">    group       haproxy</span><br><span class="line">    daemon</span><br><span class="line">    stats socket /var/lib/haproxy/stats level admin  #支持命令行控制</span><br><span class="line">defaults</span><br><span class="line">    mode                    http</span><br><span class="line">    log                     global</span><br><span class="line">    option                  httplog</span><br><span class="line">    option                  dontlognull</span><br><span class="line">    option http-server-close</span><br><span class="line">    option forwardfor       except 127.0.0.0/8</span><br><span class="line">    option                  redispatch</span><br><span class="line">    retries                 3</span><br><span class="line">    timeout http-request    10s</span><br><span class="line">    timeout queue           1m</span><br><span class="line">    timeout connect         10s</span><br><span class="line">    timeout client          1m</span><br><span class="line">    timeout server          1m</span><br><span class="line">    timeout http-keep-alive 10s</span><br><span class="line">    timeout check           10s</span><br><span class="line">    maxconn                 3000</span><br><span class="line">listen stats</span><br><span class="line">    mode http</span><br><span class="line">    bind 0.0.0.0:8888</span><br><span class="line">    stats enable</span><br><span class="line">    stats uri     /haproxy-status </span><br><span class="line">    stats auth    admin:123456</span><br><span class="line">frontend frontend_www_example_com</span><br><span class="line">    bind 10.0.0.100:8000</span><br><span class="line">    mode http</span><br><span class="line">    option httplog</span><br><span class="line">    log global</span><br><span class="line">    default_backend backend_www_example_com</span><br><span class="line">backend backend_www_example_com</span><br><span class="line">    option forwardfor header X-REAL-IP</span><br><span class="line">    option httpchk HEAD / HTTP/1.0</span><br><span class="line">    balance roundrobin</span><br><span class="line">    server web-node1  10.0.0.100:32768 check inter 2000 rise 30 fall 15</span><br><span class="line">    server web-node2  10.0.0.100:32769 check inter 2000 rise 30 fall 15</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]#cp /etc/haproxy/haproxy.cfg&#123;,.bak&#125;
+[root@docker01 ~]# vim /etc/haproxy/haproxy.cfg
+global
+    log         127.0.0.1 local2
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+    stats socket /var/lib/haproxy/stats level admin  #支持命令行控制
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+listen stats
+    mode http
+    bind 0.0.0.0:8888
+    stats enable
+    stats uri     /haproxy-status 
+    stats auth    admin:123456
+frontend frontend_www_example_com
+    bind 10.0.0.100:8000
+    mode http
+    option httplog
+    log global
+    default_backend backend_www_example_com
+backend backend_www_example_com
+    option forwardfor header X-REAL-IP
+    option httpchk HEAD / HTTP/1.0
+    balance roundrobin
+    server web-node1  10.0.0.100:32768 check inter 2000 rise 30 fall 15
+    server web-node2  10.0.0.100:32769 check inter 2000 rise 30 fall 15
+</code></pre>
 <p>5、启动haproxy</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl start haproxy</span><br><span class="line">systemctl enable haproxy</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">systemctl start haproxy
+systemctl enable haproxy
+</code></pre>
 <p>6、使用浏览器访问hapeoxy监听的8000端口可以看到负载的情况</p>
 <p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231224194738709.png" alt="img"></p>
 <p>7、使用浏览器访问 </p>
@@ -767,48 +1130,81 @@
 <p>可以看到后端节点的监控状况，</p>
 <p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231224194739069.png" alt="img"></p>
 <h3 id="11-4-安装socat-直接操作socket控制haproxy"><a href="#11-4-安装socat-直接操作socket控制haproxy" class="headerlink" title="11.4. 安装socat 直接操作socket控制haproxy"></a>11.4. <strong>安装socat 直接操作socket控制haproxy</strong></h3><p>1、安装软件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install socat.x86_64 -y</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">yum install socat.x86_64 -y
+</code></pre>
 <p>2、查看帮助</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 web_data]# echo &quot;help&quot;|socat stdio /var/lib/haproxy/stats</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 web_data]# echo &quot;help&quot;|socat stdio /var/lib/haproxy/stats
+</code></pre>
 <p>3、下线后端节点</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;disable server backend_www_example_com/web-node2&quot;|socat stdio /var/lib/haproxy/stats</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">echo &quot;disable server backend_www_example_com/web-node2&quot;|socat stdio /var/lib/haproxy/stats
+</code></pre>
 <p>4、上线后端节点</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;enable server backend_www_example_com/web-node3&quot;|socat stdio /var/lib/haproxy/stats</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">echo &quot;enable server backend_www_example_com/web-node3&quot;|socat stdio /var/lib/haproxy/stats
+</code></pre>
 <p>5、编写php测试页，放到&#x2F;data&#x2F;web_data下，在浏览器中访问可以查看当前的节点</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 web_data]# vim check.php</span><br><span class="line">&lt;html&gt;</span><br><span class="line">    &lt;head&gt;</span><br><span class="line">        &lt;title&gt;PHP测试&lt;/title&gt;</span><br><span class="line">    &lt;/head&gt;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">        &lt;?php  echo &#x27;&lt;p&gt;Hello World &lt;/p&gt;&#x27;; ?&gt;</span><br><span class="line">        &lt;?php  echo &quot;访问的服务器地址是:&quot;.&quot;&lt;fontcolor=red&gt;&quot;.$_SERVER[&#x27;SERVER_ADDR&#x27;].&quot;&lt;/font&gt;&quot;.&quot;&lt;br&gt;&quot;;</span><br><span class="line">        echo&quot;访问的服务器域名是:&quot;.&quot;&lt;fontcolor=red&gt;&quot;.$_SERVER[&#x27;SERVER_NAME&#x27;].&quot;&lt;/font&gt;&quot;.&quot;&lt;br&gt;&quot;;</span><br><span class="line">        ?&gt;</span><br><span class="line">    &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
-
-<h2 id="12-重启docker服务，容器全部退出的解决办法"><a href="#12-重启docker服务，容器全部退出的解决办法" class="headerlink" title="12. 重启docker服务，容器全部退出的解决办法"></a>12. 重启docker服务，容器全部退出的解决办法</h2><h3 id="12-1-在启动是指定自动重启"><a href="#12-1-在启动是指定自动重启" class="headerlink" title="12.1. 在启动是指定自动重启"></a>12.1. <strong>在启动是指定自动重启</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run  --restart=always</span><br></pre></td></tr></table></figure>
-
-<h3 id="12-1-修改docker默认配置文件"><a href="#12-1-修改docker默认配置文件" class="headerlink" title="12.1. 修改docker默认配置文件"></a>12.1. <strong>修改docker默认配置文件</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">添加上下面这行</span></span><br><span class="line">&quot;live-restore&quot;: true</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 web_data]# vim check.php
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;PHP测试&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;?php  echo &#39;&lt;p&gt;Hello World &lt;/p&gt;&#39;; ?&gt;
+        &lt;?php  echo &quot;访问的服务器地址是:&quot;.&quot;&lt;fontcolor=red&gt;&quot;.$_SERVER[&#39;SERVER_ADDR&#39;].&quot;&lt;/font&gt;&quot;.&quot;&lt;br&gt;&quot;;
+        echo&quot;访问的服务器域名是:&quot;.&quot;&lt;fontcolor=red&gt;&quot;.$_SERVER[&#39;SERVER_NAME&#39;].&quot;&lt;/font&gt;&quot;.&quot;&lt;br&gt;&quot;;
+        ?&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<h2 id="12-重启docker服务，容器全部退出的解决办法"><a href="#12-重启docker服务，容器全部退出的解决办法" class="headerlink" title="12. 重启docker服务，容器全部退出的解决办法"></a>12. 重启docker服务，容器全部退出的解决办法</h2><h3 id="12-1-在启动是指定自动重启"><a href="#12-1-在启动是指定自动重启" class="headerlink" title="12.1. 在启动是指定自动重启"></a>12.1. <strong>在启动是指定自动重启</strong></h3><pre><code class="shell">docker run  --restart=always
+</code></pre>
+<h3 id="12-1-修改docker默认配置文件"><a href="#12-1-修改docker默认配置文件" class="headerlink" title="12.1. 修改docker默认配置文件"></a>12.1. <strong>修改docker默认配置文件</strong></h3><pre><code class="shell"># 添加上下面这行
+&quot;live-restore&quot;: true
+</code></pre>
 <p>docker server配置文件 &#x2F;etc&#x2F;docker&#x2F;daemon.json 参考</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@docker02 ~]# cat  /etc/docker/daemon.json </span><br><span class="line">&#123;</span><br><span class="line">  &quot;registry-mirrors&quot;: [&quot;https://registry.docker-cn.com&quot;],</span><br><span class="line">  &quot;graph&quot;: &quot;/opt/mydocker&quot;, # 修改数据的存放目录到/opt/mydocker/，原/var/lib/docker/</span><br><span class="line">  &quot;insecure-registries&quot;: [&quot;10.0.0.100:5000&quot;],</span><br><span class="line">  &quot;live-restore&quot;: true</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker02 ~]# cat  /etc/docker/daemon.json 
+&#123;
+  &quot;registry-mirrors&quot;: [&quot;https://registry.docker-cn.com&quot;],
+  &quot;graph&quot;: &quot;/opt/mydocker&quot;, # 修改数据的存放目录到/opt/mydocker/，原/var/lib/docker/
+  &quot;insecure-registries&quot;: [&quot;10.0.0.100:5000&quot;],
+  &quot;live-restore&quot;: true
+&#125;
+</code></pre>
 <p>重启生效，只对在此之后启动的容器生效</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# systemctl restart  docker.service</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code class="shell">[root@docker01 ~]# systemctl restart  docker.service
+</code></pre>
 <h2 id="13-Docker网络类型"><a href="#13-Docker网络类型" class="headerlink" title="13. Docker网络类型"></a>13. <strong>Docker网络类型</strong></h2><p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231224194739297.png" alt="img"></p>
 <h3 id="13-1-docker的网络类型"><a href="#13-1-docker的网络类型" class="headerlink" title="13.1. docker的网络类型"></a>13.1. <strong>docker的网络类型</strong></h3><p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/image-20231224195047745.png" alt="image-20231224195047745"></p>
 <p>Bridge默认docker网络隔离基于网络命名空间，在物理机上创建docker容器时会为每一个docker容器分配网络命名空间，并且把容器IP桥接到物理机的虚拟网桥上。</p>
 <h3 id="13-2-不为容器配置网络功能"><a href="#13-2-不为容器配置网络功能" class="headerlink" title="13.2. 不为容器配置网络功能"></a>13.2. <strong>不为容器配置网络功能</strong></h3><p>此模式下创建容器是不会为容器配置任何网络参数的，如：容器网卡、IP、通信路由等，全部需要自己去配置。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run  -it --network none busybox:latest  /bin/sh </span><br><span class="line">/ # ip a</span><br><span class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue </span><br><span class="line">    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span><br><span class="line">    inet 127.0.0.1/8 scope host lo</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run  -it --network none busybox:latest  /bin/sh 
+/ # ip a
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+</code></pre>
 <h3 id="13-3-与其他容器共享网络配置-Container）"><a href="#13-3-与其他容器共享网络配置-Container）" class="headerlink" title="13.3. 与其他容器共享网络配置(Container）"></a>13.3. <strong>与其他容器共享网络配置(Container）</strong></h3><p>此模式和host模式很类似，只是此模式创建容器共享的是其他容器的IP和端口而不是物理机，此模式容器自身是不会配置网络和端口，创建此模式容器进去后，你会发现里边的IP是你所指定的那个容器IP并且端口也是共享的，而且其它还是互相隔离的，如进程等。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run  -it --network container:mywordpress_db_1  busybox:latest  /bin/sh </span><br><span class="line">/ # ip a</span><br><span class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue </span><br><span class="line">    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span><br><span class="line">    inet 127.0.0.1/8 scope host lo</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">105: eth0@if106: &lt;BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN&gt; mtu 1500 qdisc noqueue </span><br><span class="line">    link/ether 02:42:ac:12:00:03 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 172.18.0.3/16 brd 172.18.255.255 scope global eth0</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker run  -it --network container:mywordpress_db_1  busybox:latest  /bin/sh 
+/ # ip a
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+105: eth0@if106: &lt;BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN&gt; mtu 1500 qdisc noqueue 
+    link/ether 02:42:ac:12:00:03 brd ff:ff:ff:ff:ff:ff
+    inet 172.18.0.3/16 brd 172.18.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+</code></pre>
 <h3 id="13-4-使用宿主机网络"><a href="#13-4-使用宿主机网络" class="headerlink" title="13.4. 使用宿主机网络"></a>13.4. <strong>使用宿主机网络</strong></h3><p>此模式创建的容器没有自己独立的网络命名空间，是和物理机共享一个Network Namespace，并且共享物理机的所有端口与IP，并且这个模式认为是不安全的。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker run  -it --network host  busybox:latest  /bin/shshell</span><br></pre></td></tr></table></figure>
-
-<h3 id="13-5-查看网络列表"><a href="#13-5-查看网络列表" class="headerlink" title="13.5. 查看网络列表"></a>13.5. <strong>查看网络列表</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker network list </span><br><span class="line">NETWORK ID          NAME                  DRIVER              SCOPE</span><br><span class="line">b15e8a720d3b        bridge                bridge              local</span><br><span class="line">345d65b4c2a0        host                  host                local</span><br><span class="line">bc5e2a32bb55        mywordpress_default   bridge              local</span><br><span class="line">ebf76eea91bb        none                  null                local</span><br></pre></td></tr></table></figure>
-
-
-
+<pre><code>[root@docker01 ~]# docker run  -it --network host  busybox:latest  /bin/shshell
+</code></pre>
+<h3 id="13-5-查看网络列表"><a href="#13-5-查看网络列表" class="headerlink" title="13.5. 查看网络列表"></a>13.5. <strong>查看网络列表</strong></h3><pre><code class="shell">[root@docker01 ~]# docker network list 
+NETWORK ID          NAME                  DRIVER              SCOPE
+b15e8a720d3b        bridge                bridge              local
+345d65b4c2a0        host                  host                local
+bc5e2a32bb55        mywordpress_default   bridge              local
+ebf76eea91bb        none                  null                local
+</code></pre>
 <ul>
 <li><h3 id="用PIPEWORK为docker容器配置独立IP"><a href="#用PIPEWORK为docker容器配置独立IP" class="headerlink" title="用PIPEWORK为docker容器配置独立IP"></a><strong>用PIPEWORK为docker容器配置独立IP</strong></h3><ul>
 <li><p>参考文档：</p>
@@ -823,64 +1219,112 @@
 </li>
 </ul>
 <p>1、安装pipework</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/jpetazzo/pipework/archive/master.zip</span><br><span class="line">unzip master.zip </span><br><span class="line">cp pipework-master/pipework  /usr/local/bin/</span><br><span class="line">chmod +x /usr/local/bin/pipework</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">wget https://github.com/jpetazzo/pipework/archive/master.zip
+unzip master.zip 
+cp pipework-master/pipework  /usr/local/bin/
+chmod +x /usr/local/bin/pipework
+</code></pre>
 <p>2、配置桥接网卡</p>
 <p>安装桥接工具</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install bridge-utils.x86_64 -y</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">yum install bridge-utils.x86_64 -y
+</code></pre>
 <p>修改网卡配置，实现桥接</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改eth0配置，让br0实现桥接</span></span><br><span class="line">[root@docker01 ~]# cat /etc/sysconfig/network-scripts/ifcfg-eth0 </span><br><span class="line">TYPE=Ethernet</span><br><span class="line">BOOTPROTO=static</span><br><span class="line">NAME=eth0</span><br><span class="line">DEVICE=eth0</span><br><span class="line">ONBOOT=yes</span><br><span class="line">BRIDGE=br0</span><br><span class="line">[root@docker01 ~]# cat /etc/sysconfig/network-scripts/ifcfg-br0 </span><br><span class="line">TYPE=Bridge</span><br><span class="line">BOOTPROTO=static</span><br><span class="line">NAME=br0</span><br><span class="line">DEVICE=br0</span><br><span class="line">ONBOOT=yes</span><br><span class="line">IPADDR=10.0.0.100</span><br><span class="line">NETMASK=255.255.255.0</span><br><span class="line">GATEWAY=10.0.0.254</span><br><span class="line">DNS1=223.5.5.5</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">重启网络</span></span><br><span class="line">[root@docker01 ~]# /etc/init.d/network restart</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell"># 修改eth0配置，让br0实现桥接
+[root@docker01 ~]# cat /etc/sysconfig/network-scripts/ifcfg-eth0 
+TYPE=Ethernet
+BOOTPROTO=static
+NAME=eth0
+DEVICE=eth0
+ONBOOT=yes
+BRIDGE=br0
+[root@docker01 ~]# cat /etc/sysconfig/network-scripts/ifcfg-br0 
+TYPE=Bridge
+BOOTPROTO=static
+NAME=br0
+DEVICE=br0
+ONBOOT=yes
+IPADDR=10.0.0.100
+NETMASK=255.255.255.0
+GATEWAY=10.0.0.254
+DNS1=223.5.5.5
+# 重启网络
+[root@docker01 ~]# /etc/init.d/network restart
+</code></pre>
 <p>3、运行一个容器镜像测试：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pipework br0 $(docker run -d -it -p 6880:80 --name  httpd_pw httpd) 10.0.0.220/24@10.0.0.254</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">pipework br0 $(docker run -d -it -p 6880:80 --name  httpd_pw httpd) 10.0.0.220/24@10.0.0.254
+</code></pre>
 <p>在其他主机上测试端口及连通性</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# curl 10.0.0.220</span><br><span class="line">&lt;html&gt;&lt;body&gt;&lt;h1&gt;It works!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;</span><br><span class="line">[root@docker01 ~]# ping 10.0.0.220 -c 1</span><br><span class="line">PING 10.0.0.220 (10.0.0.220) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.0.0.220: icmp_seq=1 ttl=64 time=0.043 ms</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# curl 10.0.0.220
+&lt;html&gt;&lt;body&gt;&lt;h1&gt;It works!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;
+[root@docker01 ~]# ping 10.0.0.220 -c 1
+PING 10.0.0.220 (10.0.0.220) 56(84) bytes of data.
+64 bytes from 10.0.0.220: icmp_seq=1 ttl=64 time=0.043 ms
+</code></pre>
 <p>4、再运行一个容器，设置网路类型为none：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pipework br0 $(docker run -d -it --net=none --name test httpd:2.4) 10.0.0.221/24@10.0.0.254</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">pipework br0 $(docker run -d -it --net=none --name test httpd:2.4) 10.0.0.221/24@10.0.0.254
+</code></pre>
 <p>进行访问测试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# curl 10.0.0.221</span><br><span class="line">&lt;html&gt;&lt;body&gt;&lt;h1&gt;It works!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# curl 10.0.0.221
+&lt;html&gt;&lt;body&gt;&lt;h1&gt;It works!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre>
 <p>5、重启容器后需要再次指定：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pipework br0 testduliip  172.16.146.113/24@172.16.146.1</span><br><span class="line">pipework br0 testduliip01  172.16.146.112/24@172.16.146.1</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">pipework br0 testduliip  172.16.146.113/24@172.16.146.1
+pipework br0 testduliip01  172.16.146.112/24@172.16.146.1
+</code></pre>
 <p>Dcoker跨主机通信之overlay可以参考：</p>
 <p>cnblogs.com&#x2F;CloudMan6&#x2F;p&#x2F;7270551.html</p>
 <h3 id="13-6-Docker跨主机通信之macvlan"><a href="#13-6-Docker跨主机通信之macvlan" class="headerlink" title="13.6. Docker跨主机通信之macvlan"></a>13.6. <strong>Docker跨主机通信之macvlan</strong></h3><p>创建网络</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 ~]# docker network  create --driver macvlan  --subnet 10.1.0.0/24 --gateway 10.1.0.254 -o parent=eth0  macvlan_1</span><br><span class="line">33a1f41dcc074f91b5bd45e7dfedabfb2b8ec82db16542f05213839a119b62ca</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 ~]# docker network  create --driver macvlan  --subnet 10.1.0.0/24 --gateway 10.1.0.254 -o parent=eth0  macvlan_1
+33a1f41dcc074f91b5bd45e7dfedabfb2b8ec82db16542f05213839a119b62ca
+</code></pre>
 <p>设置网卡为混杂模式</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip link set eth0 promisc on</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">ip link set eth0 promisc on
+</code></pre>
 <p>创建使用macvlan网络容器</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker02 ~]# docker run  -it --network macvlan_1  --ip=10.1.0.222 busybox /b</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker02 ~]# docker run  -it --network macvlan_1  --ip=10.1.0.222 busybox /b
+</code></pre>
 <h2 id="14-docker企业级镜像仓库harbor"><a href="#14-docker企业级镜像仓库harbor" class="headerlink" title="14. docker企业级镜像仓库harbor"></a>14. <strong>docker企业级镜像仓库harbor</strong></h2><p>容器管理</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 harbor]# pwd</span><br><span class="line">/opt/harbor</span><br><span class="line">[root@docker01 harbor]# docker-compose stop</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 harbor]# pwd
+/opt/harbor
+[root@docker01 harbor]# docker-compose stop
+</code></pre>
 <p>1、安装docker、docker-compose</p>
 <p>下载 harbor</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /opt &amp;&amp; https://storage.googleapis.com/harbor-releases/harbor-offline-installer-v1.3.0.tgz</span><br><span class="line">tar xf harbor-offline-installer-v1.3.0.tgz</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">cd /opt &amp;&amp; https://storage.googleapis.com/harbor-releases/harbor-offline-installer-v1.3.0.tgz
+tar xf harbor-offline-installer-v1.3.0.tgz
+</code></pre>
 <p>2、修改主机及web界面密码</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 harbor]# vim harbor.cfg </span><br><span class="line">    ···</span><br><span class="line">    hostname = 10.0.0.100</span><br><span class="line">    harbor_admin_password = Harbor12345</span><br><span class="line">    ···</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 harbor]# vim harbor.cfg 
+    ···
+    hostname = 10.0.0.100
+    harbor_admin_password = Harbor12345
+    ···
+</code></pre>
 <p>3、执行安装脚本</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@docker01 harbor]# ./install.sh</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker01 harbor]# ./install.sh
+</code></pre>
 <p>浏览器访问 <a target="_blank" rel="noopener" href="http://10.0.0.11/">http://10.0.0.11</a></p>
 <p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231224194739908.png" alt="图片"> </p>
 <p>添加一个项目</p>
 <p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231224194740296.png" alt="图片"></p>
 <p>4、镜像推送到仓库的指定项目</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@docker02 ~]# docker  tag centos:6.8  10.0.0.100/clsn/centos6.8:1.0</span><br><span class="line">[root@docker02 ~]#  </span><br><span class="line">[root@docker02 ~]# docker images </span><br><span class="line">REPOSITORY                  TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">busybox                     latest              5b0d59026729        8 days ago          1.15MB</span><br><span class="line">10.0.0.100/clsn/centos6.8   1.0                 6704d778b3ba        2 months ago        195MB</span><br><span class="line">centos                      6.8                 6704d778b3ba        2 months ago        195MB</span><br><span class="line">[root@docker02 ~]# docker login 10.0.0.100</span><br><span class="line">Username: admin</span><br><span class="line">Password: </span><br><span class="line">Login Succeeded</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker02 ~]# docker  tag centos:6.8  10.0.0.100/clsn/centos6.8:1.0
+[root@docker02 ~]#  
+[root@docker02 ~]# docker images 
+REPOSITORY                  TAG                 IMAGE ID            CREATED             SIZE
+busybox                     latest              5b0d59026729        8 days ago          1.15MB
+10.0.0.100/clsn/centos6.8   1.0                 6704d778b3ba        2 months ago        195MB
+centos                      6.8                 6704d778b3ba        2 months ago        195MB
+[root@docker02 ~]# docker login 10.0.0.100
+Username: admin
+Password: 
+Login Succeeded
+</code></pre>
 <p>5、推送镜像</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@docker02 ~]# docker push 10.0.0.100/clsn/centos6.8 </span><br><span class="line">The push refers to repository [10.0.0.100/clsn/centos6.8]</span><br><span class="line">e00c9229b481: Pushing  13.53MB/194.5MB</span><br></pre></td></tr></table></figure>
-
+<pre><code class="shell">[root@docker02 ~]# docker push 10.0.0.100/clsn/centos6.8 
+The push refers to repository [10.0.0.100/clsn/centos6.8]
+e00c9229b481: Pushing  13.53MB/194.5MB
+</code></pre>
 <p>6、在web界面里查看</p>
 <p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/640-20231224194740343.png" alt="图片"> </p>
 <h3 id="14-1-使用容器的建议"><a href="#14-1-使用容器的建议" class="headerlink" title="14.1. 使用容器的建议"></a>14.1. <strong>使用容器的建议</strong></h3><ol>

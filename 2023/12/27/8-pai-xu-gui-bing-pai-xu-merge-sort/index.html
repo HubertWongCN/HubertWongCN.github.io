@@ -452,8 +452,128 @@
 <p>假设被排序的数列中有N个数。遍历一趟的时间复杂度是O(N)，需要遍历多少次呢? 归并排序的形式就是一棵二叉树，它需要遍历的次数就是二叉树的深度，而根据完全二叉树的可以得出它的时间复杂度是O(N*lgN)。</p>
 <h3 id="归并排序稳定性"><a href="#归并排序稳定性" class="headerlink" title="归并排序稳定性"></a>归并排序稳定性</h3><p>归并排序是稳定的算法，它满足稳定算法的定义。</p>
 <p><code>算法稳定性</code> – 假设在数列中存在a[i]&#x3D;a[j]，若在排序之前，a[i]在a[j]前面；并且排序之后，a[i]仍然在a[j]前面。则这个排序算法是稳定的！</p>
-<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 归并排序: Java</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> skywang</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2014/03/12</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MergeSort</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 将一个数组中的两个相邻有序区间合并成一个</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明: </span></span><br><span class="line"><span class="comment">     *     a -- 包含两个有序区间的数组</span></span><br><span class="line"><span class="comment">     *     start -- 第1个有序区间的起始地址。</span></span><br><span class="line"><span class="comment">     *     mid   -- 第1个有序区间的结束地址。也是第2个有序区间的起始地址。</span></span><br><span class="line"><span class="comment">     *     end   -- 第2个有序区间的结束地址。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">merge</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> start, <span class="type">int</span> mid, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">        <span class="type">int</span>[] tmp = <span class="keyword">new</span> <span class="title class_">int</span>[end-start+<span class="number">1</span>];    <span class="comment">// tmp是汇总2个有序区的临时区域</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> start;            <span class="comment">// 第1个有序区的索引</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> mid + <span class="number">1</span>;        <span class="comment">// 第2个有序区的索引</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> <span class="number">0</span>;                <span class="comment">// 临时区域的索引</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(i &lt;= mid &amp;&amp; j &lt;= end) &#123;</span><br><span class="line">            <span class="keyword">if</span> (a[i] &lt;= a[j])</span><br><span class="line">                tmp[k++] = a[i++];</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                tmp[k++] = a[j++];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(i &lt;= mid)</span><br><span class="line">            tmp[k++] = a[i++];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(j &lt;= end)</span><br><span class="line">            tmp[k++] = a[j++];</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将排序后的元素，全部都整合到数组a中。</span></span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; k; i++)</span><br><span class="line">            a[start + i] = tmp[i];</span><br><span class="line"></span><br><span class="line">        tmp=<span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 归并排序(从上往下)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明: </span></span><br><span class="line"><span class="comment">     *     a -- 待排序的数组</span></span><br><span class="line"><span class="comment">     *     start -- 数组的起始地址</span></span><br><span class="line"><span class="comment">     *     endi -- 数组的结束地址</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">mergeSortUp2Down</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> start, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span>(a==<span class="literal">null</span> || start &gt;= end)</span><br><span class="line">            <span class="keyword">return</span> ;</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (end + start)/<span class="number">2</span>;</span><br><span class="line">        mergeSortUp2Down(a, start, mid); <span class="comment">// 递归排序a[start...mid]</span></span><br><span class="line">        mergeSortUp2Down(a, mid+<span class="number">1</span>, end); <span class="comment">// 递归排序a[mid+1...end]</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// a[start...mid] 和 a[mid...end]是两个有序空间，</span></span><br><span class="line">        <span class="comment">// 将它们排序成一个有序空间a[start...end]</span></span><br><span class="line">        merge(a, start, mid, end);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 对数组a做若干次合并: 数组a的总长度为len，将它分为若干个长度为gap的子数组；</span></span><br><span class="line"><span class="comment">     *             将&quot;每2个相邻的子数组&quot; 进行合并排序。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明: </span></span><br><span class="line"><span class="comment">     *     a -- 待排序的数组</span></span><br><span class="line"><span class="comment">     *     len -- 数组的长度</span></span><br><span class="line"><span class="comment">     *     gap -- 子数组的长度</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">mergeGroups</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> len, <span class="type">int</span> gap)</span> &#123;</span><br><span class="line">        <span class="type">int</span> i;</span><br><span class="line">        <span class="type">int</span> <span class="variable">twolen</span> <span class="operator">=</span> <span class="number">2</span> * gap;    <span class="comment">// 两个相邻的子数组的长度</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将&quot;每2个相邻的子数组&quot; 进行合并排序。</span></span><br><span class="line">        <span class="keyword">for</span>(i = <span class="number">0</span>; i+<span class="number">2</span>*gap-<span class="number">1</span> &lt; len; i+=(<span class="number">2</span>*gap))</span><br><span class="line">            merge(a, i, i+gap-<span class="number">1</span>, i+<span class="number">2</span>*gap-<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 若 i+gap-1 &lt; len-1，则剩余一个子数组没有配对。</span></span><br><span class="line">        <span class="comment">// 将该子数组合并到已排序的数组中。</span></span><br><span class="line">        <span class="keyword">if</span> ( i+gap-<span class="number">1</span> &lt; len-<span class="number">1</span>)</span><br><span class="line">            merge(a, i, i + gap - <span class="number">1</span>, len - <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 归并排序(从下往上)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * 参数说明: </span></span><br><span class="line"><span class="comment">     *     a -- 待排序的数组</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">mergeSortDown2Up</span><span class="params">(<span class="type">int</span>[] a)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (a==<span class="literal">null</span>)</span><br><span class="line">            <span class="keyword">return</span> ;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> <span class="number">1</span>; n &lt; a.length; n*=<span class="number">2</span>)</span><br><span class="line">            mergeGroups(a, a.length, n);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> i;</span><br><span class="line">        <span class="type">int</span> a[] = &#123;<span class="number">80</span>,<span class="number">30</span>,<span class="number">60</span>,<span class="number">40</span>,<span class="number">20</span>,<span class="number">10</span>,<span class="number">50</span>,<span class="number">70</span>&#125;;</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;before sort:&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;a.length; i++)</span><br><span class="line">            System.out.printf(<span class="string">&quot;%d &quot;</span>, a[i]);</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">        mergeSortUp2Down(a, <span class="number">0</span>, a.length-<span class="number">1</span>);        <span class="comment">// 归并排序(从上往下)</span></span><br><span class="line">        <span class="comment">//mergeSortDown2Up(a);                    // 归并排序(从下往上)</span></span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;after  sort:&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;a.length; i++)</span><br><span class="line">            System.out.printf(<span class="string">&quot;%d &quot;</span>, a[i]);</span><br><span class="line">        System.out.printf(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><pre><code class="java">/**
+ * 归并排序: Java
+ *
+ * @author skywang
+ * @date 2014/03/12
+ */
 
+public class MergeSort &#123;
+
+    /*
+     * 将一个数组中的两个相邻有序区间合并成一个
+     *
+     * 参数说明: 
+     *     a -- 包含两个有序区间的数组
+     *     start -- 第1个有序区间的起始地址。
+     *     mid   -- 第1个有序区间的结束地址。也是第2个有序区间的起始地址。
+     *     end   -- 第2个有序区间的结束地址。
+     */
+    public static void merge(int[] a, int start, int mid, int end) &#123;
+        int[] tmp = new int[end-start+1];    // tmp是汇总2个有序区的临时区域
+        int i = start;            // 第1个有序区的索引
+        int j = mid + 1;        // 第2个有序区的索引
+        int k = 0;                // 临时区域的索引
+
+        while(i &lt;= mid &amp;&amp; j &lt;= end) &#123;
+            if (a[i] &lt;= a[j])
+                tmp[k++] = a[i++];
+            else
+                tmp[k++] = a[j++];
+        &#125;
+
+        while(i &lt;= mid)
+            tmp[k++] = a[i++];
+
+        while(j &lt;= end)
+            tmp[k++] = a[j++];
+
+        // 将排序后的元素，全部都整合到数组a中。
+        for (i = 0; i &lt; k; i++)
+            a[start + i] = tmp[i];
+
+        tmp=null;
+    &#125;
+
+    /*
+     * 归并排序(从上往下)
+     *
+     * 参数说明: 
+     *     a -- 待排序的数组
+     *     start -- 数组的起始地址
+     *     endi -- 数组的结束地址
+     */
+    public static void mergeSortUp2Down(int[] a, int start, int end) &#123;
+        if(a==null || start &gt;= end)
+            return ;
+
+        int mid = (end + start)/2;
+        mergeSortUp2Down(a, start, mid); // 递归排序a[start...mid]
+        mergeSortUp2Down(a, mid+1, end); // 递归排序a[mid+1...end]
+
+        // a[start...mid] 和 a[mid...end]是两个有序空间，
+        // 将它们排序成一个有序空间a[start...end]
+        merge(a, start, mid, end);
+    &#125;
+
+
+    /*
+     * 对数组a做若干次合并: 数组a的总长度为len，将它分为若干个长度为gap的子数组；
+     *             将&quot;每2个相邻的子数组&quot; 进行合并排序。
+     *
+     * 参数说明: 
+     *     a -- 待排序的数组
+     *     len -- 数组的长度
+     *     gap -- 子数组的长度
+     */
+    public static void mergeGroups(int[] a, int len, int gap) &#123;
+        int i;
+        int twolen = 2 * gap;    // 两个相邻的子数组的长度
+
+        // 将&quot;每2个相邻的子数组&quot; 进行合并排序。
+        for(i = 0; i+2*gap-1 &lt; len; i+=(2*gap))
+            merge(a, i, i+gap-1, i+2*gap-1);
+
+        // 若 i+gap-1 &lt; len-1，则剩余一个子数组没有配对。
+        // 将该子数组合并到已排序的数组中。
+        if ( i+gap-1 &lt; len-1)
+            merge(a, i, i + gap - 1, len - 1);
+    &#125;
+
+    /*
+     * 归并排序(从下往上)
+     *
+     * 参数说明: 
+     *     a -- 待排序的数组
+     */
+    public static void mergeSortDown2Up(int[] a) &#123;
+        if (a==null)
+            return ;
+
+        for(int n = 1; n &lt; a.length; n*=2)
+            mergeGroups(a, a.length, n);
+    &#125;
+
+    public static void main(String[] args) &#123;
+        int i;
+        int a[] = &#123;80,30,60,40,20,10,50,70&#125;;
+
+        System.out.printf(&quot;before sort:&quot;);
+        for (i=0; i&lt;a.length; i++)
+            System.out.printf(&quot;%d &quot;, a[i]);
+        System.out.printf(&quot;\n&quot;);
+
+        mergeSortUp2Down(a, 0, a.length-1);        // 归并排序(从上往下)
+        //mergeSortDown2Up(a);                    // 归并排序(从下往上)
+
+        System.out.printf(&quot;after  sort:&quot;);
+        for (i=0; i&lt;a.length; i++)
+            System.out.printf(&quot;%d &quot;, a[i]);
+        System.out.printf(&quot;\n&quot;);
+    &#125;
+&#125;
+</code></pre>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><blockquote>
 <p>提示</p>
 <p>本文主要参考至 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/skywang12345/p/3602369.html">https://www.cnblogs.com/skywang12345/p/3602369.html</a>, 在此基础上做了内容的增改。</p>

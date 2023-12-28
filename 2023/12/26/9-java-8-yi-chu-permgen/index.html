@@ -330,12 +330,12 @@
                                 <span class="chip bg-color">Java</span>
                             </a>
                         
-                            <a href="/tags/Java8/">
-                                <span class="chip bg-color">Java8</span>
-                            </a>
-                        
                             <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
                                 <span class="chip bg-color">新特性</span>
+                            </a>
+                        
+                            <a href="/tags/Java8/">
+                                <span class="chip bg-color">Java8</span>
                             </a>
                         
                     </div>
@@ -461,11 +461,43 @@
 <li>使用JDK1.8运行Java程序，模拟耗尽通过“MaxMetaspaceSize”参数设定的128MB大小的Metaspace内存空间。</li>
 </ul>
 <p>首先建立了一个模拟PermGen OOM的代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClassA</span> &#123;</span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">method</span><span class="params">(String name)</span> &#123;</span><br><span class="line">  <span class="comment">// do nothing</span></span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">public class ClassA &#123;
+ public void method(String name) &#123;
+  // do nothing
+ &#125;
+&#125;
+</code></pre>
 <p>上面是一个简单的ClassA，把他编译成class字节码放到D: &#x2F;classes下面，测试代码中用URLClassLoader来加载此类型上面类编译成class</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 模拟PermGen OOM</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> benhail</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OOMTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//准备url</span></span><br><span class="line">            <span class="type">URL</span> <span class="variable">url</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;D:/classes&quot;</span>).toURI().toURL();</span><br><span class="line">            URL[] urls = &#123;url&#125;;</span><br><span class="line">            <span class="comment">//获取有关类型加载的JMX接口</span></span><br><span class="line">            <span class="type">ClassLoadingMXBean</span> <span class="variable">loadingBean</span> <span class="operator">=</span> ManagementFactory.getClassLoadingMXBean();</span><br><span class="line">            <span class="comment">//用于缓存类加载器</span></span><br><span class="line">            List&lt;ClassLoader&gt; classLoaders = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;ClassLoader&gt;();</span><br><span class="line">            <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">                <span class="comment">//加载类型并缓存类加载器实例</span></span><br><span class="line">                <span class="type">ClassLoader</span> <span class="variable">classLoader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URLClassLoader</span>(urls);</span><br><span class="line">                classLoaders.add(classLoader);</span><br><span class="line">                classLoader.loadClass(<span class="string">&quot;ClassA&quot;</span>);</span><br><span class="line">                <span class="comment">//显示数量信息(共加载过的类型数目，当前还有效的类型数目，已经被卸载的类型数目)</span></span><br><span class="line">                System.out.println(<span class="string">&quot;total: &quot;</span> + loadingBean.getTotalLoadedClassCount());</span><br><span class="line">                System.out.println(<span class="string">&quot;active: &quot;</span> + loadingBean.getLoadedClassCount());</span><br><span class="line">                System.out.println(<span class="string">&quot;unloaded: &quot;</span> + loadingBean.getUnloadedClassCount());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre><code class="java">/**
+ * 模拟PermGen OOM
+ * @author benhail
+ */
+public class OOMTest &#123;
+    public static void main(String[] args) &#123;
+        try &#123;
+            //准备url
+            URL url = new File(&quot;D:/classes&quot;).toURI().toURL();
+            URL[] urls = &#123;url&#125;;
+            //获取有关类型加载的JMX接口
+            ClassLoadingMXBean loadingBean = ManagementFactory.getClassLoadingMXBean();
+            //用于缓存类加载器
+            List&lt;ClassLoader&gt; classLoaders = new ArrayList&lt;ClassLoader&gt;();
+            while (true) &#123;
+                //加载类型并缓存类加载器实例
+                ClassLoader classLoader = new URLClassLoader(urls);
+                classLoaders.add(classLoader);
+                classLoader.loadClass(&quot;ClassA&quot;);
+                //显示数量信息(共加载过的类型数目，当前还有效的类型数目，已经被卸载的类型数目)
+                System.out.println(&quot;total: &quot; + loadingBean.getTotalLoadedClassCount());
+                System.out.println(&quot;active: &quot; + loadingBean.getLoadedClassCount());
+                System.out.println(&quot;unloaded: &quot; + loadingBean.getUnloadedClassCount());
+            &#125;
+        &#125; catch (Exception e) &#123;
+            e.printStackTrace();
+        &#125;
+    &#125;
+&#125;
+</code></pre>
 <p>虚拟机器参数设置如下: -verbose -verbose:gc</p>
 <p>设置-verbose参数是为了获取类型加载和卸载的信息</p>
 <p>设置-verbose:gc是为了获取垃圾收集的相关信息</p>
@@ -473,8 +505,19 @@
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262252253.jpg" alt="img"></p>
 <p>可以从上面的JVisualVM的截图看出: 当加载超过6万个类之后，PermGen被耗尽。我们也能通过程序和GC的输出观察耗尽的过程。</p>
 <p>程序输出(摘取了部分)</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">......</span><br><span class="line">[Loaded ClassA from file:/D:/classes/]</span><br><span class="line">total: 64887</span><br><span class="line">active: 64887</span><br><span class="line">unloaded: 0</span><br><span class="line">[GC 245041K-&gt;213978K(536768K), 0.0597188 secs]</span><br><span class="line">[Full GC 213978K-&gt;211425K(644992K), 0.6456638 secs]</span><br><span class="line">[GC 211425K-&gt;211425K(656448K), 0.0086696 secs]</span><br><span class="line">[Full GC 211425K-&gt;211411K(731008K), 0.6924754 secs]</span><br><span class="line">[GC 211411K-&gt;211411K(726528K), 0.0088992 secs]</span><br><span class="line">...............</span><br><span class="line">java.lang.OutOfMemoryError: PermGen space</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">......
+[Loaded ClassA from file:/D:/classes/]
+total: 64887
+active: 64887
+unloaded: 0
+[GC 245041K-&gt;213978K(536768K), 0.0597188 secs]
+[Full GC 213978K-&gt;211425K(644992K), 0.6456638 secs]
+[GC 211425K-&gt;211425K(656448K), 0.0086696 secs]
+[Full GC 211425K-&gt;211411K(731008K), 0.6924754 secs]
+[GC 211411K-&gt;211411K(726528K), 0.0088992 secs]
+...............
+java.lang.OutOfMemoryError: PermGen space
+</code></pre>
 <h3 id="JDK-1-8-64-bit-–-Metaspace大小动态调整测试"><a href="#JDK-1-8-64-bit-–-Metaspace大小动态调整测试" class="headerlink" title="JDK 1.8 @64-bit – Metaspace大小动态调整测试"></a>JDK 1.8 @64-bit – Metaspace大小动态调整测试</h3><p>Java的Metaspace空间: 不受限制 (默认)</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262252183.png" alt="img"></p>
 <p>从上面的截图可以看到，JVM Metaspace进行了动态扩展，本地内存的使用由20MB增长到646MB，以满足程序中不断增长的类数据内存占用需求。我们也能观察到JVM的垃圾回收事件—试图销毁僵死的类或类加载器对象。但是，由于我们程序的泄漏，JVM别无选择只能动态扩展Metaspace内存空间。程序加载超过10万个类，而没有出现OOM事件。</p>
@@ -482,8 +525,14 @@
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262253551.png" alt="img"></p>
 <p>可以从上面的JVisualVM的截图看出: 当加载超过2万个类之后，Metaspace被耗尽；与JDK1.7运行时非常相似。我们也能通过程序和GC的输出观察耗尽的过程。另一个有趣的现象是，保留的原生内存占用量是设定的最大大小两倍之多。这可能表明，如果可能的话，可微调元空间容量大小策略，来避免本地内存的浪费。</p>
 <p>从Java程序的输出中看到如下异常。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[Loaded ClassA from file:/D:/classes/]</span><br><span class="line">total: 21393</span><br><span class="line">active: 21393</span><br><span class="line">unloaded: 0</span><br><span class="line">[GC (Metadata GC Threshold) 64306K-&gt;57010K(111616K), 0.0145502 secs]</span><br><span class="line">[Full GC (Metadata GC Threshold) 57010K-&gt;56810K(122368K), 0.1068084 secs]</span><br><span class="line">java.lang.OutOfMemoryError: Metaspace</span><br></pre></td></tr></table></figure>
-
+<pre><code class="bash">[Loaded ClassA from file:/D:/classes/]
+total: 21393
+active: 21393
+unloaded: 0
+[GC (Metadata GC Threshold) 64306K-&gt;57010K(111616K), 0.0145502 secs]
+[Full GC (Metadata GC Threshold) 57010K-&gt;56810K(122368K), 0.1068084 secs]
+java.lang.OutOfMemoryError: Metaspace
+</code></pre>
 <p>在设置了MaxMetaspaceSize的情况下，该空间的内存仍然会耗尽，进而引发“java.lang.OutOfMemoryError: Metadata space”错误。因为类加载器的泄漏仍然存在，而通常Java又不希望无限制地消耗本机内存，因此设置一个类似于MaxPermSize的限制看起来也是合理的。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
 <li>之前不管是不是需要，JVM都会吃掉那块空间……如果设置得太小，JVM会死掉；如果设置得太大，这块内存就被JVM浪费了。理论上说，现在你完全可以不关注这个，因为JVM会在运行时自动调校为“合适的大小”；</li>
@@ -559,12 +608,12 @@
                                     <span class="chip bg-color">Java</span>
                                 </a>
                             
-                                <a href="/tags/Java8/">
-                                    <span class="chip bg-color">Java8</span>
-                                </a>
-                            
                                 <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
                                     <span class="chip bg-color">新特性</span>
+                                </a>
+                            
+                                <a href="/tags/Java8/">
+                                    <span class="chip bg-color">Java8</span>
                                 </a>
                             
                         </div>
@@ -660,12 +709,12 @@
                         <span class="chip bg-color">Java</span>
                     </a>
                     
-                    <a href="/tags/Java8/">
-                        <span class="chip bg-color">Java8</span>
-                    </a>
-                    
                     <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
                         <span class="chip bg-color">新特性</span>
+                    </a>
+                    
+                    <a href="/tags/Java8/">
+                        <span class="chip bg-color">Java8</span>
                     </a>
                     
                 </div>
@@ -725,12 +774,12 @@
                         <span class="chip bg-color">Java</span>
                     </a>
                     
-                    <a href="/tags/Java8/">
-                        <span class="chip bg-color">Java8</span>
-                    </a>
-                    
                     <a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/">
                         <span class="chip bg-color">新特性</span>
+                    </a>
+                    
+                    <a href="/tags/Java8/">
+                        <span class="chip bg-color">Java8</span>
                     </a>
                     
                 </div>
