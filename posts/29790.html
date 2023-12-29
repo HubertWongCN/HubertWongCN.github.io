@@ -1,0 +1,1603 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN,en,default">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="20.Redis大厂经验 - 微博：万亿级日访问量下，Redis在微博的9年优化历程, 生活，养猫，Java，后端开发">
+    <meta name="description" content="记录猫奴生活、后端学习笔记，由Hexo+Github搭建">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>20.Redis大厂经验 - 微博：万亿级日访问量下，Redis在微博的9年优化历程 | Hubert&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/hubert-logo.png">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/my.css">
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/jquery/jquery.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="Hubert's Blog" type="application/atom+xml">
+</head>
+
+
+
+   <style>
+    body{
+       background-image: url(https://cdn.jsdelivr.net/gh/Tokisaki-Galaxy/res/site/medias/background.jpg);
+       background-repeat:no-repeat;
+       background-size:cover;
+       background-attachment:fixed;
+    }
+</style>
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Hubert&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>主页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Hubert&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            记录猫奴生活、后端学习笔记，由Hexo+Github搭建
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			主页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/20.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">20.Redis大厂经验 - 微博：万亿级日访问量下，Redis在微博的9年优化历程</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/DataBase/">
+                                <span class="chip bg-color">DataBase</span>
+                            </a>
+                        
+                            <a href="/tags/NoSQL/">
+                                <span class="chip bg-color">NoSQL</span>
+                            </a>
+                        
+                            <a href="/tags/Redis/">
+                                <span class="chip bg-color">Redis</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/DataBase/" class="post-category">
+                                DataBase
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2023-12-29
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2023-12-29
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    5.2k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                    18 分
+                </div>
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/prism/prism.css">
+        
+
+        
+        <!-- 代码块折行 -->
+        <style type="text/css">
+            code[class*="language-"], pre[class*="language-"] { white-space: pre-wrap !important; }
+        </style>
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p>再分享一篇微博使用redis的经验的文章，因为Redis在微博内部分布在各个应用场景，比如像现在春晚必争的“红包飞”活动，还有像粉丝数、用户数、阅读数、转评赞、评论盖楼、广告推荐、负反馈、音乐榜单等等都有用到Redis；我们可以通过大厂使用redis的经验来强化对redis使用上的认知。</p>
+</blockquote>
+<h2 id="Redis在微博的应用场景"><a href="#Redis在微博的应用场景" class="headerlink" title="Redis在微博的应用场景"></a>Redis在微博的应用场景</h2><blockquote>
+<p>Redis在微博内部分布在各个应用场景，比如像现在春晚必争的“红包飞”活动，还有像粉丝数、用户数、阅读数、转评赞、评论盖楼、广告推荐、负反馈、音乐榜单等等都有用到Redis。</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292312720.png" alt="img"></p>
+<h3 id="业务-规模-挑战"><a href="#业务-规模-挑战" class="headerlink" title="业务&amp;规模&amp;挑战"></a>业务&amp;规模&amp;挑战</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292312181.png"></p>
+<p>线上的业务有前面提到的信息流、广告、用户关系等等，还有现在大家可能比较感兴趣的热搜，用户一般会去看发生了什么事情，还有引爆阅读量的话题，以及现在兵家必争之地的视频，微博大大小小的业务都有用到Redis。</p>
+<ul>
+<li>线上<strong>规模</strong>方面，微博有100T+存储，1000+台物理机，10000+Redis实例。</li>
+<li>关于面临的<strong>挑战</strong>，我们每天有万亿级的读写，线上的响应时间要求也比较高。</li>
+</ul>
+<p>举一个简单的例子，我们部署资源是跨机房部署，但是有一些业务部门连跨机房部署存在的多余两毫秒的延迟都要投诉反馈（真的是臣妾做不到啊，如果单机房故障了呢？有些业务方真是异想天开）。响应时间基本上四个9是20毫秒。</p>
+<ul>
+<li><strong>成本</strong>的话因为我们线上有大量需求是上T的，所以成本压力其实也特别大。</li>
+</ul>
+<h3 id="技术选型"><a href="#技术选型" class="headerlink" title="技术选型"></a>技术选型</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292312015.png" alt="img"></p>
+<p>上图是微博数据库的技术选型，其实可以看到这里面不仅仅包含Redis等NoSQL，还有队列、存储，如果以后有机会的话可以给大家分享一下从0到1搭建微博的数据库，在内部分享的时候大概花了2-3个小时，时间有限，这次就只讲Redis这一部分。</p>
+<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3><p>从2010年开始，我们就基于官方的2.0版本引进Redis，到现在已经有九个年头了，我们主要做了以下这些方面的改进：</p>
+<ul>
+<li>Redis编码格式，在特殊场景下可以节省30%的空间；</li>
+<li>主从库方面有独立的复制线程；</li>
+<li>我们定制化一些数据结构，比如：LongSet 数据结构，它是一个“固定长度开放寻址的 Hash 数组”，减少Redis dict 很多额外的指针开销；</li>
+<li>在主从复制方面，独立复制线程 + 完全增量复制,这样的话，如果网络主从临时断了，只要从当前的pos点同步数据就行；</li>
+<li>在持久化方面，我们是全量的RDB加增量的AOF复制；</li>
+<li>AOF写入/ 刷盘，主线程—&gt;BIO，避免了因为写入导致的阻塞；</li>
+<li>落地时间，不可控—&gt;cronsave可控；</li>
+<li>增加aofnumber,设置AOF数量，避免因为写入过快，磁盘写满；</li>
+<li>高可用, Redis的HA我们并没有用官方的或者社区开源的，用的是我们自己开发的一套Redis HA，保障在故障的情况下，能快速进行切换。</li>
+</ul>
+<p>微博有大量的技术场景，比如转评赞、阅读数等，对于一些用户来说，他们是很关心这些指标的。</p>
+<p>如果我们用原生的Redis，会浪费大量的存储空间，因为它的产品特别特殊，它的key是一个用户的id，value是数字，我们自己内部最早改了一版叫RedisCounter，它相当于只维持了一个哈希表，节省了大量的Redis内存空间。</p>
+<p>当然它有一个缺点就是当初是短平快地上线了，所以它只支持单个列和单个表，如果你要存转发，评论，赞3个计数的话需要部署三套资源，这样一来大家访问微博取这3个数的速度会变慢。</p>
+<p>而且需要维护3套资源，为了应对这种场景，我们支持了多列和多表的方式，如果一个表写满了，可以继续写下一个表，写到最后一个表时，我们可以把前面的表滚到盘里面，但是这个时候是不可读的。</p>
+<p>为了解决不可读的问题，我们想了一个办法，把表都放在磁盘里面，维护ddb的数据结构，在这样的落地方式下，就可以把最近的热数据放在内存里面，把冷数据或者历史数据放在磁盘里面。</p>
+<p>之前统计了一下，在线上90%多的情况下，用户只访问几个月的数据，所以一些长尾数据可以靠从磁盘中读取数据来解决，也不影响用户体验。</p>
+<p>微博还有一些存在性判断的行为，比如是否赞过、是否阅读过，这些全量的数据特别大，如果用Redis的话对内存成本花费特别大。</p>
+<p>所以我们改造了一版服务，它是一个兼容Redis协议，基于BloomFilter，开发了一版phantom，高性能，单线程网络处理机制，与Redis性能相当，低存储空间，每条记录占用1.2<em>N字节（1%的误判率，每增加0.6</em>N字节误判率下降为原来的1/10，N为单个槽位占用的bit数）。</p>
+<p>当然还有其他像我们最近用的队列、MySQL等等其他类型的数据库，这边就不展开了。简单做一下Redis第一阶段优化的小结：</p>
+<ul>
+<li>无阻塞落地</li>
+<li>增量复制 -&gt; RDB+AOF</li>
+<li>在线热升级</li>
+<li>关系graph定制 <ul>
+<li>内存降为1/10</li>
+<li>性能相当</li>
+</ul>
+</li>
+<li>计数定制化 <ul>
+<li>内存降为1/4</li>
+<li>性能提升3-5倍</li>
+</ul>
+</li>
+<li>BloomFilter</li>
+</ul>
+<p>但是我们做了这么多优化还是跟不上业务的需求。</p>
+<h2 id="Redis在微博的优化"><a href="#Redis在微博的优化" class="headerlink" title="Redis在微博的优化"></a>Redis在微博的优化</h2><p>首先需要明白为什么要优化，我们一般从三个方面进行考虑：</p>
+<p><strong>首先是业务方</strong>。目前线上的业务方需要关心资源的分布、容量规划等多方面，比如内存是否满了、磁盘是否满了、如果用MySQL的话是否要提前分库分表、QPS是否能扛住。</p>
+<p>我们希望把这些问题对业务方屏蔽，他们只管用，而不用关心太多涉及到资源细节的方面。</p>
+<p><strong>第二是DBA</strong>。虽然现在微博已经不是处于高速增长的状态了，但实际上它也还是以一定的速度在增长，所以对DBA来说，需求还是特别多的。</p>
+<p>加上我们部门是承接微博所有的数据库的服务，有微博最多的服务器，因此对于我们来说，需求多，变更多，挑战大。</p>
+<p>从设计的角度，我们要考虑如何设计Redis更合理。</p>
+<p>总结了一下有三个方面：</p>
+<p><strong>一是高性能，读写快、访问快、响应时间快</strong>。</p>
+<p><strong>二是能够支持大容量的需求</strong>。</p>
+<p><strong>三是可扩展</strong>，因为接触的业务方比较多，就会发现一个问题，基本上没有几个业务方能把自己的需求描述得特别清楚，经常上线之后才发现内存不够了，或者写入扛不住了，所以这个时候我们需要在可扩展性方面提供一个强有力的支持。</p>
+<p>我们可以把这三个方面解释为三座大山。</p>
+<h3 id="Cache-Service服务化"><a href="#Cache-Service服务化" class="headerlink" title="Cache Service服务化"></a>Cache Service服务化</h3><p>为了解决三座大山，首先要把Cache服务化，它是一个多级缓存的服务，能够解决高访问、高并发的问题以及实现高可用。</p>
+<p>基于这套系统，也设计了一套后台程序，根据微博的流量进行自动监测、能够支持自动扩缩容，这样能快速扛过峰值，峰值过去之后又回收机器，实现了对资源的充分利用。</p>
+<p>当然这套系统还在持续完善中，希望未来能做到更智能。</p>
+<p>ConfigService就是我们把配置放在配置中心里面，Client再从配置中心里面拉取配置。</p>
+<p>一共有两种访问方式，第一种是SDK，第二种是支持多语言的，通过Proxy把请求路由到后端的Cache里面。DBA只要通过管理平台就可以对资源进行快速扩缩容。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292313417.png" alt="img"></p>
+<p>现在讲一下多级的Cache，实际上这里面有四个角色：master、maste-l1、slave、slave-l1。</p>
+<p>master跟slave没有同步关系，只是按角色作用的方式命名的，master-l1有多组数据来扛热点，master是基准数据保存全量数据，slave一般是做多机房的容灾，slave-l1做多机房的数据同步，这个同步只保证最终数据的一致性。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292313689.png" alt="img"></p>
+<p>以读取作为例子来说一下流程，读取是先访问master-l1，如果没有命中会访问master，如果又没有命中会访问到slave，通过这3层，大部分情况下能把99%的热点给扛住，然后还有1%的流量才会落到MySQL里面。</p>
+<p>假如是100万的读，穿透到MySQL只有一万QPS，如果100万的读全部都打到MySQL的话，对于MySQL而言成本特别高，而且大家知道，MySQL在高并发读写情况下，很容易被打死，且在短时间内是恢复不了。</p>
+<p>Cacheservice 目前支持mc和Redis协议2种协议。</p>
+<p>上图是我们DBA操作的扩缩容的界面，这个业务总共有20组，每组有5个IP，5×20=100个实例，实际上就是一百个实例在里面提供服务，线上有好多个单个集群服务，可以支撑百万甚至千万QPS的高并发访问，而且可以支持快速的扩缩容。</p>
+<p>分享一下我们之前的成功案例，我们已经实现好几年的春晚1000+台阿里云ECS弹性扩缩容，多次实现无降级平滑过渡，高峰期支持微博50%的春晚核心流量。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292313533.png" alt="img"></p>
+<p>上图是我们内部为了支持系统而进行的系统整合，在这边就不展开了。</p>
+<h3 id="mcq服务化"><a href="#mcq服务化" class="headerlink" title="mcq服务化"></a>mcq服务化</h3><p>基于前面的Cache服务化，我们在2018上半年跟业务方一起合作，把队列也给服务化了。</p>
+<p>为什么要把队列单独提出来呢？是因为经常有内部或外部的人问，你们发微博是什么样的流程？你们发评论是什么样的流程？数据怎么解决？</p>
+<p>这些问题很关键的一环就是在队列里面，发微博的时候实际上是先写到队列，然后队列再写到后端的MySQL里面，如果这个时候MySQL宕机了，我们会有一个修复队列，专门有一个Key来存这部分的数据，等MySQL恢复以后再把这部分数据写入到MySQL里面。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292313280.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292313383.png" alt="img"></p>
+<p>上面还有一个BCP，是因为当初我们在做这一套的时候，实际上是想在整个微博推广。</p>
+<p>去年比特币特别火，我们也想通过购买比特币的方式，在内部通过机器的资源或者内部开源的一些东西来做等价物质的转换，然后来应用这个服务，但是最终这个计划没有具体落地。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292313033.png" alt="img"></p>
+<p>上图是一键告警以及操作的监控图。</p>
+<p>前面提到我们把Cache服务化了，但是实际上并没有很好地解决容量过大的问题，虽然现在内存的价格一直在下降，但相对硬盘来说价格还是太高。</p>
+<p>如果我们经常有像5T或者10T的业务，并且全放内存里面的话，对于我们成本的压力实际上是特别大的。</p>
+<p>而且我们需要向专门的成本委员会申领资源，只有成本委员会同意了我们才能拿到这些机器，整个周期时间长。</p>
+<h3 id="如何解决Redis容量过大？"><a href="#如何解决Redis容量过大？" class="headerlink" title="如何解决Redis容量过大？"></a>如何解决Redis容量过大？</h3><p>为了解决容量过大的问题，我们想把容量从内存放到磁盘里面。</p>
+<p>我们当时考虑了一些特性，比如支持冷热数据的分离，比如把历史的数据或者全量的数据全部存在磁盘，然后支持持久化、支持数据主从复制、支持在线热升级，需要兼容Redis数据类型，还要兼容与Redis的复制。</p>
+<p>基于前面的场景，像微博这种属性特别适合用这种方法，就算冷热数据不明显，比如上T，每秒几K访问的情况，用这个方法也特别合适。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292314975.png" alt="img"></p>
+<p>下面讲一下处理模块，里面有主线程和后台线程。</p>
+<p>主线程主要处理连接的请求、协议的解析以及命令的请求，后台线程主要是复制线程，还有像BIO线程，我们把像刷盘操作是写AOF都是放在这个线程，这样可以尽可能减少写入所造成的对Redis的阻塞。</p>
+<p>还有一个Bloom Filter，是基于布谷鸟算法来优化，初始化的时候指定Filter的容量，新增双向链表管理Hash冲突。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292314432.png" alt="img"></p>
+<p>从这个名字大家可以猜到，是Redis+RocksDB的结合，为什么这个时候我们不像前面提到的类似设计CounterserviceSSD那样自己设计，其实主要原因是当初我们在设计时RocksDB还没有非常多大规模的应用。</p>
+<p>现在RocksDB已经特别成熟，而且有非常多成功的案例。我们还有一个不自己开发的原因，就是如果自己开发的话，可能适用性或者性能，以及代码健壮性反而没有那么好，所以为了节省时间我们采用了RocksDB来做存储，避免重复造轮子。</p>
+<p>LRU是为了加快访问速度的，如果第一次访问的时候没有在内存里面读取到，就从磁盘里面读取，它实际上会放在内存，下次你再读取的时候会从LRU里面读取出来。</p>
+<p>这边还涉及到数据从内存到磁盘换入换出，如果key或者value特别大的话，性能会有影响。这就是前面提到的为什么我们不推荐那种特别大的key或者value用RedRocks。</p>
+<p>把前面的处理模块和后端整合一下就形成了以下这样的架构图。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292314253.png" alt="img"></p>
+<p>对其做一下小结：</p>
+<ul>
+<li>简单易用：完全兼容Redis，业务方不用做任何改动就可以迁移上；</li>
+<li>成本优势：把热点数据或者频繁访问数据放在内存，全量的数据全部放磁盘，这是一个特别大的优势，可以突破内存容量限制；</li>
+<li>高性能：热点数据在内存，热点数据访问性能和Redis相当。</li>
+</ul>
+<p>下图是性能压测报告，我们对比了set的随机对写。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292314194.png" alt="img"></p>
+<h3 id="仍满足不了新需求？"><a href="#仍满足不了新需求？" class="headerlink" title="仍满足不了新需求？"></a>仍满足不了新需求？</h3><p>我们前面已经解决了大容量的问题，但还是有很多困难并没有得到很好的解决。</p>
+<p>因此，我们借鉴了开源经验，也调研了Twemproxy、Codis、Corvus、Redis-Cluser这些功能：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292314009.png" alt="img"></p>
+<p>实际上我们在2015年就已经存在基于Twemproxy的业务，在线上的话像微博音乐、微博健康、通行证这3个业务已经上线。</p>
+<p>但是我们没有在内部大范围推广开来，其中涉及到2个主要的原因，第一就是迁移还是比较费时间，第二是无法比较完美的动态增加节点，还有内部一些其他原因等等的约束。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292314646.png" alt="img"></p>
+<p>以上是我们的设计思路，一是能支持在线扩缩容，二是支持多语言的访问，因为我们是要对整个公司进行推广的，而不是说只对一个部门，所以为了推广方便我们必须有这种功能，三是对服务化特性的需求。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292314138.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292315915.png" alt="img"></p>
+<p>下面简单讲一下proxy里面各模块的功能：</p>
+<ul>
+<li><strong>port自动增删和监听</strong>：根据Vintage对本proxy节点的配置，自动增加监听的端口或者删除移除的端口，监听客户端的连接。</li>
+<li><strong>Redis协议解析</strong>：解析Redis协议，确定需要路由的请求，非法和不支持的请求直接返回错误。</li>
+<li><strong>路由</strong>：需要获取和监听端口对应的backend以及它们的slot， 根据端口、key和Redis命令选择一个backend, 将请求路由到对应的backend,并将结果返回给客户端。</li>
+<li><strong>配置监控</strong>：监控Vintage中本proxy的配置，包括端口的变动、端口和backend的变动以及slot的变化等，通知端口监听模块和路由模块。</li>
+<li><strong>指标监控</strong>：需要将Metrics发送到Graphite中进行监控。</li>
+<li><strong>日志记录</strong>：生成日志文件以便跟踪。</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292315509.png" alt="img"></p>
+<ul>
+<li><strong>Redis存储方面</strong>：还是沿用我们内部改造的Redis版本，相对之前线上的版本，这次我们新增了官方比如Mememory，内存编码的优化，以及内部新增的一些新的功能。</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292315701.png" alt="img"></p>
+<p>关于集群管理方面，无论是Redis也好，MySQL也好，对资源的任何管理都可以用这个来总结，包括五个部分：资源申请，资源分配，业务上线，资源查询，资源变更。</p>
+<p>对于业务申请这一方面需要有一个业务唯一的标识，QPS、数据类型是怎样的，基于这些考察我们再对它进行分配、配置、部署。</p>
+<p>基于前面我们做了那么多的优化以及平台服务化，用下图作为总结比较合适，就相当于服务的高可用、高性能以及可扩展这些方面，我们基本上都用前面这一套方案解决了。</p>
+<h2 id="未来展望"><a href="#未来展望" class="headerlink" title="未来展望"></a>未来展望</h2><p>无论是最开始的MySQL也好还是到后面的Oracle也好，这些都离不开SQL。如果我们能把数据一致性解决好的话，Redis的应用场景会更广。</p>
+<p>现在有很多公司对Raft做了二次开发，后续我们也会投入到在这方面中。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292315342.png" alt="img"></p>
+<p>借用两句话结束今天的演讲：“数据库实际上是需要你用最快的速度把数据存储下来，然后以最方便的方式把数据给回忆起来。”</p>
+<h3 id="Q-A"><a href="#Q-A" class="headerlink" title="Q &amp; A"></a>Q &amp; A</h3><p>Q1：<strong>刚才您说您这边有一个新的类型叫LongSet，能不能说一下它的应用场景</strong>？</p>
+<p>A：应用场景是在关系判断这个场景下，在微博关注Cache化改造中，需要把Redis当做Cache用存储用户的关注列表，原定方案是使用Hash结构。</p>
+<p>但是由于Redis是做Cahce使用，key可能会被剔除，所以在判断用户是否关注某人的时候，可能不存在，这时就需要从数据库拉用户的关注列表直接HMSET到Hash结构中。</p>
+<p>但是Redis在一次HSET多个field的时候，性能是比较低的，并且会堵塞其它的请求。</p>
+<p>同时在仿真压力测试过程中发现，在Cache为空的情况下，必须要逐步放量填充Cache后，业务才能达到稳定。</p>
+<p>这种情况下，对运维的压力比较大，容错很低，违背了我们Cache化的初衷，所以才有了这一次的改造。</p>
+<p>为了解决Redis Hash结构HMSET性能较低及内存利用率较低的问题，对Redis进行了定制化改造，增加了一种新的数据结构LongSet，用来存储元素为long类型的集合。</p>
+<p>Q2：<strong>您刚刚解释的是热数据放在Redis，初始放在RocksDB，什么时候调用这个数据？什么时候调用那个数据？肯定是有一张表吧</strong>？</p>
+<p>A：读取流程是，先读取内存中的数据，这个内存大小是可以动态调整的，和官方的maxMemory参数是一致的，内存中只保留一部分的数据，如果内存中的数据没有读取到，才会从磁盘里面读取数据。</p>
+<h2 id="文章来源"><a href="#文章来源" class="headerlink" title="文章来源"></a>文章来源</h2><ul>
+<li>兰将州，新浪微博核心feed流、广告数据库业务线负责人，主要负责MySQL、NoSQL、TiDB相关的自动化开发和运维，参与Redis、counteservice_ssd、memcacheq相关代码的开发，目前关注分布式系统。</li>
+<li>本文根据兰将州老师在〖2019 Gdevops全球敏捷运维峰会北京站〗现场演讲内容整理而成。</li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=Mzg4NzU1MzIzMA==&amp;mid=2247528094&amp;idx=1&amp;sn=e4416e3e13194a64319dd88d4b541d52&amp;source=41#wechat_redirect">原文地址</a></li>
+<li><a target="_blank" rel="noopener" href="https://pan.baidu.com/s/10SDlBF7bWXwk2clZ5TvthA">演讲PPT</a></li>
+</ul>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Hubert Wong</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://hubertwongcn.github.io/posts/29790.html">https://hubertwongcn.github.io/posts/29790.html</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Hubert Wong</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/DataBase/">
+                                    <span class="chip bg-color">DataBase</span>
+                                </a>
+                            
+                                <a href="/tags/NoSQL/">
+                                    <span class="chip bg-color">NoSQL</span>
+                                </a>
+                            
+                                <a href="/tags/Redis/">
+                                    <span class="chip bg-color">Redis</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+        <style>
+    .valine-card {
+        margin: 1.5rem auto;
+    }
+
+    .valine-card .card-content {
+        padding: 20px 20px 5px 20px;
+    }
+
+    #vcomments textarea {
+        box-sizing: border-box;
+        background: url("/medias/comment_bg.png") 100% 100% no-repeat;
+    }
+
+    #vcomments p {
+        margin: 2px 2px 10px;
+        font-size: 1.05rem;
+        line-height: 1.78rem;
+    }
+
+    #vcomments blockquote p {
+        text-indent: 0.2rem;
+    }
+
+    #vcomments a {
+        padding: 0 2px;
+        color: #4cbf30;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    #vcomments img {
+        max-width: 100%;
+        height: auto;
+        cursor: pointer;
+    }
+
+    #vcomments ol li {
+        list-style-type: decimal;
+    }
+
+    #vcomments ol,
+    ul {
+        display: block;
+        padding-left: 2em;
+        word-spacing: 0.05rem;
+    }
+
+    #vcomments ul li,
+    ol li {
+        display: list-item;
+        line-height: 1.8rem;
+        font-size: 1rem;
+    }
+
+    #vcomments ul li {
+        list-style-type: disc;
+    }
+
+    #vcomments ul ul li {
+        list-style-type: circle;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    #vcomments table, th, td {
+        border: 0;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments h1 {
+        font-size: 1.85rem;
+        font-weight: bold;
+        line-height: 2.2rem;
+    }
+
+    #vcomments h2 {
+        font-size: 1.65rem;
+        font-weight: bold;
+        line-height: 1.9rem;
+    }
+
+    #vcomments h3 {
+        font-size: 1.45rem;
+        font-weight: bold;
+        line-height: 1.7rem;
+    }
+
+    #vcomments h4 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    #vcomments h5 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        line-height: 1.4rem;
+    }
+
+    #vcomments h6 {
+        font-size: 1rem;
+        line-height: 1.3rem;
+    }
+
+    #vcomments p {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    #vcomments hr {
+        margin: 12px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
+    }
+
+    #vcomments blockquote {
+        margin: 15px 0;
+        border-left: 5px solid #42b983;
+        padding: 1rem 0.8rem 0.3rem 0.8rem;
+        color: #666;
+        background-color: rgba(66, 185, 131, .1);
+    }
+
+    #vcomments pre {
+        font-family: monospace, monospace;
+        padding: 1.2em;
+        margin: .5em 0;
+        background: #272822;
+        overflow: auto;
+        border-radius: 0.3em;
+        tab-size: 4;
+    }
+
+    #vcomments code {
+        font-family: monospace, monospace;
+        padding: 1px 3px;
+        font-size: 0.92rem;
+        color: #e96900;
+        background-color: #f8f8f8;
+        border-radius: 2px;
+    }
+
+    #vcomments pre code {
+        font-family: monospace, monospace;
+        padding: 0;
+        color: #e8eaf6;
+        background-color: #272822;
+    }
+
+    #vcomments pre[class*="language-"] {
+        padding: 1.2em;
+        margin: .5em 0;
+    }
+
+    #vcomments code[class*="language-"],
+    pre[class*="language-"] {
+        color: #e8eaf6;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+
+    #vcomments b,
+    strong {
+        font-weight: bold;
+    }
+
+    #vcomments dfn {
+        font-style: italic;
+    }
+
+    #vcomments small {
+        font-size: 85%;
+    }
+
+    #vcomments cite {
+        font-style: normal;
+    }
+
+    #vcomments mark {
+        background-color: #fcf8e3;
+        padding: .2em;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+</style>
+
+<div class="card valine-card" data-aos="fade-up">
+    <div class="comment_headling" style="font-size: 20px; font-weight: 700; position: relative; padding-left: 20px; top: 15px; padding-bottom: 5px;">
+        <i class="fas fa-comments fa-fw" aria-hidden="true"></i>
+        <span>评论</span>
+    </div>
+    <div id="vcomments" class="card-content" style="display: grid">
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/valine/av-min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.iohttps://unpkg.com/valine/dist/Valine.min.js"></script> -->
+<script src="https://unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        appId: 'oTH4fV5e9iBU62LIVFq44U80-gzGzoHsz',
+        appKey: 'XpA0KzIfRp5Be7wCiljyVm7u',
+        notify: 'false' === 'true',
+        verify: 'false' === 'true',
+        visitor: 'false' === 'true',
+        avatar: 'monsterid',
+        pageSize: '10',
+        lang: 'en',
+        placeholder: '昵称填写QQ，可以显示QQ头像和昵称',
+        enableQQ: true,
+        requiredFields: ['nick','mail'], //设置必填项
+    });
+</script>
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/posts/22518.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/7.jpg" class="responsive-img" alt="21.Redis大厂经验 - 美团：Redis 高负载下的中断优化">
+                        
+                        <span class="card-title">21.Redis大厂经验 - 美团：Redis 高负载下的中断优化</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2023-12-29
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/DataBase/" class="post-category">
+                                    DataBase
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/DataBase/">
+                        <span class="chip bg-color">DataBase</span>
+                    </a>
+                    
+                    <a href="/tags/NoSQL/">
+                        <span class="chip bg-color">NoSQL</span>
+                    </a>
+                    
+                    <a href="/tags/Redis/">
+                        <span class="chip bg-color">Redis</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/posts/15356.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/9.jpg" class="responsive-img" alt="19.Redis进阶 - 性能调优：Redis性能调优详解">
+                        
+                        <span class="card-title">19.Redis进阶 - 性能调优：Redis性能调优详解</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2023-12-29
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/DataBase/" class="post-category">
+                                    DataBase
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/DataBase/">
+                        <span class="chip bg-color">DataBase</span>
+                    </a>
+                    
+                    <a href="/tags/NoSQL/">
+                        <span class="chip bg-color">NoSQL</span>
+                    </a>
+                    
+                    <a href="/tags/Redis/">
+                        <span class="chip bg-color">Redis</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('3'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\(', '\)']]}
+    });
+</script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+    <div class="container row center-align" style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2023</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">Hubert Wong</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                class="white-color">844.3k</span>&nbsp;字
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <span id="sitetime">载入运行时间...</span>
+            <script>
+                function siteTime() {
+                    var seconds = 1000;
+                    var minutes = seconds * 60;
+                    var hours = minutes * 60;
+                    var days = hours * 24;
+                    var years = days * 365;
+                    var today = new Date();
+                    var startYear = "2019";
+                    var startMonth = "6";
+                    var startDate = "28";
+                    var startHour = "0";
+                    var startMinute = "0";
+                    var startSecond = "0";
+                    var todayYear = today.getFullYear();
+                    var todayMonth = today.getMonth() + 1;
+                    var todayDate = today.getDate();
+                    var todayHour = today.getHours();
+                    var todayMinute = today.getMinutes();
+                    var todaySecond = today.getSeconds();
+                    var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                    var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                    var diff = t2 - t1;
+                    var diffYears = Math.floor(diff / years);
+                    var diffDays = Math.floor((diff / days) - diffYears * 365);
+                    var diffHours = Math.floor((diff - (diffYears * 365 + diffDays) * days) / hours);
+                    var diffMinutes = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours) /
+                        minutes);
+                    var diffSeconds = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours -
+                        diffMinutes * minutes) / seconds);
+                    if (startYear == todayYear) {
+                        document.getElementById("year").innerHTML = todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffDays + " 天 " + diffHours +
+                            " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    } else {
+                        document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffYears + " 年 " + diffDays +
+                            " 天 " + diffHours + " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    }
+                }
+                setInterval(siteTime, 1000);
+            </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/HubertWongCN" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:hubertwongcn@gmail.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+        <script src="//code.tidio.co/qst6g32qs2bibjqjp6oqgpe69j3qtrn9.js"></script>
+        <script>
+            $(document).ready(function () {
+                setInterval(change_Tidio, 50);
+                function change_Tidio() {
+                    var tidio=$("#tidio-chat iframe");
+                    if(tidio.css("display")=="block"&& $(window).width()>977 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" &&$(window).width()>977)>0? "-40px" : ($("div.toc-title").length&&$(window).width()>977)>0?"85px":"20px";
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.height=parseInt(tidio.css("height"))>=520?"520px":tidio.css("height");
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()>601 &&$(window).width()<992 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && 601< $(window).width()<992)>0? "-40px":"20px" ;
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))<230){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && $(window).width()<601)>0? "-10px":"45px" ;
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    if( tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))>=230){
+                        document.getElementById("tidio-chat-iframe").style.zIndex="998";
+                    }
+                }
+            });
+        </script>
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

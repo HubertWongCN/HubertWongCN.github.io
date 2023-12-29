@@ -1,0 +1,1767 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN,en,default">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="17.Redis进阶 - 版本特性: Redis4.0、5.0、6.0特性整理, 生活，养猫，Java，后端开发">
+    <meta name="description" content="记录猫奴生活、后端学习笔记，由Hexo+Github搭建">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>17.Redis进阶 - 版本特性: Redis4.0、5.0、6.0特性整理 | Hubert&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/hubert-logo.png">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/my.css">
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/jquery/jquery.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="Hubert's Blog" type="application/atom+xml">
+</head>
+
+
+
+   <style>
+    body{
+       background-image: url(https://cdn.jsdelivr.net/gh/Tokisaki-Galaxy/res/site/medias/background.jpg);
+       background-repeat:no-repeat;
+       background-size:cover;
+       background-attachment:fixed;
+    }
+</style>
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Hubert&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>主页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Hubert&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            记录猫奴生活、后端学习笔记，由Hexo+Github搭建
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			主页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/3.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">17.Redis进阶 - 版本特性: Redis4.0、5.0、6.0特性整理</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/DataBase/">
+                                <span class="chip bg-color">DataBase</span>
+                            </a>
+                        
+                            <a href="/tags/NoSQL/">
+                                <span class="chip bg-color">NoSQL</span>
+                            </a>
+                        
+                            <a href="/tags/Redis/">
+                                <span class="chip bg-color">Redis</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/DataBase/" class="post-category">
+                                DataBase
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2023-12-29
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2023-12-29
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    5.6k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                    21 分
+                </div>
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/prism/prism.css">
+        
+
+        
+        <!-- 代码块折行 -->
+        <style type="text/css">
+            code[class*="language-"], pre[class*="language-"] { white-space: pre-wrap !important; }
+        </style>
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p>在学习Redis知识体系时，我们难免会需要查看版本实现之间的差异，本文主要整理Redis较为新的版本的特性。</p>
+</blockquote>
+<h2 id="Redis-4"><a href="#Redis-4" class="headerlink" title="Redis 4"></a>Redis 4</h2><h3 id="模块系统"><a href="#模块系统" class="headerlink" title="模块系统"></a>模块系统</h3><p> Redis 4.0 发生的最大变化就是加入了模块系统， 这个系统可以让用户通过自己编写的代码来扩展和实现 Redis 本身并不具备的功能，因为模块系统是通过高层次 API 实现的， 它与 Redis 内核本身完全分离、互不干扰， 所以用户可以在有需要的情况下才启用这个功能。目前已经有人使用这个功能开发了各种各样的模块， 比如 Redis Labs 开发的一些模块就可以在 <a target="_blank" rel="noopener" href="http://redismodules.com/">http://redismodules.com</a> 看到。模块功能使得用户可以将 Redis 用作基础设施， 并在上面构建更多功能， 这给 Redis 带来了无数新的可能性。</p>
+<h3 id="PSYNC-2-0"><a href="#PSYNC-2-0" class="headerlink" title="PSYNC 2.0"></a>PSYNC 2.0</h3><p>新版本的PSYNC命令解决了旧版本的 Redis 在复制时的一些不够优化的地方：</p>
+<ul>
+<li>在旧版本 Redis 中， 如果一个从服务器在 FAILOVER 之后成为了新的主节点， 那么其他从节点在复制这个新主的时候就必须进行全量复制。 在 Redis 4.0 中， 新主和从服务器在处理这种情况时， 将在条件允许的情况下使用部分复制。</li>
+<li>在旧版本 Redis 中， 一个从服务器如果重启了， 那么它就必须与主服务器重新进行全量复制， 在 Redis 4.0 中， 只要条件允许， 主从在处理这种情况时将使用部分复制。</li>
+<li>在旧版本中，当复制为链式复制的时候，如 A—&gt;B—&gt;C ，主节点为A。当A出现问题，C节点不能正常复制B节点的数据。当提升B为主节点，C需要全量同步B的数据。在PSYNC2：PSYNC2解决了链式复制之间的关联性。A出现问题不影响C节点，B提升为主C不需要全量同步。</li>
+<li>在使用星形复制时，如一主两从。A—&gt;B , A—&gt;C ，主节点为A。当A出现问题，B提升为主节点，C 重新指向主节点B。使用同步机制PSYNC2，C节点只做增量同步即可。在使用sentinel故障转移可以较少数据重新同步的延迟时间，避免大redis同步出现的网络带宽占满。</li>
+</ul>
+<h3 id="缓存驱逐策略优化"><a href="#缓存驱逐策略优化" class="headerlink" title="缓存驱逐策略优化"></a>缓存驱逐策略优化</h3><p>新添加了Last Frequently Used（LFU）缓存驱逐策略；</p>
+<p>LFU：最不经常使用。在一段时间内，使用次数最少的数据，优先被淘汰；</p>
+<p>另外 Redis 4.0 还对已有的缓存驱逐策略进行了优化， 使得它们能够更健壮、高效、快速和精确。</p>
+<h3 id="Lazy-Free"><a href="#Lazy-Free" class="headerlink" title="Lazy Free"></a>Lazy Free</h3><p>在 Redis 4.0 之前， 用户在使用 DEL命令删除体积较大的键， 又或者在使用 <strong>FLUSHDB</strong> 和 <strong>FLUSHALL</strong>删除包含大量键的数据库时， 都可能会造成服务器阻塞。</p>
+<p>为了解决以上问题， Redis 4.0 新添加了<strong>UNLINK</strong>命令， 这个命令是DEL命令的异步版本， 它可以将删除指定键的操作放在后台线程里面执行， 从而尽可能地避免服务器阻塞：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">redis<span class="token operator">&gt;</span> UNLINK fruits
+<span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">1</span></code></pre>
+
+<p> 因为一些历史原因， 执行同步删除操作的DEL命令将会继续保留。此外， Redis 4.0 中的<strong>FLUSHDB</strong>和<strong>FLUSHALL</strong>这两个命令都新添加了ASYNC选项， 带有这个选项的数据库删除操作将在后台线程进行：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">redis<span class="token operator">&gt;</span> FLUSHDB ASYNC
+OK
+
+redis<span class="token operator">&gt;</span> FLUSHALL ASYNC
+OK</code></pre>
+
+<p> 还有，执行<code>rename oldkey newkey</code>时，如果newkey已经存在，Redis会先删除已经存在的newkey，这也会引发上面提到的删除大key问题。如果想让Redis在这种场景下也使用lazyfree的方式来删除，可以按如下配置：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">lazyfree-lazy-server-del <span class="token function">yes</span></code></pre>
+
+<h3 id="交换数据库"><a href="#交换数据库" class="headerlink" title="交换数据库"></a>交换数据库</h3><p>Redis 4.0 对数据库命令的另外一个修改是新增了SWAPDB命令， 这个命令可以对指定的两个数据库进行互换： 比如说， 通过执行命令 <code>SWAPDB 0 1</code> ， 我们可以将原来的数据库 0 变成数据库 1 ， 而原来的数据库 1 则变成数据库 0。</p>
+<h3 id="混合持久化"><a href="#混合持久化" class="headerlink" title="混合持久化"></a>混合持久化</h3><p>Redis 4.0 新增了 RDB-AOF 混合持久化格式， 这是一个可选的功能， 在开启了这个功能之后， AOF 重写产生的文件将同时包含 RDB 格式的内容和 AOF 格式的内容， 其中 RDB 格式的内容用于记录已有的数据， 而 AOF 格式的内存则用于记录最近发生了变化的数据， 这样 Redis 就可以同时兼有 RDB 持久化和 AOF 持久化的优点 —— 既能够快速地生成重写文件， 也能够在出现问题时， 快速地载入数据。这个功能可以通过配置项：<code>aof-use-rdb-preamble</code>进行开启。</p>
+<h3 id="内存命令"><a href="#内存命令" class="headerlink" title="内存命令"></a>内存命令</h3><p>新添加了一个MEMORY命令， 这个命令可以用于视察内存使用情况， 并进行相应的内存管理操作：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">redis<span class="token operator">&gt;</span> MEMORY HELP
+<span class="token number">1</span><span class="token punctuation">)</span> <span class="token string">"MEMORY USAGE &lt;key&gt; [SAMPLES &lt;count&gt;] - Estimate memory usage of key"</span>
+<span class="token number">2</span><span class="token punctuation">)</span> <span class="token string">"MEMORY STATS                         - Show memory usage details"</span>
+<span class="token number">3</span><span class="token punctuation">)</span> <span class="token string">"MEMORY PURGE                         - Ask the allocator to release memory"</span>
+<span class="token number">4</span><span class="token punctuation">)</span> <span class="token string">"MEMORY MALLOC-STATS                  - Show allocator internal stats"</span></code></pre>
+
+<p>其中， 使用MEMORY USAGE子命令可以估算储存给定键所需的内存：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">redis<span class="token operator">&gt;</span> SET msg <span class="token string">"hello world"</span>
+OK
+
+redis<span class="token operator">&gt;</span> SADD fruits apple banana cherry
+<span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">3</span>
+
+redis<span class="token operator">&gt;</span> MEMORY USAGE msg
+<span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">62</span>
+
+redis<span class="token operator">&gt;</span> MEMORY USAGE fruits
+<span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">375</span></code></pre>
+
+<p>使用MEMORY STATS子命令可以查看 Redis 当前的内存使用情况：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">redis<span class="token operator">&gt;</span> MEMORY STATS
+<span class="token number">1</span><span class="token punctuation">)</span> <span class="token string">"peak.allocated"</span>
+<span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">1014480</span>
+<span class="token number">3</span><span class="token punctuation">)</span> <span class="token string">"total.allocated"</span>
+<span class="token number">4</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">1014512</span>
+<span class="token number">5</span><span class="token punctuation">)</span> <span class="token string">"startup.allocated"</span>
+<span class="token number">6</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">963040</span>
+<span class="token number">7</span><span class="token punctuation">)</span> <span class="token string">"replication.backlog"</span>
+<span class="token number">8</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">0</span>
+<span class="token number">9</span><span class="token punctuation">)</span> <span class="token string">"clients.slaves"</span>
+<span class="token number">10</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">0</span>
+<span class="token number">11</span><span class="token punctuation">)</span> <span class="token string">"clients.normal"</span>
+<span class="token number">12</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">49614</span>
+<span class="token number">13</span><span class="token punctuation">)</span> <span class="token string">"aof.buffer"</span>
+<span class="token number">14</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">0</span>
+<span class="token number">15</span><span class="token punctuation">)</span> <span class="token string">"db.0"</span>
+<span class="token number">16</span><span class="token punctuation">)</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token string">"overhead.hashtable.main"</span>
+    <span class="token number">2</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">264</span>
+    <span class="token number">3</span><span class="token punctuation">)</span> <span class="token string">"overhead.hashtable.expires"</span>
+    <span class="token number">4</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">32</span>
+<span class="token number">17</span><span class="token punctuation">)</span> <span class="token string">"overhead.total"</span>
+<span class="token number">18</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">1012950</span>
+<span class="token number">19</span><span class="token punctuation">)</span> <span class="token string">"keys.count"</span>
+<span class="token number">20</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">5</span>
+<span class="token number">21</span><span class="token punctuation">)</span> <span class="token string">"keys.bytes-per-key"</span>
+<span class="token number">22</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">10294</span>
+<span class="token number">23</span><span class="token punctuation">)</span> <span class="token string">"dataset.bytes"</span>
+<span class="token number">24</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">1562</span>
+<span class="token number">25</span><span class="token punctuation">)</span> <span class="token string">"dataset.percentage"</span>
+<span class="token number">26</span><span class="token punctuation">)</span> <span class="token string">"3.0346596240997314"</span>
+<span class="token number">27</span><span class="token punctuation">)</span> <span class="token string">"peak.percentage"</span>
+<span class="token number">28</span><span class="token punctuation">)</span> <span class="token string">"100.00315093994141"</span>
+<span class="token number">29</span><span class="token punctuation">)</span> <span class="token string">"fragmentation"</span>
+<span class="token number">30</span><span class="token punctuation">)</span> <span class="token string">"2.1193723678588867"</span></code></pre>
+
+<p>使用<strong>MEMORY PURGE</strong>子命令可以要求分配器释放内存：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">redis<span class="token operator">&gt;</span> MEMORY PURGE
+OK</code></pre>
+
+<p>使用<strong>MEMORY MALLOC-STATS</strong>子命令可以展示分配器内部状态：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token number">127.0</span>.0.1:630<span class="token operator"><span class="token file-descriptor important">6</span>&gt;</span> MEMORY MALLOC-STATS
+___ Begin jemalloc statistics ___
+Version: <span class="token number">4.0</span>.3-0-ge9192eacf8935e29fc62fddc2701f7942b1cc02c
+Assertions disabled
+Run-time option settings:
+  opt.abort: <span class="token boolean">false</span>
+  opt.lg_chunk: <span class="token number">21</span>
+  opt.dss: <span class="token string">"secondary"</span>
+  opt.narenas: <span class="token number">32</span>
+  opt.lg_dirty_mult: <span class="token number">3</span> <span class="token punctuation">(</span>arenas.lg_dirty_mult: <span class="token number">3</span><span class="token punctuation">)</span>
+  opt.stats_print: <span class="token boolean">false</span>
+  opt.junk: <span class="token string">"false"</span>
+  opt.quarantine: <span class="token number">0</span>
+  opt.redzone: <span class="token boolean">false</span>
+  opt.zero: <span class="token boolean">false</span>
+  opt.tcache: <span class="token boolean">true</span>
+  opt.lg_tcache_max: <span class="token number">15</span>
+CPUs: <span class="token number">8</span>
+Arenas: <span class="token number">32</span>
+Pointer size: <span class="token number">8</span>
+Quantum size: <span class="token number">8</span>
+Page size: <span class="token number">4096</span>
+Min active:dirty page ratio per arena: <span class="token number">8</span>:1
+Maximum thread-cached size class: <span class="token number">32768</span>
+Chunk size: <span class="token number">2097152</span> <span class="token punctuation">(</span><span class="token number">2</span>^21<span class="token punctuation">)</span>
+Allocated: <span class="token number">3101248</span>, active: <span class="token number">3371008</span>, metadata: <span class="token number">1590912</span>, resident: <span class="token number">4657152</span>, mapped: <span class="token number">8388608</span>
+Current active ceiling: <span class="token number">4194304</span>
+ 
+arenas<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>:
+assigned threads: <span class="token number">1</span>
+dss allocation precedence: secondary
+min active:dirty page ratio: <span class="token number">8</span>:1
+dirty pages: <span class="token number">823</span>:10 active:dirty, <span class="token number">1</span> sweep, <span class="token number">3</span> madvises, <span class="token number">1032</span> purged
+                            allocated      nmalloc      ndalloc    nrequests
+small:                         <span class="token number">586304</span>        <span class="token number">25408</span>        <span class="token number">13607</span>    <span class="token number">170099066</span>
+large:                        <span class="token number">2514944</span>      <span class="token number">3967215</span>      <span class="token number">3967203</span>      <span class="token number">3967223</span>
+huge:                               <span class="token number">0</span>            <span class="token number">1</span>            <span class="token number">1</span>            <span class="token number">1</span>
+total:                        <span class="token number">3101248</span>      <span class="token number">3992624</span>      <span class="token number">3980811</span>    <span class="token number">174066290</span>
+active:                       <span class="token number">3371008</span>
+mapped:                       <span class="token number">6291456</span>
+metadata: mapped: <span class="token number">159744</span>, allocated: <span class="token number">346240</span>
+<span class="token punctuation">..</span>.
+<span class="token punctuation">..</span>.</code></pre>
+
+<h3 id="兼容-NAT-和-Docker"><a href="#兼容-NAT-和-Docker" class="headerlink" title="兼容 NAT 和 Docker"></a>兼容 NAT 和 Docker</h3><p> 在Redis Cluster集群模式下，集群的节点需要告诉用户或者是其他节点连接自己的IP和端口。</p>
+<p> 默认情况下，Redis会自动检测自己的IP和从配置中获取绑定的PORT，告诉客户端或者是其他节点。而在Docker环境中，如果使用的不是host网络模式，在容器内部的IP和PORT都是隔离的，那么客户端和其他节点无法通过节点公布的IP和PORT建立连接。</p>
+<p>4.0中增加了三个配置：</p>
+<ul>
+<li><code>cluster-announce-ip</code>：要宣布的IP地址</li>
+<li><code>cluster-announce-port</code>：要宣布的数据端口</li>
+<li><code>cluster-announce-bus-port</code>：节点通信端口，默认在端口前+1</li>
+</ul>
+<p>如果配置了以后，Redis节点会将配置中的这些IP和PORT告知客户端或其他节点。而这些IP和PORT是通过Docker转发到容器内的临时IP和PORT的。 Active Defrag</p>
+<p>Redis 4.0 之后支持自动内存碎片整理（Active Defrag），通过以下选项进行配置：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 开启自动内存碎片整理(总开关)</span>
+activedefrag <span class="token function">yes</span>
+<span class="token comment"># 当碎片达到 100mb 时，开启内存碎片整理</span>
+active-defrag-ignore-bytes 100mb
+<span class="token comment"># 当碎片超过 10% 时，开启内存碎片整理</span>
+active-defrag-threshold-lower <span class="token number">10</span>
+<span class="token comment"># 内存碎片超过 100%，则尽最大努力整理</span>
+active-defrag-threshold-upper <span class="token number">100</span>
+<span class="token comment"># 内存自动整理占用资源最小百分比</span>
+active-defrag-cycle-min <span class="token number">25</span>
+<span class="token comment"># 内存自动整理占用资源最大百分比</span>
+active-defrag-cycle-max <span class="token number">75</span></code></pre>
+
+<p>实现原理可参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/67381368">https://zhuanlan.zhihu.com/p/67381368</a></p>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><ul>
+<li>Redis Cluster的故障检测方式改变，node之间的通讯减少；</li>
+<li>慢日志记录客户端来源IP地址，这个小功能对于故障排查很有用处；</li>
+<li>新增zlexcount命令，用于sorted set中，和zrangebylex类似，不同的是zrangebylex返回member，而zlexcount是返回符合条件的member个数；</li>
+</ul>
+<h2 id="Redis-5"><a href="#Redis-5" class="headerlink" title="Redis 5"></a>Redis 5</h2><h3 id="Stream类型"><a href="#Stream类型" class="headerlink" title="Stream类型"></a>Stream类型</h3><p>Stream与Redis现有数据结构比较：</p>
+<table>
+<thead>
+<tr>
+<th>Stream</th>
+<th>List, Pub/Sub, Zset</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>获取元素高效，复杂度为O(logN)</td>
+<td>List获取元素的复杂度为O(N)</td>
+</tr>
+<tr>
+<td>支持offset，每个消息元素有唯一id。不会因为新元素加入或者其他元素淘汰而改变id。</td>
+<td>List没有offset概念，如果有元素被逐出，无法确定最新的元素</td>
+</tr>
+<tr>
+<td>支持消息元素持久化，可以保存到AOF和RDB中</td>
+<td>Pub/Sub不支持持久化消息</td>
+</tr>
+<tr>
+<td>支持消费分组</td>
+<td>Pub/Sub不支持消费分组</td>
+</tr>
+<tr>
+<td>支持ACK（消费确认）</td>
+<td>Pub/Sub不支持</td>
+</tr>
+<tr>
+<td>Stream性能与消费者数量无明显关系</td>
+<td>Pub/Sub性能与客户端数量负相关</td>
+</tr>
+<tr>
+<td>允许按时间线逐出历史数据，支持block，给予radix tree和listpack，内存开销少</td>
+<td>Zset不能重复添加相同元素，不支持逐出和block，内存开销大</td>
+</tr>
+<tr>
+<td>不能从中间删除消息元素</td>
+<td>Zet支持删除任意元素</td>
+</tr>
+</tbody></table>
+<h3 id="新的Redis模块API"><a href="#新的Redis模块API" class="headerlink" title="新的Redis模块API"></a>新的Redis模块API</h3><p>新的Redis模块API：定时器(Timers)、集群(Cluster)和字典API(Dictionary APIs)。</p>
+<h3 id="集群管理器更改"><a href="#集群管理器更改" class="headerlink" title="集群管理器更改"></a>集群管理器更改</h3><p> redis3.x和redis4.x的集群管理主要依赖基于Ruby的redis-trib.rb脚本，redis5.0彻底抛弃了它，将集群管理功能全部集成到完全用C写的redis-cli中。可以通过命令<code>redis-cli --cluster help</code>查看帮助信息。</p>
+<h3 id="Lua改进"><a href="#Lua改进" class="headerlink" title="Lua改进"></a>Lua改进</h3><p>将Lua脚本更好地传播到 replicas/AOF；</p>
+<p>Lua脚本现在可以超时并在副本中进入BUSY状态。</p>
+<h3 id="RDB格式变化"><a href="#RDB格式变化" class="headerlink" title="RDB格式变化"></a>RDB格式变化</h3><p>Redis5.0开始，RDB快照文件中增加存储key逐出策略LRU和LFU：</p>
+<ul>
+<li>LRU(Least Recently Used)：最近最少使用。长期未使用的数据，优先被淘汰。</li>
+<li>LFU(Least Frequently Used)：最不经常使用。在一段时间内，使用次数最少的数据，优先被淘汰。</li>
+</ul>
+<p>Redis5.0的RDB文件格式有变化，向下兼容。因此如果使用快照的方式迁移，可以从Redis低版本迁移到Redis5.0，但不能从Redis5.0迁移到低版本。</p>
+<h3 id="动态HZ"><a href="#动态HZ" class="headerlink" title="动态HZ"></a>动态HZ</h3><p> 以前redis版本的配置项hz都是固定的，redis5.0将hz动态化是为了平衡空闲CPU的使用率和响应能力。当然这个是可配置的，只不过在5.0中默认是动态的，其对应的配置为：<code>dynamic-hz yes</code></p>
+<h3 id="ZPOPMIN-ZPOPMAX命令"><a href="#ZPOPMIN-ZPOPMAX命令" class="headerlink" title="ZPOPMIN&amp;ZPOPMAX命令"></a>ZPOPMIN&amp;ZPOPMAX命令</h3><ul>
+<li><p>ZPOPMIN key [count]</p>
+<p>在有序集合ZSET所有key中，删除并返回指定count个数得分最低的成员，如果返回多个成员，也会按照得分高低（value值比较），从低到高排列。</p>
+</li>
+<li><p>ZPOPMAX key [count]</p>
+<p>在有序集合ZSET所有key中，删除并返回指定count个数得分最高的成员，如果返回多个成员，也会按照得分高低（value值比较），从高到低排列。</p>
+</li>
+<li><p>BZPOPMIN key [key …] timeout</p>
+<p>ZPOPMIN的阻塞版本。</p>
+</li>
+<li><p>BZPOPMAX key [key …] timeout</p>
+<p>ZPOPMAX的阻塞版本。</p>
+</li>
+</ul>
+<h3 id="CLIENT新增命令"><a href="#CLIENT新增命令" class="headerlink" title="CLIENT新增命令"></a>CLIENT新增命令</h3><ul>
+<li><p>CLIENT UNBLOCK</p>
+<p><strong>格式：</strong>CLIENT UNBLOCK client-id [TIMEOUT|ERROR]</p>
+<p><strong>用法：</strong>当客户端因为执行具有阻塞功能的命令如BRPOP、XREAD被阻塞时，该命令可以通过其他连接解除客户端的阻塞</p>
+</li>
+<li><p>CLIENT ID</p>
+<p>该命令仅返回当前连接的ID。每个连接ID都有某些保证： 它永远不会重复，可以判断当前链接是否断开过； ID是单调递增的。可以判断两个链接的接入顺序。</p>
+</li>
+</ul>
+<h3 id="其他-1"><a href="#其他-1" class="headerlink" title="其他"></a>其他</h3><ul>
+<li>主动碎片整理V2：增强版主动碎片整理，配合Jemalloc版本更新，更快更智能，延时更低；</li>
+<li>HyperLogLog改进：在Redis5.0中，HyperLogLog算法得到改进，优化了计数统计时的内存使用效率；</li>
+<li>更好的内存统计报告；</li>
+<li>客户经常连接和断开连接时性能更好；</li>
+<li>错误修复和改进；</li>
+<li>Jemalloc内存分配器升级到5.1版本；</li>
+<li>许多拥有子命令的命令，新增了HELP子命令，如：XINFO help、PUBSUB help、XGROUP help…</li>
+<li>LOLWUT命令：没什么实际用处，根据不同的版本，显示不同的图案，类似安卓；</li>
+<li>如果不为了API向后兼容，我们将不再使用“slave”一词：<a target="_blank" rel="noopener" href="https://www.oschina.net/news/99797/redis-master-slave-terminology">查看原因在新窗口打开</a></li>
+<li>Redis核心在许多方面进行了重构和改进。</li>
+</ul>
+<h2 id="Redis-6"><a href="#Redis-6" class="headerlink" title="Redis 6"></a>Redis 6</h2><h3 id="多线程IO"><a href="#多线程IO" class="headerlink" title="多线程IO"></a>多线程IO</h3><p> Redis的多线程部分只是用来处理网络数据的读写和协议解析，执行命令仍然是单线程顺序执行。所以我们不需要去考虑控制 key、lua、事务，LPUSH/LPOP 等等的并发及线程安全问题。</p>
+<p> Redis6.0的多线程默认是禁用的，只使用主线程。如需开启需要修改redis.conf配置文件：io-threads-do-reads yes。开启多线程后，还需要设置线程数，否则是不生效的。修改redis.conf配置文件：io-threads ，关于线程数的设置，官方有一个建议：4核的机器建议设置为2或3个线程，8核的建议设置为6个线程，线程数一定要小于机器核数。还需要注意的是，线程数并不是越大越好，官方认为超过了8个基本就没什么意义了。</p>
+<p> 更多关于redis 6.0多线程的讲解，请查看：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/madashu/p/12832766.html">https://www.cnblogs.com/madashu/p/12832766.html</a></p>
+<h3 id="SSL支持"><a href="#SSL支持" class="headerlink" title="SSL支持"></a>SSL支持</h3><p> 连接支持SSL协议，更加安全。</p>
+<h3 id="ACL支持"><a href="#ACL支持" class="headerlink" title="ACL支持"></a>ACL支持</h3><p> 在之前的版本中，Redis都会有这样的问题：用户执行FLUSHAL，现在整个数据库就空了在以前解决这个问题的办法可能是在Redis配置中将危险命令进行rename，这样将命令更名为随机字符串或者直接屏蔽掉，以满足需要。当有了ACL之后，你就可以控制比如：这个连接只允许使用RPOP，LPUSH这些命令，其他命令都无法调用。</p>
+<p> Redis ACL是Access Control List（访问控制列表）的缩写，该功能允许根据可以执行的命令和可以访问的键来限制某些连接。它的工作方式是：在客户端连接之后，需要客户端进行身份验证，以提供用户名和有效密码：如果身份验证阶段成功，则将连接与指定用户关联，并且该用户具有指定的限制。可以对Redis进行配置，使新连接通过“默认”用户进行身份验证（这是默认配置），但是只能提供特定的功能子集。</p>
+<p> 在默认配置中，Redis 6（第一个具有ACL的版本）的工作方式与Redis的旧版本完全相同，也就是说，每个新连接都能够调用每个可能的命令并访问每个键，因此ACL功能对于客户端和应用程序与旧版本向后兼容。同样，使用requirepass配置指令配置密码的旧方法仍然可以按预期工作，但是现在它的作用只是为默认用户设置密码。</p>
+<p>Redis AUTH命令在Redis 6中进行了扩展，因此现在可以在两个参数的形式中使用它：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">AUTH <span class="token operator">&lt;</span>username<span class="token operator">&gt;</span> <span class="token operator">&lt;</span>password<span class="token operator">&gt;</span></code></pre>
+
+<p>也可按照旧格式使用时，即：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">AUTH <span class="token operator">&lt;</span>password<span class="token operator">&gt;</span></code></pre>
+
+<p>Redis提供了一个新的命令ACL来维护Redis的访问控制信息，详情见：<a target="_blank" rel="noopener" href="https://redis.io/topics/acl">https://redis.io/topics/acl</a></p>
+<h3 id="RESP3"><a href="#RESP3" class="headerlink" title="RESP3"></a>RESP3</h3><p> RESP（Redis Serialization Protocol）是 Redis 服务端与客户端之间通信的协议。Redis 6之前使用的是 RESP2，而Redis 6开始在兼容RESP2的基础上，开始支持RESP3。在Redis 6中我们可以使用HELLO命令在RESP2和RESP3协议之间进行切换：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#使用RESP2协议</span>
+HELLO <span class="token number">2</span>
+<span class="token comment">#使用RESP3协议</span>
+HELLO <span class="token number">3</span></code></pre>
+
+<p>推出RESP3的目的：一是因为希望能为客户端提供更多的语义化响应（semantical replies），降低客户端的复杂性，以开发使用旧协议难以实现的功能；另一个原因是为了实现 Client side caching（客户端缓存）功能。详细见：<a target="_blank" rel="noopener" href="https://github.com/antirez/RESP3/blob/master/spec.md">https://github.com/antirez/RESP3/blob/master/spec.md</a></p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token number">127.0</span>.0.1:638<span class="token operator"><span class="token file-descriptor important">0</span>&gt;</span> HSET myhash a <span class="token number">1</span> b <span class="token number">2</span> c <span class="token number">3</span>
+<span class="token punctuation">(</span>integer<span class="token punctuation">)</span> <span class="token number">3</span>
+<span class="token number">127.0</span>.0.1:638<span class="token operator"><span class="token file-descriptor important">0</span>&gt;</span> HGETALL myhash
+<span class="token number">1</span><span class="token punctuation">)</span> <span class="token string">"a"</span>
+<span class="token number">2</span><span class="token punctuation">)</span> <span class="token string">"1"</span>
+<span class="token number">3</span><span class="token punctuation">)</span> <span class="token string">"b"</span>
+<span class="token number">4</span><span class="token punctuation">)</span> <span class="token string">"2"</span>
+<span class="token number">5</span><span class="token punctuation">)</span> <span class="token string">"c"</span>
+<span class="token number">6</span><span class="token punctuation">)</span> <span class="token string">"3"</span>
+<span class="token number">127.0</span>.0.1:638<span class="token operator"><span class="token file-descriptor important">0</span>&gt;</span> HELLO <span class="token number">3</span>
+<span class="token number">1</span><span class="token comment"># "server" =&gt; "redis"</span>
+<span class="token number">2</span><span class="token comment"># "version" =&gt; "6.0"</span>
+<span class="token number">3</span><span class="token comment"># "proto" =&gt; (integer) 3</span>
+<span class="token number">4</span><span class="token comment"># "id" =&gt; (integer) 5</span>
+<span class="token number">5</span><span class="token comment"># "mode" =&gt; "standalone"</span>
+<span class="token number">6</span><span class="token comment"># "role" =&gt; "master"</span>
+<span class="token number">7</span><span class="token comment"># "modules" =&gt; (empty array)</span>
+<span class="token number">127.0</span>.0.1:638<span class="token operator"><span class="token file-descriptor important">0</span>&gt;</span> HGETALL myhash
+<span class="token number">1</span><span class="token comment"># "a" =&gt; "1"</span>
+<span class="token number">2</span><span class="token comment"># "b" =&gt; "2"</span>
+<span class="token number">3</span><span class="token comment"># "c" =&gt; "3"</span></code></pre>
+
+<h3 id="客户端缓存"><a href="#客户端缓存" class="headerlink" title="客户端缓存"></a>客户端缓存</h3><p> 基于 RESP3 协议实现的客户端缓存功能。为了进一步提升缓存的性能，将客户端经常访问的数据cache到客户端。减少TCP网络交互。不过该特性目前合并到了unstable 分支，作者说等6.0 GA版本之前，还要修改很多。</p>
+<p> 客户端缓存的功能是该版本的全新特性，服务端能够支持让客户端缓存values，Redis作为一个本身作为一个缓存数据库，自身的性能是非常出色的，但是如果可以在Redis客户端再增加一层缓存结果，那么性能会更加的出色。Redis实现的是一个服务端协助的客户端缓存，叫做tracking。客户端缓存的命令是:</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">CLIENT TRACKING ON<span class="token operator">|</span>OFF <span class="token punctuation">[</span>REDIRECT client-id<span class="token punctuation">]</span> <span class="token punctuation">[</span>PREFIX prefix<span class="token punctuation">]</span> <span class="token punctuation">[</span>BCAST<span class="token punctuation">]</span> <span class="token punctuation">[</span>OPTIN<span class="token punctuation">]</span> <span class="token punctuation">[</span>OPTOUT<span class="token punctuation">]</span> <span class="token punctuation">[</span>NOLOOP<span class="token punctuation">]</span></code></pre>
+
+<p> 当tracking开启时， Redis会”记住”每个客户端请求的key，当key的值发现变化时会发送失效信息给客户端。失效信息可以通过 RESP3 协议发送给请求的客户端，或者转发给一个不同的连接(支持RESP2+ Pub/Sub)。</p>
+<p>更多信息见：<a target="_blank" rel="noopener" href="http://antirez.com/news/130">http://antirez.com/news/130</a></p>
+<h3 id="集群代理"><a href="#集群代理" class="headerlink" title="集群代理"></a>集群代理</h3><p> 因为 Redis Cluster 内部使用的是P2P中的Gossip协议，每个节点既可以从其他节点得到服务，也可以向其他节点提供服务，没有中心的概念，通过一个节点可以获取到整个集群的所有信息。所以如果应用连接Redis Cluster可以配置一个节点地址，也可以配置多个节点地址。但需要注意如果集群进行了上下节点的的操作，其应用也需要进行修改，这样会导致需要重启应用，非常的不友好。从Redis 6.0开始支持了Prxoy，可以直接用Proxy来管理各个集群节点。本文来介绍下如何使用官方自带的proxy：redis-cluster-proxy  通过使用 redis-cluster-proxy 可以与组成Redis集群的一组实例进行通讯，就像是单个实例一样。Redis群集代理是多线程的，使用多路复用通信模型，因此每个线程都有自己的与群集的连接，该连接由属于该线程本身的所有客户端共享。</p>
+<p>在某些特殊情况下（例如MULTI事务或阻塞命令），多路复用将被禁用；并且客户端将拥有自己的集群连接。这样客户端仅发送诸如GET和SET之类的简单命令就不需要Redis集群的专有连接。</p>
+<p>redis-cluster-proxy的主要功能特点：</p>
+<ul>
+<li>路由：每个查询都会自动路由到集群的正确节点</li>
+<li>多线程</li>
+<li>支持多路复用和专用连接模型</li>
+<li>在多路复用上下文中，可以确保查询执行和答复顺序</li>
+<li>发生ASK | MOVED错误后自动更新集群的配置：当答复中发生此类错误时，代理通过获取集群的更新配置并重新映射所有插槽来自动更新集群。 更新完成后所有查询将重新执行，因此，从客户端的角度来看，一切正常进行（客户端将不会收到ASK | MOVED错误：他们将在收到请求后直接收到预期的回复） 群集配置已更新）。</li>
+<li>跨槽/跨节点查询：支持许多命令，这些命令涉及属于不同插槽（甚至不同集群节点）的多个键。这些命令会将查询分为多个查询，这些查询将被路由到不同的插槽/节点。 这些命令的回复处理是特定于命令的。 某些命令（例如MGET）将合并所有答复，就好像它们是单个答复一样。 其他命令（例如MSET或DEL）将汇总所有答复的结果。 由于这些查询实际上破坏了命令的原子性，因此它们的用法是可选的（默认情况下禁用）。</li>
+<li>一些没有特定节点/插槽的命令（例如DBSIZE）将传递到所有节点，并且将对映射的回复进行映射缩减，以便得出所有回复中包含的所有值的总和。</li>
+<li>可用于执行某些特定于代理的操作的附加PROXY命令</li>
+</ul>
+<h3 id="Disque-module"><a href="#Disque-module" class="headerlink" title="Disque module"></a>Disque module</h3><p> 这个本来是作者几年前开发的一个基于 Redis 的消息队列工具，但多年来作者发现 Redis 在持续开发时，他也要持续把新的功能合并到这个Disque 项目里面，这里有大量无用的工作。因此这次他在 Redis 的基础上通过 Modules 功能实现 Disque。</p>
+<p> 如果业务并不需要保持严格消息的顺序，这个 Disque 能提供足够简单和快速的消息队列功能。</p>
+<h3 id="其他-2"><a href="#其他-2" class="headerlink" title="其他"></a>其他</h3><ul>
+<li>新的Expire算法：用于定期删除过期key的函数activeExpireCycle被重写，以便更快地收回已经过期的key；</li>
+<li>提供了许多新的Module API；</li>
+<li>从服务器也支持无盘复制：在用户可以配置的特定条件下，从服务器现在可以在第一次同步时直接从套接字加载RDB到内存；</li>
+<li>SRANDMEMBER命令和类似的命令优化，使其结果具有更好的分布；</li>
+<li>重写了Systemd支持；</li>
+<li>官方redis-benchmark工具支持cluster模式；</li>
+<li>提升了RDB日志加载速度；</li>
+</ul>
+<h3 id="文章来源"><a href="#文章来源" class="headerlink" title="文章来源"></a>文章来源</h3><p>本文主要来源于（参考redis4.0、5.0、6.0版本的release notes）</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/sinat_14840559/article/details/108326178">https://blog.csdn.net/sinat_14840559/article/details/108326178</a></p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Hubert Wong</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://hubertwongcn.github.io/posts/36404.html">https://hubertwongcn.github.io/posts/36404.html</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Hubert Wong</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/DataBase/">
+                                    <span class="chip bg-color">DataBase</span>
+                                </a>
+                            
+                                <a href="/tags/NoSQL/">
+                                    <span class="chip bg-color">NoSQL</span>
+                                </a>
+                            
+                                <a href="/tags/Redis/">
+                                    <span class="chip bg-color">Redis</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+        <style>
+    .valine-card {
+        margin: 1.5rem auto;
+    }
+
+    .valine-card .card-content {
+        padding: 20px 20px 5px 20px;
+    }
+
+    #vcomments textarea {
+        box-sizing: border-box;
+        background: url("/medias/comment_bg.png") 100% 100% no-repeat;
+    }
+
+    #vcomments p {
+        margin: 2px 2px 10px;
+        font-size: 1.05rem;
+        line-height: 1.78rem;
+    }
+
+    #vcomments blockquote p {
+        text-indent: 0.2rem;
+    }
+
+    #vcomments a {
+        padding: 0 2px;
+        color: #4cbf30;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    #vcomments img {
+        max-width: 100%;
+        height: auto;
+        cursor: pointer;
+    }
+
+    #vcomments ol li {
+        list-style-type: decimal;
+    }
+
+    #vcomments ol,
+    ul {
+        display: block;
+        padding-left: 2em;
+        word-spacing: 0.05rem;
+    }
+
+    #vcomments ul li,
+    ol li {
+        display: list-item;
+        line-height: 1.8rem;
+        font-size: 1rem;
+    }
+
+    #vcomments ul li {
+        list-style-type: disc;
+    }
+
+    #vcomments ul ul li {
+        list-style-type: circle;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    #vcomments table, th, td {
+        border: 0;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments h1 {
+        font-size: 1.85rem;
+        font-weight: bold;
+        line-height: 2.2rem;
+    }
+
+    #vcomments h2 {
+        font-size: 1.65rem;
+        font-weight: bold;
+        line-height: 1.9rem;
+    }
+
+    #vcomments h3 {
+        font-size: 1.45rem;
+        font-weight: bold;
+        line-height: 1.7rem;
+    }
+
+    #vcomments h4 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    #vcomments h5 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        line-height: 1.4rem;
+    }
+
+    #vcomments h6 {
+        font-size: 1rem;
+        line-height: 1.3rem;
+    }
+
+    #vcomments p {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    #vcomments hr {
+        margin: 12px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
+    }
+
+    #vcomments blockquote {
+        margin: 15px 0;
+        border-left: 5px solid #42b983;
+        padding: 1rem 0.8rem 0.3rem 0.8rem;
+        color: #666;
+        background-color: rgba(66, 185, 131, .1);
+    }
+
+    #vcomments pre {
+        font-family: monospace, monospace;
+        padding: 1.2em;
+        margin: .5em 0;
+        background: #272822;
+        overflow: auto;
+        border-radius: 0.3em;
+        tab-size: 4;
+    }
+
+    #vcomments code {
+        font-family: monospace, monospace;
+        padding: 1px 3px;
+        font-size: 0.92rem;
+        color: #e96900;
+        background-color: #f8f8f8;
+        border-radius: 2px;
+    }
+
+    #vcomments pre code {
+        font-family: monospace, monospace;
+        padding: 0;
+        color: #e8eaf6;
+        background-color: #272822;
+    }
+
+    #vcomments pre[class*="language-"] {
+        padding: 1.2em;
+        margin: .5em 0;
+    }
+
+    #vcomments code[class*="language-"],
+    pre[class*="language-"] {
+        color: #e8eaf6;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+
+    #vcomments b,
+    strong {
+        font-weight: bold;
+    }
+
+    #vcomments dfn {
+        font-style: italic;
+    }
+
+    #vcomments small {
+        font-size: 85%;
+    }
+
+    #vcomments cite {
+        font-style: normal;
+    }
+
+    #vcomments mark {
+        background-color: #fcf8e3;
+        padding: .2em;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+</style>
+
+<div class="card valine-card" data-aos="fade-up">
+    <div class="comment_headling" style="font-size: 20px; font-weight: 700; position: relative; padding-left: 20px; top: 15px; padding-bottom: 5px;">
+        <i class="fas fa-comments fa-fw" aria-hidden="true"></i>
+        <span>评论</span>
+    </div>
+    <div id="vcomments" class="card-content" style="display: grid">
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/valine/av-min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.iohttps://unpkg.com/valine/dist/Valine.min.js"></script> -->
+<script src="https://unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        appId: 'oTH4fV5e9iBU62LIVFq44U80-gzGzoHsz',
+        appKey: 'XpA0KzIfRp5Be7wCiljyVm7u',
+        notify: 'false' === 'true',
+        verify: 'false' === 'true',
+        visitor: 'false' === 'true',
+        avatar: 'monsterid',
+        pageSize: '10',
+        lang: 'en',
+        placeholder: '昵称填写QQ，可以显示QQ头像和昵称',
+        enableQQ: true,
+        requiredFields: ['nick','mail'], //设置必填项
+    });
+</script>
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/posts/54454.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/16.jpg" class="responsive-img" alt="18.Redis进阶 - 运维监控：Redis的监控详解">
+                        
+                        <span class="card-title">18.Redis进阶 - 运维监控：Redis的监控详解</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2023-12-29
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/DataBase/" class="post-category">
+                                    DataBase
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/DataBase/">
+                        <span class="chip bg-color">DataBase</span>
+                    </a>
+                    
+                    <a href="/tags/NoSQL/">
+                        <span class="chip bg-color">NoSQL</span>
+                    </a>
+                    
+                    <a href="/tags/Redis/">
+                        <span class="chip bg-color">Redis</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/posts/61846.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/18.jpg" class="responsive-img" alt="16.Redis进阶 - 缓存问题：一致性, 穿击, 穿透, 雪崩, 污染等">
+                        
+                        <span class="card-title">16.Redis进阶 - 缓存问题：一致性, 穿击, 穿透, 雪崩, 污染等</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2023-12-29
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/DataBase/" class="post-category">
+                                    DataBase
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/DataBase/">
+                        <span class="chip bg-color">DataBase</span>
+                    </a>
+                    
+                    <a href="/tags/NoSQL/">
+                        <span class="chip bg-color">NoSQL</span>
+                    </a>
+                    
+                    <a href="/tags/Redis/">
+                        <span class="chip bg-color">Redis</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('3'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\(', '\)']]}
+    });
+</script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+    <div class="container row center-align" style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2023</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">Hubert Wong</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                class="white-color">844.3k</span>&nbsp;字
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <span id="sitetime">载入运行时间...</span>
+            <script>
+                function siteTime() {
+                    var seconds = 1000;
+                    var minutes = seconds * 60;
+                    var hours = minutes * 60;
+                    var days = hours * 24;
+                    var years = days * 365;
+                    var today = new Date();
+                    var startYear = "2019";
+                    var startMonth = "6";
+                    var startDate = "28";
+                    var startHour = "0";
+                    var startMinute = "0";
+                    var startSecond = "0";
+                    var todayYear = today.getFullYear();
+                    var todayMonth = today.getMonth() + 1;
+                    var todayDate = today.getDate();
+                    var todayHour = today.getHours();
+                    var todayMinute = today.getMinutes();
+                    var todaySecond = today.getSeconds();
+                    var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                    var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                    var diff = t2 - t1;
+                    var diffYears = Math.floor(diff / years);
+                    var diffDays = Math.floor((diff / days) - diffYears * 365);
+                    var diffHours = Math.floor((diff - (diffYears * 365 + diffDays) * days) / hours);
+                    var diffMinutes = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours) /
+                        minutes);
+                    var diffSeconds = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours -
+                        diffMinutes * minutes) / seconds);
+                    if (startYear == todayYear) {
+                        document.getElementById("year").innerHTML = todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffDays + " 天 " + diffHours +
+                            " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    } else {
+                        document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffYears + " 年 " + diffDays +
+                            " 天 " + diffHours + " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    }
+                }
+                setInterval(siteTime, 1000);
+            </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/HubertWongCN" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:hubertwongcn@gmail.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+        <script src="//code.tidio.co/qst6g32qs2bibjqjp6oqgpe69j3qtrn9.js"></script>
+        <script>
+            $(document).ready(function () {
+                setInterval(change_Tidio, 50);
+                function change_Tidio() {
+                    var tidio=$("#tidio-chat iframe");
+                    if(tidio.css("display")=="block"&& $(window).width()>977 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" &&$(window).width()>977)>0? "-40px" : ($("div.toc-title").length&&$(window).width()>977)>0?"85px":"20px";
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.height=parseInt(tidio.css("height"))>=520?"520px":tidio.css("height");
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()>601 &&$(window).width()<992 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && 601< $(window).width()<992)>0? "-40px":"20px" ;
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))<230){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && $(window).width()<601)>0? "-10px":"45px" ;
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    if( tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))>=230){
+                        document.getElementById("tidio-chat-iframe").style.zIndex="998";
+                    }
+                }
+            });
+        </script>
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
