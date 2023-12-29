@@ -1,0 +1,1918 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN,en,default">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="20.Mongo进阶 - 系统设计：数据模型, 生活，养猫，Java，后端开发">
+    <meta name="description" content="记录猫奴生活、后端学习笔记，由Hexo+Github搭建">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>20.Mongo进阶 - 系统设计：数据模型 | Hubert&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/hubert-logo.png">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/my.css">
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/jquery/jquery.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="Hubert's Blog" type="application/atom+xml">
+</head>
+
+
+
+   <style>
+    body{
+       background-image: url(https://cdn.jsdelivr.net/gh/Tokisaki-Galaxy/res/site/medias/background.jpg);
+       background-repeat:no-repeat;
+       background-size:cover;
+       background-attachment:fixed;
+    }
+</style>
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Hubert&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>主页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Hubert&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            记录猫奴生活、后端学习笔记，由Hexo+Github搭建
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			主页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/15.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">20.Mongo进阶 - 系统设计：数据模型</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/DataBase/">
+                                <span class="chip bg-color">DataBase</span>
+                            </a>
+                        
+                            <a href="/tags/NoSQL/">
+                                <span class="chip bg-color">NoSQL</span>
+                            </a>
+                        
+                            <a href="/tags/MongoDB/">
+                                <span class="chip bg-color">MongoDB</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/DataBase/" class="post-category">
+                                DataBase
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2023-12-30
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2023-12-30
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    6.5k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                    24 分
+                </div>
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/prism/prism.css">
+        
+
+        
+        <!-- 代码块折行 -->
+        <style type="text/css">
+            code[class*="language-"], pre[class*="language-"] { white-space: pre-wrap !important; }
+        </style>
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h1 id="一、数据模型介绍"><a href="#一、数据模型介绍" class="headerlink" title="一、数据模型介绍"></a>一、数据模型介绍</h1><p>MongoDB中的数据有着灵活的架构。与SQL数据库不同，因为SQL数据库必须先定义表结构，然后才能向其中插入数据，而MongoDB的集合不强制任何文档结构。这个灵活性方便了文档与实体或者对象之间的映射。每个文档可以匹配所表示实体的数据域，哪怕这个数据后面会发生变化。当然实际应用中，最好还是让集合中的文档有着类似的结构。</p>
+<p>数据模型最富有挑战的意义是在于能平衡应用需要与数据库引擎性能以及数据获取模式。当设计数据模型时，总是会考虑应用程序对数据的使用（如查询、更新和数据处理），以及数据本身的继承结构。</p>
+<h3 id="文档结构"><a href="#文档结构" class="headerlink" title="文档结构"></a>文档结构</h3><p>为MongoDB应用程序设计数据模型的关键点是解析文档的结构和应用程序如何表示数据之间的关系。应用程序表示数据关系可以有两种方式：引用和嵌入文档。</p>
+<h3 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h3><p>引用通过包含链接或从一个文档到另一个文档的引用来存储数据关系。应用程序可以通过解析这些引用来访问有关数据。一般地我们称之为规范化数据模型。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300111334.svg" alt="使用引用链接文档的数据模型。 “contact”文档和“access”文档都包含对“user”文档的引用。"></p>
+<h3 id="嵌入数据"><a href="#嵌入数据" class="headerlink" title="嵌入数据"></a>嵌入数据</h3><p>嵌入文档通过把数据存储到一个独立文档结构中来获取数据之间的关系。MongoDB允许将一个文档结构嵌入到另一个文档的字段或者数组中。这些去规范化数据模型允许应用程序在一个独立的数据库操作中获取和操作有关数据。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300109110.svg" alt="具有包含所有相关信息的嵌入字段的数据模型。"></p>
+<h3 id="写操作的原子性"><a href="#写操作的原子性" class="headerlink" title="写操作的原子性"></a>写操作的原子性</h3><p>MongoDB的写操作在文档级别是原子性的，没有单个写操作对超过一个文档或者超过一个集合是原子性的。带有嵌入数据的去规范化数据模型将一个可表现实体的所有有关数据合并到单个文档中。这有益于原子写操作，因为单个写操作可以对一个实体实现插入和更新。规范数据意味着把数据切分到不同的集合，这需要多个写操作，而这些写操作虽然自己本身是原子性的，但是合并起来看则不具有原子性。</p>
+<h3 id="文档增长"><a href="#文档增长" class="headerlink" title="文档增长"></a>文档增长</h3><p>有些更新，如将元素压入数组或者添加新字段，则会增加文档大小。</p>
+<p>对MMAPv1存储引擎而言，如果文档大小超过为这个文档分配的空间，MongoDB会在磁盘上迁移此文档。当使用MMAPv1存储引擎时，文档增长的考虑会影响我们规范化数据还是去规范化数据。</p>
+<h3 id="数据使用和性能"><a href="#数据使用和性能" class="headerlink" title="数据使用和性能"></a>数据使用和性能</h3><p>设计数据模型时，考虑一下应用程序如何使用数据库。例如，如果应用程序仅使用最近插入的文档，那可以考虑使用Capped Collections。如果程序主要是对集合的读操作，那么对集合添加索引可以提高性能。</p>
+<h1 id="二、文档验证"><a href="#二、文档验证" class="headerlink" title="二、文档验证"></a>二、文档验证</h1><p>MongoDB在更新和插入操作期间可以验证文档。验证规则使用validator选项在每个集合上指定，这个validator选项用一个文档具现化验证规则和表达式。这些表达式的指定可以使用任何查询操作符，除了$geoNear$,$near$, $nearSphere$，$text$和$where$。</p>
+<p>如要对一个集合添加文档验证，使用带validator选项的collMod命令。你可以在创建新集合时就指定文档验证规则，即，使用带有validator选项的db.createCollection()方法，如下所示：</p>
+<pre class="language-json" data-language="json"><code class="language-json">db.createCollection( <span class="token string">"contacts"</span><span class="token punctuation">,</span>
+   <span class="token punctuation">{</span> validator<span class="token operator">:</span> <span class="token punctuation">{</span> $or<span class="token operator">:</span>
+      <span class="token punctuation">[</span>
+         <span class="token punctuation">{</span> phone<span class="token operator">:</span> <span class="token punctuation">{</span> $type<span class="token operator">:</span> <span class="token string">"string"</span> <span class="token punctuation">}</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
+         <span class="token punctuation">{</span> email<span class="token operator">:</span> <span class="token punctuation">{</span> $regex<span class="token operator">:</span> /@mongodb\.com$/ <span class="token punctuation">}</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
+         <span class="token punctuation">{</span> status<span class="token operator">:</span> <span class="token punctuation">{</span> $in<span class="token operator">:</span> <span class="token punctuation">[</span> <span class="token string">"Unknown"</span><span class="token punctuation">,</span> <span class="token string">"Incomplete"</span> <span class="token punctuation">]</span> <span class="token punctuation">}</span> <span class="token punctuation">}</span>
+      <span class="token punctuation">]</span>
+   <span class="token punctuation">}</span>
+<span class="token punctuation">}</span> )</code></pre>
+
+<p>MongoDB提供了validationLevel选项，这个选项决定了MongoDB在更新文档时应用验证规则的严格程度。还有一个是validationAction选项，这决定了MongoDB是否引发错误并拒绝违背验证规则的文档，还是给出警告并把违背验证规则消息写入日志同时接受无效的文档。</p>
+<h3 id="行为"><a href="#行为" class="headerlink" title="行为"></a>行为</h3><p>验证在更新和插入时验证。当你添加验证规则到一个集合时，已经存在的文档不会被验证是否符合验证规则，除非这些文档被修改。</p>
+<h3 id="存在的文档"><a href="#存在的文档" class="headerlink" title="存在的文档"></a>存在的文档</h3><p>可以使用validationLevel选项来控制MongoDB如何处理已存在的文档，即是否验证之前已存在的规则。</p>
+<p>默认情况下，validationLevel值为strict，MongoDB应用验证规则到所有的插入和更新操作。设置validationLevel为moderate，则应用验证规则到插入操作和对已存在且满足验证标准的文档的更新操作。在moderate级别下，对不满足验证标准的已存在文档，MongoDB则不检测这些文档的有效性。</p>
+<p>例子：</p>
+<p>考虑以下contacts集合中的文档：</p>
+<pre class="language-json" data-language="json"><code class="language-json"><span class="token punctuation">{</span>
+   <span class="token property">"_id"</span><span class="token operator">:</span> <span class="token string">"125876"</span>
+   <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"Anne"</span><span class="token punctuation">,</span>
+   <span class="token property">"phone"</span><span class="token operator">:</span> <span class="token string">"+1 555 123 456"</span><span class="token punctuation">,</span>
+   <span class="token property">"city"</span><span class="token operator">:</span> <span class="token string">"London"</span><span class="token punctuation">,</span>
+   <span class="token property">"status"</span><span class="token operator">:</span> <span class="token string">"Complete"</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span>
+<span class="token punctuation">{</span>
+   <span class="token property">"_id"</span><span class="token operator">:</span> <span class="token string">"860000"</span><span class="token punctuation">,</span>
+   <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"Ivan"</span><span class="token punctuation">,</span>
+   <span class="token property">"city"</span><span class="token operator">:</span> <span class="token string">"Vancouver"</span>
+<span class="token punctuation">}</span></code></pre>
+
+<p>用以下命令对contacts集合添加一个验证器</p>
+<pre class="language-json" data-language="json"><code class="language-json">db.runCommand( <span class="token punctuation">{</span>
+   collMod<span class="token operator">:</span> <span class="token string">"contacts"</span><span class="token punctuation">,</span>
+   validator<span class="token operator">:</span> <span class="token punctuation">{</span> $or<span class="token operator">:</span> <span class="token punctuation">[</span> <span class="token punctuation">{</span> phone<span class="token operator">:</span> <span class="token punctuation">{</span> $exists<span class="token operator">:</span> <span class="token boolean">true</span> <span class="token punctuation">}</span> <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span> email<span class="token operator">:</span> <span class="token punctuation">{</span> $exists<span class="token operator">:</span> <span class="token boolean">true</span> <span class="token punctuation">}</span> <span class="token punctuation">}</span> <span class="token punctuation">]</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
+   validationLevel<span class="token operator">:</span> <span class="token string">"moderate"</span>
+<span class="token punctuation">}</span> )</code></pre>
+
+<p>现在contacts集合有一个moderate级别的验证器。如果试图更新_id为125876的文档，MongoDB将应用验证规则，因为这个已存在文档匹配验证条件。相反地，MongoDB不会应用验证规则到_id为860000的文档更新操作上，因为这个文档原先不满足验证规则。</p>
+<p>如果想完全禁用验证规则，可以设置validationLevel为off。</p>
+<h3 id="接受或拒绝无效文档"><a href="#接受或拒绝无效文档" class="headerlink" title="接受或拒绝无效文档"></a>接受或拒绝无效文档</h3><p>validationAction选项决定了MongoDB如何处理违反验证规则的文档。</p>
+<p>默认地，validationAction为error，这时MongoDB拒绝任何违反验证条件的插入或更新操作。当validationAction值设置为warn，MongoDB记录任何违反验证的信息到日志但是允许插入或者更新的操作处理。</p>
+<p>例如，下例创建一个contacts集合，这个集合带有一个验证器，这个验证器指定插入和更新文档需要满足以下三个条件中的至少一个条件：</p>
+<ul>
+<li>phone字段是string类型</li>
+<li>email字符满足正则表达式</li>
+<li>status字段要么是Unknown，要么是Incomplete</li>
+</ul>
+<pre class="language-none"><code class="language-none">db.createCollection( "contacts",
+   {
+      validator: { $or:
+         [
+            { phone: { $type: "string" } },
+            { email: { $regex: /@mongodb\.com$/ } },
+            { status: { $in: [ "Unknown", "Incomplete" ] } }
+         ],
+       validationAction: "warn"
+      }
+   }
+)</code></pre>
+
+<p>有了验证器之后，以下插入操作不满足验证规则，但是因为validationAction值为warn，故写操作记录此信息到日志。</p>
+<pre class="language-none"><code class="language-none">db.contacts.insert( { name: "Amanda", status: "Updated" } )</code></pre>
+
+<p>日志信息包含了集合的全命名空间和不满足验证规则的文档，以及操作时间</p>
+<pre class="language-none"><code class="language-none">2015-10-15T11:20:44.260-0400 W STORAGE  [conn3] Document would fail validation collection: example.contacts doc: { _id: ObjectId('561fc44c067a5d85b96274e4'), name: "Amanda", status: "Updated" }</code></pre>
+
+<h3 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h3><p>我们不能为admin，local和config数据库指定验证器，也不能对system.*集合添加验证器。</p>
+<h3 id="绕过文档验证"><a href="#绕过文档验证" class="headerlink" title="绕过文档验证"></a>绕过文档验证</h3><p>用户可以使用bypassDocumentValidation选项绕过文档验证，参考<a target="_blank" rel="noopener" href="https://docs.mongodb.org/manual/release-notes/3.2/#rel-notes-document-validation">Document Validation</a>可以获得支持bypassDocumentValidation选项的命令的列表。</p>
+<p>如果部署已经允许访问控制，为了绕过文档验证，已认证用户必须需要bypassDocumentValidation动作。内建的dbAdmin和restore角色提供了这个动作。</p>
+<h1 id="三、数据模型设计"><a href="#三、数据模型设计" class="headerlink" title="三、数据模型设计"></a>三、数据模型设计</h1><p> 有效的数据模型可以支持程序的需求。关键考虑点便是文档结构采用嵌入式还是引用式。</p>
+<h3 id="嵌入数据模型"><a href="#嵌入数据模型" class="headerlink" title="嵌入数据模型"></a>嵌入数据模型</h3><p>上面已经介绍过，即去规范化数据模型</p>
+<h3 id="引用数据模型"><a href="#引用数据模型" class="headerlink" title="引用数据模型"></a>引用数据模型</h3><p>上面已经介绍过，即规范化数据模型</p>
+<h3 id="嵌入文档的一对一模型"><a href="#嵌入文档的一对一模型" class="headerlink" title="嵌入文档的一对一模型"></a>嵌入文档的一对一模型</h3><p>考虑以下patron与address之间的关系。这个例子表明了如果需要查看处于其他上下文中的数据实体，那么嵌入式比引用式数据模型具有优势。在这个patron和address数据之间的一对一关系中，address属于patron</p>
+<p>在规范化数据模型中，address文档包含了一个队patron文档的引用。</p>
+<pre class="language-none"><code class="language-none">{
+   _id: "joe",
+   name: "Joe Bookreader"
+}
+
+{
+   patron_id: "joe",
+   street: "123 Fake Street",
+   city: "Faketon",
+   state: "MA",
+   zip: "12345"
+}</code></pre>
+
+<p>如果address数据需要频繁获取名字信息，那在引用式数据模型中，程序需要进行多个查询来解析这个引用。更好的数据模型会把address数据嵌入到patron数据中，如下</p>
+<pre class="language-none"><code class="language-none">{
+   _id: "joe",
+   name: "Joe Bookreader",
+   address: {
+              street: "123 Fake Street",
+              city: "Faketon",
+              state: "MA",
+              zip: "12345"
+            }
+}</code></pre>
+
+<p>这样，程序在一次查询中就能获取全部信息。</p>
+<h3 id="嵌入文档的一对多关系模型"><a href="#嵌入文档的一对多关系模型" class="headerlink" title="嵌入文档的一对多关系模型"></a>嵌入文档的一对多关系模型</h3><p>以下例子中，patron与address数据之间存在一对多关系，即patron有多个address实体。</p>
+<p>在规范化数据模型中，address文档包含了对patron文档的引用，如下</p>
+<pre class="language-none"><code class="language-none">{
+   _id: "joe",
+   name: "Joe Bookreader"
+}
+
+{
+   patron_id: "joe",
+   street: "123 Fake Street",
+   city: "Faketon",
+   state: "MA",
+   zip: "12345"
+}
+
+{
+   patron_id: "joe",
+   street: "1 Some Other Street",
+   city: "Boston",
+   state: "MA",
+   zip: "12345"
+}</code></pre>
+
+<p>如果程序频繁获取address数据中的名称信息，那么需要多次查询以解析引用。一个较优的方案是嵌入address数据到patron数据中，如下</p>
+<pre class="language-none"><code class="language-none">{
+   _id: "joe",
+   name: "Joe Bookreader",
+   addresses: [
+                {
+                  street: "123 Fake Street",
+                  city: "Faketon",
+                  state: "MA",
+                  zip: "12345"
+                },
+                {
+                  street: "1 Some Other Street",
+                  city: "Boston",
+                  state: "MA",
+                  zip: "12345"
+                }
+              ]
+ }</code></pre>
+
+<p>这样通过一次查询，程序就能获取全部的patron信息。</p>
+<h3 id="文档引用的一对多关系模型"><a href="#文档引用的一对多关系模型" class="headerlink" title="文档引用的一对多关系模型"></a>文档引用的一对多关系模型</h3><p>考虑以下出版社与书之间关系映射。这个例子说明了引用比嵌入具有的优势，避免了出版社信息的重复。</p>
+<p>嵌入式数据模型如下</p>
+<pre class="language-none"><code class="language-none">{
+   title: "MongoDB: The Definitive Guide",
+   author: [ "Kristina Chodorow", "Mike Dirolf" ],
+   published_date: ISODate("2010-09-24"),
+   pages: 216,
+   language: "English",
+   publisher: {
+              name: "O'Reilly Media",
+              founded: 1980,
+              location: "CA"
+            }
+}
+
+{
+   title: "50 Tips and Tricks for MongoDB Developer",
+   author: "Kristina Chodorow",
+   published_date: ISODate("2011-05-06"),
+   pages: 68,
+   language: "English",
+   publisher: {
+              name: "O'Reilly Media",
+              founded: 1980,
+              location: "CA"
+            }
+}</code></pre>
+
+<p>可见，这种数据模型导致出版社信息的重复，使用引用数据模型使出版社信息在一个独立的集合中则可以解决冗余问题。</p>
+<p>当使用引用数据模型时，关系的增长决定将引用存储到何处。如果每个出版社的书数量增长缓慢，那将书的引用存储到出版社文档中可能会是不错的主意。否则如果每个出版社的书数量没有界限，那这个数据模型会导致可变的，增长数组，如下所示，</p>
+<pre class="language-none"><code class="language-none">{
+   name: "O'Reilly Media",
+   founded: 1980,
+   location: "CA",
+   books: [12346789, 234567890, ...]  // 随着书的数量增长
+}
+
+{
+    _id: 123456789,
+    title: "MongoDB: The Definitive Guide",
+    author: [ "Kristina Chodorow", "Mike Dirolf" ],
+    published_date: ISODate("2010-09-24"),
+    pages: 216,
+    language: "English"
+}
+
+{
+   _id: 234567890,
+   title: "50 Tips and Tricks for MongoDB Developer",
+   author: "Kristina Chodorow",
+   published_date: ISODate("2011-05-06"),
+   pages: 68,
+   language: "English"
+}</code></pre>
+
+<p>为了避免文档中可变的增长数组，存储出版社信息到书文档中，如下</p>
+<pre class="language-none"><code class="language-none">{
+   _id: "oreilly",
+   name: "O'Reilly Media",
+   founded: 1980,
+   location: "CA"
+}
+
+{
+   _id: 123456789,
+   title: "MongoDB: The Definitive Guide",
+   author: [ "Kristina Chodorow", "Mike Dirolf" ],
+   published_date: ISODate("2010-09-24"),
+   pages: 216,
+   language: "English",
+   publisher_id: "oreilly"
+}
+
+{
+   _id: 234567890,
+   title: "50 Tips and Tricks for MongoDB Developer",
+   author: "Kristina Chodorow",
+   published_date: ISODate("2011-05-06"),
+   pages: 68,
+   language: "English",
+   publisher_id: "oreilly"
+}</code></pre>
+
+<h1 id="四、模型树结构"><a href="#四、模型树结构" class="headerlink" title="四、模型树结构"></a>四、模型树结构</h1><h2 id="父引用的模型树结构"><a href="#父引用的模型树结构" class="headerlink" title="父引用的模型树结构"></a>父引用的模型树结构</h2><p>这个数据模型描述了一个树形结构，在子节点中存储父节点的引用。</p>
+<h3 id="模式"><a href="#模式" class="headerlink" title="模式"></a>模式</h3><p>父引用模式存储每个树节点到文档中，除了树节点外，文档还存储了父节点的id。</p>
+<p>考虑以下目录的层级关系。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300120397.png" alt="父引用"></p>
+<p>以下为应用实例</p>
+<pre class="language-none"><code class="language-none">db.categories.insert( { _id: "MongoDB", parent: "Databases" } )
+db.categories.insert( { _id: "dbm", parent: "Databases" } )
+db.categories.insert( { _id: "Databases", parent: "Programming" } )
+db.categories.insert( { _id: "Languages", parent: "Programming" } )
+db.categories.insert( { _id: "Programming", parent: "Books" } )
+db.categories.insert( { _id: "Books", parent: null } )</code></pre>
+
+<p>查询一个节点的父节点变得快速且直观</p>
+<pre class="language-none"><code class="language-none">db.categories.findOne( { _id: "MongoDB" } ).parent</code></pre>
+
+<p>还可以对parent字段创建索引以提高查询速度</p>
+<pre class="language-none"><code class="language-none">db.categories.createIndex( { parent: 1 } )</code></pre>
+
+<p>通过parent字段查询其直接子节点</p>
+<pre class="language-none"><code class="language-none">db.categories.find( { parent: "Databases" } )</code></pre>
+
+<p>这种父引用模式是实现树存储的简单方法，缺点是获取子树时则需要多个查询。</p>
+<h2 id="子引用的模型树结构"><a href="#子引用的模型树结构" class="headerlink" title="子引用的模型树结构"></a>子引用的模型树结构</h2><p>这个数据模型描述了树形结构，存储子节点的引用到父节点中。</p>
+<h3 id="模式-1"><a href="#模式-1" class="headerlink" title="模式"></a>模式</h3><p>子引用模式存储每个树节点到一个文档中，除了树节点，文档还存储了包含其子节点id的数组。</p>
+<p>考虑与上一个图中相同的目录层级关系，其子引用模式的实现如下</p>
+<pre class="language-none"><code class="language-none">db.categories.insert( { _id: "MongoDB", children: [] } )
+db.categories.insert( { _id: "dbm", children: [] } )
+db.categories.insert( { _id: "Databases", children: [ "MongoDB", "dbm" ] } )
+db.categories.insert( { _id: "Languages", children: [] } )
+db.categories.insert( { _id: "Programming", children: [ "Databases", "Languages" ] } )
+db.categories.insert( { _id: "Books", children: [ "Programming" ] } )</code></pre>
+
+<p>查询获取一个节点的直接子节点则变得快速且直观</p>
+<pre class="language-none"><code class="language-none">db.categories.findOne( { _id: "Databases" } ).children</code></pre>
+
+<p>创建children字段上的索引以实现快速查询</p>
+<pre class="language-none"><code class="language-none">db.categories.createIndex( { children: 1 } )</code></pre>
+
+<p>通过children信息查询其父节点以及兄弟节点信息</p>
+<pre class="language-none"><code class="language-none">db.categories.find( { children: "MongoDB" } )</code></pre>
+
+<p>子引用模式提供了一种树存储的合适方案，只要不需要对子树操作就行（单个查询无法保证获取一个节点的所有子节点）。对于存储图像，其中一个节点可能有多个父节点，那这个模式也是很好的方案。</p>
+<h2 id="祖先数组的模型树结构"><a href="#祖先数组的模型树结构" class="headerlink" title="祖先数组的模型树结构"></a>祖先数组的模型树结构</h2><p>这个数据模型描述了树形结构，使用对父节点的引用和一个数组来存储所有的祖先节点。</p>
+<h3 id="模式-2"><a href="#模式-2" class="headerlink" title="模式"></a>模式</h3><p>文档中除了存储每个树节点，还存储了一个数组，其他暴露了所有祖先节点的id或者路径（祖先节点的id按顺序排序组成路径）。</p>
+<p>考虑跟上面图中相同的目录层级关系</p>
+<p>以下实际实例中，文档除了ancestors字段，还有parent字段，parent字段存储了直接父节点的引用。</p>
+<pre class="language-none"><code class="language-none">db.categories.insert( { _id: "MongoDB", ancestors: [ "Books", "Programming", "Databases" ], parent: "Databases" } )
+db.categories.insert( { _id: "dbm", ancestors: [ "Books", "Programming", "Databases" ], parent: "Databases" } )
+db.categories.insert( { _id: "Databases", ancestors: [ "Books", "Programming" ], parent: "Programming" } )
+db.categories.insert( { _id: "Languages", ancestors: [ "Books", "Programming" ], parent: "Programming" } )
+db.categories.insert( { _id: "Programming", ancestors: [ "Books" ], parent: "Books" } )
+db.categories.insert( { _id: "Books", ancestors: [ ], parent: null } )</code></pre>
+
+<p>查询获取一个节点的祖先节点或者路径则变得快速而直观</p>
+<pre class="language-none"><code class="language-none">db.categories.findOne( { _id: "MongoDB" } ).ancestors</code></pre>
+
+<p>对ancestors字段创建索引提高查询速度</p>
+<pre class="language-none"><code class="language-none">db.categories.createIndex( { ancestors: 1 } )</code></pre>
+
+<p>查询ancestors字段以查找它的所有后代节点</p>
+<pre class="language-none"><code class="language-none">db.categories.find( { ancestors: "Programming" } )</code></pre>
+
+<p>祖先数组模式提供了查询某节点的后代节点以及某节点的祖先节点的有效方案，所以当需要对子树节点进行操作时，这个模式是一个很好的选择。</p>
+<p>祖先数组模式比具体化路径（Materialized Paths）模式稍慢，但是使用更直观。</p>
+<h2 id="具体化路径（Materialized-Paths）的模型树结构"><a href="#具体化路径（Materialized-Paths）的模型树结构" class="headerlink" title="具体化路径（Materialized Paths）的模型树结构"></a>具体化路径（Materialized Paths）的模型树结构</h2><p>这个数据模型描述了树形结构，存储文档间的全关系路径。</p>
+<h3 id="模式-3"><a href="#模式-3" class="headerlink" title="模式"></a>模式</h3><p>具体化路径中，文档除了存储树节点之外，还存储了节点的祖先的id或者路径。尽管具体化路径模式要求额外的步骤处理字符串和正则表达式，这个模式也提供了处理路径的灵活性，如通过部分路径查找节点。</p>
+<p>考虑与上面的图中相同的目录层级关系</p>
+<p>具体化路径模式中，存储路径到path字段中，路径使用逗号作为分隔符</p>
+<pre class="language-none"><code class="language-none">db.categories.insert( { _id: "Books", path: null } )
+db.categories.insert( { _id: "Programming", path: ",Books," } )
+db.categories.insert( { _id: "Databases", path: ",Books,Programming," } )
+db.categories.insert( { _id: "Languages", path: ",Books,Programming," } )
+db.categories.insert( { _id: "MongoDB", path: ",Books,Programming,Databases," } )
+db.categories.insert( { _id: "dbm", path: ",Books,Programming,Databases," } )</code></pre>
+
+<p>通过path字段查询所有的节点</p>
+<pre class="language-none"><code class="language-none">db.categories.find().sort( { path: 1 } )  // 按path的升序</code></pre>
+
+<p>对path字段使用正则表达式查找Programming的后代</p>
+<pre class="language-none"><code class="language-none">db.categories.find( { path: /,Programming,/ } ) // 路径包含",Programming,"</code></pre>
+
+<p>查找Books的后代，因为Books是最高节点，故正则表达式以”,Books,”开头</p>
+<pre class="language-none"><code class="language-none">db.categories.find( { path: /^,Books,/ } )</code></pre>
+
+<p>对path字段创建索引</p>
+<pre class="language-none"><code class="language-none">db.categories.createIndex( { path: 1 } )</code></pre>
+
+<p>根据具体查询，这个索引可能会提高性能：</p>
+<ul>
+<li>对于根节点Books的子树上的查询（例如，/^,Books,/ 或者 /^,Books,Programming,/），path字段的索引会明显提高查询性能。</li>
+<li>对于未提供到根节点的路径的子树上的查询（例如， /,Databases,/），或者类似的子树查询，节点在加索引的字符串的中间，这时查询必须扫描所有索引。对这些查询来说，如果索引比整个集合小很多，则索引会提高查询性能。</li>
+</ul>
+<h2 id="内嵌集（Nested-Sets）的模型树结构"><a href="#内嵌集（Nested-Sets）的模型树结构" class="headerlink" title="内嵌集（Nested Sets）的模型树结构"></a>内嵌集（Nested Sets）的模型树结构</h2><p>这个数据模型描述了树形结构，优化了查找子树的性能，但是也会导致树的易变性的增加。</p>
+<h3 id="模式-4"><a href="#模式-4" class="headerlink" title="模式"></a>模式</h3><p>内嵌集模式对树作一个往返遍历并标示树中每个节点为停留点。应用程序对每个节点访问两次，第一次为去往遍历，第二次为返回遍历。内嵌集模式中文档除了存储树节点，还存储了其父节点的id，存储其去往停留点到left字段，以及存储返回停留点到right字段。</p>
+<p>考虑如下目录的层级关系</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300124103.png" alt="在这里插入图片描述"></p>
+<p>下面代码演示了内嵌集的实现</p>
+<pre class="language-none"><code class="language-none">db.categories.insert( { _id: "Books", parent: 0, left: 1, right: 12 } )
+db.categories.insert( { _id: "Programming", parent: "Books", left: 2, right: 11 } )
+db.categories.insert( { _id: "Languages", parent: "Programming", left: 3, right: 4 } )
+db.categories.insert( { _id: "Databases", parent: "Programming", left: 5, right: 10 } )
+db.categories.insert( { _id: "MongoDB", parent: "Databases", left: 6, right: 7 } )
+db.categories.insert( { _id: "dbm", parent: "Databases", left: 8, right: 9 } )</code></pre>
+
+<p>查询获取一个节点的后代</p>
+<pre class="language-none"><code class="language-none">var databaseCategory = db.categories.findOne( { _id: "Databases" } );
+db.categories.find( { left: { $gt: databaseCategory.left }, right: { $lt: databaseCategory.right } } );</code></pre>
+
+<p>内嵌集模式提供了为查找子树的一个快速并有效率的方案，但是在修改树结构时较为麻烦。故这种模式适合不会改变结构的静态树。</p>
+<h1 id="五、模型特定的程序上下文"><a href="#五、模型特定的程序上下文" class="headerlink" title="五、模型特定的程序上下文"></a>五、模型特定的程序上下文</h1><h2 id="原子操作的模型数据"><a href="#原子操作的模型数据" class="headerlink" title="原子操作的模型数据"></a>原子操作的模型数据</h2><p>MongoDB中的写操作，例如db.collection.update()，db.collection.findAndModify()，db.collection.remove()在单个文档级别是原子的。对于那些需要一起被更新的字段，将字段嵌入到文档中可以确保对这些字段的更新是原子的。</p>
+<p>例如，考虑这样一种情况，当需要维护书的信息时，包括可以检出的书数量以及当前检出信息，如何确定这两个操作整体的原子性？</p>
+<p>可获得的书和检出信息必须同步。这样，将available字段和checkout字段嵌入相同的文档以确保更新文档是原子性的。</p>
+<pre class="language-none"><code class="language-none">{
+    _id: 123456789,
+    title: "MongoDB: The Definitive Guide",
+    author: [ "Kristina Chodorow", "Mike Dirolf" ],
+    published_date: ISODate("2010-09-24"),
+    pages: 216,
+    language: "English",
+    publisher_id: "oreilly",
+    available: 3,
+    checkout: [ { by: "joe", date: ISODate("2012-10-15") } ]
+}</code></pre>
+
+<p>那么，根据新的检出信息，可以使用db.collection.update()进行更新，并且对available字段和checkout字段的更新是原子性的。</p>
+<pre class="language-none"><code class="language-none">db.books.update (
+   { _id: 123456789, available: { $gt: 0 } },  //查询条件
+   {
+     $inc: { available: -1 },　　　　//available字段减1
+     $push: { checkout: { by: "abc", date: new Date() } }　　// checkout字段数组增加一个元素
+   }
+)</code></pre>
+
+<p>以上操作返回一个WriteResult()对象，包含了操作的有关信息</p>
+<pre class="language-none"><code class="language-none">WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })</code></pre>
+
+<p>nMatched字段表明1个文档匹配这个更新条件，nModified表明这个操作更新了一个文档。</p>
+<h2 id="支持关键字查询的模型数据"><a href="#支持关键字查询的模型数据" class="headerlink" title="支持关键字查询的模型数据"></a>支持关键字查询的模型数据</h2><p>关键字搜索与文本搜索或者全文搜索不同，它不提供词干提取或者其他文本处理特性。</p>
+<p>此模式描述了支持关键字搜索的方法，以支持程序搜索功能，这个搜索方法使用存储在相同文档中的数组中的关键字，而这个数组作为这个文档的文本字段。与多键索引结合后，这个模式可以支持程序的关键字搜索操作。</p>
+<h3 id="模式-5"><a href="#模式-5" class="headerlink" title="模式"></a>模式</h3><p>为了向文档中增加结构以支持基于关键字的查询，首先向文档中创建一个数组字段，并将关键字以字符串形式添加到数组中。然后可以对这个数组创建多键索引，并创建查询从这个数组中选择数值。</p>
+<p>实例：</p>
+<p>给定一个图书卷的集合，并想提供一个机遇主题的搜索。对每个卷而言，我们增加topics数组，并尽可能的对这个卷添加关键字到数组中。对Moby-Dick卷可以由如下文档表示，</p>
+<pre class="language-none"><code class="language-none">{ title : "Moby-Dick" ,
+  author : "Herman Melville" ,
+  published : 1851 ,
+  ISBN : 0451526996 ,
+  topics : [ "whaling" , "allegory" , "revenge" , "American" ,
+    "novel" , "nautical" , "voyage" , "Cape Cod" ]
+}</code></pre>
+
+<p>然后对topics数组创建多键索引</p>
+<pre class="language-none"><code class="language-none">db.volumes.createIndex( { topics: 1 } )</code></pre>
+
+<p>多键索引对topics数组中的每个关键字创建索引项。例如，索引中有一个是关于”whaling”的索引项，另一个是关于”allegory”的索引项。</p>
+<p>然后基于关键字的查询示例如下</p>
+<pre class="language-none"><code class="language-none">db.volumes.findOne( { topics : "voyage" }, { title: 1 } )</code></pre>
+
+<p>提示：数组中的元素数量很大时，如有几百或上千的关键字，那插入操作会导致加索引花费很大。</p>
+<h3 id="关键字索引的限制"><a href="#关键字索引的限制" class="headerlink" title="关键字索引的限制"></a>关键字索引的限制</h3><p>使用特定的数据模型和多键索引，MongoDB可以支持关键字搜索。然而，这些关键字索引在以下方面与全文搜索比较则显得不足或者无法相比：</p>
+<ul>
+<li>词干提取。关键字查询无法解析关键字为根或者有关词语。</li>
+<li>同义。关键字搜索特性必须在应用层提供同义支持或相关查询。</li>
+<li>排序。关键字查询不提供判断结果权重的方式。</li>
+<li>异步索引。MongoDB同步创建索引，这意味着为关键字使用的索引总是处于当前的并可实时操作。然而，异步创建的索引在某种内容和工作负荷下效率更高。</li>
+</ul>
+<h1 id="六、数据模型引用"><a href="#六、数据模型引用" class="headerlink" title="六、数据模型引用"></a>六、数据模型引用</h1><h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><p>我们已经知道MongoDB以文档的形式存储数据，而文档是JSON风格的数据结构，由一系列的“字段名-值”对组成，如下所示</p>
+<pre class="language-none"><code class="language-none">{ "item": "pencil", "qty": 500, "type": "no.2" }</code></pre>
+
+<p>大多用户可访问的数据结构是文档，这些文档可以表示很多含义，包括：</p>
+<ul>
+<li>所有数据库记录。</li>
+<li>查询选择器，定义选择什么样的记录用以读取、更新和删除操作。</li>
+<li>更新定义，定义需要修改哪些字段。</li>
+<li>索引指定，定义对哪些字段加索引。</li>
+<li>用于MongoDB报道以及配置的数据输出，例如serverStatus的输出和复制集配置文档。</li>
+</ul>
+<h3 id="文档格式"><a href="#文档格式" class="headerlink" title="文档格式"></a>文档格式</h3><p>MongoDB在磁盘上以BSON的序列化格式存储文档。BSON就是JSON文档的二进制表现，尽管BSON包含了比JSON更多的数据类型。</p>
+<p>mongo的JavaScript脚本与MongoDB语言驱动器用于在BSON和语言有关的文档表现形式之间转换。</p>
+<h3 id="文档结构-1"><a href="#文档结构-1" class="headerlink" title="文档结构"></a>文档结构</h3><p>文档的形式如下</p>
+<pre class="language-none"><code class="language-none">{
+   field1: value1,
+   field2: value2,
+   field3: value3,
+   ...
+   fieldN: valueN
+}</code></pre>
+
+<p>字段的值可以是任意的BSON数据类型，也包括其他文档、数组和文档数组。下面的示例文档包含了各种类型</p>
+<pre class="language-none"><code class="language-none">var mydoc = {
+               _id: ObjectId("5099803df3f4948bd2f98391"),
+               name: { first: "Alan", last: "Turing" },
+               birth: new Date('Jun 23, 1912'),
+               death: new Date('Jun 07, 1954'),
+               contribs: [ "Turing machine", "Turing test", "Turingery" ],
+               views : NumberLong(1250000)
+            }</code></pre>
+
+<h2 id="数据库引用"><a href="#数据库引用" class="headerlink" title="数据库引用"></a>数据库引用</h2><p>因为MongoDB的文档结构自由灵活不固定，所以这使得MongoDB不支持连接操作。数据去规范化存储，或者存储有关的数据到文档中，可以免去对连接的需要，当然这有可能导致有关的信息被存储在不同的文档中，而且通常这些文档位于不同的集合甚至不同的数据库中。</p>
+<p>MongoDB的应用程序如要将不同的文档联系起来，可以使用以下两种方法中的一种：</p>
+<ul>
+<li>手动引用，在一个文档中存储另一个文档的_id字段。这样，应用程序可以使用一个二次查询来返回需要的数据。这些引用在大多数情况下都很简单并且足够用。</li>
+<li>DBRefs，一个文档中引用另一个文档，引用内容包括：被引用的文档的_id字段，集合名，甚至还可以有数据库名。通过包含这些名称，DBRefs可以用一个集合中的文档简单方便地与位于其他集合中的文档联系起来。为了解析DBRefs，程序也需要执行额外的查询才能得到被引用的文档。很多驱动都有一些帮助方法来自动为DBRef生成查询，不过驱动不会自动解析DBRefs生成文档（一些社区支持的驱动可以切换行为从而有可能可以自动解析DBRef为文档）。DBRefs提供一个通过的格式和类型来表征文档间的关系。如果数据库必须与多个框架和工具进行交互，那DBRefs格式也提供表征文档之间的联系的通用语义。</li>
+</ul>
+<h3 id="手动引用"><a href="#手动引用" class="headerlink" title="手动引用"></a>手动引用</h3><p>考虑如下示例，使第一个文档的_id字段作为第二个文档的引用</p>
+<pre class="language-none"><code class="language-none">original_id = ObjectId()
+
+db.places.insert({
+    "_id": original_id,
+    "name": "Broadway Center",
+    "url": "bc.example.net"
+})
+
+db.people.insert({
+    "name": "Erin",
+    "places_id": original_id,
+    "url":  "bc.example.net/Erin"
+})</code></pre>
+
+<p>这样，一个查询从people集合中返回后，就可以跟进返回结果中的places_id字段值对places集合做第二个查询。</p>
+<p>手动引用是非常简单的，解析引用也是决定于程序是否需要。</p>
+<h3 id="DBRefs"><a href="#DBRefs" class="headerlink" title="DBRefs"></a>DBRefs</h3><p>DBRefs约定是表征一个文档，而非一个特定的引用类型。DBRefs除了包含_id字段值，还包含集合名，某些情况下还包括数据库名。</p>
+<p>格式如下：</p>
+<p>$ref：字段保持着被引用的文档所在集合的名称</p>
+<p>$id：包含了被引用文档的_id字段值</p>
+<p>db：这是一个可选项。包含了被引用文档所在数据库的名称，注意仅部分驱动支持��：这是一个可选项。包含了被引用文档所在数据库的名称，注意仅部分驱动支持db引用。</p>
+<pre class="language-none"><code class="language-none">{ "$ref" : &lt;value&gt;, "$id" : &lt;value&gt;, "$db" : &lt;value&gt; }</code></pre>
+
+<p>示例，考虑一个文档，其在creator字段中存储了DBRef</p>
+<pre class="language-none"><code class="language-none">{
+  "_id" : ObjectId("5126bbf64aed4daf9e2ab771"),
+  // .. application fields
+  "creator" : {
+                  "$ref" : "creators",
+                  "$id" : ObjectId("5126bc054aed4daf9e2ab772"),
+                  "$db" : "users"
+               }
+}</code></pre>
+
+<p>注意，通常来说，使用手动引用就可以了，如果需要引用多个集合中的文档，则考虑使用DBRefs。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Hubert Wong</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://hubertwongcn.github.io/posts/6463.html">https://hubertwongcn.github.io/posts/6463.html</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Hubert Wong</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/DataBase/">
+                                    <span class="chip bg-color">DataBase</span>
+                                </a>
+                            
+                                <a href="/tags/NoSQL/">
+                                    <span class="chip bg-color">NoSQL</span>
+                                </a>
+                            
+                                <a href="/tags/MongoDB/">
+                                    <span class="chip bg-color">MongoDB</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+        <style>
+    .valine-card {
+        margin: 1.5rem auto;
+    }
+
+    .valine-card .card-content {
+        padding: 20px 20px 5px 20px;
+    }
+
+    #vcomments textarea {
+        box-sizing: border-box;
+        background: url("/medias/comment_bg.png") 100% 100% no-repeat;
+    }
+
+    #vcomments p {
+        margin: 2px 2px 10px;
+        font-size: 1.05rem;
+        line-height: 1.78rem;
+    }
+
+    #vcomments blockquote p {
+        text-indent: 0.2rem;
+    }
+
+    #vcomments a {
+        padding: 0 2px;
+        color: #4cbf30;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    #vcomments img {
+        max-width: 100%;
+        height: auto;
+        cursor: pointer;
+    }
+
+    #vcomments ol li {
+        list-style-type: decimal;
+    }
+
+    #vcomments ol,
+    ul {
+        display: block;
+        padding-left: 2em;
+        word-spacing: 0.05rem;
+    }
+
+    #vcomments ul li,
+    ol li {
+        display: list-item;
+        line-height: 1.8rem;
+        font-size: 1rem;
+    }
+
+    #vcomments ul li {
+        list-style-type: disc;
+    }
+
+    #vcomments ul ul li {
+        list-style-type: circle;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    #vcomments table, th, td {
+        border: 0;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments h1 {
+        font-size: 1.85rem;
+        font-weight: bold;
+        line-height: 2.2rem;
+    }
+
+    #vcomments h2 {
+        font-size: 1.65rem;
+        font-weight: bold;
+        line-height: 1.9rem;
+    }
+
+    #vcomments h3 {
+        font-size: 1.45rem;
+        font-weight: bold;
+        line-height: 1.7rem;
+    }
+
+    #vcomments h4 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    #vcomments h5 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        line-height: 1.4rem;
+    }
+
+    #vcomments h6 {
+        font-size: 1rem;
+        line-height: 1.3rem;
+    }
+
+    #vcomments p {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    #vcomments hr {
+        margin: 12px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
+    }
+
+    #vcomments blockquote {
+        margin: 15px 0;
+        border-left: 5px solid #42b983;
+        padding: 1rem 0.8rem 0.3rem 0.8rem;
+        color: #666;
+        background-color: rgba(66, 185, 131, .1);
+    }
+
+    #vcomments pre {
+        font-family: monospace, monospace;
+        padding: 1.2em;
+        margin: .5em 0;
+        background: #272822;
+        overflow: auto;
+        border-radius: 0.3em;
+        tab-size: 4;
+    }
+
+    #vcomments code {
+        font-family: monospace, monospace;
+        padding: 1px 3px;
+        font-size: 0.92rem;
+        color: #e96900;
+        background-color: #f8f8f8;
+        border-radius: 2px;
+    }
+
+    #vcomments pre code {
+        font-family: monospace, monospace;
+        padding: 0;
+        color: #e8eaf6;
+        background-color: #272822;
+    }
+
+    #vcomments pre[class*="language-"] {
+        padding: 1.2em;
+        margin: .5em 0;
+    }
+
+    #vcomments code[class*="language-"],
+    pre[class*="language-"] {
+        color: #e8eaf6;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+
+    #vcomments b,
+    strong {
+        font-weight: bold;
+    }
+
+    #vcomments dfn {
+        font-style: italic;
+    }
+
+    #vcomments small {
+        font-size: 85%;
+    }
+
+    #vcomments cite {
+        font-style: normal;
+    }
+
+    #vcomments mark {
+        background-color: #fcf8e3;
+        padding: .2em;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+</style>
+
+<div class="card valine-card" data-aos="fade-up">
+    <div class="comment_headling" style="font-size: 20px; font-weight: 700; position: relative; padding-left: 20px; top: 15px; padding-bottom: 5px;">
+        <i class="fas fa-comments fa-fw" aria-hidden="true"></i>
+        <span>评论</span>
+    </div>
+    <div id="vcomments" class="card-content" style="display: grid">
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/valine/av-min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.iohttps://unpkg.com/valine/dist/Valine.min.js"></script> -->
+<script src="https://unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        appId: 'oTH4fV5e9iBU62LIVFq44U80-gzGzoHsz',
+        appKey: 'XpA0KzIfRp5Be7wCiljyVm7u',
+        notify: 'false' === 'true',
+        verify: 'false' === 'true',
+        visitor: 'false' === 'true',
+        avatar: 'monsterid',
+        pageSize: '10',
+        lang: 'en',
+        placeholder: '昵称填写QQ，可以显示QQ头像和昵称',
+        enableQQ: true,
+        requiredFields: ['nick','mail'], //设置必填项
+    });
+</script>
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/posts/49814.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/12.jpg" class="responsive-img" alt="21.Mongo进阶 - 系统设计：模式构建">
+                        
+                        <span class="card-title">21.Mongo进阶 - 系统设计：模式构建</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2023-12-30
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/DataBase/" class="post-category">
+                                    DataBase
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/DataBase/">
+                        <span class="chip bg-color">DataBase</span>
+                    </a>
+                    
+                    <a href="/tags/NoSQL/">
+                        <span class="chip bg-color">NoSQL</span>
+                    </a>
+                    
+                    <a href="/tags/MongoDB/">
+                        <span class="chip bg-color">MongoDB</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/posts/38477.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/8.jpg" class="responsive-img" alt="19.Mongo进阶 - DB核心：备份恢复">
+                        
+                        <span class="card-title">19.Mongo进阶 - DB核心：备份恢复</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2023-12-30
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/DataBase/" class="post-category">
+                                    DataBase
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/DataBase/">
+                        <span class="chip bg-color">DataBase</span>
+                    </a>
+                    
+                    <a href="/tags/NoSQL/">
+                        <span class="chip bg-color">NoSQL</span>
+                    </a>
+                    
+                    <a href="/tags/MongoDB/">
+                        <span class="chip bg-color">MongoDB</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('3'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\(', '\)']]}
+    });
+</script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+    <div class="container row center-align" style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2023</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">Hubert Wong</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                class="white-color">911.1k</span>&nbsp;字
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <span id="sitetime">载入运行时间...</span>
+            <script>
+                function siteTime() {
+                    var seconds = 1000;
+                    var minutes = seconds * 60;
+                    var hours = minutes * 60;
+                    var days = hours * 24;
+                    var years = days * 365;
+                    var today = new Date();
+                    var startYear = "2019";
+                    var startMonth = "6";
+                    var startDate = "28";
+                    var startHour = "0";
+                    var startMinute = "0";
+                    var startSecond = "0";
+                    var todayYear = today.getFullYear();
+                    var todayMonth = today.getMonth() + 1;
+                    var todayDate = today.getDate();
+                    var todayHour = today.getHours();
+                    var todayMinute = today.getMinutes();
+                    var todaySecond = today.getSeconds();
+                    var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                    var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                    var diff = t2 - t1;
+                    var diffYears = Math.floor(diff / years);
+                    var diffDays = Math.floor((diff / days) - diffYears * 365);
+                    var diffHours = Math.floor((diff - (diffYears * 365 + diffDays) * days) / hours);
+                    var diffMinutes = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours) /
+                        minutes);
+                    var diffSeconds = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours -
+                        diffMinutes * minutes) / seconds);
+                    if (startYear == todayYear) {
+                        document.getElementById("year").innerHTML = todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffDays + " 天 " + diffHours +
+                            " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    } else {
+                        document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffYears + " 年 " + diffDays +
+                            " 天 " + diffHours + " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    }
+                }
+                setInterval(siteTime, 1000);
+            </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/HubertWongCN" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:hubertwongcn@gmail.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+        <script src="//code.tidio.co/qst6g32qs2bibjqjp6oqgpe69j3qtrn9.js"></script>
+        <script>
+            $(document).ready(function () {
+                setInterval(change_Tidio, 50);
+                function change_Tidio() {
+                    var tidio=$("#tidio-chat iframe");
+                    if(tidio.css("display")=="block"&& $(window).width()>977 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" &&$(window).width()>977)>0? "-40px" : ($("div.toc-title").length&&$(window).width()>977)>0?"85px":"20px";
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.height=parseInt(tidio.css("height"))>=520?"520px":tidio.css("height");
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()>601 &&$(window).width()<992 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && 601< $(window).width()<992)>0? "-40px":"20px" ;
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))<230){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && $(window).width()<601)>0? "-10px":"45px" ;
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    if( tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))>=230){
+                        document.getElementById("tidio-chat-iframe").style.zIndex="998";
+                    }
+                }
+            });
+        </script>
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
