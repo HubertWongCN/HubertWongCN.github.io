@@ -1,0 +1,1720 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN,en,default">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="13.大厂实践 - 美团: 基于代价的慢查询优化建议, 生活，养猫，Java，后端开发">
+    <meta name="description" content="记录猫奴生活、后端学习笔记，由Hexo+Github搭建">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>13.大厂实践 - 美团: 基于代价的慢查询优化建议 | Hubert&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/hubert-logo.png">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/my.css">
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/jquery/jquery.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="Hubert's Blog" type="application/atom+xml">
+</head>
+
+
+
+   <style>
+    body{
+       background-image: url(https://cdn.jsdelivr.net/gh/Tokisaki-Galaxy/res/site/medias/background.jpg);
+       background-repeat:no-repeat;
+       background-size:cover;
+       background-attachment:fixed;
+    }
+</style>
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Hubert&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>主页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Hubert&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            记录猫奴生活、后端学习笔记，由Hexo+Github搭建
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			主页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/20.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">13.大厂实践 - 美团: 基于代价的慢查询优化建议</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/MySQL/">
+                                <span class="chip bg-color">MySQL</span>
+                            </a>
+                        
+                            <a href="/tags/DataBase/">
+                                <span class="chip bg-color">DataBase</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93/">
+                                <span class="chip bg-color">关系型数据库</span>
+                            </a>
+                        
+                            <a href="/tags/%E6%85%A2%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96/">
+                                <span class="chip bg-color">慢查询优化</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/DataBase/" class="post-category">
+                                DataBase
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2023-12-29
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2023-12-29
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    6.5k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                    23 分
+                </div>
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/prism/prism.css">
+        
+
+        
+        <!-- 代码块折行 -->
+        <style type="text/css">
+            code[class*="language-"], pre[class*="language-"] { white-space: pre-wrap !important; }
+        </style>
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p>前文我们介绍了优化慢查询最直接有效的方法就是选用一个查询效率高的索引。关于高效率的索引推荐，主要在日常工作中，基于经验规则的推荐随处可见，对于简单的SQL，如<code>select * from sync_test1 where name like 'Bobby%'</code>，直接添加索引IX(name) 就可以取得不错的效果；但对于稍微复杂点的SQL，如<code>select * from sync_test1 where name like 'Bobby%' and dt &gt; '2021-07-06'</code>，到底选择IX(name)、IX(dt)、IX(dt,name) 还是IX(name,dt)，该方法也无法给出准确的回答。更别说像多表Join、子查询这样复杂的场景了。所以采用基于代价的推荐来解决该问题会更加普适，因为基于代价的方法使用了和数据库优化器相同的方式，去量化评估所有的可能性，选出的是执行SQL耗费代价最小的索引。</p>
+</blockquote>
+<h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1 背景"></a>1 背景</h2><p>慢查询是指数据库中查询时间超过指定阈值（美团设置为100ms）的SQL，它是数据库的性能杀手，也是业务优化数据库访问的重要抓手。随着美团业务的高速增长，日均慢查询量已经过亿条，此前因慢查询导致的故障约占数据库故障总数的10%以上，而且高级别的故障呈日益增长趋势。因此，对慢查询的优化已经变得刻不容缓。</p>
+<p>那么如何优化慢查询呢？最直接有效的方法就是选用一个查询效率高的索引。关于高效率的索引推荐，主要在日常工作中，基于经验规则的推荐随处可见，对于简单的SQL，如<code>select * from sync_test1 where name like 'Bobby%'</code>，直接添加索引IX(name) 就可以取得不错的效果；但对于稍微复杂点的SQL，如<code>select * from sync_test1 where name like 'Bobby%' and dt &gt; '2021-07-06'</code>，到底选择IX(name)、IX(dt)、IX(dt,name) 还是IX(name,dt)，该方法也无法给出准确的回答。更别说像多表Join、子查询这样复杂的场景了。所以采用基于代价的推荐来解决该问题会更加普适，因为基于代价的方法使用了和数据库优化器相同的方式，去量化评估所有的可能性，选出的是执行SQL耗费代价最小的索引。</p>
+<h2 id="2-基于代价的优化器介绍"><a href="#2-基于代价的优化器介绍" class="headerlink" title="2 基于代价的优化器介绍"></a>2 基于代价的优化器介绍</h2><h3 id="2-1-SQL执行与优化器"><a href="#2-1-SQL执行与优化器" class="headerlink" title="2.1 SQL执行与优化器"></a>2.1 SQL执行与优化器</h3><p>一条SQL在MySQL服务器中执行流程主要包含：SQL解析、基于语法树的准备工作、优化器的逻辑变化、优化器的代价准备工作、基于代价模型的优化、进行额外的优化和运行执行计划等部分。具体如下图所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292005868.jpeg" alt="img"></p>
+<h3 id="2-2-代价模型介绍"><a href="#2-2-代价模型介绍" class="headerlink" title="2.2 代价模型介绍"></a>2.2 代价模型介绍</h3><p>而对于优化器来说，执行一条SQL有各种各样的方案可供选择，如表是否用索引、选择哪个索引、是否使用范围扫描、多表Join的连接顺序和子查询的执行方式等。如何从这些可选方案中选出耗时最短的方案呢？这就需要定义一个量化数值指标，这个指标就是代价(Cost)，我们分别计算出可选方案的操作耗时，从中选出最小值。</p>
+<p>代价模型将操作分为Server层和Engine（存储引擎）层两类，Server层主要是CPU代价，Engine层主要是IO代价，比如MySQL从磁盘读取一个数据页的代价io_block_read_cost为1，计算符合条件的行代价为row_evaluate_cost为0.2。除此之外还有：</p>
+<ul>
+<li>memory_temptable_create_cost (default 2.0) 内存临时表的创建代价。</li>
+<li>memory_temptable_row_cost (default 0.2) 内存临时表的行代价。</li>
+<li>key_compare_cost (default 0.1) 键比较的代价，例如排序。</li>
+<li>disk_temptable_create_cost (default 40.0) 内部myisam或innodb临时表的创建代价。</li>
+<li>disk_temptable_row_cost (default 1.0) 内部myisam或innodb临时表的行代价。</li>
+</ul>
+<p>在MySQL 5.7中，这些操作代价的默认值都可以进行配置。为了计算出方案的总代价，还需要参考一些统计数据，如表数据量大小、元数据和索引信息等。MySQL的代价优化器模型整体如下图所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292005791.jpeg" alt="img"></p>
+<h3 id="2-3-基于代价的索引选择"><a href="#2-3-基于代价的索引选择" class="headerlink" title="2.3 基于代价的索引选择"></a>2.3 基于代价的索引选择</h3><p>还是继续拿上述的<code>SQL select * from sync_test1 where name like 'Bobby%' and dt &gt; '2021-07-06'</code>为例，我们看看MySQL优化器是如何根据代价模型选择索引的。首先，我们直接在建表时加入四个候选索引。</p>
+<pre class="language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">Create</span> <span class="token keyword">Table</span>: <span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> <span class="token identifier"><span class="token punctuation">`</span>sync_test1<span class="token punctuation">`</span></span> <span class="token punctuation">(</span>
+    <span class="token identifier"><span class="token punctuation">`</span>id<span class="token punctuation">`</span></span> <span class="token keyword">int</span><span class="token punctuation">(</span><span class="token number">11</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span> <span class="token keyword">AUTO_INCREMENT</span><span class="token punctuation">,</span>
+    <span class="token identifier"><span class="token punctuation">`</span>cid<span class="token punctuation">`</span></span> <span class="token keyword">int</span><span class="token punctuation">(</span><span class="token number">11</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    <span class="token identifier"><span class="token punctuation">`</span>phone<span class="token punctuation">`</span></span> <span class="token keyword">int</span><span class="token punctuation">(</span><span class="token number">11</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    <span class="token identifier"><span class="token punctuation">`</span>name<span class="token punctuation">`</span></span> <span class="token keyword">varchar</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    <span class="token identifier"><span class="token punctuation">`</span>address<span class="token punctuation">`</span></span> <span class="token keyword">varchar</span><span class="token punctuation">(</span><span class="token number">255</span><span class="token punctuation">)</span> <span class="token keyword">DEFAULT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    <span class="token identifier"><span class="token punctuation">`</span>dt<span class="token punctuation">`</span></span> <span class="token keyword">datetime</span> <span class="token keyword">DEFAULT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+    <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span><span class="token identifier"><span class="token punctuation">`</span>id<span class="token punctuation">`</span></span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">KEY</span> <span class="token identifier"><span class="token punctuation">`</span>IX_name<span class="token punctuation">`</span></span> <span class="token punctuation">(</span><span class="token identifier"><span class="token punctuation">`</span>name<span class="token punctuation">`</span></span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">KEY</span> <span class="token identifier"><span class="token punctuation">`</span>IX_dt<span class="token punctuation">`</span></span> <span class="token punctuation">(</span><span class="token identifier"><span class="token punctuation">`</span>dt<span class="token punctuation">`</span></span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">KEY</span> <span class="token identifier"><span class="token punctuation">`</span>IX_dt_name<span class="token punctuation">`</span></span> <span class="token punctuation">(</span><span class="token identifier"><span class="token punctuation">`</span>dt<span class="token punctuation">`</span></span><span class="token punctuation">,</span><span class="token identifier"><span class="token punctuation">`</span>name<span class="token punctuation">`</span></span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token keyword">KEY</span> <span class="token identifier"><span class="token punctuation">`</span>IX_name_dt<span class="token punctuation">`</span></span> <span class="token punctuation">(</span><span class="token identifier"><span class="token punctuation">`</span>name<span class="token punctuation">`</span></span><span class="token punctuation">,</span><span class="token identifier"><span class="token punctuation">`</span>dt<span class="token punctuation">`</span></span><span class="token punctuation">)</span>
+    <span class="token punctuation">)</span> <span class="token keyword">ENGINE</span><span class="token operator">=</span><span class="token keyword">InnoDB</span></code></pre>
+
+<p>通过执行explain看出MySQL最终选择了IX_name索引。</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">mysql<span class="token operator">&gt;</span> explain  <span class="token keyword">select</span> * from sync_test1 where name like <span class="token string">'Bobby%'</span> and dt <span class="token operator">&gt;</span> <span class="token string">'2021-07-06'</span><span class="token punctuation">;</span>
++----+-------------+------------+------------+-------+-------------------------------------+---------+---------+------+------+----------+------------------------------------+
+<span class="token operator">|</span> <span class="token function">id</span> <span class="token operator">|</span> select_type <span class="token operator">|</span> table      <span class="token operator">|</span> partitions <span class="token operator">|</span> <span class="token builtin class-name">type</span>  <span class="token operator">|</span> possible_keys                       <span class="token operator">|</span> key     <span class="token operator">|</span> key_len <span class="token operator">|</span> ref  <span class="token operator">|</span> rows <span class="token operator">|</span> filtered <span class="token operator">|</span> Extra                              <span class="token operator">|</span>
++----+-------------+------------+------------+-------+-------------------------------------+---------+---------+------+------+----------+------------------------------------+
+<span class="token operator">|</span>  <span class="token number">1</span> <span class="token operator">|</span> SIMPLE      <span class="token operator">|</span> sync_test1 <span class="token operator">|</span> NULL       <span class="token operator">|</span> range <span class="token operator">|</span> IX_name,IX_dt,IX_dt_name,IX_name_dt <span class="token operator">|</span> IX_name <span class="token operator">|</span> <span class="token number">12</span>      <span class="token operator">|</span> NULL <span class="token operator">|</span>  <span class="token number">572</span> <span class="token operator">|</span>    <span class="token number">36.83</span> <span class="token operator">|</span> Using index condition<span class="token punctuation">;</span> Using where <span class="token operator">|</span>
++----+-------------+------------+------------+-------+-------------------------------------+---------+---------+------+------+----------+------------------------------------+</code></pre>
+
+<p>然后再打开MySQL追踪优化器Trace功能。可以看出，没有选择其他三个索引的原因均是因为在其他三个索引上使用range scan的代价均&gt;= IX_name。</p>
+<pre class="language-sql" data-language="sql"><code class="language-sql">mysql<span class="token operator">&gt;</span> <span class="token keyword">select</span> <span class="token operator">*</span> <span class="token keyword">from</span> INFORMATION_SCHEMA<span class="token punctuation">.</span>OPTIMIZER_TRACE\G<span class="token punctuation">;</span>
+<span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span> <span class="token number">1.</span> <span class="token keyword">row</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span><span class="token operator">*</span>
+
+TRACE: {
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token string">"rows_estimation"</span>: <span class="token punctuation">[</span>
+{
+<span class="token string">"table"</span>: <span class="token string">"`sync_test1`"</span><span class="token punctuation">,</span>
+<span class="token string">"range_analysis"</span>: {
+<span class="token string">"table_scan"</span>: {
+  <span class="token string">"rows"</span>: <span class="token number">105084</span><span class="token punctuation">,</span>
+  <span class="token string">"cost"</span>: <span class="token number">21628</span>
+}<span class="token punctuation">,</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token string">"analyzing_range_alternatives"</span>: {
+  <span class="token string">"range_scan_alternatives"</span>: <span class="token punctuation">[</span>
+    {
+      <span class="token string">"index"</span>: <span class="token string">"IX_name"</span><span class="token punctuation">,</span>
+      <span class="token string">"ranges"</span>: <span class="token punctuation">[</span>
+        <span class="token string">"Bobby\u0000\u0000\u0000\u0000\u0000 &lt;= name &lt;= Bobbyÿÿÿÿÿ"</span>
+      <span class="token punctuation">]</span><span class="token punctuation">,</span>
+      <span class="token string">"index_dives_for_eq_ranges"</span>: <span class="token boolean">true</span><span class="token punctuation">,</span>
+      <span class="token string">"rowid_ordered"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"using_mrr"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"index_only"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"rows"</span>: <span class="token number">572</span><span class="token punctuation">,</span>
+      <span class="token string">"cost"</span>: <span class="token number">687.41</span><span class="token punctuation">,</span>
+      <span class="token string">"chosen"</span>: <span class="token boolean">true</span>
+    }<span class="token punctuation">,</span>
+    {
+      <span class="token string">"index"</span>: <span class="token string">"IX_dt"</span><span class="token punctuation">,</span>
+      <span class="token string">"ranges"</span>: <span class="token punctuation">[</span>
+        <span class="token string">"0x99aa0c0000 &lt; dt"</span>
+      <span class="token punctuation">]</span><span class="token punctuation">,</span>
+      <span class="token string">"index_dives_for_eq_ranges"</span>: <span class="token boolean">true</span><span class="token punctuation">,</span>
+      <span class="token string">"rowid_ordered"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"using_mrr"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"index_only"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"rows"</span>: <span class="token number">38698</span><span class="token punctuation">,</span>
+      <span class="token string">"cost"</span>: <span class="token number">46439</span><span class="token punctuation">,</span>
+      <span class="token string">"chosen"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"cause"</span>: <span class="token string">"cost"</span>
+    }<span class="token punctuation">,</span>
+    {
+      <span class="token string">"index"</span>: <span class="token string">"IX_dt_name"</span><span class="token punctuation">,</span>
+      <span class="token string">"ranges"</span>: <span class="token punctuation">[</span>
+        <span class="token string">"0x99aa0c0000 &lt; dt"</span>
+      <span class="token punctuation">]</span><span class="token punctuation">,</span>
+      <span class="token string">"index_dives_for_eq_ranges"</span>: <span class="token boolean">true</span><span class="token punctuation">,</span>
+      <span class="token string">"rowid_ordered"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"using_mrr"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"index_only"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"rows"</span>: <span class="token number">38292</span><span class="token punctuation">,</span>
+      <span class="token string">"cost"</span>: <span class="token number">45951</span><span class="token punctuation">,</span>
+      <span class="token string">"chosen"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"cause"</span>: <span class="token string">"cost"</span>
+    }<span class="token punctuation">,</span>
+    {
+      <span class="token string">"index"</span>: <span class="token string">"IX_name_dt"</span><span class="token punctuation">,</span>
+      <span class="token string">"ranges"</span>: <span class="token punctuation">[</span>
+        <span class="token string">"Bobby\u0000\u0000\u0000\u0000\u0000 &lt;= name &lt;= Bobbyÿÿÿÿÿ"</span>
+      <span class="token punctuation">]</span><span class="token punctuation">,</span>
+      <span class="token string">"index_dives_for_eq_ranges"</span>: <span class="token boolean">true</span><span class="token punctuation">,</span>
+      <span class="token string">"rowid_ordered"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"using_mrr"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"index_only"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"rows"</span>: <span class="token number">572</span><span class="token punctuation">,</span>
+      <span class="token string">"cost"</span>: <span class="token number">687.41</span><span class="token punctuation">,</span>
+      <span class="token string">"chosen"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+      <span class="token string">"cause"</span>: <span class="token string">"cost"</span>
+    }
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token string">"analyzing_roworder_intersect"</span>: {
+    <span class="token string">"usable"</span>: <span class="token boolean">false</span><span class="token punctuation">,</span>
+    <span class="token string">"cause"</span>: <span class="token string">"too_few_roworder_scans"</span>
+  }
+}<span class="token punctuation">,</span>
+<span class="token string">"chosen_range_access_summary"</span>: {
+  <span class="token string">"range_access_plan"</span>: {
+    <span class="token string">"type"</span>: <span class="token string">"range_scan"</span><span class="token punctuation">,</span>
+    <span class="token string">"index"</span>: <span class="token string">"IX_name"</span><span class="token punctuation">,</span>
+    <span class="token string">"rows"</span>: <span class="token number">572</span><span class="token punctuation">,</span>
+    <span class="token string">"ranges"</span>: <span class="token punctuation">[</span>
+      <span class="token string">"Bobby\u0000\u0000\u0000\u0000\u0000 &lt;= name &lt;= Bobbyÿÿÿÿÿ"</span>
+    <span class="token punctuation">]</span>
+  }<span class="token punctuation">,</span>
+  <span class="token string">"rows_for_plan"</span>: <span class="token number">572</span><span class="token punctuation">,</span>
+  <span class="token string">"cost_for_plan"</span>: <span class="token number">687.41</span><span class="token punctuation">,</span>
+  <span class="token string">"chosen"</span>: <span class="token boolean">true</span>
+}
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+}</code></pre>
+
+<p>下面我们根据代价模型来推演一下代价的计算过程：</p>
+<ul>
+<li>走全表扫描的代价：io_cost + cpu_cost = （数据页个数 * io_block_read_cost）+ (数据行数 * row_evaluate_cost + 1.1) = （data_length / block_size + 1）+ (rows * 0.2 + 1.1) = (9977856 / 16384 + 1) + (105084 * 0.2 + 1.1) = 21627.9。</li>
+<li>走二级索引IX_name的代价：io_cost + cpu_cost = (预估范围行数 * io_block_read_cost + 1) + (数据行数 * row_evaluate_cost + 0.01) = (572 * 1 + 1) + (572*0.2 + 0.01) = 687.41。</li>
+<li>走二级索引IX_dt的代价：io_cost + cpu_cost = (预估范围行数 * io_block_read_cost + 1) + (数据行数 * row_evaluate_cost + 0.01) = (38698 * 1 + 1) + (38698*0.2 + 0.01) = 46438.61。</li>
+<li>走二级索引IX_dt_name的代价: io_cost + cpu_cost = (预估范围行数 * io_block_read_cost + 1) + (数据行数 * row_evaluate_cost + 0.01) = (38292 * 1 + 1) + (38292 * 0.2 + 0.01) = 45951.41。</li>
+<li>走二级索引IX_name_dt的代价：io_cost + cpu_cost = (预估范围行数 * io_block_read_cost + 1) + (数据行数 * row_evaluate_cost + 0.01) = (572 * 1 + 1) + (572*0.2 + 0.01) = 687.41。</li>
+</ul>
+<p><strong>补充说明</strong></p>
+<ul>
+<li>计算结果在小数上有偏差，因为MySQL使用%g打印浮点数，小数会以最短的方式输出。</li>
+<li>除“+1.1 +1”这种调节值外，Cost计算还会出现+0.01, 它是为了避免index scan和range scan出现Cost的竞争。</li>
+<li>Cost计算是基于MySQL的默认参数配置，如果Cost Model参数改变，optimizer_switch的选项不同，数据分布不同都会导致最终Cost的计算结果不同。</li>
+<li>data_length可查询information_schema.tables，block_size默认16K。</li>
+</ul>
+<h3 id="2-4-基于代价的索引推荐思路"><a href="#2-4-基于代价的索引推荐思路" class="headerlink" title="2.4 基于代价的索引推荐思路"></a>2.4 基于代价的索引推荐思路</h3><p>如果想借助MySQL优化器给慢查询计算出最佳索引，那么需要真实地在业务表上添加所有候选索引。对于线上业务来说，直接添加索引的时间空间成本太高，是不可接受的。MySQL优化器选最佳索引用到的数据是索引元数据和统计数据，所以我们想是否可以通过给它提供候选索引的这些数据，而非真实添加索引的这种方式来实现。</p>
+<p>通过深入调研MySQL的代码结构和优化器流程，我们发现是可行的：一部分存在于Server层的frm文件中，比如索引定义；另一部分存在于Engine层中，或者通过调用Engine层的接口函数来获取，比如索引中某个列的不同值个数、索引占据的页面大小等。索引相关的信息，如下图所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292005459.jpeg" alt="img"></p>
+<p>因为MySQL本身就支持自定义存储引擎，所以索引推荐思路是构建一个支持虚假索引的存储引擎，在它上面建立包含候选索引的空表，再采集样本数据，计算出统计数据提供给优化器，让优化器选出最优索引，整个调用关系如下图所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292006582.jpeg" alt="img"></p>
+<h2 id="3-索引推荐实现"><a href="#3-索引推荐实现" class="headerlink" title="3 索引推荐实现"></a>3 索引推荐实现</h2><p>因为存储引擎本身并不具备对外提供服务的能力，直接在MySQL Server层修改也难以维护，所以我们将整个索引推荐系统拆分成支持虚假索引的Fakeindex存储引擎和对外提供服务的Go-Server两部分，整体架构图如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292006128.jpeg" alt="img"></p>
+<p>首先简要介绍一下Fakeindex存储引擎，这是一个轻量级的存储引擎，负责将索引的相关接口透传到Go-Server部分。因为它必须采用C++实现，与Go-Server间存在跨语言调用的问题，我们使用了Go原生的轻量级RPC技术+cgo来避免引入重量级的RPC框架，也不必引入第三方依赖包。函数调用链路如下所示，MySQL优化器调用Fakeindex的C++函数，参数转换成C语言，然后通过cgo调用到Go语言的方法，再通过Go自带的RPC客户端向服务端发起调用。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292006316.jpeg" alt="img"></p>
+<p>下面将重点阐述核心逻辑Go-Server部分，主要流程步骤如下。</p>
+<h3 id="3-1-前置校验"><a href="#3-1-前置校验" class="headerlink" title="3.1 前置校验"></a>3.1 前置校验</h3><p>首先根据经验规则，排除一些不支持通过添加索引来提高查询效率的场景，如查系统库的SQL，非select、update、delete SQL等。</p>
+<h3 id="3-2-提取关键列名"><a href="#3-2-提取关键列名" class="headerlink" title="3.2 提取关键列名"></a>3.2 提取关键列名</h3><p>这一步提取SQL可用来添加索引的候选列名，除了选择给出现在where中的列添加索引，MySQL对排序、聚合、表连接、聚合函数（如max）也支持使用索引来提高查询效率。我们对SQL进行语法树解析，在树节点的where、join、order by、group by、聚合函数中提取列名，作为索引的候选列。值得注意的是，对于某些SQL，还需结合表结构才能准确地提取，比如：</p>
+<ol>
+<li><code>select * from tb1, tb2 where a = 1</code>，列a归属tb1还是tb2取决于谁唯一包含列a。</li>
+<li><code>select * from tb1 natural join tb2 where tb1.a = 1</code>，在自然连接中，tb1和tb2默认使用了相同列名进行连接，但SQL中并没有暴露出这些可用于添加索引的列。</li>
+</ol>
+<h3 id="3-3-生成候选索引"><a href="#3-3-生成候选索引" class="headerlink" title="3.3 生成候选索引"></a>3.3 生成候选索引</h3><p>将提取出的关键列名进行全排列即包含所有的索引组合，如列A、B、C的所有索引组合是[‘A’, ‘B’, ‘C’, ‘AB’, ‘AC’, ‘BA’, ‘BC’, ‘CA’, ‘CB’, ‘ABC’, ‘ACB’, ‘BAC’, ‘BCA’, ‘CAB’, ‘CBA’]，但还需排除一些索引才能得到所有的候选索引，比如：</p>
+<p>已经存在的索引，如存在AB，需排除AB、A，因为MySQL支持使用前缀索引。 超过最大索引长度3072字节限制的索引。 一些暂时不支持的索引，如带地理数据类型列的空间索引。</p>
+<h3 id="3-4-数据采集"><a href="#3-4-数据采集" class="headerlink" title="3.4 数据采集"></a>3.4 数据采集</h3><p>直接从业务数据库采集，数据分成元数据、统计数据、样本数据三部分：</p>
+<ol>
+<li><strong>元数据</strong>：即表的定义数据，包括列定义、索引定义，可通过show create table获取。</li>
+<li><strong>统计数据</strong>：如表的行数、表数据大小、索引大小，可以通过查询infromation_schema.tables获取；已存在索引的cardinality（关键值：即索引列的不同值个数，值越大，索引优化效果越明显），可以通过查询mysql.innodb_index_stats表获取。</li>
+<li><strong>样本数据</strong>：候选索引为假索引，采集的统计数据并不包含假索引的数据，这里我们通过采集原表的样本数据来计算出假索引的统计数据。</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292006452.jpeg" alt="img"></p>
+<p>下面介绍样本数据的采样算法，好的采样算法应该尽最大可能采集到符合原表数据分布的样本。比如基于均匀随机采样的方式select * from table where rand() &lt; rate，然而它会给线上数据库造成大量I/O的问题，严重时可引发数据库故障。所以我们采用了基于块的采样方式：它参考了MySQL 8.0的直方图采样算法，如对于一张100万的表，采集10万行数，根据主键的最小值最大值将表数据均分成100个区间，每个区间取一块1000行数据，采集数据的SQL，最后将采集到的数据塞入采样表中。代码如下：</p>
+<pre class="language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">select</span> A<span class="token punctuation">,</span>B<span class="token punctuation">,</span>C<span class="token punctuation">,</span>id <span class="token keyword">from</span> <span class="token keyword">table</span> <span class="token keyword">where</span> id <span class="token operator">&gt;=</span> <span class="token number">1000</span> <span class="token operator">and</span> id <span class="token operator">&lt;=</span> <span class="token number">10000</span> <span class="token keyword">limit</span> <span class="token number">1000</span><span class="token punctuation">;</span>
+<span class="token keyword">select</span> A<span class="token punctuation">,</span>B<span class="token punctuation">,</span>C<span class="token punctuation">,</span>id <span class="token keyword">from</span> <span class="token keyword">table</span> <span class="token keyword">where</span> id <span class="token operator">&gt;=</span> <span class="token number">10000</span> <span class="token operator">and</span> id <span class="token operator">&lt;=</span> <span class="token number">20000</span> <span class="token keyword">limit</span> <span class="token number">1000</span><span class="token punctuation">;</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span></code></pre>
+
+<h3 id="3-5-统计数据计算"><a href="#3-5-统计数据计算" class="headerlink" title="3.5 统计数据计算"></a>3.5 统计数据计算</h3><p>下面举例说明两个核心统计数据的计算方式。首先是records_in_range，优化器在处理范围查询时，如果可以用索引，就会调用该函数估算走该索引可过滤出的行数，以此决定最终选用的索引。</p>
+<p>比如，对于SQL<code>select * from table1 where A &gt; 100 and B &lt; 1000</code>，候选索引A、B来说，优化器会调用此函数在索引页A上估算A &gt; 100有多少行数，在索引页B上估计B&lt;1000的行数，例如满足条件的A有200行，B有50行，那么优化器会优先选择使用索引B。对于假索引来说，我们按照该公式：样本满足条件的范围行数 * (原表行数 / 样本表行数)，直接样本数据中查找，然后按照采样比例放大即可估算出原表中满足条件的范围行数。</p>
+<p>其次是用于计算索引区分度的cardinality。如果直接套用上述公式：样本列上不同值个数 * (原表行数 / 样本表行数)， 如上述的候选索引A，根据样本统计出共有100个不同值，那么在原表中，该列有多少不同值？一般以为是10,000 =100 *（1,000,000/100,000）。但这样计算不适用某些场景，比如状态码字段，可能最多100个不同值。针对该问题，我们引入斜率和两趟计算来规避，流程如下：</p>
+<ul>
+<li><strong>第一趟计算</strong>：取样本数据一半来统计A的不同值个数R1，区间[min_id, min_id+(max_id - min_id) / 2]。</li>
+<li><strong>第二趟计算</strong>：取所有样本据统计A的不同值个数R2，区间[min_id, max_id] 计算斜率：R2/R1。</li>
+<li><strong>判断斜率</strong>：如果斜率小于1.1，为固定值100，否则根据采样比例放大，为10,000。</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292006978.jpeg" alt="img"></p>
+<h3 id="3-6-候选索引代价评估"><a href="#3-6-候选索引代价评估" class="headerlink" title="3.6 候选索引代价评估"></a>3.6 候选索引代价评估</h3><p>这一步让优化器帮助我们从候选索引中选出最佳索引，主要步骤如下：</p>
+<ol>
+<li>建包含候选索引的表：将候选索引塞入原表定义，并把存储引擎改为Fakeindex，在推荐引擎的mysqld上创建表。</li>
+<li>通过在推荐引擎mysqld上explain format=json SQL，获取优化器选择的索引。</li>
+</ol>
+<p>值得注意的是，MySQL表最多建64个索引（二级索引），计算所有候选索引的可能时，使用的是增幅比指数还恐怖的全排列算法。如下图所示，随着列数的增加，候选索引数量急剧上升，在5个候选列时的索引组合数量就超过了MySQL最大值，显然不能满足一些复杂SQL的需求。统计美团线上索引列数分布后，我们发现，95%以上的索引列数都&lt;=3个。同时基于经验考虑，3列索引也可满足绝大部分场景，剩余场景会通过其他方式，如库表拆分来提高查询性能，而不是增加索引列个数。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292006571.png" alt="img"></p>
+<p>但即便最多推荐3列索引，在5个候选列时其排列数量<code>85=$A{5}^{1}+A{5}^{2}+A_{5}^{3}$</code>也远超64。这里我们采用归并思路。如下图所示，将所有候选索引拆分到多个表中，采用两次计算，先让MySQL优化器选出批次一的最佳索引，可采用并行计算保证时效性，再MySQL选出批次一所有最佳索引的最佳索引，该方案可以最多支持4096个候选索引，结合最大索引3列限制，可以支持计算出17个候选列的最佳索引。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292007642.jpeg" alt="img"></p>
+<h2 id="4-推荐质量保证"><a href="#4-推荐质量保证" class="headerlink" title="4 推荐质量保证"></a>4 推荐质量保证</h2><p>为了得到索引推荐质量大致的整体数据，我们使用美团数据库最近一周的线下慢查询数据，共246G、约3万个SQL模板用例做了一个初步测试。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292007101.png" alt="img"></p>
+<p>从结果可以看出，系统基本能覆盖到大部分的慢查询。但还是会出现无效的推荐，大致原因如下：</p>
+<ol>
+<li>索引推荐计算出的Cost严重依赖样本数据的质量，在当表数据分布不均或数据倾斜时会导致统计数据出现误差，导致推荐出错误索引。</li>
+<li>索引推荐系统本身存在缺陷，从而导致推荐出错误索引。</li>
+<li>MySQL优化器自身存在的缺陷，导致推荐出错误索引。</li>
+</ol>
+<p>因此，我们在业务添加索引前后增加了索引的有效性验证和效果追踪两个步骤，整个流程如下所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292007161.jpeg" alt="img"></p>
+<h3 id="4-1-有效性验证"><a href="#4-1-有效性验证" class="headerlink" title="4.1 有效性验证"></a>4.1 有效性验证</h3><p>因为目前还不具备大规模数据库备份快速还原的能力，所以无法使用完整的备份数据做验证。我们近似地认为，如果推荐索引在业务库上取得较好的效果，那么在样本库也会取得不错效果。通过真正地在样本库上真实执行SQL，并添加索引来验证其有效性，验证结果展示如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292007078.png" alt="img"></p>
+<h3 id="4-2-效果追踪"><a href="#4-2-效果追踪" class="headerlink" title="4.2 效果追踪"></a>4.2 效果追踪</h3><p>考虑到使用采样数据验证的局限性，所以当在生产环境索引添加完毕之后，会立即对添加的索引进行效果追踪。一方面通过explain验证索引是否被真正用到，以及Cost是否减小；另一方面用Flink实时跟踪该数据库的全量SQL访问数据，通过对比索引添加前后，该SQL的真实执行时间来判断索引是否有效。如果发现有性能方面的回退，则立即发出告警，周知到DBA和研发人员。生成的报告如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292007521.jpeg" alt="img"></p>
+<h3 id="4-3-仿真环境"><a href="#4-3-仿真环境" class="headerlink" title="4.3 仿真环境"></a>4.3 仿真环境</h3><p>当推荐链路出现问题时，直接在线上排查验证问题的话，很容易给业务带来安全隐患，同时也降低了系统的稳定性。对此我们搭建了离线仿真环境，利用数据库备份构建了和生产环境一样的数据源，并完整复刻了线上推荐链路的各个步骤，在仿真环境回放异常案例，复现问题、排查根因，反复验证改进方案后再上线到生产系统，进而不断优化现有系统，提升推荐质量。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292007915.jpeg"></p>
+<h3 id="4-4-测试案例库"><a href="#4-4-测试案例库" class="headerlink" title="4.4 测试案例库"></a>4.4 测试案例库</h3><p>在上线过程中，往往会出现改进方案修复了一个Bug，带来了更多Bug的情况。能否做好索引推荐能力的回归测试，直接决定了推荐质量的稳定性。于是，我们参考了阿里云的技术方案，计划构建一个尽可能完备的测试案例库用于衡量索引推荐服务能力强弱。但考虑影响MySQL索引选择的因素众多，各因素间的组合，SQL的复杂性，如果人为去设计测试用例是是不切实际的，我们通过下列方法自动化收集测试用例：</p>
+<ul>
+<li>利用美团线上的丰富数据，以影响MySQL索引选择的因素特征为抓手，直接从全量SQL和慢SQL中抽取最真实的案例，不断更新现有测试案例库。</li>
+<li>在生产的推荐系统链路上埋点，自动收集异常案例，回流到现有的测试案例库。</li>
+<li>对于现有数据没有覆盖到的极端场景，采用人为构造的方案，补充测试用例。</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292007024.jpeg" alt="img"></p>
+<h2 id="5-慢查询治理运营"><a href="#5-慢查询治理运营" class="headerlink" title="5 慢查询治理运营"></a>5 慢查询治理运营</h2><p>我们主要从时间维度的三个方向将慢查询接入索引推荐，推广治理：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292008955.jpeg" alt="img"></p>
+<h3 id="5-1-过去-历史慢查询"><a href="#5-1-过去-历史慢查询" class="headerlink" title="5.1 过去-历史慢查询"></a>5.1 过去-历史慢查询</h3><p>这类慢查询属于过去产生的，并且一直存在，数量较多，治理推动力不足，可通过收集历史慢查询日志发现，分成两类接入：</p>
+<ul>
+<li><strong>核心数据库</strong>：该类慢查询通常会被周期性地关注，如慢查询周报、月报，可直接将优化建议提前生成出来，接入它们，一并运营治理。</li>
+<li><strong>普通数据库</strong>：可将优化建议直接接入数据库平台的慢查询模块，让研发自助地选择治理哪些慢查询。</li>
+</ul>
+<h3 id="5-2-现在-新增慢查询"><a href="#5-2-现在-新增慢查询" class="headerlink" title="5.2 现在-新增慢查询"></a>5.2 现在-新增慢查询</h3><p>这类慢查询属于当前产生的，数量较少，属于治理的重点，也可通过实时收集慢查询日志发现，分成两类接入：</p>
+<ul>
+<li><strong>影响程度一般的慢查询</strong>：可通过实时分析慢查询日志，对比历史慢查询，识别出新增慢查询，并生成优化建议，为用户创建数据库风险项，跟进治理。</li>
+<li><strong>影响程度较大的慢查询</strong>：该类通常会引发数据库告警，如慢查询导致数据库Load过高，可通过故障诊断根因系统，识别出具体的慢查询SQL，并生成优化建议，及时推送到故障处理群，降低故障处理时长。</li>
+</ul>
+<h3 id="5-3-未来-潜在慢查询"><a href="#5-3-未来-潜在慢查询" class="headerlink" title="5.3 未来-潜在慢查询"></a>5.3 未来-潜在慢查询</h3><p>这类查询属于当前还没被定义成慢查询，随着时间推进可能变成演变成慢查询，对于一些核心业务来说，往往会引发故障，属于他们治理的重点，分成两类接入：</p>
+<ul>
+<li><strong>未上线的准慢查询</strong>：项目准备上线而引入的新的准慢查询，可接入发布前的集成测试流水线，Java项目可通过 agentmain的代理方式拦截被测试用例覆盖到的SQL，再通过经验+explain识别出慢查询，并生成优化建议，给用户在需求管理系统上创建缺陷任务，解决后才能发布上线。</li>
+<li><strong>已上线的准慢查询</strong>：该类属于当前执行时间较快的SQL，随着表数据量的增加，会演变成慢查询，最常见的就是全表扫描，这类可通过增加慢查询配置参数log_queries_not_using_indexes记录到慢日志，并生成优化建议，为用户创建数据库风险项，跟进治理。</li>
+</ul>
+<h2 id="6-项目运行情况"><a href="#6-项目运行情况" class="headerlink" title="6 项目运行情况"></a>6 项目运行情况</h2><p>当前，主要以新增慢查询为突破点，重点为全表扫描推荐优化建议。目前我们已经灰度接入了一小部分业务，共分析了六千多条慢查询，推荐了一千多条高效索引建议。另外，美团内部的研发同学也可通过数据库平台自助发起SQL优化建议工单，如下图所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292008523.jpeg" alt="img"></p>
+<p>另外在美团内部，我们已经和数据库告警打通，实现了故障发现、根因分析、解决方案的自动化处理，极大地提高了故障处理效率。下面是一个展示案例，当数据库集群发生告警，我们会拉一个故障群，先通过根因定位系统，如果识别出慢查询造成的，会马上调用SQL优化建议系统，推荐出索引，整个处理流程是分钟级别，都会在群里面推送最新消息。如下图所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292008766.jpeg" alt="img"></p>
+<h2 id="7-未来规划"><a href="#7-未来规划" class="headerlink" title="7 未来规划"></a>7 未来规划</h2><p>考虑到美团日均产生近亿级别的慢查询数据，为了实现对它们的诊断分析，我们还需要提高系统大规模的数据并发处理的能力。另外，当前该系统还是针对单SQL的优化，没有考虑维护新索引带来的代价，如占用额外的磁盘空间，使写操作变慢，也没有考虑到MySQL选错索引引发其他SQL的性能回退。对于业务或者DBA来说，我们更多关心的是整个数据库或者集群层面的优化。</p>
+<p>业界如阿里云的DAS则是站在全局的角度考量，综合考虑各个因素，输出需要创建的新索引、需要改写的索引、需要删除的索引，实现数据库性能最大化提升，同时最大化降低磁盘空间消耗。未来我们也将不断优化和改进，实现类似基于Workload的全局优化。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li>MySQL Writing a Custom Storage Engine</li>
+<li>MySQL Optimizer Guide</li>
+<li>MySQL 直方图</li>
+<li>Golang cgo</li>
+<li>阿里云-DAS之基于Workload的全局自动优化实践</li>
+<li>SQL诊断优化，以后就都交给数据库自治服务DAS吧</li>
+<li>MySQL索引原理及慢查询优化</li>
+</ul>
+<h2 id="本文作者"><a href="#本文作者" class="headerlink" title="本文作者"></a>本文作者</h2><p>粟含，美团基础研发平台/基础技术部/数据库平台研发组工程师。</p>
+<h2 id="文章来源"><a href="#文章来源" class="headerlink" title="文章来源"></a>文章来源</h2><p>转载说明</p>
+<ul>
+<li>作者：粟含</li>
+<li>版权声明：本文为美团技术团队的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。</li>
+<li>原文链接：<a target="_blank" rel="noopener" href="https://tech.meituan.com/2022/04/21/slow-query-optimized-advice-driven-by-cost-model.html">https://tech.meituan.com/2022/04/21/slow-query-optimized-advice-driven-by-cost-model.html</a></li>
+</ul>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Hubert Wong</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://hubertwongcn.github.io/posts/33861.html">https://hubertwongcn.github.io/posts/33861.html</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Hubert Wong</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/MySQL/">
+                                    <span class="chip bg-color">MySQL</span>
+                                </a>
+                            
+                                <a href="/tags/DataBase/">
+                                    <span class="chip bg-color">DataBase</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93/">
+                                    <span class="chip bg-color">关系型数据库</span>
+                                </a>
+                            
+                                <a href="/tags/%E6%85%A2%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96/">
+                                    <span class="chip bg-color">慢查询优化</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+        <style>
+    .valine-card {
+        margin: 1.5rem auto;
+    }
+
+    .valine-card .card-content {
+        padding: 20px 20px 5px 20px;
+    }
+
+    #vcomments textarea {
+        box-sizing: border-box;
+        background: url("/medias/comment_bg.png") 100% 100% no-repeat;
+    }
+
+    #vcomments p {
+        margin: 2px 2px 10px;
+        font-size: 1.05rem;
+        line-height: 1.78rem;
+    }
+
+    #vcomments blockquote p {
+        text-indent: 0.2rem;
+    }
+
+    #vcomments a {
+        padding: 0 2px;
+        color: #4cbf30;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    #vcomments img {
+        max-width: 100%;
+        height: auto;
+        cursor: pointer;
+    }
+
+    #vcomments ol li {
+        list-style-type: decimal;
+    }
+
+    #vcomments ol,
+    ul {
+        display: block;
+        padding-left: 2em;
+        word-spacing: 0.05rem;
+    }
+
+    #vcomments ul li,
+    ol li {
+        display: list-item;
+        line-height: 1.8rem;
+        font-size: 1rem;
+    }
+
+    #vcomments ul li {
+        list-style-type: disc;
+    }
+
+    #vcomments ul ul li {
+        list-style-type: circle;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    #vcomments table, th, td {
+        border: 0;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments h1 {
+        font-size: 1.85rem;
+        font-weight: bold;
+        line-height: 2.2rem;
+    }
+
+    #vcomments h2 {
+        font-size: 1.65rem;
+        font-weight: bold;
+        line-height: 1.9rem;
+    }
+
+    #vcomments h3 {
+        font-size: 1.45rem;
+        font-weight: bold;
+        line-height: 1.7rem;
+    }
+
+    #vcomments h4 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    #vcomments h5 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        line-height: 1.4rem;
+    }
+
+    #vcomments h6 {
+        font-size: 1rem;
+        line-height: 1.3rem;
+    }
+
+    #vcomments p {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    #vcomments hr {
+        margin: 12px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
+    }
+
+    #vcomments blockquote {
+        margin: 15px 0;
+        border-left: 5px solid #42b983;
+        padding: 1rem 0.8rem 0.3rem 0.8rem;
+        color: #666;
+        background-color: rgba(66, 185, 131, .1);
+    }
+
+    #vcomments pre {
+        font-family: monospace, monospace;
+        padding: 1.2em;
+        margin: .5em 0;
+        background: #272822;
+        overflow: auto;
+        border-radius: 0.3em;
+        tab-size: 4;
+    }
+
+    #vcomments code {
+        font-family: monospace, monospace;
+        padding: 1px 3px;
+        font-size: 0.92rem;
+        color: #e96900;
+        background-color: #f8f8f8;
+        border-radius: 2px;
+    }
+
+    #vcomments pre code {
+        font-family: monospace, monospace;
+        padding: 0;
+        color: #e8eaf6;
+        background-color: #272822;
+    }
+
+    #vcomments pre[class*="language-"] {
+        padding: 1.2em;
+        margin: .5em 0;
+    }
+
+    #vcomments code[class*="language-"],
+    pre[class*="language-"] {
+        color: #e8eaf6;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+
+    #vcomments b,
+    strong {
+        font-weight: bold;
+    }
+
+    #vcomments dfn {
+        font-style: italic;
+    }
+
+    #vcomments small {
+        font-size: 85%;
+    }
+
+    #vcomments cite {
+        font-style: normal;
+    }
+
+    #vcomments mark {
+        background-color: #fcf8e3;
+        padding: .2em;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+</style>
+
+<div class="card valine-card" data-aos="fade-up">
+    <div class="comment_headling" style="font-size: 20px; font-weight: 700; position: relative; padding-left: 20px; top: 15px; padding-bottom: 5px;">
+        <i class="fas fa-comments fa-fw" aria-hidden="true"></i>
+        <span>评论</span>
+    </div>
+    <div id="vcomments" class="card-content" style="display: grid">
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/valine/av-min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.iohttps://unpkg.com/valine/dist/Valine.min.js"></script> -->
+<script src="https://unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        appId: 'oTH4fV5e9iBU62LIVFq44U80-gzGzoHsz',
+        appKey: 'XpA0KzIfRp5Be7wCiljyVm7u',
+        notify: 'false' === 'true',
+        verify: 'false' === 'true',
+        visitor: 'false' === 'true',
+        avatar: 'monsterid',
+        pageSize: '10',
+        lang: 'en',
+        placeholder: '昵称填写QQ，可以显示QQ头像和昵称',
+        enableQQ: true,
+        requiredFields: ['nick','mail'], //设置必填项
+    });
+</script>
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/posts/5760.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/17.jpg" class="responsive-img" alt="14.大厂实践 - 美团: MySQL数据库巡检系统的设计与应用">
+                        
+                        <span class="card-title">14.大厂实践 - 美团: MySQL数据库巡检系统的设计与应用</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2023-12-29
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/DataBase/" class="post-category">
+                                    DataBase
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/MySQL/">
+                        <span class="chip bg-color">MySQL</span>
+                    </a>
+                    
+                    <a href="/tags/DataBase/">
+                        <span class="chip bg-color">DataBase</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93/">
+                        <span class="chip bg-color">关系型数据库</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%B7%A1%E6%A3%80%E7%B3%BB%E7%BB%9F/">
+                        <span class="chip bg-color">巡检系统</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/posts/21475.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/18.jpg" class="responsive-img" alt="12.大厂实践 - 美团: SQL优化工具SQLAdvisor开源">
+                        
+                        <span class="card-title">12.大厂实践 - 美团: SQL优化工具SQLAdvisor开源</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2023-12-29
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/DataBase/" class="post-category">
+                                    DataBase
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/MySQL/">
+                        <span class="chip bg-color">MySQL</span>
+                    </a>
+                    
+                    <a href="/tags/DataBase/">
+                        <span class="chip bg-color">DataBase</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93/">
+                        <span class="chip bg-color">关系型数据库</span>
+                    </a>
+                    
+                    <a href="/tags/SQL%E4%BC%98%E5%8C%96%E5%B7%A5%E5%85%B7/">
+                        <span class="chip bg-color">SQL优化工具</span>
+                    </a>
+                    
+                    <a href="/tags/SQLAdvisor/">
+                        <span class="chip bg-color">SQLAdvisor</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('3'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\(', '\)']]}
+    });
+</script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+    <div class="container row center-align" style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2023</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">Hubert Wong</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                class="white-color">739.3k</span>&nbsp;字
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <span id="sitetime">载入运行时间...</span>
+            <script>
+                function siteTime() {
+                    var seconds = 1000;
+                    var minutes = seconds * 60;
+                    var hours = minutes * 60;
+                    var days = hours * 24;
+                    var years = days * 365;
+                    var today = new Date();
+                    var startYear = "2019";
+                    var startMonth = "6";
+                    var startDate = "28";
+                    var startHour = "0";
+                    var startMinute = "0";
+                    var startSecond = "0";
+                    var todayYear = today.getFullYear();
+                    var todayMonth = today.getMonth() + 1;
+                    var todayDate = today.getDate();
+                    var todayHour = today.getHours();
+                    var todayMinute = today.getMinutes();
+                    var todaySecond = today.getSeconds();
+                    var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                    var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                    var diff = t2 - t1;
+                    var diffYears = Math.floor(diff / years);
+                    var diffDays = Math.floor((diff / days) - diffYears * 365);
+                    var diffHours = Math.floor((diff - (diffYears * 365 + diffDays) * days) / hours);
+                    var diffMinutes = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours) /
+                        minutes);
+                    var diffSeconds = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours -
+                        diffMinutes * minutes) / seconds);
+                    if (startYear == todayYear) {
+                        document.getElementById("year").innerHTML = todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffDays + " 天 " + diffHours +
+                            " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    } else {
+                        document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffYears + " 年 " + diffDays +
+                            " 天 " + diffHours + " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    }
+                }
+                setInterval(siteTime, 1000);
+            </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/HubertWongCN" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:hubertwongcn@gmail.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+        <script src="//code.tidio.co/qst6g32qs2bibjqjp6oqgpe69j3qtrn9.js"></script>
+        <script>
+            $(document).ready(function () {
+                setInterval(change_Tidio, 50);
+                function change_Tidio() {
+                    var tidio=$("#tidio-chat iframe");
+                    if(tidio.css("display")=="block"&& $(window).width()>977 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" &&$(window).width()>977)>0? "-40px" : ($("div.toc-title").length&&$(window).width()>977)>0?"85px":"20px";
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.height=parseInt(tidio.css("height"))>=520?"520px":tidio.css("height");
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()>601 &&$(window).width()<992 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && 601< $(window).width()<992)>0? "-40px":"20px" ;
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))<230){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && $(window).width()<601)>0? "-10px":"45px" ;
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    if( tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))>=230){
+                        document.getElementById("tidio-chat-iframe").style.zIndex="998";
+                    }
+                }
+            });
+        </script>
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
