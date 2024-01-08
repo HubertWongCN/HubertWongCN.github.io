@@ -1,0 +1,1840 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN,en,default">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="16.SpringBoot接口 - 如何生成接口文档之集成Smart-Doc, 生活，养猫，Java，后端开发">
+    <meta name="description" content="记录猫奴生活、后端学习笔记，由Hexo+Github搭建">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>16.SpringBoot接口 - 如何生成接口文档之集成Smart-Doc | Hubert&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/hubert-logo.png">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/my.css">
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/jquery/jquery.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="Hubert's Blog" type="application/atom+xml">
+</head>
+
+
+
+   <style>
+    body{
+       background-image: url(https://cdn.jsdelivr.net/gh/Tokisaki-Galaxy/res/site/medias/background.jpg);
+       background-repeat:no-repeat;
+       background-size:cover;
+       background-attachment:fixed;
+    }
+</style>
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Hubert&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>主页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Hubert&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            记录猫奴生活、后端学习笔记，由Hexo+Github搭建
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			主页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/18.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">16.SpringBoot接口 - 如何生成接口文档之集成Smart-Doc</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/Spring/">
+                                <span class="chip bg-color">Spring</span>
+                            </a>
+                        
+                            <a href="/tags/SpringBoot/">
+                                <span class="chip bg-color">SpringBoot</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/SpringBoot/" class="post-category">
+                                SpringBoot
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2024-01-04
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2024-01-04
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    5.4k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                    22 分
+                </div>
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/prism/prism.css">
+        
+
+        
+        <!-- 代码块折行 -->
+        <style type="text/css">
+            code[class*="language-"], pre[class*="language-"] { white-space: pre-wrap !important; }
+        </style>
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p>上文我们看到可以通过Swagger系列可以快速生成API文档， 但是这种API文档生成是需要在接口上添加注解等，这表明这是一种侵入式方式； 那么有没有非侵入式方式呢, 比如通过注释生成文档？ 本文主要介绍非侵入式的方式及集成Smart-doc案例。我们构建知识体系时使用Smart-doc这类工具并不是目标，而是<strong>要了解非侵入方式能做到什么程度和技术思路</strong>, 最后<strong>平衡</strong>下来多数情况下多数人还是会选择Swagger+openapi技术栈的。 </p>
+</blockquote>
+<h2 id="准备知识点"><a href="#准备知识点" class="headerlink" title="准备知识点"></a>准备知识点</h2><blockquote>
+<p>需要了解Swagger侵入性和依赖性， 以及Smart-Doc这类工具如何解决这些问题, 部分内容来自<a target="_blank" rel="noopener" href="https://gitee.com/smart-doc-team/smart-doc">官方网站</a>。</p>
+</blockquote>
+<h3 id="为什么会产生Smart-Doc这类工具？"><a href="#为什么会产生Smart-Doc这类工具？" class="headerlink" title="为什么会产生Smart-Doc这类工具？"></a>为什么会产生Smart-Doc这类工具？</h3><blockquote>
+<p>既然有了Swagger， 为何还会产生Smart-Doc这类工具呢？ 本质上是Swagger侵入性和依赖性。</p>
+</blockquote>
+<p>我们来看下目前主流的技术文档工具存在什么问题：</p>
+<ol>
+<li><strong>侵入性强</strong>，需要编写大量注解，代表工具如：swagger，还有一些公司自研的文档工具</li>
+<li><strong>强依赖性</strong>，如果项目不想使用该工具，业务代码无法编译通过。</li>
+<li>代码解析能力弱，使用文档不齐全，主要代表为国内众多开源的相关工具。</li>
+<li>众多基于注释分析的工具无法解析jar包里面的注释(sources jar包)，需要人工配置源码路径，无法满足DevOps构建场景。</li>
+<li>部分工具无法支持多模块复杂项目代码分析。</li>
+</ol>
+<h3 id="什么是Smart-Doc？有哪些特性？"><a href="#什么是Smart-Doc？有哪些特性？" class="headerlink" title="什么是Smart-Doc？有哪些特性？"></a>什么是Smart-Doc？有哪些特性？</h3><blockquote>
+<p>smart-doc是一款同时支持JAVA REST API和Apache Dubbo RPC接口文档生成的工具，smart-doc在业内率先提出<strong>基于JAVA泛型定义推导</strong>的理念， 完全基于接口源码来分析生成接口文档，不采用任何注解侵入到业务代码中。你只需要<strong>按照java-doc标准</strong>编写注释， smart-doc就能帮你生成一个简易明了的Markdown、HTML5、Postman Collection2.0+、OpenAPI 3.0+的文档。</p>
+</blockquote>
+<ul>
+<li>零注解、零学习成本、只需要写标准JAVA注释。</li>
+<li>基于源代码接口定义自动推导，强大的返回结构推导。</li>
+<li>支持Spring MVC、Spring Boot、Spring Boot Web Flux(controller书写方式)、Feign。</li>
+<li>支持Callable、Future、CompletableFuture等异步接口返回的推导。</li>
+<li>支持JavaBean上的JSR303参数校验规范，包括分组验证。</li>
+<li>对JSON请求参数的接口能够自动生成模拟JSON参数。</li>
+<li>对一些常用字段定义能够生成有效的模拟值。</li>
+<li>支持生成JSON返回值示例。</li>
+<li>支持从项目外部加载源代码来生成字段注释(包括标准规范发布的jar包)。</li>
+<li>支持生成多种格式文档：Markdown、HTML5、Asciidoctor、Postman Collection、OpenAPI 3.0。 Up- 开放文档数据，可自由实现接入文档管理系统。</li>
+<li>支持导出错误码和定义在代码中的各种字典码到接口文档。</li>
+<li>支持Maven、Gradle插件式轻松集成。</li>
+<li>支持Apache Dubbo RPC接口文档生成。</li>
+<li>debug接口调试html5页面完全支持文件上传，下载(@download tag标记下载方法)测试。</li>
+</ul>
+<h2 id="实现案例"><a href="#实现案例" class="headerlink" title="实现案例"></a>实现案例</h2><blockquote>
+<p>从smart-doc 1.7.9开始官方提供了Maven插件，可以通过在项目中集成smart-doc的Maven插件，然后运行插件直接生成文档。 我们的案例基于smart-doc-maven-plugin，生成文档。示例参考官方<a target="_blank" rel="noopener" href="https://smart-doc-group.github.io/#/zh-cn/plugins/maven_plugin">配置文档在新窗口打开</a>而写。</p>
+</blockquote>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>添加maven的插件</p>
+<pre class="language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>build</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>plugins</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>plugin</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>groupId</span><span class="token punctuation">&gt;</span></span>org.springframework.boot<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>groupId</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>artifactId</span><span class="token punctuation">&gt;</span></span>spring-boot-maven-plugin<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>artifactId</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>plugin</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>plugin</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>groupId</span><span class="token punctuation">&gt;</span></span>com.github.shalousun<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>groupId</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>artifactId</span><span class="token punctuation">&gt;</span></span>smart-doc-maven-plugin<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>artifactId</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>version</span><span class="token punctuation">&gt;</span></span>2.4.8<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>version</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>configuration</span><span class="token punctuation">&gt;</span></span>
+                <span class="token comment">&lt;!--指定生成文档的使用的配置文件,配置文件放在自己的项目中--&gt;</span>
+                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>configFile</span><span class="token punctuation">&gt;</span></span>./src/main/resources/smart-doc.json<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>configFile</span><span class="token punctuation">&gt;</span></span>
+                <span class="token comment">&lt;!--指定项目名称，推荐使用动态参数，例如${project.description}--&gt;</span>
+                <span class="token comment">&lt;!--如果smart-doc.json中和此处都未设置projectName，2.3.4开始，插件自动采用pom中的projectName作为设置--&gt;</span>
+                <span class="token comment">&lt;!--&lt;projectName&gt;${project.description}&lt;/projectName&gt;--&gt;</span>
+                <span class="token comment">&lt;!--smart-doc实现自动分析依赖树加载第三方依赖的源码，如果一些框架依赖库加载不到导致报错，这时请使用excludes排除掉--&gt;</span>
+                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>excludes</span><span class="token punctuation">&gt;</span></span>
+                    <span class="token comment">&lt;!--格式为：groupId:artifactId;参考如下--&gt;</span>
+                    <span class="token comment">&lt;!--也可以支持正则式如：com.alibaba:.* --&gt;</span>
+                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>exclude</span><span class="token punctuation">&gt;</span></span>com.alibaba:fastjson<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>exclude</span><span class="token punctuation">&gt;</span></span>
+                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>excludes</span><span class="token punctuation">&gt;</span></span>
+                <span class="token comment">&lt;!--includes配置用于配置加载外部依赖源码,配置后插件会按照配置项加载外部源代码而不是自动加载所有，因此使用时需要注意--&gt;</span>
+                <span class="token comment">&lt;!--smart-doc能自动分析依赖树加载所有依赖源码，原则上会影响文档构建效率，因此你可以使用includes来让插件加载你配置的组件--&gt;</span>
+                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>includes</span><span class="token punctuation">&gt;</span></span>
+                    <span class="token comment">&lt;!--格式为：groupId:artifactId;参考如下--&gt;</span>
+                    <span class="token comment">&lt;!--也可以支持正则式如：com.alibaba:.* --&gt;</span>
+                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>include</span><span class="token punctuation">&gt;</span></span>com.alibaba:fastjson<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>include</span><span class="token punctuation">&gt;</span></span>
+                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>includes</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>configuration</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>executions</span><span class="token punctuation">&gt;</span></span>
+                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>execution</span><span class="token punctuation">&gt;</span></span>
+                    <span class="token comment">&lt;!--如果不需要在执行编译时启动smart-doc，则将phase注释掉--&gt;</span>
+                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>phase</span><span class="token punctuation">&gt;</span></span>compile<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>phase</span><span class="token punctuation">&gt;</span></span>
+                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>goals</span><span class="token punctuation">&gt;</span></span>
+                        <span class="token comment">&lt;!--smart-doc提供了html、openapi、markdown等goal，可按需配置--&gt;</span>
+                        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>goal</span><span class="token punctuation">&gt;</span></span>html<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>goal</span><span class="token punctuation">&gt;</span></span>
+                    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>goals</span><span class="token punctuation">&gt;</span></span>
+                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>execution</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>executions</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>plugin</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>plugins</span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>build</span><span class="token punctuation">&gt;</span></span></code></pre>
+
+<p>其中./src/main/resources/smart-doc.json是配置文件。</p>
+<pre class="language-json" data-language="json"><code class="language-json"><span class="token punctuation">{</span>
+  <span class="token property">"serverUrl"</span><span class="token operator">:</span> <span class="token string">"http://127.0.0.1"</span><span class="token punctuation">,</span> <span class="token comment">//服务器地址,非必须。导出postman建议设置成http://{{server}}方便直接在postman直接设置环境变量</span>
+  <span class="token property">"pathPrefix"</span><span class="token operator">:</span> <span class="token string">""</span><span class="token punctuation">,</span> <span class="token comment">//设置path前缀,非必须。如配置Servlet ContextPath 。@since 2.2.3</span>
+  <span class="token property">"isStrict"</span><span class="token operator">:</span> <span class="token boolean">false</span><span class="token punctuation">,</span> <span class="token comment">//是否开启严格模式</span>
+  <span class="token property">"allInOne"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>  <span class="token comment">//是否将文档合并到一个文件中，一般推荐为true</span>
+  <span class="token property">"outPath"</span><span class="token operator">:</span> <span class="token string">"/Users/hubertwong/IdeaProjects/hubert-spring-demos/springboot-demo-smart-doc/md"</span><span class="token punctuation">,</span> <span class="token comment">//指定文档的输出路径</span>
+  <span class="token property">"coverOld"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>  <span class="token comment">//是否覆盖旧的文件，主要用于markdown文件覆盖</span>
+  <span class="token property">"createDebugPage"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span><span class="token comment">//@since 2.0.0 smart-doc支持创建可以测试的html页面，仅在AllInOne模式中起作用。</span>
+  <span class="token property">"packageFilters"</span><span class="token operator">:</span> <span class="token string">""</span><span class="token punctuation">,</span><span class="token comment">//controller包过滤，多个包用英文逗号隔开，2.2.2开始需要采用正则：com.test.controller.*</span>
+  <span class="token property">"md5EncryptedHtmlName"</span><span class="token operator">:</span> <span class="token boolean">false</span><span class="token punctuation">,</span><span class="token comment">//只有每个controller生成一个html文件时才使用</span>
+  <span class="token property">"style"</span><span class="token operator">:</span><span class="token string">"xt256"</span><span class="token punctuation">,</span> <span class="token comment">//基于highlight.js的代码高设置,可选值很多可查看码云wiki，喜欢配色统一简洁的同学可以不设置</span>
+  <span class="token property">"projectName"</span><span class="token operator">:</span> <span class="token string">"springboot-demo-smart-doc"</span><span class="token punctuation">,</span><span class="token comment">//配置自己的项目名称，不设置则插件自动获取pom中的projectName</span>
+  <span class="token property">"skipTransientField"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span><span class="token comment">//目前未实现</span>
+  <span class="token property">"sortByTitle"</span><span class="token operator">:</span><span class="token boolean">false</span><span class="token punctuation">,</span><span class="token comment">//接口标题排序，默认为false,@since 1.8.7版本开始</span>
+  <span class="token property">"showAuthor"</span><span class="token operator">:</span><span class="token boolean">true</span><span class="token punctuation">,</span><span class="token comment">//是否显示接口作者名称，默认是true,不想显示可关闭</span>
+  <span class="token property">"requestFieldToUnderline"</span><span class="token operator">:</span><span class="token boolean">true</span><span class="token punctuation">,</span><span class="token comment">//自动将驼峰入参字段在文档中转为下划线格式,//@since 1.8.7版本开始</span>
+  <span class="token property">"responseFieldToUnderline"</span><span class="token operator">:</span><span class="token boolean">true</span><span class="token punctuation">,</span><span class="token comment">//自动将驼峰入参字段在文档中转为下划线格式,//@since 1.8.7版本开始</span>
+  <span class="token property">"inlineEnum"</span><span class="token operator">:</span><span class="token boolean">true</span><span class="token punctuation">,</span><span class="token comment">//设置为true会将枚举详情展示到参数表中，默认关闭，//@since 1.8.8版本开始</span>
+  <span class="token property">"recursionLimit"</span><span class="token operator">:</span><span class="token number">7</span><span class="token punctuation">,</span><span class="token comment">//设置允许递归执行的次数用于避免一些对象解析卡主，默认是7，正常为3次以内，//@since 1.8.8版本开始</span>
+  <span class="token property">"allInOneDocFileName"</span><span class="token operator">:</span><span class="token string">"index.html"</span><span class="token punctuation">,</span><span class="token comment">//自定义设置输出文档名称, @since 1.9.0</span>
+  <span class="token property">"requestExample"</span><span class="token operator">:</span><span class="token string">"true"</span><span class="token punctuation">,</span><span class="token comment">//是否将请求示例展示在文档中，默认true，@since 1.9.0</span>
+  <span class="token property">"responseExample"</span><span class="token operator">:</span><span class="token string">"true"</span><span class="token punctuation">,</span><span class="token comment">//是否将响应示例展示在文档中，默认为true，@since 1.9.0</span>
+
+  <span class="token property">"ignoreRequestParams"</span><span class="token operator">:</span><span class="token punctuation">[</span> <span class="token comment">//忽略请求参数对象，把不想生成文档的参数对象屏蔽掉，@since 1.9.2</span>
+    <span class="token string">"org.springframework.ui.ModelMap"</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token property">"dataDictionaries"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">{</span> <span class="token comment">//配置数据字典，没有需求可以不设置</span>
+    <span class="token property">"title"</span><span class="token operator">:</span> <span class="token string">"http状态码字典"</span><span class="token punctuation">,</span> <span class="token comment">//数据字典的名称</span>
+    <span class="token property">"enumClassName"</span><span class="token operator">:</span> <span class="token string">"org.hubert.springboot.smartdoc.constant.ResponseStatus"</span><span class="token punctuation">,</span> <span class="token comment">//数据字典枚举类名称</span>
+    <span class="token property">"codeField"</span><span class="token operator">:</span> <span class="token string">"responseCode"</span><span class="token punctuation">,</span><span class="token comment">//数据字典字典码对应的字段名称</span>
+    <span class="token property">"descField"</span><span class="token operator">:</span> <span class="token string">"description"</span><span class="token comment">//数据字典对象的描述信息字典</span>
+  <span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token property">"errorCodeDictionaries"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">{</span> <span class="token comment">//错误码列表，没有需求可以不设置</span>
+    <span class="token property">"title"</span><span class="token operator">:</span> <span class="token string">"title"</span><span class="token punctuation">,</span>
+    <span class="token property">"enumClassName"</span><span class="token operator">:</span> <span class="token string">"org.hubert.springboot.smartdoc.constant.ResponseStatus"</span><span class="token punctuation">,</span> <span class="token comment">//错误码枚举类</span>
+    <span class="token property">"codeField"</span><span class="token operator">:</span> <span class="token string">"responseCode"</span><span class="token punctuation">,</span><span class="token comment">//错误码的code码字段名称</span>
+    <span class="token property">"descField"</span><span class="token operator">:</span> <span class="token string">"description"</span><span class="token comment">//错误码的描述信息对应的字段名</span>
+  <span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token property">"revisionLogs"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">{</span> <span class="token comment">//文档变更记录，非必须</span>
+    <span class="token property">"version"</span><span class="token operator">:</span> <span class="token string">"1.1"</span><span class="token punctuation">,</span> <span class="token comment">//文档版本号</span>
+    <span class="token property">"revisionTime"</span><span class="token operator">:</span> <span class="token string">"2022-07-01 22:12:01"</span><span class="token punctuation">,</span> <span class="token comment">//文档修订时间</span>
+    <span class="token property">"status"</span><span class="token operator">:</span> <span class="token string">"update"</span><span class="token punctuation">,</span> <span class="token comment">//变更操作状态，一般为：创建、更新等</span>
+    <span class="token property">"author"</span><span class="token operator">:</span> <span class="token string">"hubert"</span><span class="token punctuation">,</span> <span class="token comment">//文档变更作者</span>
+    <span class="token property">"remarks"</span><span class="token operator">:</span> <span class="token string">"init user api"</span> <span class="token comment">//变更描述</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token punctuation">{</span> <span class="token comment">//文档变更记录，非必须</span>
+    <span class="token property">"version"</span><span class="token operator">:</span> <span class="token string">"1.2"</span><span class="token punctuation">,</span> <span class="token comment">//文档版本号</span>
+    <span class="token property">"revisionTime"</span><span class="token operator">:</span> <span class="token string">"2022-07-01 22:12:02"</span><span class="token punctuation">,</span> <span class="token comment">//文档修订时间</span>
+    <span class="token property">"status"</span><span class="token operator">:</span> <span class="token string">"update"</span><span class="token punctuation">,</span> <span class="token comment">//变更操作状态，一般为：创建、更新等</span>
+    <span class="token property">"author"</span><span class="token operator">:</span> <span class="token string">"hubert"</span><span class="token punctuation">,</span> <span class="token comment">//文档变更作者</span>
+    <span class="token property">"remarks"</span><span class="token operator">:</span> <span class="token string">"add address api"</span> <span class="token comment">//变更描述</span>
+  <span class="token punctuation">}</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token property">"customResponseFields"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">{</span> <span class="token comment">//自定义添加字段和注释，一般用户处理第三方jar包库，非必须</span>
+    <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"code"</span><span class="token punctuation">,</span><span class="token comment">//覆盖响应码字段</span>
+    <span class="token property">"desc"</span><span class="token operator">:</span> <span class="token string">"响应代码"</span><span class="token punctuation">,</span><span class="token comment">//覆盖响应码的字段注释</span>
+    <span class="token property">"ownerClassName"</span><span class="token operator">:</span> <span class="token string">"org.springframework.data.domain.Pageable"</span><span class="token punctuation">,</span> <span class="token comment">//指定你要添加注释的类名</span>
+    <span class="token property">"ignore"</span><span class="token operator">:</span><span class="token boolean">true</span><span class="token punctuation">,</span> <span class="token comment">//设置true会被自动忽略掉不会出现在文档中</span>
+    <span class="token property">"value"</span><span class="token operator">:</span> <span class="token string">"00000"</span><span class="token comment">//设置响应码的值</span>
+  <span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token property">"requestHeaders"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">{</span> <span class="token comment">//设置请求头，没有需求可以不设置</span>
+    <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"token"</span><span class="token punctuation">,</span><span class="token comment">//请求头名称</span>
+    <span class="token property">"type"</span><span class="token operator">:</span> <span class="token string">"string"</span><span class="token punctuation">,</span><span class="token comment">//请求头类型</span>
+    <span class="token property">"desc"</span><span class="token operator">:</span> <span class="token string">"desc"</span><span class="token punctuation">,</span><span class="token comment">//请求头描述信息</span>
+    <span class="token property">"value"</span><span class="token operator">:</span><span class="token string">"token请求头的值"</span><span class="token punctuation">,</span><span class="token comment">//不设置默认null</span>
+    <span class="token property">"required"</span><span class="token operator">:</span> <span class="token boolean">false</span><span class="token punctuation">,</span><span class="token comment">//是否必须</span>
+    <span class="token property">"since"</span><span class="token operator">:</span> <span class="token string">"-"</span><span class="token punctuation">,</span><span class="token comment">//什么版本添加的改请求头</span>
+    <span class="token property">"pathPatterns"</span><span class="token operator">:</span> <span class="token string">"/app/test/**"</span><span class="token punctuation">,</span><span class="token comment">//请看https://gitee.com/smart-doc-team/smart-doc/wikis/请求头高级配置?sort_id=4178978</span>
+    <span class="token property">"excludePathPatterns"</span><span class="token operator">:</span><span class="token string">"/app/page/**"</span><span class="token comment">//请看https://gitee.com/smart-doc-team/smart-doc/wikis/请求头高级配置?sort_id=4178978</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span><span class="token punctuation">{</span>
+    <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"appkey"</span><span class="token punctuation">,</span><span class="token comment">//请求头</span>
+    <span class="token property">"type"</span><span class="token operator">:</span> <span class="token string">"string"</span><span class="token punctuation">,</span><span class="token comment">//请求头类型</span>
+    <span class="token property">"desc"</span><span class="token operator">:</span> <span class="token string">"desc"</span><span class="token punctuation">,</span><span class="token comment">//请求头描述信息</span>
+    <span class="token property">"value"</span><span class="token operator">:</span><span class="token string">"appkey请求头的值"</span><span class="token punctuation">,</span><span class="token comment">//不设置默认null</span>
+    <span class="token property">"required"</span><span class="token operator">:</span> <span class="token boolean">false</span><span class="token punctuation">,</span><span class="token comment">//是否必须</span>
+    <span class="token property">"pathPatterns"</span><span class="token operator">:</span> <span class="token string">"/test/add,/testConstants/1.0"</span><span class="token punctuation">,</span><span class="token comment">//正则表达式过滤请求头,url匹配上才会添加该请求头，多个正则用分号隔开</span>
+    <span class="token property">"since"</span><span class="token operator">:</span> <span class="token string">"-"</span><span class="token comment">//什么版本添加的改请求头</span>
+  <span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token property">"requestParams"</span><span class="token operator">:</span> <span class="token punctuation">[</span> <span class="token comment">//设置公共参数，没有需求可以不设置</span>
+    <span class="token punctuation">{</span>
+      <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"configPathParam"</span><span class="token punctuation">,</span><span class="token comment">//请求名称</span>
+      <span class="token property">"type"</span><span class="token operator">:</span> <span class="token string">"string"</span><span class="token punctuation">,</span><span class="token comment">//请求类型</span>
+      <span class="token property">"desc"</span><span class="token operator">:</span> <span class="token string">"desc"</span><span class="token punctuation">,</span><span class="token comment">//请求描述信息</span>
+      <span class="token property">"paramIn"</span><span class="token operator">:</span> <span class="token string">"path"</span><span class="token punctuation">,</span> <span class="token comment">// 参数所在位置 header-请求头, path-路径参数, query-参数</span>
+      <span class="token property">"value"</span><span class="token operator">:</span><span class="token string">"testPath"</span><span class="token punctuation">,</span><span class="token comment">//不设置默认null</span>
+      <span class="token property">"required"</span><span class="token operator">:</span> <span class="token boolean">false</span><span class="token punctuation">,</span><span class="token comment">//是否必须</span>
+      <span class="token property">"since"</span><span class="token operator">:</span> <span class="token string">"2.2.3"</span><span class="token punctuation">,</span><span class="token comment">//什么版本添加的该请求</span>
+      <span class="token property">"pathPatterns"</span><span class="token operator">:</span> <span class="token string">"/app/test/**"</span><span class="token punctuation">,</span><span class="token comment">//请看https://gitee.com/smart-doc-team/smart-doc/wikis/请求高级配置?sort_id=4178978</span>
+      <span class="token property">"excludePathPatterns"</span><span class="token operator">:</span><span class="token string">"/app/page/**"</span><span class="token comment">//请看https://gitee.com/smart-doc-team/smart-doc/wikis/请求高级配置?sort_id=4178978</span>
+    <span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token property">"responseBodyAdvice"</span><span class="token operator">:</span><span class="token punctuation">{</span> <span class="token comment">//自smart-doc 1.9.8起，非必须项，ResponseBodyAdvice统一返回设置(不要随便配置根据项目的技术来配置)，可用ignoreResponseBodyAdvice tag来忽略</span>
+    <span class="token property">"className"</span><span class="token operator">:</span><span class="token string">"org.hubert.springboot.smartdoc.constant.ResponseStatus"</span> <span class="token comment">//通用响应体</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code></pre>
+
+<h3 id="运行测试"><a href="#运行测试" class="headerlink" title="运行测试"></a>运行测试</h3><p>可以通过Maven命令生成文档</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">//生成html
+mvn <span class="token parameter variable">-Dfile.encoding</span><span class="token operator">=</span>UTF-8 smart-doc:html</code></pre>
+
+<p>在IDEA中，也可以通过maven插件构建</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401041044909.png" alt="smart-doc:html"></p>
+<p>maven构建日志如下</p>
+<pre class="language-text" data-language="text"><code class="language-text">[INFO] Error stacktraces are turned on.
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------&lt; org.hubert:springboot-demo-smart-doc &gt;----------------
+[INFO] Building springboot-demo-smart-doc 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] &gt;&gt;&gt; smart-doc:2.4.8:html (default-cli) &gt; compile @ springboot-demo-smart-doc &gt;&gt;&gt;
+[INFO] 
+[INFO] --- resources:3.2.0:resources (default-resources) @ springboot-demo-smart-doc ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 0 resource
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- compiler:3.8.1:compile (default-compile) @ springboot-demo-smart-doc ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] &lt;&lt;&lt; smart-doc:2.4.8:html (default-cli) &lt; compile @ springboot-demo-smart-doc &lt;&lt;&lt;
+[INFO] 
+[INFO] 
+[INFO] --- smart-doc:2.4.8:html (default-cli) @ springboot-demo-smart-doc ---
+[INFO] ------------------------------------------------------------------------
+[INFO] Smart-doc Start preparing sources at: 2024-01-04 10:41:11
+[INFO] Artifacts that the current project depends on: ["org.springframework.boot:spring-boot-starter-web","org.projectlombok:lombok"]
+[INFO] Smart-doc has loaded the source code path: [{"path":"/Users/hubertwong/IdeaProjects/hubert-spring-demos/springboot-demo-smart-doc/src/main/java"}]
+[INFO] Smart-doc Starting Create API Documentation at: 2024-01-04 10:41:11
+[INFO] API documentation is output to =&gt; /Users/hubertwong/IdeaProjects/hubert-spring-demos/springboot-demo-smart-doc
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.530 s
+[INFO] Finished at: 2024-01-04T10:41:11+08:00
+[INFO] ------------------------------------------------------------------------
+hubertwong@Huberts-MBP springboot-demo-smart-doc % mvn -e -Dfile.encoding=UTF-8 smart-doc:html
+[INFO] Error stacktraces are turned on.
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------&lt; org.hubert:springboot-demo-smart-doc &gt;----------------
+[INFO] Building springboot-demo-smart-doc 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] &gt;&gt;&gt; smart-doc:2.4.8:html (default-cli) &gt; compile @ springboot-demo-smart-doc &gt;&gt;&gt;
+[INFO] 
+[INFO] --- resources:3.2.0:resources (default-resources) @ springboot-demo-smart-doc ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 0 resource
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- compiler:3.8.1:compile (default-compile) @ springboot-demo-smart-doc ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] &lt;&lt;&lt; smart-doc:2.4.8:html (default-cli) &lt; compile @ springboot-demo-smart-doc &lt;&lt;&lt;
+[INFO] 
+[INFO] 
+[INFO] --- smart-doc:2.4.8:html (default-cli) @ springboot-demo-smart-doc ---
+[INFO] ------------------------------------------------------------------------
+[INFO] Smart-doc Start preparing sources at: 2024-01-04 10:42:29
+[INFO] Artifacts that the current project depends on: ["org.springframework.boot:spring-boot-starter-web","org.projectlombok:lombok"]
+[INFO] Smart-doc has loaded the source code path: [{"path":"/Users/hubertwong/IdeaProjects/hubert-spring-demos/springboot-demo-smart-doc/src/main/java"}]
+[INFO] Smart-doc Starting Create API Documentation at: 2024-01-04 10:42:29
+[INFO] API documentation is output to =&gt; /Users/hubertwong/IdeaProjects/hubert-spring-demos/springboot-demo-smart-doc/md
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.610 s
+[INFO] Finished at: 2024-01-04T10:42:29+08:00
+[INFO] ------------------------------------------------------------------------</code></pre>
+
+<p>构建后的html如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401041046083.png" alt="smart-doc"></p>
+<p>也可以看到还自动提供了mock的数据，以及测试接口的按钮。还包含自定义的返回枚举类型等。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401041049695.png" alt="example"></p>
+<p>展示效果，可以参看<a target="_blank" rel="noopener" href="https://api.doubans.com/">https://api.doubans.com/</a></p>
+<h3 id="生成更多类型的文档"><a href="#生成更多类型的文档" class="headerlink" title="生成更多类型的文档"></a>生成更多类型的文档</h3><p>smart-doc 还支持生成如下类型的文档：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">//生成markdown
+mvn <span class="token parameter variable">-Dfile.encoding</span><span class="token operator">=</span>UTF-8 smart-doc:markdown
+//生成adoc
+mvn <span class="token parameter variable">-Dfile.encoding</span><span class="token operator">=</span>UTF-8 smart-doc:adoc
+//生成postman json数据
+mvn <span class="token parameter variable">-Dfile.encoding</span><span class="token operator">=</span>UTF-8 smart-doc:postman
+// 生成 Open Api <span class="token number">3.0</span>+, Since smart-doc-maven-plugin <span class="token number">1.1</span>.5
+mvn <span class="token parameter variable">-Dfile.encoding</span><span class="token operator">=</span>UTF-8 smart-doc:openapi</code></pre>
+
+<h2 id="进一步理解"><a href="#进一步理解" class="headerlink" title="进一步理解"></a>进一步理解</h2><blockquote>
+<p>结合smart-doc官方文档，我们通过几个问题进一步理解smart-doc。主要内容来源于<a target="_blank" rel="noopener" href="https://smart-doc-group.github.io/">官方文档</a>。</p>
+</blockquote>
+<h3 id="注释信息是有限的，smart-doc如何从注释拓展文档内容呢？"><a href="#注释信息是有限的，smart-doc如何从注释拓展文档内容呢？" class="headerlink" title="注释信息是有限的，smart-doc如何从注释拓展文档内容呢？"></a>注释信息是有限的，smart-doc如何从注释拓展文档内容呢？</h3><blockquote>
+<p>我们知道注释的信息是有限的，swagger技术栈的方式通过定义注解来约束并拓展文档中的内容，那么smart-doc如何从注释拓展文档内容呢？</p>
+</blockquote>
+<p>一方面<code>smart-doc</code>的实现初衷是通过使用<code>javadoc</code>文档注释来去除注解式的侵入，因此<code>smart-doc</code>每增加一个功能首先都是去考虑<code>javadoc</code>原生的<code>tag</code>,</p>
+<p>下面对<code>smart-doc</code>使用的一些<code>javadoc</code>的注释<code>tag</code>做介绍。</p>
+<table>
+<thead>
+<tr>
+<th>tag名称</th>
+<th>使用描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@param</code></td>
+<td>对于在<code>Spring Boot</code>接口层，对于简单类型的参数必须在使用<code>@param</code>时写上注释描述，对于<code>Entity</code>类型<code>smart-doc</code>则不会检查</td>
+</tr>
+<tr>
+<td><code>@deprecated</code></td>
+<td>可以在注释中用于标记接口已经废弃，作用同<code>@Deprecated</code>注解</td>
+</tr>
+<tr>
+<td><code>@apiNote</code></td>
+<td><code>@apiNote</code>是<code>JAVA</code>新增的文档<code>tag</code>,<code>smart-doc</code>使用<code>@apiNote</code>的注释作为方法的详细描述，因此可以使用<code>@apiNote</code>来写一段长注释。如果一个方法不写 <code>@apiNote</code>注释说明，<code>smart-doc</code>直接使用方法默认注释填充</td>
+</tr>
+</tbody></table>
+<p>另一方面，原生的tag是不够的，所以<code>smart-doc</code>又通过自定义tag来支持更多功能的拓展</p>
+<table>
+<thead>
+<tr>
+<th>tag名称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@ignore</code></td>
+<td><code>@ignore</code> <code>tag</code>用于过滤请求参数对象上的某个字段，设置后<code>smart-doc</code>不输出改字段到请求参数列表中。关于响应字段忽略的请看<a target="_blank" rel="noopener" href="https://smart-doc-group.github.io/#/zh-cn/diy/advancedFeatures?id=%E5%93%8D%E5%BA%94%E5%AD%97%E6%AE%B5%E5%BF%BD%E7%95%A5">【忽略响应字段】</a> 如果<code>@ignore</code>加到方法上，则接口方法不会输出到文档。从<code>1.8.4</code>开始<code>@ignore</code>支持添加到<code>Controller</code>上进行忽略不想生成文档的接口类。<code>@ignore</code>也可以用于方法上忽略某个请求参数。</td>
+</tr>
+<tr>
+<td><code>@required</code></td>
+<td>如果你没有使用<code>JSR303</code>参数验证规范实现的方式来标注字段，就可以使用<code>@required</code>去标注请求参数对象的字段，标注<code>smart-doc</code>在输出参数列表时会设置为<code>true</code>。</td>
+</tr>
+<tr>
+<td><code>@mock</code></td>
+<td>从<code>smart-doc 1.8.0</code>开始，<code>@mock</code> <code>tag</code>用于在对象基本类型字段设置自定义文档展示值。设置值后<code>smart-doc</code>不再帮你生成随机值。方便可以通过<code>smart-doc</code>直接输出交付文档。</td>
+</tr>
+<tr>
+<td><code>@dubbo</code></td>
+<td>从<code>smart-doc 1.8.7</code>开始，<code>@dubbo</code> <code>tag</code>用于在<code>Dubbo</code>的<code>API</code>接口类上添加让<code>smart-doc</code>可以扫描到<code>Dubbo RPC</code>的接口生成文档。</td>
+</tr>
+<tr>
+<td><code>@restApi</code></td>
+<td>从<code>smart-doc 1.8.8</code>开始，<code>@restApi</code> <code>tag</code>用于支持<code>smart-doc</code>去扫描<code>Spring Cloud Feign</code>的定义接口生成文档。</td>
+</tr>
+<tr>
+<td><code>@order</code></td>
+<td>从<code>smart-doc 1.9.4</code>开始，<code>@order</code> <code>tag</code>用于设置<code>Controller</code>接口或者<code>API</code>入口的自定义排序序号，<code>@order 1</code>就表示设置序号为<code>1</code>。</td>
+</tr>
+<tr>
+<td><code>@ignoreResponseBodyAdvice</code></td>
+<td>从<code>smart-doc 1.9.8</code>开始，<code>@ignoreResponseBodyAdvice</code> <code>tag</code>用于忽略<code>ResponseBodyAdvice</code>设置的包装类。</td>
+</tr>
+<tr>
+<td><code>@download</code></td>
+<td>从<code>smart-doc 2.0.1</code>开始，<code>@download</code> <code>tag</code>用于标注在<code>Controller</code>的文件下载方法上，生成<code>debug</code>页面时可实现文件下载测试。并且支持下载文件带请求头参数测试。</td>
+</tr>
+<tr>
+<td><code>@page</code></td>
+<td>从<code>smart-doc 2.0.2</code>开始，<code>@page</code> <code>tag</code>用于标注在<code>Controller</code>的方法上表示该方法用来渲染返回一个静态页面，生成<code>debug</code>页面时如果发起测试，测试页面会自动在浏览器开启新标签显示页面。</td>
+</tr>
+<tr>
+<td><code>@ignoreParams</code></td>
+<td>从<code>smart-doc 2.1.0</code>开始，<code>@ignoreParams</code> <code>tag</code>用于标注在<code>Controller</code>方法上忽略掉不想显示在文档中的参数，例如：<code>@ignoreParams id name</code>，多个参数名用空格隔开</td>
+</tr>
+<tr>
+<td><code>@response</code></td>
+<td>从<code>smart-doc 2.2.0</code>开始，<code>@response</code> <code>tag</code>标注在<code>Controller</code>方法上可以允许用这自己定义返回的<code>json example</code>。建议只在返回基础类型时使用，如：<code>Result&lt;String&gt;</code>类型这种泛型是简单原生类型的响应。</td>
+</tr>
+<tr>
+<td><code>@tag</code></td>
+<td><code>@since 2.2.5</code>, <code>@tag</code>用于将<code>Controller</code>方法分类, 可以将不同<code>Contoller</code>下的方法指定到多个分类下, 同时也可以直接指定<code>Controller</code>为一个分类或多个分类</td>
+</tr>
+</tbody></table>
+<h3 id="Maven多模块中使用插件有没有比较好的实践？"><a href="#Maven多模块中使用插件有没有比较好的实践？" class="headerlink" title="Maven多模块中使用插件有没有比较好的实践？"></a>Maven多模块中使用插件有没有比较好的实践？</h3><blockquote>
+<p>在独立的Maven项目中使用smart-doc，当前可以说是如丝般爽滑。但是在Maven的多模块项目中使用smart-doc-maven-plugin时，很多同学就有疑问了， smart-doc插件我到底是放在什么地方合适？是放在Maven的根pom.xml中？还是说各个需要生成API接口文档的模块中呢？ 下面就来说说根据不同的项目结构应该怎么放插件。</p>
+</blockquote>
+<p>完全的父子级关系的maven项目：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">├─parent
+├──common
+│   pom.xml
+├──web1
+│   pom.xml
+├──web2
+│   pom.xml
+└─pom.xml</code></pre>
+
+<p>上面的maven结构假设是严格按照父子级来配置的，然后web1和web2都依赖于common， 这种情况下如果跑到web1下或者web2目录下直接执行mvn命令来编译 都是无法完成的。需要在根目录上去执行命令编译命令才能通过，而smart-doc插件会通过类加载器去加载用户配置的一些类，因此是需要调用编译的和执行命令 是一样的。这种情况下建议你建smart-doc-maven-plugin放到根pom.xml中，在web1和web2中放置各自的smart-doc.json配置。 然后通过-pl去指定让smart-doc生成指定 模块的文档。操作命令如下：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 生成web1模块的api文档</span>
+mvn smart-doc:markdown <span class="token parameter variable">-Dfile.encoding</span><span class="token operator">=</span>UTF-8  <span class="token parameter variable">-pl</span> :web1 <span class="token parameter variable">-am</span>
+<span class="token comment"># 生成web2模块的api文档</span>
+mvn smart-doc:markdown <span class="token parameter variable">-Dfile.encoding</span><span class="token operator">=</span>UTF-8  <span class="token parameter variable">-pl</span> :web2 <span class="token parameter variable">-am</span></code></pre>
+
+<p>如果不是按照严格父子级构建的项目，还是以上面的结构例子来说。common模块放在类parent中，但是common的pom.xml并没有定义parent。 common模块也很少变更，很多公司内部可能就直接把common单独depoly上传到了公司的Nexus仓库中，这种情况下web1和web2虽然依赖于common， 但是web1和web2都可以在web1和web2目录下用命令编译，这种情况下直接将smart-doc-maven-plugin单独放到web1和web2中是可以做构建生成文档的。</p>
+<p>【<a target="_blank" rel="noopener" href="https://gitee.com/smart-doc-team/spring-boot-maven-multiple-module">多模块测试用例参考</a>】</p>
+<p>注意： 怎么去使用插件并没有固定的模式，最重要的是熟练Maven的一些列操作，然后根据自己的项目情况来调整。技巧娴熟就能应对自如。 对于插件的使用，从smart-doc-maven-plugin 1.2.0开始，插件是能够自动分析生成模块的依赖来加载必要的源码，并不会将所有模块的接口文档合并到一个文档中。</p>
+<h3 id="如果生成文档时遇到问题，该如何调试？"><a href="#如果生成文档时遇到问题，该如何调试？" class="headerlink" title="如果生成文档时遇到问题，该如何调试？"></a>如果生成文档时遇到问题，该如何调试？</h3><blockquote>
+<p>在使用<code>smart-doc-maven-plugin</code>插件来构建生成<code>API</code>文档的过程中可能会出现一些错误问题。官方文档中提供了调试的方案：</p>
+</blockquote>
+<ol>
+<li><strong>添加smart-doc依赖</strong></li>
+</ol>
+<p>因为<code>smart-doc-maven-plugin</code>最终是使用<code>smart-doc</code>来完成项目的源码分析和文档生成的， 通常情况下真正的调试的代码是<code>smart-doc</code>。但这个过程主要通过<code>smart-doc-maven-plugin</code>来排查。</p>
+<pre class="language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>dependency</span><span class="token punctuation">&gt;</span></span>
+     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>groupId</span><span class="token punctuation">&gt;</span></span>com.github.shalousun<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>groupId</span><span class="token punctuation">&gt;</span></span>
+     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>artifactId</span><span class="token punctuation">&gt;</span></span>smart-doc<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>artifactId</span><span class="token punctuation">&gt;</span></span>
+     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>version</span><span class="token punctuation">&gt;</span></span>[最新版本]<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>version</span><span class="token punctuation">&gt;</span></span>
+     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>scope</span><span class="token punctuation">&gt;</span></span>test<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>scope</span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>dependency</span><span class="token punctuation">&gt;</span></span></code></pre>
+
+<p><strong>注意：</strong> 使用<code>smart-doc</code>的版本最好和插件依赖的<code>smart-doc</code>版本一致。</p>
+<ol>
+<li><strong>添加断点</strong></li>
+</ol>
+<p>添加断点如图所示</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401041100137.png" alt="断点"></p>
+<ol>
+<li><strong>Debug模式运行构建目标</strong></li>
+</ol>
+<p><code>maven</code>插件在<code>idea</code>中运行<code>debug</code>非常简单，操作如下图。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401041101167.png" alt="debug"></p>
+<p>这样就可以直接进入断点了。</p>
+<p><strong>提示：</strong> 上面是通过插件去作为入口调试<code>smart-doc</code>的源码，如果你想调试插件本身的源码执行过程，则将插件的依赖添加到项目依赖中,如下：</p>
+<pre class="language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>dependency</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>groupId</span><span class="token punctuation">&gt;</span></span>com.github.shalousun<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>groupId</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>artifactId</span><span class="token punctuation">&gt;</span></span>smart-doc-maven-plugin<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>artifactId</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>version</span><span class="token punctuation">&gt;</span></span>【maven仓库最新版本】<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>version</span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>dependency</span><span class="token punctuation">&gt;</span></span></code></pre>
+
+<p>然后通过上面的类似步骤调试<code>smart-doc-maven-plugin</code>的源码</p>
+<h2 id="示例源码"><a href="#示例源码" class="headerlink" title="示例源码"></a>示例源码</h2><p><a target="_blank" rel="noopener" href="https://github.com/HubertWongCN/hubert-spring-demos">https://github.com/HubertWongCN/hubert-spring-demos</a></p>
+<p><a target="_blank" rel="noopener" href="https://smart-doc-group.github.io/">https://smart-doc-group.github.io/</a></p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Hubert Wong</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://hubertwongcn.github.io/posts/29624.html">https://hubertwongcn.github.io/posts/29624.html</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Hubert Wong</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/Spring/">
+                                    <span class="chip bg-color">Spring</span>
+                                </a>
+                            
+                                <a href="/tags/SpringBoot/">
+                                    <span class="chip bg-color">SpringBoot</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+        <style>
+    .valine-card {
+        margin: 1.5rem auto;
+    }
+
+    .valine-card .card-content {
+        padding: 20px 20px 5px 20px;
+    }
+
+    #vcomments textarea {
+        box-sizing: border-box;
+        background: url("/medias/comment_bg.png") 100% 100% no-repeat;
+    }
+
+    #vcomments p {
+        margin: 2px 2px 10px;
+        font-size: 1.05rem;
+        line-height: 1.78rem;
+    }
+
+    #vcomments blockquote p {
+        text-indent: 0.2rem;
+    }
+
+    #vcomments a {
+        padding: 0 2px;
+        color: #4cbf30;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    #vcomments img {
+        max-width: 100%;
+        height: auto;
+        cursor: pointer;
+    }
+
+    #vcomments ol li {
+        list-style-type: decimal;
+    }
+
+    #vcomments ol,
+    ul {
+        display: block;
+        padding-left: 2em;
+        word-spacing: 0.05rem;
+    }
+
+    #vcomments ul li,
+    ol li {
+        display: list-item;
+        line-height: 1.8rem;
+        font-size: 1rem;
+    }
+
+    #vcomments ul li {
+        list-style-type: disc;
+    }
+
+    #vcomments ul ul li {
+        list-style-type: circle;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    #vcomments table, th, td {
+        border: 0;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments h1 {
+        font-size: 1.85rem;
+        font-weight: bold;
+        line-height: 2.2rem;
+    }
+
+    #vcomments h2 {
+        font-size: 1.65rem;
+        font-weight: bold;
+        line-height: 1.9rem;
+    }
+
+    #vcomments h3 {
+        font-size: 1.45rem;
+        font-weight: bold;
+        line-height: 1.7rem;
+    }
+
+    #vcomments h4 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    #vcomments h5 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        line-height: 1.4rem;
+    }
+
+    #vcomments h6 {
+        font-size: 1rem;
+        line-height: 1.3rem;
+    }
+
+    #vcomments p {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    #vcomments hr {
+        margin: 12px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
+    }
+
+    #vcomments blockquote {
+        margin: 15px 0;
+        border-left: 5px solid #42b983;
+        padding: 1rem 0.8rem 0.3rem 0.8rem;
+        color: #666;
+        background-color: rgba(66, 185, 131, .1);
+    }
+
+    #vcomments pre {
+        font-family: monospace, monospace;
+        padding: 1.2em;
+        margin: .5em 0;
+        background: #272822;
+        overflow: auto;
+        border-radius: 0.3em;
+        tab-size: 4;
+    }
+
+    #vcomments code {
+        font-family: monospace, monospace;
+        padding: 1px 3px;
+        font-size: 0.92rem;
+        color: #e96900;
+        background-color: #f8f8f8;
+        border-radius: 2px;
+    }
+
+    #vcomments pre code {
+        font-family: monospace, monospace;
+        padding: 0;
+        color: #e8eaf6;
+        background-color: #272822;
+    }
+
+    #vcomments pre[class*="language-"] {
+        padding: 1.2em;
+        margin: .5em 0;
+    }
+
+    #vcomments code[class*="language-"],
+    pre[class*="language-"] {
+        color: #e8eaf6;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+
+    #vcomments b,
+    strong {
+        font-weight: bold;
+    }
+
+    #vcomments dfn {
+        font-style: italic;
+    }
+
+    #vcomments small {
+        font-size: 85%;
+    }
+
+    #vcomments cite {
+        font-style: normal;
+    }
+
+    #vcomments mark {
+        background-color: #fcf8e3;
+        padding: .2em;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+</style>
+
+<div class="card valine-card" data-aos="fade-up">
+    <div class="comment_headling" style="font-size: 20px; font-weight: 700; position: relative; padding-left: 20px; top: 15px; padding-bottom: 5px;">
+        <i class="fas fa-comments fa-fw" aria-hidden="true"></i>
+        <span>评论</span>
+    </div>
+    <div id="vcomments" class="card-content" style="display: grid">
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/valine/av-min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.iohttps://unpkg.com/valine/dist/Valine.min.js"></script> -->
+<script src="https://unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        appId: 'oTH4fV5e9iBU62LIVFq44U80-gzGzoHsz',
+        appKey: 'XpA0KzIfRp5Be7wCiljyVm7u',
+        notify: 'false' === 'true',
+        verify: 'false' === 'true',
+        visitor: 'false' === 'true',
+        avatar: 'monsterid',
+        pageSize: '10',
+        lang: 'en',
+        placeholder: '昵称填写QQ，可以显示QQ头像和昵称',
+        enableQQ: true,
+        requiredFields: ['nick','mail'], //设置必填项
+    });
+</script>
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/posts/46299.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/16.jpg" class="responsive-img" alt="17.SpringBoot接口 - 如何访问外部接口">
+                        
+                        <span class="card-title">17.SpringBoot接口 - 如何访问外部接口</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2024-01-04
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/SpringBoot/" class="post-category">
+                                    SpringBoot
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Spring/">
+                        <span class="chip bg-color">Spring</span>
+                    </a>
+                    
+                    <a href="/tags/SpringBoot/">
+                        <span class="chip bg-color">SpringBoot</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/posts/41656.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/8.jpg" class="responsive-img" alt="15.SpringBoot接口 - 如何生成接口文档之Swagger技术栈">
+                        
+                        <span class="card-title">15.SpringBoot接口 - 如何生成接口文档之Swagger技术栈</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-04
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/SpringBoot/" class="post-category">
+                                    SpringBoot
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Spring/">
+                        <span class="chip bg-color">Spring</span>
+                    </a>
+                    
+                    <a href="/tags/SpringBoot/">
+                        <span class="chip bg-color">SpringBoot</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('3'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\(', '\)']]}
+    });
+</script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+    <div class="container row center-align" style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2024</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">Hubert Wong</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                class="white-color">1368.7k</span>&nbsp;字
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <span id="sitetime">载入运行时间...</span>
+            <script>
+                function siteTime() {
+                    var seconds = 1000;
+                    var minutes = seconds * 60;
+                    var hours = minutes * 60;
+                    var days = hours * 24;
+                    var years = days * 365;
+                    var today = new Date();
+                    var startYear = "2019";
+                    var startMonth = "6";
+                    var startDate = "28";
+                    var startHour = "0";
+                    var startMinute = "0";
+                    var startSecond = "0";
+                    var todayYear = today.getFullYear();
+                    var todayMonth = today.getMonth() + 1;
+                    var todayDate = today.getDate();
+                    var todayHour = today.getHours();
+                    var todayMinute = today.getMinutes();
+                    var todaySecond = today.getSeconds();
+                    var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                    var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                    var diff = t2 - t1;
+                    var diffYears = Math.floor(diff / years);
+                    var diffDays = Math.floor((diff / days) - diffYears * 365);
+                    var diffHours = Math.floor((diff - (diffYears * 365 + diffDays) * days) / hours);
+                    var diffMinutes = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours) /
+                        minutes);
+                    var diffSeconds = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours -
+                        diffMinutes * minutes) / seconds);
+                    if (startYear == todayYear) {
+                        document.getElementById("year").innerHTML = todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffDays + " 天 " + diffHours +
+                            " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    } else {
+                        document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffYears + " 年 " + diffDays +
+                            " 天 " + diffHours + " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    }
+                }
+                setInterval(siteTime, 1000);
+            </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/HubertWongCN" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:hubertwongcn@gmail.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+        <script src="//code.tidio.co/qst6g32qs2bibjqjp6oqgpe69j3qtrn9.js"></script>
+        <script>
+            $(document).ready(function () {
+                setInterval(change_Tidio, 50);
+                function change_Tidio() {
+                    var tidio=$("#tidio-chat iframe");
+                    if(tidio.css("display")=="block"&& $(window).width()>977 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" &&$(window).width()>977)>0? "-40px" : ($("div.toc-title").length&&$(window).width()>977)>0?"85px":"20px";
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.height=parseInt(tidio.css("height"))>=520?"520px":tidio.css("height");
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()>601 &&$(window).width()<992 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && 601< $(window).width()<992)>0? "-40px":"20px" ;
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))<230){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && $(window).width()<601)>0? "-10px":"45px" ;
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    if( tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))>=230){
+                        document.getElementById("tidio-chat-iframe").style.zIndex="998";
+                    }
+                }
+            });
+        </script>
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
