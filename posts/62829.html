@@ -533,7 +533,7 @@
 <li>读线程在访问完毕某个hazard pointer对象时，将其对应的标记从标记数组中删除。</li>
 </ul>
 <p>写线程的步骤大致是这样的，写线程如果需要对某个hazard pointer对象写时，先判断所有读线程是否标记了这个对象，如果标记了，放弃写。如果未标记，进行写。</p>
-<p>关于hazard pointer理论可以访问<a target="_blank" rel="noopener" href="https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf">https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf在新窗口打开</a></p>
+<p>关于hazard pointer理论可以访问<a target="_blank" rel="noopener" href="https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf">https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf</a></p>
 <p>Hazardpointer是怎样应用在WT中呢？我们这样来看待这个事情，把内存page的读写看做hazard pointer的读操作，把page从内存淘汰到磁盘上的过程看做hazard pointer的写操作，这样瞬间就能明白为什么WT在页的操作上可以不遵守The FIX Rules规则，而是采用无锁并发的页操作。要达到这种访问方式有个条件就是内存中page本身的结构要支持lock free访问。从上面的描述可以看出evict page的过程中首先要做一次hazard pointer写操作检查，而后才能进行page的reconcile和数据落盘。</p>
 <p>hazard pointer并发技术的应用是整个WT存储引擎的关键，它关系到btree结构、internal page的构造、事务线程模型、事务并发等实现。Hazard pointer使得WT不依赖The Fix Rules规则，也让WT的btree结构更加灵活多变。</p>
 <p>Hazard pointer是比较新的无锁编程模式，可以应用在很多地方，笔者曾在一个高并发媒体服务器上用到这个技术，以后有机会把里面的技术细节分享出来。</p>
@@ -1249,7 +1249,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1368.7k</span>&nbsp;字
+                class="white-color">1368.3k</span>&nbsp;字
             
             
             

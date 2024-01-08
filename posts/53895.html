@@ -532,8 +532,8 @@
 <li>如果使用场景是聚合或排序，并且都是基于 analyzed 字符数据，这时需要更多的 heap size，建议机器上运行多 ES 实例，每个实例保持不超过 50% 的 ES heap 设置（但不超过 32 G，堆内存设置 32 G 以下时，JVM 使用对象指标压缩技巧节省空间），50% 以上留给 lucene。</li>
 </ul>
 <h4 id="禁止-swap"><a href="#禁止-swap" class="headerlink" title="禁止 swap"></a>禁止 swap</h4><p>禁止 swap，一旦允许内存与磁盘的交换，会引起致命的性能问题。可以通过在 elasticsearch.yml 中 bootstrap.memory_lock: true，以保持 JVM 锁定内存，保证 ES 的性能。</p>
-<h4 id="GC-设置"><a href="#GC-设置" class="headerlink" title="GC 设置"></a>GC 设置</h4><p><a target="_blank" rel="noopener" href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/dont-touch-these-settings.html">老的版本中官方文档在新窗口打开</a>中推荐默认设置为：Concurrent-Mark and Sweep（CMS），给的理由是当时G1 还有很多 BUG。</p>
-<p>原因是：已知JDK 8附带的HotSpot JVM的早期版本存在一些问题，当启用G1GC收集器时，这些问题可能导致索引损坏。受影响的版本早于JDK 8u40随附的HotSpot版本。来源于<a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/_g1gc_check.html">官方说明在新窗口打开</a></p>
+<h4 id="GC-设置"><a href="#GC-设置" class="headerlink" title="GC 设置"></a>GC 设置</h4><p><a target="_blank" rel="noopener" href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/dont-touch-these-settings.html">老的版本中官方文档</a>中推荐默认设置为：Concurrent-Mark and Sweep（CMS），给的理由是当时G1 还有很多 BUG。</p>
+<p>原因是：已知JDK 8附带的HotSpot JVM的早期版本存在一些问题，当启用G1GC收集器时，这些问题可能导致索引损坏。受影响的版本早于JDK 8u40随附的HotSpot版本。来源于<a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/_g1gc_check.html">官方说明</a></p>
 <p>实际上如果你使用的JDK8较高版本，或者JDK9+，我推荐你使用G1 GC； 因为我们目前的项目使用的就是G1 GC，运行效果良好，对Heap大对象优化尤为明显。修改jvm.options文件，将下面几行:</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token parameter variable">-XX:+UseConcMarkSweepGC</span>
 <span class="token parameter variable">-XX:CMSInitiatingOccupancyFraction</span><span class="token operator">=</span><span class="token number">75</span>
@@ -1397,7 +1397,7 @@ index.mapping.depth.limit: <span class="token number">20</span></code></pre>
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1368.7k</span>&nbsp;字
+                class="white-color">1368.3k</span>&nbsp;字
             
             
             
