@@ -469,7 +469,7 @@
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    3.4k
+                    3.3k
                 </div>
                 
 
@@ -518,7 +518,7 @@
 <h2 id="分布式锁的设计原则"><a href="#分布式锁的设计原则" class="headerlink" title="分布式锁的设计原则"></a>分布式锁的设计原则</h2><blockquote>
 <p>分布式锁的最小设计原则：<strong>安全性</strong>和<strong>有效性</strong></p>
 </blockquote>
-<p><a target="_blank" rel="noopener" href="https://redis.io/docs/reference/patterns/distributed-locks/">Redis的官网在新窗口打开</a>上对使用分布式锁提出至少需要满足如下三个要求：</p>
+<p><a target="_blank" rel="noopener" href="https://redis.io/docs/reference/patterns/distributed-locks/">Redis的官网</a>上对使用分布式锁提出至少需要满足如下三个要求：</p>
 <ol>
 <li><strong>互斥</strong>（属于安全性）：在任何给定时刻，只有一个客户端可以持有锁。</li>
 <li><strong>无死锁</strong>（属于有效性）：即使锁定资源的客户端崩溃或被分区，也总是可以获得锁；通常通过超时机制实现。</li>
@@ -614,7 +614,7 @@
 </ul>
 <p>对数据库依赖，开销问题，行锁变表锁问题，无法解决数据库单点和可重入的问题。</p>
 <h2 id="基于redis如何实现分布式锁？有什么缺陷？"><a href="#基于redis如何实现分布式锁？有什么缺陷？" class="headerlink" title="基于redis如何实现分布式锁？有什么缺陷？"></a>基于redis如何实现分布式锁？有什么缺陷？</h2><blockquote>
-<p>基于redis如何实现分布式锁？这里一定要看<a target="_blank" rel="noopener" href="https://redis.io/docs/reference/patterns/distributed-locks/">Redis的官网在新窗口打开</a>的分布式锁的实现这篇文章。</p>
+<p>基于redis如何实现分布式锁？这里一定要看<a target="_blank" rel="noopener" href="https://redis.io/docs/reference/patterns/distributed-locks/">Redis的官网</a>的分布式锁的实现这篇文章。</p>
 </blockquote>
 <h3 id="set-NX-PX-Lua"><a href="#set-NX-PX-Lua" class="headerlink" title="set NX PX + Lua"></a>set NX PX + Lua</h3><p><strong>加锁</strong>： set NX PX + 重试 + 重试间隔</p>
 <p>向Redis发起如下命令: <code>SET productId:lock 0xx9p03001 NX PX 30000</code> 其中，”productId”由自己定义，可以是与本次业务有关的id，”0xx9p03001”是一串随机值，必须保证全局唯一(原因在后文中会提到)，“NX”指的是当且仅当key(也就是案例中的”productId:lock”)在Redis中不存在时，返回执行成功，否则执行失败。”PX 30000”指的是在30秒后，key将被自动删除。执行命令后返回成功，表明服务成功的获得了锁。</p>
@@ -663,7 +663,7 @@
 <span class="token keyword">end</span></code></pre>
 
 <h3 id="基于RedLock实现分布式锁"><a href="#基于RedLock实现分布式锁" class="headerlink" title="基于RedLock实现分布式锁"></a>基于RedLock实现分布式锁</h3><blockquote>
-<p>这是Redis作者推荐的分布式集群情况下的方式，请看这篇文章<a target="_blank" rel="noopener" href="http://antirez.com/news/101">Is Redlock safe?在新窗口打开</a></p>
+<p>这是Redis作者推荐的分布式集群情况下的方式，请看这篇文章<a target="_blank" rel="noopener" href="http://antirez.com/news/101">Is Redlock safe?</a></p>
 </blockquote>
 <p>假设有两个服务A、B都希望获得锁，有一个包含了5个redis master的Redis Cluster，执行过程大致如下:</p>
 <ol>
@@ -695,7 +695,7 @@
 <p>每次lock会调用incrby，每次unlock会减一。</p>
 <h3 id="进一步理解"><a href="#进一步理解" class="headerlink" title="进一步理解"></a>进一步理解</h3><ol>
 <li>借助Redis实现分布式锁时，有一个共同的缺陷: 当获取锁被拒绝后，需要不断的循环，重新发送获取锁(创建key)的请求，直到请求成功。这就造成空转，浪费宝贵的CPU资源。</li>
-<li>RedLock算法本身有争议，具体看这篇文章<a target="_blank" rel="noopener" href="https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html">How to do distributed locking在新窗口打开</a> 以及作者的回复<a target="_blank" rel="noopener" href="http://antirez.com/news/101">Is Redlock safe?在新窗口打开</a></li>
+<li>RedLock算法本身有争议，具体看这篇文章<a target="_blank" rel="noopener" href="https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html">How to do distributed locking</a> 以及作者的回复<a target="_blank" rel="noopener" href="http://antirez.com/news/101">Is Redlock safe?</a></li>
 </ol>
 <h2 id="基于zookeeper如何实现分布式锁？"><a href="#基于zookeeper如何实现分布式锁？" class="headerlink" title="基于zookeeper如何实现分布式锁？"></a>基于zookeeper如何实现分布式锁？</h2><p>说几个核心点：</p>
 <ul>
@@ -712,7 +712,7 @@
 </ul>
 <p>每个线程抢占锁之前，先抢号创建自己的ZNode。同样，释放锁的时候，就需要删除抢号的Znode。抢号成功后，如果不是排号最小的节点，就处于等待通知的状态。等谁的通知呢？不需要其他人，只需要等前一个Znode 的通知就可以了。当前一个Znode 删除的时候，就是轮到了自己占有锁的时候。第一个通知第二个、第二个通知第三个，击鼓传花似的依次向后。</p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://antirez.com/news/101">Is Redlock safe?在新窗口打开</a></li>
+<li><a target="_blank" rel="noopener" href="http://antirez.com/news/101">Is Redlock safe?</a></li>
 </ul>
 <p><a target="_blank" rel="noopener" href="https://juejin.im/post/6872001566111596552">https://juejin.im/post/6872001566111596552</a></p>
 <p><a target="_blank" rel="noopener" href="https://juejin.im/post/6872886438325813256">https://juejin.im/post/6872886438325813256</a></p>
@@ -1360,7 +1360,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1604.1k</span>&nbsp;字
+                class="white-color">1611.9k</span>&nbsp;字
             
             
             
