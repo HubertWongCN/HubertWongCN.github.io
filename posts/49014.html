@@ -1,0 +1,1720 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN,en,default">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="3.美团: 可视化全链路日志追踪, 生活，养猫，Java，后端开发">
+    <meta name="description" content="记录猫奴生活、后端学习笔记，由Hexo+Github搭建">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>3.美团: 可视化全链路日志追踪 | Hubert&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/hubert-logo.png">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/my.css">
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/jquery/jquery.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="Hubert's Blog" type="application/atom+xml">
+</head>
+
+
+
+   <style>
+    body{
+       background-image: url(https://cdn.jsdelivr.net/gh/Tokisaki-Galaxy/res/site/medias/background.jpg);
+       background-repeat:no-repeat;
+       background-size:cover;
+       background-attachment:fixed;
+    }
+</style>
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Hubert&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>主页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Hubert&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            记录猫奴生活、后端学习笔记，由Hexo+Github搭建
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			主页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/14.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">3.美团: 可视化全链路日志追踪</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">
+                                <span class="chip bg-color">系统设计</span>
+                            </a>
+                        
+                            <a href="/tags/%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/">
+                                <span class="chip bg-color">日志系统</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%85%A8%E9%93%BE%E8%B7%AF%E6%97%A5%E5%BF%97%E8%BF%BD%E8%B8%AA/">
+                                <span class="chip bg-color">全链路日志追踪</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" class="post-category">
+                                系统设计
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2024-01-10
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2024-01-10
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    7.3k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                    25 分
+                </div>
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/prism/prism.css">
+        
+
+        
+        <!-- 代码块折行 -->
+        <style type="text/css">
+            code[class*="language-"], pre[class*="language-"] { white-space: pre-wrap !important; }
+        </style>
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p>目前在分布式场景下，业务追踪的主流实现方式包括两类，一类是基于日志的ELK方案，一类是基于单次请求调用的会话跟踪方案。然而随着业务逻辑的日益复杂，上述方案越来越不适用于当下的业务系统。</p>
+</blockquote>
+<h2 id="1-背景"><a href="#1-背景" class="headerlink" title="1. 背景"></a>1. 背景</h2><h3 id="1-1-业务系统日益复杂"><a href="#1-1-业务系统日益复杂" class="headerlink" title="1.1 业务系统日益复杂"></a>1.1 业务系统日益复杂</h3><p>随着互联网产品的快速发展，不断变化的商业环境和用户诉求带来了纷繁复杂的业务需求。业务系统需要支撑的业务场景越来越广、涵盖的业务逻辑越来越多，系统的复杂度也跟着快速提升。与此同时，由于微服务架构的演进，业务逻辑的实现往往需要依赖多个服务间的共同协作。总而言之，业务系统的日益复杂已经成为一种常态。</p>
+<h3 id="1-2-业务追踪面临挑战"><a href="#1-2-业务追踪面临挑战" class="headerlink" title="1.2 业务追踪面临挑战"></a>1.2 业务追踪面临挑战</h3><p>业务系统往往面临着多样的日常客诉和突发问题，“业务追踪”就成为了关键的应对手段。业务追踪可以看做一次业务执行的现场还原过程，通过执行中的各种记录还原出原始现场，可用于业务逻辑执行情况的分析和问题的定位，是整个系统建设中重要的一环。</p>
+<p>目前在分布式场景下，业务追踪的主流实现方式包括两类，一类是基于日志的ELK方案，一类是基于单次请求调用的会话跟踪方案。然而随着业务逻辑的日益复杂，上述方案越来越不适用于当下的业务系统。</p>
+<h4 id="1-2-1-传统的ELK方案"><a href="#1-2-1-传统的ELK方案" class="headerlink" title="1.2.1 传统的ELK方案"></a>1.2.1 传统的ELK方案</h4><p>日志作为业务系统的必备能力，职责就是记录程序运行期间发生的离散事件，并且在事后阶段用于程序的行为分析，比如曾经调用过什么方法、操作过哪些数据等等。在分布式系统中，ELK技术栈已经成为日志收集和分析的通用解决方案。如下图1所示，伴随着业务逻辑的执行，业务日志会被打印，统一收集并存储至Elasticsearch（下称ES）[2]。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100415599.jpeg" alt="img"></p>
+<p>传统的ELK方案需要开发者在编写代码时尽可能全地打印日志，再通过关键字段从ES中搜集筛选出与业务逻辑相关的日志数据，进而拼凑出业务执行的现场信息。然而该方案存在如下的痛点：</p>
+<ul>
+<li><strong>日志搜集繁琐</strong>：虽然ES提供了日志检索的能力，但是日志数据往往是缺乏结构性的文本段，很难快速完整地搜集到全部相关的日志。</li>
+<li><strong>日志筛选困难</strong>：不同业务场景、业务逻辑之间存在重叠，重叠逻辑打印的业务日志可能相互干扰，难以从中筛选出正确的关联日志。</li>
+<li><strong>日志分析耗时</strong>：搜集到的日志只是一条条离散的数据，只能阅读代码，再结合逻辑，由人工对日志进行串联分析，尽可能地还原出现场。</li>
+</ul>
+<p>综上所述，随着业务逻辑和系统复杂度的攀升，传统的ELK方案在日志搜集、日志筛选和日志分析方面愈加的耗时耗力，很难快速实现对业务的追踪。</p>
+<h4 id="1-2-2-分布式会话跟踪方案"><a href="#1-2-2-分布式会话跟踪方案" class="headerlink" title="1.2.2 分布式会话跟踪方案"></a>1.2.2 分布式会话跟踪方案</h4><p>在分布式系统，尤其是微服务系统中，业务场景的某次请求往往需要经过多个服务、多个中间件、多台机器的复杂链路处理才能完成。为了解决复杂链路排查困难的问题，“分布式会话跟踪方案”诞生。该方案的理论知识由Google在2010年《Dapper》论文[3]中发表，随后Twitter开发出了一个开源版本Zipkin[4]。</p>
+<p>市面上的同类型框架几乎都是以Google Dapper论文为基础进行实现，整体大同小异，都是通过一个分布式全局唯一的id（即traceId），将分布在各个服务节点上的同一次请求串联起来，还原调用关系、追踪系统问题、分析调用数据、统计系统指标。分布式会话跟踪，是一种<strong>会话级别</strong>的追踪能力，如下图2所示，单个分布式请求被还原成一条调用链路，从客户端发起请求抵达系统的边界开始，记录请求流经的每一个服务，直到向客户端返回响应为止。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100415563.jpeg" alt="img"></p>
+<p>分布式会话跟踪的主要作用是<strong>分析分布式系统的调用行为</strong>，并不能很好地应用于业务逻辑的追踪。下图3是一个审核业务场景的追踪案例，业务系统对外提供审核能力，待审对象的审核需要经过“初审”和“复审”两个环节（两个环节关联相同的taskId），因此整个审核环节的执行调用了两次审核接口。如图左侧所示，完整的审核场景涉及众多“业务逻辑”的执行，而分布式会话跟踪只是根据两次RPC调用生成了右侧的两条调用链路，并没有办法准确地描述审核场景业务逻辑的执行，问题主要体现在以下几个方面：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100415948.jpeg" alt="img"></p>
+<ul>
+<li><strong>无法同时追踪多条调用链路</strong></li>
+</ul>
+<p>分布式会话跟踪仅支持单个请求的调用追踪，当业务场景包含了多个调用时，将生成多条调用链路；由于调用链路通过traceId串联，不同链路之间相互独立，因此给完整的业务追踪增加了难度。例如当排查审核场景的业务问题时，由于初审和复审是不同的RPC请求，所以无法直接同时获取到2条调用链路，通常需要额外存储2个traceId的映射关系。</p>
+<ul>
+<li><strong>无法准确描述业务逻辑的全景</strong></li>
+</ul>
+<p>分布式会话跟踪生成的调用链路，只包含单次请求的实际调用情况，部分未执行的调用以及本地逻辑无法体现在链路中，导致无法准确描述业务逻辑的全景。例如同样是审核接口，初审链路1包含了服务b的调用，而复审链路2却并没有包含，这是因为审核场景中存在“判断逻辑”，而该逻辑无法体现在调用链路中，还是需要人工结合代码进行分析。</p>
+<ul>
+<li><strong>无法聚焦于当前业务系统的逻辑执行</strong></li>
+</ul>
+<p>分布式会话跟踪覆盖了单个请求流经的所有服务、组件、机器等等，不仅包含当前业务系统，还涉及了众多的下游服务，当接口内部逻辑复杂时，调用链路的深度和复杂度都会明显增加，而业务追踪其实仅需要聚焦于当前业务系统的逻辑执行情况。例如审核场景生成的调用链路，就涉及了众多下游服务的内部调用情况，反而给当前业务系统的问题排查增加了复杂度。</p>
+<h4 id="1-2-3-总结"><a href="#1-2-3-总结" class="headerlink" title="1.2.3 总结"></a>1.2.3 总结</h4><p>传统的ELK方案是一种滞后的业务追踪，需要事后从大量离散的日志中搜集和筛选出需要的日志，并人工进行日志的串联分析，其过程必然耗时耗力。而分布式会话跟踪方案则是在调用执行的同时，实时地完成了链路的动态串联，但由于是会话级别且仅关注于调用关系等问题，导致其无法很好地应用于业务追踪。</p>
+<p>因此，无论是传统的ELK方案还是分布式会话跟踪方案，都难以满足日益复杂的业务追踪需求。本文希望能够实现聚焦于业务逻辑追踪的高效解决方案，将业务执行的日志以业务链路为载体进行高效组织和串联，并支持业务执行现场的还原和可视化查看，从而提升定位问题的效率，即<strong>可视化全链路日志追踪</strong>。</p>
+<p>下文将介绍可视化全链路日志追踪的设计思路和通用方案，同时介绍新方案在大众点评内容平台的落地情况，旨在帮助有类似需求的业务系统开发需求的同学提供一些思路。</p>
+<h2 id="2-可视化全链路日志追踪"><a href="#2-可视化全链路日志追踪" class="headerlink" title="2. 可视化全链路日志追踪"></a>2. 可视化全链路日志追踪</h2><h3 id="2-1-设计思路"><a href="#2-1-设计思路" class="headerlink" title="2.1 设计思路"></a>2.1 设计思路</h3><p>可视化全链路日志追踪考虑在前置阶段，即业务执行的同时实现业务日志的高效组织和动态串联，如下图4所示，此时离散的日志数据将会根据业务逻辑进行组织，绘制出执行现场，从而可以实现高效的业务追踪。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416433.jpeg" alt="img"></p>
+<p>新方案需要回答两个关键问题：如何高效组织业务日志，以及如何动态串联业务日志。下文将逐一进行回答。</p>
+<ul>
+<li><strong>问题1：如何高效组织业务日志</strong>？</li>
+</ul>
+<p>为了实现高效的业务追踪，首先需要准确完整地描述出业务逻辑，形成业务逻辑的全景图，而业务追踪其实就是通过执行时的日志数据，在全景图中还原出业务执行的现场。</p>
+<p>新方案对业务逻辑进行了抽象，定义出业务逻辑链路，下面还是以“审核业务场景”为例，来说明业务逻辑链路的抽象过程：</p>
+<ul>
+<li><strong>逻辑节点</strong>：业务系统的众多逻辑可以按照业务功能进行拆分，形成一个个相互独立的业务逻辑单元，即逻辑节点，可以是本地方法（如下图5的“判断逻辑”节点）也可以是RPC等远程调用方法（如下图5的“逻辑A”节点）。</li>
+<li><strong>逻辑链路</strong>：业务系统对外支撑着众多的业务场景，每个业务场景对应一个完整的业务流程，可以抽象为由逻辑节点组合而成的逻辑链路，如下图5中的逻辑链路就准确完整地描述了“审核业务场景”。</li>
+</ul>
+<p>一次业务追踪就是逻辑链路的某一次执行情况的还原，逻辑链路完整准确地描述了业务逻辑全景，同时作为载体可以实现业务日志的高效组织。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416849.jpeg" alt="img"></p>
+<ul>
+<li><strong>问题2：如何动态串联业务日志</strong>？</li>
+</ul>
+<p>业务逻辑执行时的日志数据原本是离散存储的，而此时需要实现的是，随着业务逻辑的执行动态串联各个逻辑节点的日志，进而还原出完整的业务逻辑执行现场。</p>
+<p>由于逻辑节点之间、逻辑节点内部往往通过MQ或者RPC等进行交互，新方案可以采用分布式会话跟踪提供的分布式参数透传能力[5]实现业务日志的动态串联：</p>
+<ul>
+<li>通过在执行线程和网络通信中持续地透传参数，实现在业务逻辑执行的同时，不中断地传递链路和节点的标识，实现离散日志的染色。</li>
+<li>基于标识，染色的离散日志会被动态串联至正在执行的节点，逐渐汇聚出完整的逻辑链路，最终实现业务执行现场的高效组织和可视化展示。</li>
+</ul>
+<p>与分布式会话跟踪方案不同的是，当同时串联多次分布式调用时，新方案需要结合业务逻辑选取一个公共id作为标识，例如图5的审核场景涉及2次RPC调用，为了保证2次执行被串联至同一条逻辑链路，此时结合审核业务场景，选择初审和复审相同的“任务id”作为标识，完整地实现审核场景的逻辑链路串联和执行现场还原。</p>
+<h3 id="2-2-通用方案"><a href="#2-2-通用方案" class="headerlink" title="2.2 通用方案"></a>2.2 通用方案</h3><p>明确日志的高效组织和动态串联这两个基本问题后，本文选取图4业务系统中的“逻辑链路1”进行通用方案的详细说明，方案可以拆解为以下步骤：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416747.jpeg" alt="img"></p>
+<h4 id="2-2-1-链路定义"><a href="#2-2-1-链路定义" class="headerlink" title="2.2.1 链路定义"></a>2.2.1 链路定义</h4><blockquote>
+<p>“链路定义”的含义为：使用特定语言，静态描述完整的逻辑链路，链路通常由多个逻辑节点，按照一定的业务规则组合而成，业务规则即各个逻辑节点之间存在的执行关系，包括串行、并行、条件分支。</p>
+</blockquote>
+<p><strong>DSL（Domain Specific Language）</strong>是为了解决某一类任务而专门设计的计算机语言，可以通过JSON或XML定义出一系列节点（逻辑节点）的组合关系（业务规则）。因此，本方案选择使用DSL描述逻辑链路，实现逻辑链路从抽象定义到具体实现。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416294.jpeg" alt="img"></p>
+<p><strong>逻辑链路1-DSL</strong></p>
+<pre class="language-json" data-language="json"><code class="language-json"><span class="token punctuation">[</span>
+  <span class="token punctuation">{</span>
+    <span class="token property">"nodeName"</span><span class="token operator">:</span> <span class="token string">"A"</span><span class="token punctuation">,</span>
+    <span class="token property">"nodeType"</span><span class="token operator">:</span> <span class="token string">"rpc"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token punctuation">{</span>
+    <span class="token property">"nodeName"</span><span class="token operator">:</span> <span class="token string">"Fork"</span><span class="token punctuation">,</span>
+    <span class="token property">"nodeType"</span><span class="token operator">:</span> <span class="token string">"fork"</span><span class="token punctuation">,</span>
+    <span class="token property">"forkNodes"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+      <span class="token punctuation">[</span>
+        <span class="token punctuation">{</span>
+          <span class="token property">"nodeName"</span><span class="token operator">:</span> <span class="token string">"B"</span><span class="token punctuation">,</span>
+          <span class="token property">"nodeType"</span><span class="token operator">:</span> <span class="token string">"rpc"</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">]</span><span class="token punctuation">,</span>
+      <span class="token punctuation">[</span>
+        <span class="token punctuation">{</span>
+          <span class="token property">"nodeName"</span><span class="token operator">:</span> <span class="token string">"C"</span><span class="token punctuation">,</span>
+          <span class="token property">"nodeType"</span><span class="token operator">:</span> <span class="token string">"local"</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">]</span>
+    <span class="token punctuation">]</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token punctuation">{</span>
+    <span class="token property">"nodeName"</span><span class="token operator">:</span> <span class="token string">"Join"</span><span class="token punctuation">,</span>
+    <span class="token property">"nodeType"</span><span class="token operator">:</span> <span class="token string">"join"</span><span class="token punctuation">,</span>
+    <span class="token property">"joinOnList"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+      <span class="token string">"B"</span><span class="token punctuation">,</span>
+      <span class="token string">"C"</span>
+    <span class="token punctuation">]</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token punctuation">{</span>
+    <span class="token property">"nodeName"</span><span class="token operator">:</span> <span class="token string">"D"</span><span class="token punctuation">,</span>
+    <span class="token property">"nodeType"</span><span class="token operator">:</span> <span class="token string">"decision"</span><span class="token punctuation">,</span>
+    <span class="token property">"decisionCases"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token property">"true"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+        <span class="token punctuation">{</span>
+          <span class="token property">"nodeName"</span><span class="token operator">:</span> <span class="token string">"E"</span><span class="token punctuation">,</span>
+          <span class="token property">"nodeType"</span><span class="token operator">:</span> <span class="token string">"rpc"</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">]</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token property">"defaultCase"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+      <span class="token punctuation">{</span>
+        <span class="token property">"nodeName"</span><span class="token operator">:</span> <span class="token string">"F"</span><span class="token punctuation">,</span>
+        <span class="token property">"nodeType"</span><span class="token operator">:</span> <span class="token string">"rpc"</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">]</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">]</span></code></pre>
+
+<h4 id="2-2-2-链路染色"><a href="#2-2-2-链路染色" class="headerlink" title="2.2.2 链路染色"></a>2.2.2 链路染色</h4><blockquote>
+<p>“链路染色”的含义为：在链路执行过程中，通过透传串联标识，明确具体是哪条链路在执行，执行到了哪个节点。</p>
+</blockquote>
+<p>链路染色包括两个步骤：</p>
+<ul>
+<li><p>步骤一：确定串联标识，当逻辑链路开启时，确定唯一标识，能够明确后续待执行的链路和节点</p>
+<p>。 </p>
+<ul>
+<li>链路唯一标识 = 业务标识 + 场景标识 + 执行标识 （三个标识共同决定“某个业务场景下的某次执行”）</li>
+<li>业务标识：赋予链路业务含义，例如“用户id”、“活动id”等等。</li>
+<li>场景标识：赋予链路场景含义，例如当前场景是“逻辑链路1”。</li>
+<li>执行标识：赋予链路执行含义，例如只涉及单次调用时，可以直接选择“traceId”；涉及多次调用时则，根据业务逻辑选取多次调用相同的“公共id”。</li>
+<li>节点唯一标识 = 链路唯一标识 + 节点名称 （两个标识共同决定“某个业务场景下的某次执行中的某个逻辑节点”）</li>
+<li>节点名称：DSL中预设的节点唯一名称，如“A”。</li>
+</ul>
+</li>
+<li><p>步骤二：传递串联标识，当逻辑链路执行时，在分布式的完整链路中透传串联标识，动态串联链路中已执行的节点，实现链路的染色</p>
+<p>。例如在“逻辑链路1”中： </p>
+<ul>
+<li>当“A”节点触发执行，则开始在后续链路和节点中传递串联标识，随着业务流程的执行，逐步完成整个链路的染色。</li>
+<li>当标识传递至“E”节点时，则表示“D”条件分支的判断结果是“true”，同时动态地将“E”节点串联至已执行的链路中。</li>
+</ul>
+</li>
+</ul>
+<h4 id="2-2-3-链路上报"><a href="#2-2-3-链路上报" class="headerlink" title="2.2.3 链路上报"></a>2.2.3 链路上报</h4><blockquote>
+<p>“链路上报”的含义为：在链路执行过程中，将日志以链路的组织形式进行上报，实现业务现场的准确保存。</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416712.jpeg" alt="img"></p>
+<p>如上图8所示，上报的日志数据包括：节点日志和业务日志。其中节点日志的作用是绘制链路中的已执行节点，记录了节点的开始、结束、输入、输出；业务日志的作用是展示链路节点具体业务逻辑的执行情况，记录了任何对业务逻辑起到解释作用的数据，包括与上下游交互的入参出参、复杂逻辑的中间变量、逻辑执行抛出的异常。</p>
+<h4 id="2-2-4-链路存储"><a href="#2-2-4-链路存储" class="headerlink" title="2.2.4 链路存储"></a>2.2.4 链路存储</h4><blockquote>
+<p>“链路存储”的含义为：将链路执行中上报的日志落地存储，并用于后续的“现场还原”。上报日志可以拆分为链路日志、节点日志和业务日志三类：</p>
+</blockquote>
+<ul>
+<li><strong>链路日志</strong>：链路单次执行中，从开始节点和结束节点的日志中提取的链路基本信息，包含链路类型、链路元信息、链路开始/结束时间等。</li>
+<li><strong>节点日志</strong>：链路单次执行中，已执行节点的基本信息，包含节点名称、节点状态、节点开始/结束时间等。</li>
+<li><strong>业务日志</strong>：链路单次执行中，已执行节点中的业务日志信息，包含日志级别、日志时间、日志数据等。</li>
+</ul>
+<p>下图就是链路存储的存储模型，包含了链路日志，节点日志，业务日志、链路元数据（配置数据），并且是如下图9所示的树状结构，其中业务标识作为根节点，用于后续的链路查询。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416332.jpeg" alt="img"></p>
+<h2 id="3-大众点评内容平台实践"><a href="#3-大众点评内容平台实践" class="headerlink" title="3. 大众点评内容平台实践"></a>3. 大众点评内容平台实践</h2><h3 id="3-1-业务特点与挑战"><a href="#3-1-业务特点与挑战" class="headerlink" title="3.1 业务特点与挑战"></a>3.1 业务特点与挑战</h3><blockquote>
+<p>互联网时代，内容为王。内容型平台的核心打法就是搭建内容流水线，保障内容可持续、健康且有价值地流转到内容消费者，并最终形成内容“生产→治理→消费→生产”的良性循环。</p>
+</blockquote>
+<p>大众点评和美团App拥有丰富多样的内容，站内外业务方、合作方有着众多的消费场景。对于内容流水线中的三方，分别有如下需求：</p>
+<ul>
+<li><strong>内容的生产方</strong>：希望生产的内容能在更多的渠道分发，收获更多的流量，被消费者所喜爱。</li>
+<li><strong>内容的治理方</strong>：希望作为“防火墙”过滤出合法合规的内容，同时整合机器和人工能力，丰富内容属性。</li>
+<li><strong>内容的消费方</strong>：希望获得满足其个性化需求的内容，能够吸引其种草，或辅助其做出消费决策。</li>
+</ul>
+<p>生产方的内容模型各异、所需处理手段各不相同，消费方对于内容也有着个性化的要求。如果由各个生产方和消费方单独对接，<strong>内容模型异构、处理流程和输出门槛各异的问题</strong>将带来对接的高成本和低效率。在此背景下，点评内容平台应运而生，作为内容流水线的“治理方”，承上启下实现了内容的统一接入、统一处理和统一输出：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417262.jpeg" alt="img"></p>
+<ul>
+<li><strong>统一接入</strong>：统一内容数据模型，对接不同的内容生产方，将异构的内容转化为内容平台通用的数据模型。</li>
+<li><strong>统一处理</strong>：统一处理能力建设，积累并完善通用的机器处理和人工运营能力，保证内容合法合规，属性丰富。</li>
+<li><strong>统一输出</strong>：统一输出门槛建设，对接不同的内容消费方，为下游提供规范且满足其个性化需求的内容数据。</li>
+</ul>
+<p>如下图11所示，是点评内容平台的核心业务流程，每一条内容都会经过这个流程，最终决定在各个渠道下是否分发。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417434.jpeg" alt="img"></p>
+<p>内容是否及时、准确经过内容平台的处理，是内容生产方和消费方的核心关注，也是日常值班的主要客诉类型。而内容平台的业务追踪建设，主要面临以下的困难与复杂性：</p>
+<ul>
+<li><strong>业务场景多</strong>：业务流程涉及多个不同的业务场景，且逻辑各异，例如实时接入、人工运营、分发重算等图中列出的部分场景。</li>
+<li><strong>逻辑节点多</strong>：业务场景涉及众多的逻辑节点，且不同内容类型节点各异，例如同样是实时接入场景，笔记内容和直播内容在执行的逻辑节点上存在较大差异。</li>
+<li><strong>触发执行多</strong>：业务场景会被多次触发执行，且由于来源不同，逻辑也会存在差异，例如笔记内容被作者编辑、被系统审核等等后，都会触发实时接入场景的重新执行。</li>
+</ul>
+<p>点评内容平台日均处理百万条内容，涉及百万次业务场景的执行、高达亿级的逻辑节点的执行，而业务日志分散在不同的应用中，并且不同内容，不同场景，不同节点以及多次执行的日志混杂在一起，无论是日志的搜集还是现场的还原都相当繁琐耗时，传统的业务追踪方案越来越不适用于内容平台。</p>
+<p>点评内容平台亟需新的解决方案，实现高效的业务追踪，因此我们进行了可视化全链路日志追踪的建设，下面本文将介绍一下相关的实践和成果。</p>
+<h3 id="3-2-实践与成果"><a href="#3-2-实践与成果" class="headerlink" title="3.2 实践与成果"></a>3.2 实践与成果</h3><h4 id="3-2-1-实践"><a href="#3-2-1-实践" class="headerlink" title="3.2.1 实践"></a>3.2.1 实践</h4><blockquote>
+<p>点评内容平台是一个复杂的业务系统，对外支撑着众多的业务场景，通过对于业务场景的梳理和抽象，可以定义出实时接入、人工运营、任务导入、分发重算等多个业务逻辑链路。由于点评内容平台涉及众多的内部服务和下游依赖服务，每天支撑着大量的内容处理业务，伴随着业务的执行将生成大量的日志数据，与此同时链路上报还需要对众多的服务进行改造。因此在通用的全链路日志追踪方案的基础上，点评内容平台进行了如下的具体实践。</p>
+</blockquote>
+<ul>
+<li><strong>支持大数据量日志的上报和存储</strong></li>
+</ul>
+<p>点评内容平台实现了图12所示的日志上报架构，支持众多服务统一的日志收集、处理和存储，能够很好地支撑大数据量下的日志追踪建设。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417497.jpeg" alt="img"></p>
+<ul>
+<li><strong>日志收集</strong>：各应用服务通过机器上部署的log_agent收集异步上报的日志数据，并统一传输至Kafka通道中，此外针对少量不支持log_agent的服务，搭建了如图所示的中转应用。</li>
+<li><strong>日志解析</strong>：收集的日志通过Kafka接入到Flink中，统一进行解析和处理，根据日志类型对日志进行分类和聚合，解析为链路日志、节点日志和业务日志。</li>
+<li><strong>日志存储</strong>：完成日志解析后，日志会按照树状的存储模型进行落地存储，结合存储的需求分析以及各个存储选项的特点，点评内容平台最终选择HBase作为存储选型。</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417412.png" alt="img"></p>
+<p>整体而言，log_agent + Kafka + Flink + HBase的日志上报和存储架构能够很好地支持复杂的业务系统，天然支持分布式场景下众多应用的日志上报，同时适用于高流量的数据写入。</p>
+<ul>
+<li><strong>实现众多后端服务的低成本改造</strong></li>
+</ul>
+<p>点评内容平台实现了“自定义日志工具包”（即下图13的TraceLogger工具包），屏蔽链路追踪中的上报细节，实现众多服务改造的成本最小化。TraceLogger工具包的功能包括：</p>
+<ul>
+<li><p><strong>模仿slf4j-api</strong>：工具包的实现在slf4j框架之上，并模仿slf4j-api对外提供相同的API，因此使用方无学习成本。</p>
+</li>
+<li><p>屏蔽内部细节</p>
+<p>，内部封装一系列的链路日志上报逻辑，屏蔽染色等细节，降低使用方的开发成本。 </p>
+<ul>
+<li>上报判断： <ul>
+<li>判断链路标识：无标识时，进行兜底的日志上报，防止日志丢失。</li>
+<li>判断上报方式：有标识时，支持日志和RPC中转两种上报方式。</li>
+</ul>
+</li>
+<li>日志组装：实现参数占位、异常堆栈输出等功能，并将相关数据组装为Trace对象，便于进行统一的收集和处理。</li>
+<li>异常上报：通过ErrorAPI主动上报异常，兼容原日志上报中ErrorAppender。</li>
+<li>日志上报：适配Log4j2日志框架实现最终的日志上报。</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417715.jpeg" alt="img"></p>
+<p>下面是TraceLogger工具包分别进行业务日志和节点日志上报的使用案例，整体的改造成本较低。</p>
+<p><strong>业务日志上报</strong>：无学习成本，基本无改造成本。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">// 替换前：原日志上报</span>
+<span class="token constant">LOGGER</span><span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span><span class="token string">"update struct failed, param:{}"</span><span class="token punctuation">,</span> <span class="token class-name">GsonUtils</span><span class="token punctuation">.</span><span class="token function">toJson</span><span class="token punctuation">(</span>structRequest<span class="token punctuation">)</span><span class="token punctuation">,</span> e<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 替换后：全链路日志上报</span>
+<span class="token class-name">TraceLogger</span><span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span><span class="token string">"update struct failed, param:{}"</span><span class="token punctuation">,</span> <span class="token class-name">GsonUtils</span><span class="token punctuation">.</span><span class="token function">toJson</span><span class="token punctuation">(</span>structRequest<span class="token punctuation">)</span><span class="token punctuation">,</span> e<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p><strong>节点日志上报</strong>：支持API、AOP两种上报方式，灵活且成本低。</p>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token class-name">Response</span> <span class="token function">realTimeInputLink</span><span class="token punctuation">(</span><span class="token keyword">long</span> contentId<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token comment">// 链路开始：传递串联标识（业务标识 + 场景标识 + 执行标识）</span>
+  <span class="token class-name">TraceUtils</span><span class="token punctuation">.</span><span class="token function">passLinkMark</span><span class="token punctuation">(</span><span class="token string">"contentId_type_uuid"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// ...</span>
+  <span class="token comment">// 本地调用(API上报节点日志)</span>
+  <span class="token class-name">TraceUtils</span><span class="token punctuation">.</span><span class="token function">reportNode</span><span class="token punctuation">(</span><span class="token string">"contentStore"</span><span class="token punctuation">,</span> contentId<span class="token punctuation">,</span> <span class="token class-name">StatusEnums</span><span class="token punctuation">.</span><span class="token constant">RUNNING</span><span class="token punctuation">)</span>
+  <span class="token function">contentStore</span><span class="token punctuation">(</span>contentId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token class-name">TraceUtils</span><span class="token punctuation">.</span><span class="token function">reportNode</span><span class="token punctuation">(</span><span class="token string">"contentStore"</span><span class="token punctuation">,</span> structResp<span class="token punctuation">,</span> <span class="token class-name">StatusEnums</span><span class="token punctuation">.</span><span class="token constant">COMPLETED</span><span class="token punctuation">)</span>
+  <span class="token comment">// ...</span>
+  <span class="token comment">// 远程调用</span>
+  <span class="token class-name">Response</span> processResp <span class="token operator">=</span> <span class="token function">picProcess</span><span class="token punctuation">(</span>contentId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">// ...</span>
+<span class="token punctuation">}</span>
+<span class="token comment">// AOP上报节点日志</span>
+<span class="token annotation punctuation">@TraceNode</span><span class="token punctuation">(</span>nodeName<span class="token operator">=</span><span class="token string">"picProcess"</span><span class="token punctuation">)</span>
+<span class="token keyword">public</span> <span class="token class-name">Response</span> <span class="token function">picProcess</span><span class="token punctuation">(</span><span class="token keyword">long</span> contentId<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token comment">// 图片处理业务逻辑</span>
+  <span class="token comment">// 业务日志数据上报</span>
+  <span class="token class-name">TraceLogger</span><span class="token punctuation">.</span><span class="token function">warn</span><span class="token punctuation">(</span><span class="token string">"picProcess failed, contentId:{}"</span><span class="token punctuation">,</span> contentId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code></pre>
+
+<h4 id="3-2-2-成果"><a href="#3-2-2-成果" class="headerlink" title="3.2.2 成果"></a>3.2.2 成果</h4><p>基于上述实践，点评内容平台实现了可视化全链路日志追踪，能够一键追踪任意一条内容所有业务场景的执行，并通过可视化的链路进行执行现场的还原，追踪效果如下图所示：</p>
+<p><strong>【链路查询功能】</strong>：根据内容id实时查询该内容所有的逻辑链路执行，覆盖所有的业务场景。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417354.jpeg" alt="img"></p>
+<p><strong>【链路展示功能】</strong>：通过链路图可视化展示业务逻辑的全景，同时展示各个节点的执行情况。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100418234.jpeg" alt="img"></p>
+<p><strong>【节点详情查询功能】</strong>：支持展示任意已执行节点的详情，包括节点输入、输出，以及节点执行过程中的关键业务日志。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100418734.jpeg" alt="img"></p>
+<p>目前，可视化全链路日志追踪系统已经成为点评内容平台的“问题排查工具”，我们可以将问题排查耗时从小时级降低到5分钟内；同时也是“测试辅助工具”，利用可视化的日志串联和展示，明显提升了RD自测、QA测试的效率。最后总结一下可视化全链路日志追踪的优点：</p>
+<ul>
+<li><strong>接入成本低</strong>：DSL配置配合简单的日志上报改造，即可快速接入。</li>
+<li><strong>追踪范围广</strong>：任意一条内容的所有逻辑链路，均可被追踪。</li>
+<li><strong>使用效率高</strong>：管理后台支持链路和日志的可视化查询展示，简单快捷。</li>
+</ul>
+<h2 id="4-总结与展望"><a href="#4-总结与展望" class="headerlink" title="4. 总结与展望"></a>4. 总结与展望</h2><blockquote>
+<p>随着分布式业务系统的日益复杂，可观测性对于业务系统的稳定运行也愈发重要[6]。作为大众点评内容流水线中的复杂业务系统，为了保障内容流转的稳定可靠，点评内容平台落地了全链路的可观测建设，在日志（Logging）、指标（Metrics）和追踪（Tracing）的三个具体方向上都进行了一定的探索和建设。</p>
+</blockquote>
+<p>其中之一就是本文的“可视化全链路日志追踪”，结合日志（Logging）与追踪（Tracing），我们提出了一套新的业务追踪通用方案，通过在业务执行阶段，结合完整的业务逻辑动态完成日志的组织串联，替代了传统方案低效且滞后的人工日志串联，最终可以实现业务全流程的高效追踪以及业务问题的高效定位。此外，在指标（Metrics）方向上，点评内容平台实践落地了“可视化全链路指标监控”，支持实时、多维度地展示业务系统的关键业务和技术指标，同时支持相应的告警和异常归因能力，实现了对业务系统整体运行状况的有效把控。</p>
+<p>未来，点评内容平台会持续深耕，实现覆盖告警、概况、排错和剖析等功能的可观测体系[7]，持续沉淀和输出相关的通用方案，希望可以为业务系统（特别是复杂的业务系统），提供一些可观测性建设的借鉴和启发。</p>
+<h2 id="5-参考文献"><a href="#5-参考文献" class="headerlink" title="5. 参考文献"></a>5. 参考文献</h2><ul>
+<li>[1] Metrics, tracing, and logging</li>
+<li>[2] ELK Stack: Elasticsearch, Logstash, Kibana | Elastic</li>
+<li>[3] Dapper, a Large-Scale Distributed Systems Tracing Infrastructure</li>
+<li>[4] OpenZipkin · A distributed tracing system</li>
+<li>[5] 分布式会话跟踪系统架构设计与实践</li>
+<li>[6] 凤凰架构-可观测性</li>
+<li>[7] 万字破解云原生可观测性</li>
+</ul>
+<h2 id="文章来源"><a href="#文章来源" class="headerlink" title="文章来源"></a>文章来源</h2><blockquote>
+<p>转载说明:</p>
+<ul>
+<li>作者：海友、怀宇、亚平、立森等，均来自点评事业部/内容平台技术团队，负责点评内容平台的建设工作。</li>
+<li>版权声明：本文为「美团技术团队」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。</li>
+<li>原文链接：<a target="_blank" rel="noopener" href="https://tech.meituan.com/2022/07/21/visualized-log-tracing.html">https://tech.meituan.com/2022/07/21/visualized-log-tracing.html</a></li>
+</ul>
+</blockquote>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Hubert Wong</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://hubertwongcn.github.io/posts/49014.html">https://hubertwongcn.github.io/posts/49014.html</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Hubert Wong</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">
+                                    <span class="chip bg-color">系统设计</span>
+                                </a>
+                            
+                                <a href="/tags/%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/">
+                                    <span class="chip bg-color">日志系统</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%85%A8%E9%93%BE%E8%B7%AF%E6%97%A5%E5%BF%97%E8%BF%BD%E8%B8%AA/">
+                                    <span class="chip bg-color">全链路日志追踪</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+        <style>
+    .valine-card {
+        margin: 1.5rem auto;
+    }
+
+    .valine-card .card-content {
+        padding: 20px 20px 5px 20px;
+    }
+
+    #vcomments textarea {
+        box-sizing: border-box;
+        background: url("/medias/comment_bg.png") 100% 100% no-repeat;
+    }
+
+    #vcomments p {
+        margin: 2px 2px 10px;
+        font-size: 1.05rem;
+        line-height: 1.78rem;
+    }
+
+    #vcomments blockquote p {
+        text-indent: 0.2rem;
+    }
+
+    #vcomments a {
+        padding: 0 2px;
+        color: #4cbf30;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    #vcomments img {
+        max-width: 100%;
+        height: auto;
+        cursor: pointer;
+    }
+
+    #vcomments ol li {
+        list-style-type: decimal;
+    }
+
+    #vcomments ol,
+    ul {
+        display: block;
+        padding-left: 2em;
+        word-spacing: 0.05rem;
+    }
+
+    #vcomments ul li,
+    ol li {
+        display: list-item;
+        line-height: 1.8rem;
+        font-size: 1rem;
+    }
+
+    #vcomments ul li {
+        list-style-type: disc;
+    }
+
+    #vcomments ul ul li {
+        list-style-type: circle;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    #vcomments table, th, td {
+        border: 0;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments h1 {
+        font-size: 1.85rem;
+        font-weight: bold;
+        line-height: 2.2rem;
+    }
+
+    #vcomments h2 {
+        font-size: 1.65rem;
+        font-weight: bold;
+        line-height: 1.9rem;
+    }
+
+    #vcomments h3 {
+        font-size: 1.45rem;
+        font-weight: bold;
+        line-height: 1.7rem;
+    }
+
+    #vcomments h4 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    #vcomments h5 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        line-height: 1.4rem;
+    }
+
+    #vcomments h6 {
+        font-size: 1rem;
+        line-height: 1.3rem;
+    }
+
+    #vcomments p {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    #vcomments hr {
+        margin: 12px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
+    }
+
+    #vcomments blockquote {
+        margin: 15px 0;
+        border-left: 5px solid #42b983;
+        padding: 1rem 0.8rem 0.3rem 0.8rem;
+        color: #666;
+        background-color: rgba(66, 185, 131, .1);
+    }
+
+    #vcomments pre {
+        font-family: monospace, monospace;
+        padding: 1.2em;
+        margin: .5em 0;
+        background: #272822;
+        overflow: auto;
+        border-radius: 0.3em;
+        tab-size: 4;
+    }
+
+    #vcomments code {
+        font-family: monospace, monospace;
+        padding: 1px 3px;
+        font-size: 0.92rem;
+        color: #e96900;
+        background-color: #f8f8f8;
+        border-radius: 2px;
+    }
+
+    #vcomments pre code {
+        font-family: monospace, monospace;
+        padding: 0;
+        color: #e8eaf6;
+        background-color: #272822;
+    }
+
+    #vcomments pre[class*="language-"] {
+        padding: 1.2em;
+        margin: .5em 0;
+    }
+
+    #vcomments code[class*="language-"],
+    pre[class*="language-"] {
+        color: #e8eaf6;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+
+    #vcomments b,
+    strong {
+        font-weight: bold;
+    }
+
+    #vcomments dfn {
+        font-style: italic;
+    }
+
+    #vcomments small {
+        font-size: 85%;
+    }
+
+    #vcomments cite {
+        font-style: normal;
+    }
+
+    #vcomments mark {
+        background-color: #fcf8e3;
+        padding: .2em;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+</style>
+
+<div class="card valine-card" data-aos="fade-up">
+    <div class="comment_headling" style="font-size: 20px; font-weight: 700; position: relative; padding-left: 20px; top: 15px; padding-bottom: 5px;">
+        <i class="fas fa-comments fa-fw" aria-hidden="true"></i>
+        <span>评论</span>
+    </div>
+    <div id="vcomments" class="card-content" style="display: grid">
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/valine/av-min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.iohttps://unpkg.com/valine/dist/Valine.min.js"></script> -->
+<script src="https://unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        appId: 'oTH4fV5e9iBU62LIVFq44U80-gzGzoHsz',
+        appKey: 'XpA0KzIfRp5Be7wCiljyVm7u',
+        notify: 'false' === 'true',
+        verify: 'false' === 'true',
+        visitor: 'false' === 'true',
+        avatar: 'monsterid',
+        pageSize: '10',
+        lang: 'en',
+        placeholder: '昵称填写QQ，可以显示QQ头像和昵称',
+        enableQQ: true,
+        requiredFields: ['nick','mail'], //设置必填项
+    });
+</script>
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/posts/36434.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/15.jpg" class="responsive-img" alt="4.美团: 日志导致线程Block的这些坑，你不得不防">
+                        
+                        <span class="card-title">4.美团: 日志导致线程Block的这些坑，你不得不防</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2024-01-10
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" class="post-category">
+                                    系统设计
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">
+                        <span class="chip bg-color">系统设计</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/">
+                        <span class="chip bg-color">日志系统</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/posts/33085.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/7.jpg" class="responsive-img" alt="2.vivo: 大数据日志采集Agent设计实践">
+                        
+                        <span class="card-title">2.vivo: 大数据日志采集Agent设计实践</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-10
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" class="post-category">
+                                    系统设计
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">
+                        <span class="chip bg-color">系统设计</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/">
+                        <span class="chip bg-color">日志系统</span>
+                    </a>
+                    
+                    <a href="/tags/Agent/">
+                        <span class="chip bg-color">Agent</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('3'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\(', '\)']]}
+    });
+</script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+    <div class="container row center-align" style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2024</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">Hubert Wong</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                class="white-color">1698.6k</span>&nbsp;字
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <span id="sitetime">载入运行时间...</span>
+            <script>
+                function siteTime() {
+                    var seconds = 1000;
+                    var minutes = seconds * 60;
+                    var hours = minutes * 60;
+                    var days = hours * 24;
+                    var years = days * 365;
+                    var today = new Date();
+                    var startYear = "2019";
+                    var startMonth = "6";
+                    var startDate = "28";
+                    var startHour = "0";
+                    var startMinute = "0";
+                    var startSecond = "0";
+                    var todayYear = today.getFullYear();
+                    var todayMonth = today.getMonth() + 1;
+                    var todayDate = today.getDate();
+                    var todayHour = today.getHours();
+                    var todayMinute = today.getMinutes();
+                    var todaySecond = today.getSeconds();
+                    var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                    var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                    var diff = t2 - t1;
+                    var diffYears = Math.floor(diff / years);
+                    var diffDays = Math.floor((diff / days) - diffYears * 365);
+                    var diffHours = Math.floor((diff - (diffYears * 365 + diffDays) * days) / hours);
+                    var diffMinutes = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours) /
+                        minutes);
+                    var diffSeconds = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours -
+                        diffMinutes * minutes) / seconds);
+                    if (startYear == todayYear) {
+                        document.getElementById("year").innerHTML = todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffDays + " 天 " + diffHours +
+                            " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    } else {
+                        document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffYears + " 年 " + diffDays +
+                            " 天 " + diffHours + " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    }
+                }
+                setInterval(siteTime, 1000);
+            </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/HubertWongCN" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:hubertwongcn@gmail.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+        <script src="//code.tidio.co/qst6g32qs2bibjqjp6oqgpe69j3qtrn9.js"></script>
+        <script>
+            $(document).ready(function () {
+                setInterval(change_Tidio, 50);
+                function change_Tidio() {
+                    var tidio=$("#tidio-chat iframe");
+                    if(tidio.css("display")=="block"&& $(window).width()>977 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" &&$(window).width()>977)>0? "-40px" : ($("div.toc-title").length&&$(window).width()>977)>0?"85px":"20px";
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.height=parseInt(tidio.css("height"))>=520?"520px":tidio.css("height");
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()>601 &&$(window).width()<992 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && 601< $(window).width()<992)>0? "-40px":"20px" ;
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))<230){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && $(window).width()<601)>0? "-10px":"45px" ;
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    if( tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))>=230){
+                        document.getElementById("tidio-chat-iframe").style.zIndex="998";
+                    }
+                }
+            });
+        </script>
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
