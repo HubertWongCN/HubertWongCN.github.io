@@ -1,0 +1,1581 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN,en,default">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="14.架构之高可用：容灾备份,故障转移, 生活，养猫，Java，后端开发">
+    <meta name="description" content="记录猫奴生活、后端学习笔记，由Hexo+Github搭建">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>14.架构之高可用：容灾备份,故障转移 | Hubert&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/hubert-logo.png">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/awesome/css/all.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/css/my.css">
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/jquery/jquery.min.js"></script>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="Hubert's Blog" type="application/atom+xml">
+</head>
+
+
+
+   <style>
+    body{
+       background-image: url(https://cdn.jsdelivr.net/gh/Tokisaki-Galaxy/res/site/medias/background.jpg);
+       background-repeat:no-repeat;
+       background-size:cover;
+       background-attachment:fixed;
+    }
+</style>
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Hubert&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>主页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/hubert-logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Hubert&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            记录猫奴生活、后端学习笔记，由Hexo+Github搭建
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			主页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/HubertWongCN/HubertWongCN.github.io" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/4.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">14.架构之高可用：容灾备份,故障转移</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E6%9E%B6%E6%9E%84/">
+                                <span class="chip bg-color">架构</span>
+                            </a>
+                        
+                            <a href="/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/">
+                                <span class="chip bg-color">高并发</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%AE%B9%E7%81%BE%E5%A4%87%E4%BB%BD/">
+                                <span class="chip bg-color">容灾备份</span>
+                            </a>
+                        
+                            <a href="/tags/%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB/">
+                                <span class="chip bg-color">故障转移</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E6%9E%B6%E6%9E%84/" class="post-category">
+                                架构
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2024-01-10
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2024-01-10
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    5.7k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                    19 分
+                </div>
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/prism/prism.css">
+        
+
+        
+        <!-- 代码块折行 -->
+        <style type="text/css">
+            code[class*="language-"], pre[class*="language-"] { white-space: pre-wrap !important; }
+        </style>
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p>容灾技术是系统的高可用性技术的一个组成部分，容灾系统更加强调处理外界环境对系统的影响，特别是灾难性事件对整个IT节点的影响，提供节点级别的系统恢复功能。故障转移（failover），即当活动的服务或应用意外终止时，快速启用<strong>冗余</strong>或备用的服务器、系统、硬件或者网络接替它们工作。故障恢复是在计划内或计划外中断解决后<strong>切换回主站点</strong>的过程。</p>
+</blockquote>
+<h2 id="什么是容灾和备份？"><a href="#什么是容灾和备份？" class="headerlink" title="什么是容灾和备份？"></a>什么是容灾和备份？</h2><blockquote>
+<p>容灾技术是系统的高可用性技术的一个组成部分，容灾系统更加强调处理外界环境对系统的影响，特别是灾难性事件对整个IT节点的影响，提供节点级别的系统恢复功能。</p>
+</blockquote>
+<p>容灾备份实际上是两个概念:</p>
+<ul>
+<li><strong>容灾</strong>是为了在遭遇灾害时能保证信息系统能正常运行，帮助企业实现业务连续性的目标；</li>
+<li><strong>备份</strong>是为了应对灾难来临时造成的数据丢失问题。</li>
+</ul>
+<p>在容灾备份一体化产品出现之前，容灾系统与备份系统是独立的。容灾备份产品的最终目标是帮助企业应对人为误操作、软件错误、病毒入侵等“软”性灾害以及硬件故障、自然灾害等“硬”性灾害。</p>
+<h3 id="容灾的分类"><a href="#容灾的分类" class="headerlink" title="容灾的分类"></a>容灾的分类</h3><p>从其对系统的保护程度来分，可以将容灾系统分为:</p>
+<ul>
+<li><strong>数据级容灾</strong>是指通过建立异地容灾中心，做数据的远程备份，在灾难发生之后要确保原有的数据不会丢失或者遭到破坏，但在数据级容灾这个级别，发生灾难时应用是会中断的。在数据级容灾方式下，所建立的异地容灾中心可以简单地把它理解成一个远程的数据备份中心。数据级容灾的恢复时间比较长，但是相比其他容灾级别来讲它的费用比较低，而且构建实施也相对简单。</li>
+<li><strong>应用级容灾</strong>是在数据级容灾的基础之上，在备份站点同样构建一套相同的应用系统，通过同步或异步复制技术，这样可以保证关键应用在允许的时间范围内恢复运行，尽可能减少灾难带来的损失，让用户基本感受不到灾难的发生，这样就使系统所提供的服务是完整的、可靠的和安全的。应用级容灾生产中心和异地灾备中心之间的数据传输是采用异类的广域网传输方式；同时应用级容灾系统需要通过更多的软件来实现，可以使多种应用在灾难发生时可以进行快速切换，确保业务的连续性。</li>
+<li><strong>业务级容灾</strong>是全业务的灾备，除了必要的IT相关技术，还要求具备全部的基础设施。其大部分内容是非IT系统（如电话、办公地点等），当大灾难发生后，原有的办公场所都会受到破坏，除了数据和应用的恢复，更需要一个备份的工作场所能够正常的开展业务。</li>
+</ul>
+<h3 id="容灾的技术指标"><a href="#容灾的技术指标" class="headerlink" title="容灾的技术指标"></a>容灾的技术指标</h3><blockquote>
+<p>主要有RPO（数据恢复点目标）和 RTO（恢复时间目标）, 从客户的角度而言就是RPO需要为0（没有数据丢失），RTO越接近0越好（恢复时间越短越好）。</p>
+</blockquote>
+<p><strong>RPO（Recovery Point Objective）</strong>：即数据恢复点目标，主要指的是业务系统所能容忍的数据丢失量，指灾难发生后，从IT系统宕机导致业务停顿之时开始，到IT系统恢复至可以支持各部门运作、恢复运营之时，此两点之间的时间段称为RTO，广道容灾备份系统RTO达到分钟级。</p>
+<p><strong>RTO（Recovery Time Objective）</strong>：即恢复时间目标，主要指的是所能容忍的业务停止服务的最长时间，也就是从灾难发生到业务系统恢复服务功能所需要的最短时间周期。</p>
+<p>指从系统和应用数据而言，要实现能够恢复至可以支持各部门业务运作，系统及生产数据应恢复到怎样的更新程度，这种更新程度可以是上一周的备份数据，也可以是上一次交易的实时数据。</p>
+<p>RPO针对的是数据丢失，而RTO针对的是服务丢失，二者没有必然的关联性。RTO和RPO的确定必须在进行风险分析和业务影响分析后根据不同的业务需求确定。对于不同企业的同一种业务，RTO和RPO的需求也会有所不同。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100056243.webp" alt="img"></p>
+<h3 id="容灾和容错的区别"><a href="#容灾和容错的区别" class="headerlink" title="容灾和容错的区别"></a>容灾和容错的区别</h3><blockquote>
+<p>例子中的图片来源于<a target="_blank" rel="noopener" href="http://www.pbenson.net/2014/02/the-difference-between-fault-tolerance-high-availability-disaster-recovery/">这里</a>，能够非常好的帮助你理解。</p>
+</blockquote>
+<ul>
+<li><strong>容灾（Disaster Tolerance）</strong>：就是在上述的灾难发生时，在保证生产系统的数据尽量少丢失的情况下，保持生存系统的业务不间断地运行。容灾通常是通过冗余方式来实现的。</li>
+</ul>
+<p>举例：飞机上有两个发动机，一个是主发动机，另外一个是备用发动机，主发动机坏了以后，立马切换到备用的发动机。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100057357.png" alt="img"></p>
+<ul>
+<li><strong>容错（fault tolerance）</strong>: 发生故障时，系统还能继续运行。容错的目的是，发生故障时，系统的运行水平可能有所下降，但是依然可用，不会完全失败。</li>
+</ul>
+<p>举例：飞机有四个引擎，如果一个引擎坏了，剩下三个引擎，还能继续飞，这就是”容错”。同样的，汽车的一个轮子扎破了，剩下三个轮子，也还是勉强能行驶。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100057482.png" alt="img"></p>
+<h3 id="容灾备份的等级"><a href="#容灾备份的等级" class="headerlink" title="容灾备份的等级"></a>容灾备份的等级</h3><blockquote>
+<p>国际标准SHARE 78 对容灾系统的定义有七个层次：从最简单的仅在本地进行磁带备份，到将备份的磁带存储在异地，再到建立应用系统实时切换的异地备份系统，恢复时间也可以从几天到小时级到分钟级、秒级或零数据丢失等。目前针对这七个层次，都有相应的容灾方案，所以，用户在选择容灾方案时应重点区分它们各自的特点和适用范围，结合自己对容灾系统的要求判断选择哪个层次的方案。</p>
+</blockquote>
+<ul>
+<li><strong>0级：无异地备份</strong></li>
+</ul>
+<p>0等级容灾方案数据仅在本地进行备份，没有在异地备份数据，未制定灾难恢复计划。这种方式是成本最低的灾难恢复解决方案，但不具备真正灾难恢复能力。</p>
+<p>在这种容灾方案中，最常用的是备份管理软件加上磁带机，可以是手工加载磁带机或自动加载磁带机。它是所有容灾方案的基础，从个人用户到企业级用户都广泛采用了这种方案。其特点是用户投资较少，技术实现简单。缺点是一旦本地发生毁灭性灾难，将丢失全部的本地备份数据，业务无法恢复。</p>
+<ul>
+<li><strong>1级：实现异地备份</strong></li>
+</ul>
+<p>第1级容灾方案是将关键数据备份到本地磁带介质上，然后送往异地保存，但异地没有可用的备份中心、备份数据处理系统和备份网络通信系统，未制定灾难恢复计划。灾难发生后，使用新的主机，利用异地数据备份介质（磁带）将数据恢复起来。</p>
+<p>这种方案成本较低，运用本地备份管理软件，可以在本地发生毁灭性灾难后，恢复从异地运送过来的备份数据到本地，进行业务恢复。但难以管理，即很难知道什么数据在什么地方，恢复时间长短依赖于何时硬件平台能够被提供和准备好。以前被许多进行关键业务生产的大企业所广泛采用，作为异地容灾的手段。目前，这一等级方案在许多中小网站和中小企业用户中采用较多。对于要求快速进行业务恢复和海量数据恢复的用户，这种方案是不能够被接受的。</p>
+<ul>
+<li><strong>2级：热备份站点备份</strong></li>
+</ul>
+<p>第2级容灾方案是将关键数据进行备份并存放到异地，制定有相应灾难恢复计划，具有热备份能力的站点灾难恢复。一旦发生灾难，利用热备份主机系统将数据恢复。它与第1级容灾方案的区别在于异地有一个热备份站点，该站点有主机系统，平时利用异地的备份管理软件将运送到异地的数据备份介质（磁带）上的数据备份到主机系统。当灾难发生时可以快速接管应用，恢复生产。</p>
+<p>由于有了热备中心，用户投资会增加，相应的管理人员要增加。技术实现简单，利用异地的热备份系统，可以在本地发生毁灭性灾难后，快速进行业务恢复。但这种容灾方案由于备份介质是采用交通运输方式送往异地，异地热备中心保存的数据是上一次备份的数据，可能会有几天甚至几周的数据丢失。这对于关键数据的容灾是不能容忍的。</p>
+<ul>
+<li><strong>3级：在线数据恢复</strong></li>
+</ul>
+<p>第3级容灾方案是通过网络将关键数据进行备份并存放至异地，制定有相应灾难恢复计划，有备份中心，并配备部分数据处理系统及网络通信系统。该等级方案特点是用电子数据传输取代交通工具传输备份数据，从而提高了灾难恢复的速度。利用异地的备份管理软件将通过网络传送到异地的数据备份到主机系统。一旦灾难发生，需要的关键数据通过网络可迅速恢复，通过网络切换，关键应用恢复时间可降低到一天或小时级。这一等级方案由于备份站点要保持持续运行，对网络的要求较高，因此成本相应有所增加。</p>
+<ul>
+<li><strong>4级：定时数据备份</strong></li>
+</ul>
+<p>第4级容灾方案是在第3级容灾方案的基础上，利用备份管理软件自动通过通信网络将部分关键数据定时备份至异地，并制定相应的灾难恢复计划。一旦灾难发生，利用备份中心已有资源及异地备份数据恢复关键业务系统运行。</p>
+<p>这一等级方案特点是备份数据是采用自动化的备份管理软件备份到异地，异地热备中心保存的数据是定时备份的数据，根据备份策略的不同，数据的丢失与恢复时间达到天或小时级。由于对备份管理软件设备和网络设备的要求较高，因此投入成本也会增加。但由于该级别备份的特点，业务恢复时间和数据的丢失量还不能满足关键行业对关键数据容灾的要求。</p>
+<ul>
+<li><strong>5级：实时数据备份</strong></li>
+</ul>
+<p>第5级容灾方案在前面几个级别的基础上使用了硬件的镜像技术和软件的数据复制技术，也就是说，可以实现在应用站点与备份站点的数据都被更新。数据在两个站点之间相互镜像，由远程异步提交来同步，因为关键应用使用了双重在线存储，所以在灾难发生时，仅仅很小部分的数据被丢失，恢复的时间被降低到了分钟级或秒级。由于对存储系统和数据复制软件的要求较高，所需成本也大大增加。</p>
+<p>这一等级的方案由于既能保证不影响当前交易的进行，又能实时复制交易产生的数据到异地，所以这一层次的方案是目前应用最广泛的一类，正因为如此，许多厂商都有基于自己产品的容灾解决方案。如存储厂商EMC等推出的基于智能存储服务器的数据远程拷贝；系统复制软件提供商VERITAS等提供的基于系统软件的数据远程复制；数据库厂商Oracle和Sybase提供的数据库复制方案等。但这些方案有一个不足之处就是异地的备份数据是处于备用（Standby）备份状态而不是实时可用的数据，这样灾难发生后需要一定时间来进行业务恢复。更为理想的应该是备份站点不仅仅是一个分离的备份系统，而且还处于活动状态，能够提供生产应用服务，所以可以提供快速的业务接管，而备份数据则可以双向传输，数据的丢失与恢复时间达到分钟甚至秒级。据了解，目前DSG公司的RealSync全局复制软件能够提供这一功能。</p>
+<ul>
+<li><strong>6级：零数据丢失</strong></li>
+</ul>
+<p>第6级容灾方案是灾难恢复中最昂贵的方式，也是速度最快的恢复方式，它是灾难恢复的最高级别，利用专用的存储网络将关键数据同步镜像至备份中心，数据不仅在本地进行确认，而且需要在异地（备份）进行确认。因为，数据是镜像地写到两个站点，所以灾难发生时异地容灾系统保留了全部的数据，实现零数据丢失。</p>
+<p>这一方案在本地和远程的所有数据被更新的同时，利用了双重在线存储和完全的网络切换能力，不仅保证数据的完全一致性，而且存储和网络等环境具备了应用的自动切换能力。一旦发生灾难，备份站点不仅有全部的数据，而且应用可以自动接管，实现零数据丢失的备份。通常在这两个系统中的光纤设备连接中还提供冗余通道，以备工作通道出现故障时及时接替工作，当然由于对存储系统和存储系统专用网络的要求很高，用户的投资巨大。采取这种容灾方式的用户主要是资金实力较为雄厚的大型企业和电信级企业。但在实际应用过程中，由于完全同步的方式对生产系统的运行效率会产生很大影响，所以适用于生产交易较少或非实时交易的关键数据系统，目前采用该级别容灾方案的用户还很少。</p>
+<h2 id="容灾备份的解决方案"><a href="#容灾备份的解决方案" class="headerlink" title="容灾备份的解决方案"></a>容灾备份的解决方案</h2><blockquote>
+<p>阿里云的容灾备份解决方案为例。</p>
+</blockquote>
+<h3 id="ECS的容灾备份"><a href="#ECS的容灾备份" class="headerlink" title="ECS的容灾备份"></a>ECS的容灾备份</h3><blockquote>
+<p>来源于阿里云<a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/98198.html?spm=5176.22414175.sslink.10.473f5c2de0EUTt">官方文档</a></p>
+</blockquote>
+<ul>
+<li><strong>备份恢复</strong></li>
+</ul>
+<p>阿里云ECS可通过<strong>快照</strong>与<strong>镜像</strong>对系统盘、数据盘进行备份。如果存储在磁盘上的数据本身就是错误的数据，例如由于应用错误导致的数据错误，或者黑客利用应用漏洞进行恶意读写，此时就可以使用快照服务将磁盘上的数据恢复到期望的状态。另外ECS可通过镜像重新初始化磁盘或使用自定义镜像新购ECS实例。</p>
+<ul>
+<li><strong>容灾应用</strong></li>
+</ul>
+<p>ECS可以从架构上实现容灾场景下的应用。例如，在应用前端购买SLB产品，后端相同应用部署至少两台ECS服务器，或者是使用阿里云的弹性伸缩技术，根据自定义ECS自身资源的使用规则进行弹性扩容。这样即便其中一台ECS服务器故障或者资源利用超负荷，也不会使服务对外终止，从而实现容灾场景下的应用。下图以同城两可用区机房部署ECS集群为例，所有通信均在阿里云千兆内网中完成，响应快速并减少了公网流量费用：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100057120.png" alt="img"></p>
+<ol>
+<li><strong>负载均衡SLB</strong>：设备侧通过多可用区级别SLB做首层流量接入，用户流量被分发至两个及以上的可用区机房，机房内均部署ECS集群。</li>
+<li><strong>ECS集群</strong>：可用区机房部署的ECS节点是对等的，单节点故障不影响数据层应用和服务器管控功能。发生故障后系统会自动热迁移，另外的ECS节点可以持续提供业务访问，防止可能的单点故障或者热迁移失败导致的业务访问中断。热迁移失败后通过系统事件获知故障信息，您可以及时部署新节点。</li>
+<li><strong>数据层</strong>：在地域级别部署对象存储，不同可用区机房的ECS节点可以直接读取文件信息。若是数据库应用，使用多可用区ApsaraDB for RDS服务做承载，主节点支持多可用区读写，与应用层流量来源无冲突关系。同时，备节点支持多可用区读能力，防止主节点故障时，ECS无法读取数据。</li>
+</ol>
+<h3 id="同城容灾"><a href="#同城容灾" class="headerlink" title="同城容灾"></a>同城容灾</h3><blockquote>
+<p>来源于阿里云<a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/419804.html?spm=a2c4g.26937906.0.0.763f292cjWILT6">官方文档</a></p>
+</blockquote>
+<p><strong>同城容灾</strong>指应用服务部署是<strong>多机房、单地域</strong>时，当其中一机房出现故障时，系统可实现业务7*24小时稳定运行，即使单机房故障也不影响业务的可持续性，保障用户访问连续不间断。</p>
+<p><strong>同城双活容灾</strong>架构，是指在同城建立两个可独立承担关键系统运行的数据中心，双中心具备基本等同的业务处理能力并通过高速链路实时同步数据，日常情况下可同时分担业务及管理系统的运行，并可切换运行；灾难情况下可在基本不丢失数据的情况下进行灾备应急切换，保持业务连续运行。多数企业为了兼顾成本与高可用性问题，会优先选择同城双活的部署方式。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100057066.png" alt="img"></p>
+<h3 id="异地容灾-两地三中心"><a href="#异地容灾-两地三中心" class="headerlink" title="异地容灾(两地三中心)"></a>异地容灾(两地三中心)</h3><blockquote>
+<p>来源于阿里云<a target="_blank" rel="noopener" href="https://help.aliyun.com/practice_detail/419526?spm=a2c4g.26937898.0.0.75ed6fc5iInM61">官方文档</a></p>
+</blockquote>
+<p><strong>异地容灾</strong>是指应用服务部署在不同地域时，当其中一地出现故障时，系统可以将出现故障地域的用户访问流量，调度至异地灾备中心，保障用户访问连续不间断。</p>
+<p><strong>两地三中心容灾</strong>架构，是指在同城双中心的基础上，在异地的城市建立一个备份的灾备中心，用于双中心的数据备份，当双中心出现自然灾害等原因而发生故障时，异地灾备中心可以用备份数据进行业务的恢复。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100058717.png" alt="img"></p>
+<h2 id="故障转移和恢复"><a href="#故障转移和恢复" class="headerlink" title="故障转移和恢复"></a>故障转移和恢复</h2><h3 id="什么是故障转移"><a href="#什么是故障转移" class="headerlink" title="什么是故障转移"></a>什么是故障转移</h3><blockquote>
+<p>故障转移（failover），即当活动的服务或应用意外终止时，快速启用冗余或备用的服务器、系统、硬件或者网络接替它们工作。 故障转移(failover)与交换转移操作基本相同，只是故障转移通常是<strong>自动完成</strong>的，没有警告提醒手动完成，而交换转移需要手动进行。</p>
+</blockquote>
+<p>要使故障转移正常工作，必须有一个数据备份裸机服务器或虚拟机充当恢复站点系统，以便在发生故障时替换主站点。由于故障转移是灾难恢复中必不可少的步骤，因此数据备份系统本身必须不受故障影响。</p>
+<p>需要持续可用性的系统需要整体故障转移和灾难恢复。在服务器级别，数据备份环境跟踪主服务器的“脉冲”，并在检测到中断时执行自动故障转移。</p>
+<h3 id="如何进行故障转移"><a href="#如何进行故障转移" class="headerlink" title="如何进行故障转移"></a>如何进行故障转移</h3><blockquote>
+<p>有两种方法可以设置故障转移系统：<strong>主动-主动</strong>和<strong>主动-被动</strong>（或主动-备用）配置。两种设置都需要至少两个节点（服务器或虚拟机）才能正常工作。</p>
+</blockquote>
+<p>在<strong>主动-主动</strong>设置中，多个节点同时运行。这允许他们分担工作量并防止任何一个节点过载。如果一个节点停止工作，它的工作负载将被其他活动节点占用，直到它重新激活。</p>
+<p><strong>主动-被动</strong>（主动-备用）设置还包括多个节点，但并非所有节点都同时处于活动状态。一旦主动节点停止工作，被动节点就会被激活并充当故障转移节点。当主节点再次运行时，数据备份节点将操作切换回主节点并再次变为被动状态。</p>
+<p>无论采用哪种故障转移方法，两种配置都要求每个节点具有相同的配置。这确保了在站点之间切换时的一致性和稳定性。</p>
+<h3 id="什么是故障恢复"><a href="#什么是故障恢复" class="headerlink" title="什么是故障恢复"></a>什么是故障恢复</h3><blockquote>
+<p>故障恢复是在计划内或计划外中断解决后<strong>切换回主站点</strong>的过程。故障恢复通常在故障转移之后作为灾难恢复计划的一部分。</p>
+</blockquote>
+<p>故障恢复不是完成故障转移的唯一方法。使用虚拟机时，您可以执行永久故障回复，使数据备份虚拟机成为新的主站点。</p>
+<h3 id="如何进行故障恢复"><a href="#如何进行故障恢复" class="headerlink" title="如何进行故障恢复"></a>如何进行故障恢复</h3><p>成功执行故障回复需要一些准备。在切换回主站点之前，请考虑以下步骤：</p>
+<ol>
+<li>检查与主站点的连接的质量和网络带宽。</li>
+<li>检查备份站点上的所有数据是否存在潜在错误。这对于关键文件和文档尤其重要。</li>
+<li>在开始故障恢复之前彻底测试所有主系统。</li>
+<li>准备并实施故障恢复计划，以最大限度地减少停机时间和用户不便。</li>
+</ol>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://zhidao.baidu.com/question/364749654551211812.html">https://zhidao.baidu.com/question/364749654551211812.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://baijiahao.baidu.com/s?id=1731952072146753719">https://baijiahao.baidu.com/s?id=1731952072146753719</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/22266875">https://www.zhihu.com/question/22266875</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/38265388">https://zhuanlan.zhihu.com/p/38265388</a></li>
+<li><a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/98198.html?spm=5176.22414175.sslink.10.473f5c2de0EUTt">https://help.aliyun.com/document_detail/98198.html?spm=5176.22414175.sslink.10.473f5c2de0EUTt</a></li>
+</ul>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Hubert Wong</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://hubertwongcn.github.io/posts/63343.html">https://hubertwongcn.github.io/posts/63343.html</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Hubert Wong</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/%E6%9E%B6%E6%9E%84/">
+                                    <span class="chip bg-color">架构</span>
+                                </a>
+                            
+                                <a href="/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/">
+                                    <span class="chip bg-color">高并发</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%AE%B9%E7%81%BE%E5%A4%87%E4%BB%BD/">
+                                    <span class="chip bg-color">容灾备份</span>
+                                </a>
+                            
+                                <a href="/tags/%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB/">
+                                    <span class="chip bg-color">故障转移</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+        <style>
+    .valine-card {
+        margin: 1.5rem auto;
+    }
+
+    .valine-card .card-content {
+        padding: 20px 20px 5px 20px;
+    }
+
+    #vcomments textarea {
+        box-sizing: border-box;
+        background: url("/medias/comment_bg.png") 100% 100% no-repeat;
+    }
+
+    #vcomments p {
+        margin: 2px 2px 10px;
+        font-size: 1.05rem;
+        line-height: 1.78rem;
+    }
+
+    #vcomments blockquote p {
+        text-indent: 0.2rem;
+    }
+
+    #vcomments a {
+        padding: 0 2px;
+        color: #4cbf30;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    #vcomments img {
+        max-width: 100%;
+        height: auto;
+        cursor: pointer;
+    }
+
+    #vcomments ol li {
+        list-style-type: decimal;
+    }
+
+    #vcomments ol,
+    ul {
+        display: block;
+        padding-left: 2em;
+        word-spacing: 0.05rem;
+    }
+
+    #vcomments ul li,
+    ol li {
+        display: list-item;
+        line-height: 1.8rem;
+        font-size: 1rem;
+    }
+
+    #vcomments ul li {
+        list-style-type: disc;
+    }
+
+    #vcomments ul ul li {
+        list-style-type: circle;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    #vcomments table, th, td {
+        border: 0;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments h1 {
+        font-size: 1.85rem;
+        font-weight: bold;
+        line-height: 2.2rem;
+    }
+
+    #vcomments h2 {
+        font-size: 1.65rem;
+        font-weight: bold;
+        line-height: 1.9rem;
+    }
+
+    #vcomments h3 {
+        font-size: 1.45rem;
+        font-weight: bold;
+        line-height: 1.7rem;
+    }
+
+    #vcomments h4 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    #vcomments h5 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        line-height: 1.4rem;
+    }
+
+    #vcomments h6 {
+        font-size: 1rem;
+        line-height: 1.3rem;
+    }
+
+    #vcomments p {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    #vcomments hr {
+        margin: 12px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
+    }
+
+    #vcomments blockquote {
+        margin: 15px 0;
+        border-left: 5px solid #42b983;
+        padding: 1rem 0.8rem 0.3rem 0.8rem;
+        color: #666;
+        background-color: rgba(66, 185, 131, .1);
+    }
+
+    #vcomments pre {
+        font-family: monospace, monospace;
+        padding: 1.2em;
+        margin: .5em 0;
+        background: #272822;
+        overflow: auto;
+        border-radius: 0.3em;
+        tab-size: 4;
+    }
+
+    #vcomments code {
+        font-family: monospace, monospace;
+        padding: 1px 3px;
+        font-size: 0.92rem;
+        color: #e96900;
+        background-color: #f8f8f8;
+        border-radius: 2px;
+    }
+
+    #vcomments pre code {
+        font-family: monospace, monospace;
+        padding: 0;
+        color: #e8eaf6;
+        background-color: #272822;
+    }
+
+    #vcomments pre[class*="language-"] {
+        padding: 1.2em;
+        margin: .5em 0;
+    }
+
+    #vcomments code[class*="language-"],
+    pre[class*="language-"] {
+        color: #e8eaf6;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+
+    #vcomments b,
+    strong {
+        font-weight: bold;
+    }
+
+    #vcomments dfn {
+        font-style: italic;
+    }
+
+    #vcomments small {
+        font-size: 85%;
+    }
+
+    #vcomments cite {
+        font-style: normal;
+    }
+
+    #vcomments mark {
+        background-color: #fcf8e3;
+        padding: .2em;
+    }
+
+    #vcomments table, th, td {
+        padding: 12px 13px;
+        border: 1px solid #dfe2e5;
+    }
+
+    table tr:nth-child(2n), thead {
+        background-color: #fafafa;
+    }
+
+    #vcomments table th {
+        background-color: #f2f2f2;
+        min-width: 80px;
+    }
+
+    #vcomments table td {
+        min-width: 80px;
+    }
+
+    #vcomments [type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+        position: inherit;
+        margin-left: -1.3rem;
+        margin-right: 0.4rem;
+        margin-top: -1px;
+        vertical-align: middle;
+        left: unset;
+        visibility: visible;
+    }
+</style>
+
+<div class="card valine-card" data-aos="fade-up">
+    <div class="comment_headling" style="font-size: 20px; font-weight: 700; position: relative; padding-left: 20px; top: 15px; padding-bottom: 5px;">
+        <i class="fas fa-comments fa-fw" aria-hidden="true"></i>
+        <span>评论</span>
+    </div>
+    <div id="vcomments" class="card-content" style="display: grid">
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/valine/av-min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.iohttps://unpkg.com/valine/dist/Valine.min.js"></script> -->
+<script src="https://unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        appId: 'oTH4fV5e9iBU62LIVFq44U80-gzGzoHsz',
+        appKey: 'XpA0KzIfRp5Be7wCiljyVm7u',
+        notify: 'false' === 'true',
+        verify: 'false' === 'true',
+        visitor: 'false' === 'true',
+        avatar: 'monsterid',
+        pageSize: '10',
+        lang: 'en',
+        placeholder: '昵称填写QQ，可以显示QQ头像和昵称',
+        enableQQ: true,
+        requiredFields: ['nick','mail'], //设置必填项
+    });
+</script>
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/posts/41191.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/9.jpg" class="responsive-img" alt="15.架构 - 保障架构安全">
+                        
+                        <span class="card-title">15.架构 - 保障架构安全</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2024-01-10
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E6%9E%B6%E6%9E%84/" class="post-category">
+                                    架构
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E6%9E%B6%E6%9E%84/">
+                        <span class="chip bg-color">架构</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%9E%B6%E6%9E%84%E5%AE%89%E5%85%A8/">
+                        <span class="chip bg-color">架构安全</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/posts/14293.html">
+                    <div class="card-image">
+                        
+                        
+                        <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/10.jpg" class="responsive-img" alt="13.架构之高可用：负载均衡">
+                        
+                        <span class="card-title">13.架构之高可用：负载均衡</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-10
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E6%9E%B6%E6%9E%84/" class="post-category">
+                                    架构
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E6%9E%B6%E6%9E%84/">
+                        <span class="chip bg-color">架构</span>
+                    </a>
+                    
+                    <a href="/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/">
+                        <span class="chip bg-color">高并发</span>
+                    </a>
+                    
+                    <a href="/tags/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">
+                        <span class="chip bg-color">负载均衡</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('3'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\(', '\)']]}
+    });
+</script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+    <div class="container row center-align" style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2024</span>
+            
+            <span id="year">2019</span>
+            <a href="/about" target="_blank">Hubert Wong</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                class="white-color">1549.6k</span>&nbsp;字
+            
+            
+            
+            
+            
+            
+            <span id="busuanzi_container_site_pv">
+                |&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;<span id="busuanzi_value_site_pv"
+                    class="white-color"></span>&nbsp;次
+            </span>
+            
+            
+            <span id="busuanzi_container_site_uv">
+                |&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;<span id="busuanzi_value_site_uv"
+                    class="white-color"></span>&nbsp;人
+            </span>
+            
+            <br>
+            
+            <span id="sitetime">载入运行时间...</span>
+            <script>
+                function siteTime() {
+                    var seconds = 1000;
+                    var minutes = seconds * 60;
+                    var hours = minutes * 60;
+                    var days = hours * 24;
+                    var years = days * 365;
+                    var today = new Date();
+                    var startYear = "2019";
+                    var startMonth = "6";
+                    var startDate = "28";
+                    var startHour = "0";
+                    var startMinute = "0";
+                    var startSecond = "0";
+                    var todayYear = today.getFullYear();
+                    var todayMonth = today.getMonth() + 1;
+                    var todayDate = today.getDate();
+                    var todayHour = today.getHours();
+                    var todayMinute = today.getMinutes();
+                    var todaySecond = today.getSeconds();
+                    var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                    var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                    var diff = t2 - t1;
+                    var diffYears = Math.floor(diff / years);
+                    var diffDays = Math.floor((diff / days) - diffYears * 365);
+                    var diffHours = Math.floor((diff - (diffYears * 365 + diffDays) * days) / hours);
+                    var diffMinutes = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours) /
+                        minutes);
+                    var diffSeconds = Math.floor((diff - (diffYears * 365 + diffDays) * days - diffHours * hours -
+                        diffMinutes * minutes) / seconds);
+                    if (startYear == todayYear) {
+                        document.getElementById("year").innerHTML = todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffDays + " 天 " + diffHours +
+                            " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    } else {
+                        document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                        document.getElementById("sitetime").innerHTML = "本站已安全运行 " + diffYears + " 年 " + diffDays +
+                            " 天 " + diffHours + " 小时 " + diffMinutes + " 分钟 " + diffSeconds + " 秒";
+                    }
+                }
+                setInterval(siteTime, 1000);
+            </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/HubertWongCN" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:hubertwongcn@gmail.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/materialize/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/aos/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/js/matery.js"></script>
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+        <script src="//code.tidio.co/qst6g32qs2bibjqjp6oqgpe69j3qtrn9.js"></script>
+        <script>
+            $(document).ready(function () {
+                setInterval(change_Tidio, 50);
+                function change_Tidio() {
+                    var tidio=$("#tidio-chat iframe");
+                    if(tidio.css("display")=="block"&& $(window).width()>977 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" &&$(window).width()>977)>0? "-40px" : ($("div.toc-title").length&&$(window).width()>977)>0?"85px":"20px";
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.height=parseInt(tidio.css("height"))>=520?"520px":tidio.css("height");
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()>601 &&$(window).width()<992 ){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && 601< $(window).width()<992)>0? "-40px":"20px" ;
+                        document.getElementById("tidio-chat-iframe").style.right="-15px";
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    else if(tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))<230){
+                        document.getElementById("tidio-chat-iframe").style.bottom= ($("div#backTop.top-scroll").css("display")=="none" && $(window).width()<601)>0? "-10px":"45px" ;
+                        document.getElementById("tidio-chat-iframe").style.zIndex="997";
+                    }
+                    if( tidio.css("display")=="block"&&$(window).width()<601 && parseInt(tidio.css("height"))>=230){
+                        document.getElementById("tidio-chat-iframe").style.zIndex="998";
+                    }
+                }
+            });
+        </script>
+    
+
+    
+
+	
+    
+
+    
+
+    
+
+    
+    <script src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

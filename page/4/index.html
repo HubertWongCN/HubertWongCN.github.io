@@ -33,9 +33,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
-<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.0.0"><link rel="alternate" href="/atom.xml" title="Hubert's Blog" type="application/atom+xml">
-
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.0.0">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="Hubert's Blog" type="application/atom+xml">
 </head>
 
 
@@ -357,13 +357,13 @@
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/59520.html">
+                    <a href="/posts/1921.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/19.jpg" class="responsive-img" alt="4.Tomcat - 源码分析准备和分析入口">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/0.jpg" class="responsive-img" alt="3.MyBatis详解 - 初始化基本过程">
                             
-                            <span class="card-title">4.Tomcat - 源码分析准备和分析入口</span>
+                            <span class="card-title">3.MyBatis详解 - 初始化基本过程</span>
                         </div>
                     </a>
 
@@ -371,23 +371,21 @@
                         <div class="summary block-with-text">
                             
                                 
-上文我们介绍了Tomcat的架构设计，接下来我们便可以下载源码以及寻找源码入口了。
+从上文我们知道MyBatis和数据库的交互有两种方式有Java API和Mapper接口两种，所以MyBatis的初始化必然也有两种；那么MyBatis是如何初始化的呢？
 
-源代码下载和编译首先是去官网下载Tomcat的源代码和二进制安装包，我这里分析Tomcat9.0.84稳定版本
-下载二进制包和源码
-下载二进制包的主要目
+MyBatis初始化的方式及引入MyBatis的初始化可以有两种
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
                                 <i class="fas fa-bookmark fa-fw icon-category"></i>
                                 
-                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
-                                    Web容器
+                                <a href="/categories/MyBatis/" class="post-category">
+                                    MyBatis
                                 </a>
                                 
                                 
@@ -398,12 +396,12 @@
                     
                     <div class="card-action article-tags">
                         
-                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
-                            <span class="chip bg-color">Web容器</span>
+                        <a href="/tags/ORM/">
+                            <span class="chip bg-color">ORM</span>
                         </a>
                         
-                        <a href="/tags/Tomcat/">
-                            <span class="chip bg-color">Tomcat</span>
+                        <a href="/tags/MyBatis/">
+                            <span class="chip bg-color">MyBatis</span>
                         </a>
                         
                     </div>
@@ -413,13 +411,13 @@
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/24677.html">
+                    <a href="/posts/53262.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/10.jpg" class="responsive-img" alt="3.Tomcat - 理解Tomcat架构设计">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/18.jpg" class="responsive-img" alt="2.MyBatis详解 - 总体框架设计">
                             
-                            <span class="card-title">3.Tomcat - 理解Tomcat架构设计</span>
+                            <span class="card-title">2.MyBatis详解 - 总体框架设计</span>
                         </div>
                     </a>
 
@@ -427,25 +425,26 @@
                         <div class="summary block-with-text">
                             
                                 
-前文我们已经介绍了一个简单的Servlet容器是如何设计出来，我们就可以开始正式学习Tomcat了，在学习开始，我们有必要站在高点去看看Tomcat的架构设计。
+MyBatis整体架构包含哪些层呢？这些层次是如何设计的呢？
 
-准备知识
-一些准备知识点。
+MyBatis架构概览MyBatis框架整体设计如下:
 
-Tomcat和Catalina是什么关系？
+接口层-和数据库交互的方式MyBatis和数据库的交互有两种方式：
 
+使用传统的MyBatis提供的API；
+使用M
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
                                 <i class="fas fa-bookmark fa-fw icon-category"></i>
                                 
-                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
-                                    Web容器
+                                <a href="/categories/MyBatis/" class="post-category">
+                                    MyBatis
                                 </a>
                                 
                                 
@@ -456,64 +455,12 @@ Tomcat和Catalina是什么关系？
                     
                     <div class="card-action article-tags">
                         
-                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
-                            <span class="chip bg-color">Web容器</span>
+                        <a href="/tags/ORM/">
+                            <span class="chip bg-color">ORM</span>
                         </a>
                         
-                        <a href="/tags/Tomcat/">
-                            <span class="chip bg-color">Tomcat</span>
-                        </a>
-                        
-                    </div>
-                    
-                </div>
-            </div>
-            
-            <div class="article col s12 m6 l4" data-aos="zoom-in">
-                <div class="card">
-                    <a href="/posts/25909.html">
-                        <div class="card-image">
-                            
-                            
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/15.jpg" class="responsive-img" alt="2.Tomcat - 如何设计一个简单的web容器">
-                            
-                            <span class="card-title">2.Tomcat - 如何设计一个简单的web容器</span>
-                        </div>
-                    </a>
-
-                    <div class="card-content article-content">
-                        <div class="summary block-with-text">
-                            
-                                
-在学习Tomcat前，很多人先入为主的对它的认知是巨复杂的；所以第一步，在学习它之前，要打破这种观念，我们通过学习如何设计一个最基本的web容器来看它需要考虑什么；进而在真正学习Tomcat时，多把重点放在它的顶层设计上，而不是某一块代码
-                            
-                        </div>
-                        <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
-                            </span>
-                            <span class="publish-author">
-                                
-                                <i class="fas fa-bookmark fa-fw icon-category"></i>
-                                
-                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
-                                    Web容器
-                                </a>
-                                
-                                
-                            </span>
-                        </div>
-                    </div>
-
-                    
-                    <div class="card-action article-tags">
-                        
-                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
-                            <span class="chip bg-color">Web容器</span>
-                        </a>
-                        
-                        <a href="/tags/Tomcat/">
-                            <span class="chip bg-color">Tomcat</span>
+                        <a href="/tags/MyBatis/">
+                            <span class="chip bg-color">MyBatis</span>
                         </a>
                         
                     </div>
@@ -523,13 +470,13 @@ Tomcat和Catalina是什么关系？
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/54385.html">
+                    <a href="/posts/9614.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/11.jpg" class="responsive-img" alt="1.Tomcat源码详解知识体系详解">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/4.jpg" class="responsive-img" alt="1.MyBatis知识体系详解">
                             
-                            <span class="card-title">1.Tomcat源码详解知识体系详解</span>
+                            <span class="card-title">1.MyBatis知识体系详解</span>
                         </div>
                     </a>
 
@@ -537,21 +484,80 @@ Tomcat和Catalina是什么关系？
                         <div class="summary block-with-text">
                             
                                 
-本系列主要对Tomcat源码知识体系进行深入理解。
+MyBatis知识体系详解。
 
-知识体系结构图
-
-初始化和启动流程
-
+架构图
 相关文章
+MyBatis详解 - 总体框架设计
+MyBatis整体架构包含哪些层呢？这些层次是如何设计的呢？
 
-Tomcat - 如何设计一个简单的web容器
-在学习Tomcat前，很多人先入为主的对它的认知是巨复杂的；所以第一步，在学习它之前，
+
+MyBatis详解 - 初始化基本过程
+从上文我们知道MyBatis和数据库的交互有
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
+                            </span>
+                            <span class="publish-author">
+                                
+                                <i class="fas fa-bookmark fa-fw icon-category"></i>
+                                
+                                <a href="/categories/MyBatis/" class="post-category">
+                                    MyBatis
+                                </a>
+                                
+                                
+                            </span>
+                        </div>
+                    </div>
+
+                    
+                    <div class="card-action article-tags">
+                        
+                        <a href="/tags/ORM/">
+                            <span class="chip bg-color">ORM</span>
+                        </a>
+                        
+                        <a href="/tags/MyBatis/">
+                            <span class="chip bg-color">MyBatis</span>
+                        </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <div class="article col s12 m6 l4" data-aos="zoom-in">
+                <div class="card">
+                    <a href="/posts/45589.html">
+                        <div class="card-image">
+                            
+                            
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/20.jpg" class="responsive-img" alt="17.Tomcat - Request请求处理过程：Connector">
+                            
+                            <span class="card-title">17.Tomcat - Request请求处理过程：Connector</span>
+                        </div>
+                    </a>
+
+                    <div class="card-content article-content">
+                        <div class="summary block-with-text">
+                            
+                                
+本文主要介绍request请求的处理过程。
+
+引入
+线程池Executor是在哪里启动的？
+Request是如何处理并交个Container处理的？
+Tomcat支持哪些协议？这些协议是处理的？协议层次结构如何设计的？
+
+Connecto
+                            
+                        </div>
+                        <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
@@ -584,13 +590,13 @@ Tomcat - 如何设计一个简单的web容器
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/29127.html">
+                    <a href="/posts/8700.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/5.jpg" class="responsive-img" alt="73.SpringBoot进阶 - 自定义starter">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/17.jpg" class="responsive-img" alt="16.Tomcat - Container的管道机制：责任链模式">
                             
-                            <span class="card-title">73.SpringBoot进阶 - 自定义starter</span>
+                            <span class="card-title">16.Tomcat - Container的管道机制：责任链模式</span>
                         </div>
                     </a>
 
@@ -598,22 +604,22 @@ Tomcat - 如何设计一个简单的web容器
                         <div class="summary block-with-text">
                             
                                 
-如何将自己的模块封装成starter， 并给其它springBoot项目使用呢？ 本文主要介绍在Springboot封装一个自定义的Starter的一个Demo，从创建一个模块-&gt;封装starter-&gt;使用。
+上文中介绍了Engine的设计，其中有Pipline相关内容没有介绍，本文将向你阐述Tomcat的管道机制以及它要解决的问题。
 
-思路
-创建模块
+内容引入
+承接上文Engine的设计，从以下几个方面，我将向你解释为什么要理解Tomcat中管道机制，它要解
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
                                 <i class="fas fa-bookmark fa-fw icon-category"></i>
                                 
-                                <a href="/categories/SpringBoot/" class="post-category">
-                                    SpringBoot
+                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
+                                    Web容器
                                 </a>
                                 
                                 
@@ -624,12 +630,12 @@ Tomcat - 如何设计一个简单的web容器
                     
                     <div class="card-action article-tags">
                         
-                        <a href="/tags/Spring/">
-                            <span class="chip bg-color">Spring</span>
+                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
+                            <span class="chip bg-color">Web容器</span>
                         </a>
                         
-                        <a href="/tags/SpringBoot/">
-                            <span class="chip bg-color">SpringBoot</span>
+                        <a href="/tags/Tomcat/">
+                            <span class="chip bg-color">Tomcat</span>
                         </a>
                         
                     </div>
@@ -639,13 +645,13 @@ Tomcat - 如何设计一个简单的web容器
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/11186.html">
+                    <a href="/posts/49789.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/3.jpg" class="responsive-img" alt="72.SpringBoot进阶 - 实现自动装配原理">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/1.jpg" class="responsive-img" alt="15.Tomcat - Container容器之Engine：StandardEngine">
                             
-                            <span class="card-title">72.SpringBoot进阶 - 实现自动装配原理</span>
+                            <span class="card-title">15.Tomcat - Container容器之Engine：StandardEngine</span>
                         </div>
                     </a>
 
@@ -653,21 +659,26 @@ Tomcat - 如何设计一个简单的web容器
                         <div class="summary block-with-text">
                             
                                 
-TBD
+上文已经知道Container的整体结构和设计，其中Engine其实就是Servlet Engine，负责处理request的顶层容器。
+
+理解思路
+第一：抓住StandardEngine整体类依赖结构来理解
 
 
+
+第二：结合server
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
                                 <i class="fas fa-bookmark fa-fw icon-category"></i>
                                 
-                                <a href="/categories/SpringBoot/" class="post-category">
-                                    SpringBoot
+                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
+                                    Web容器
                                 </a>
                                 
                                 
@@ -678,12 +689,12 @@ TBD
                     
                     <div class="card-action article-tags">
                         
-                        <a href="/tags/Spring/">
-                            <span class="chip bg-color">Spring</span>
+                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
+                            <span class="chip bg-color">Web容器</span>
                         </a>
                         
-                        <a href="/tags/SpringBoot/">
-                            <span class="chip bg-color">SpringBoot</span>
+                        <a href="/tags/Tomcat/">
+                            <span class="chip bg-color">Tomcat</span>
                         </a>
                         
                     </div>
@@ -693,13 +704,13 @@ TBD
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/12333.html">
+                    <a href="/posts/33222.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/14.jpg" class="responsive-img" alt="71.SpringBoot监控 - 集成springboot admin监控工具">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/22.jpg" class="responsive-img" alt="14.Tomcat - Request请求处理: Container设计">
                             
-                            <span class="card-title">71.SpringBoot监控 - 集成springboot admin监控工具</span>
+                            <span class="card-title">14.Tomcat - Request请求处理: Container设计</span>
                         </div>
                     </a>
 
@@ -707,19 +718,19 @@ TBD
                         <div class="summary block-with-text">
                             
                                 
-上文中展示了SpringBoot提供了Actuator对应用进行监控和管理， 而Spring Boot Admin能够将 Actuator 中的信息进行界面化的展示，也可以监控所有 Spring Boot 应用的健康状况，提供实时警报功能
+在理解了Server，Service和Executor后，我们可以进入Request处理环节了。我们知道客户端是可以发起多个请求的，Tomcat也是可以支持多个webapp的，有多个上下文，且一个webapp中可以有多个Servlet…等
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
                                 <i class="fas fa-bookmark fa-fw icon-category"></i>
                                 
-                                <a href="/categories/SpringBoot/" class="post-category">
-                                    SpringBoot
+                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
+                                    Web容器
                                 </a>
                                 
                                 
@@ -730,16 +741,12 @@ TBD
                     
                     <div class="card-action article-tags">
                         
-                        <a href="/tags/Spring/">
-                            <span class="chip bg-color">Spring</span>
+                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
+                            <span class="chip bg-color">Web容器</span>
                         </a>
                         
-                        <a href="/tags/SpringBoot/">
-                            <span class="chip bg-color">SpringBoot</span>
-                        </a>
-                        
-                        <a href="/tags/springboot-admin/">
-                            <span class="chip bg-color">springboot admin</span>
+                        <a href="/tags/Tomcat/">
+                            <span class="chip bg-color">Tomcat</span>
                         </a>
                         
                     </div>
@@ -749,13 +756,13 @@ TBD
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/24078.html">
+                    <a href="/posts/8568.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/20.jpg" class="responsive-img" alt="70.SpringBoot监控 - 集成actuator监控工具">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/18.jpg" class="responsive-img" alt="13.Tomcat - 线程池的设计与实现：StandardThreadExecutor">
                             
-                            <span class="card-title">70.SpringBoot监控 - 集成actuator监控工具</span>
+                            <span class="card-title">13.Tomcat - 线程池的设计与实现：StandardThreadExecutor</span>
                         </div>
                     </a>
 
@@ -763,21 +770,19 @@ TBD
                         <div class="summary block-with-text">
                             
                                 
-当SpringBoot的应用部署到生产环境中后，如何监控和管理呢？比如审计日志，监控状态，指标收集等。为了解决这个问题，SpringBoot提供了Actuator。本文主要介绍Spring Boot Actuator及实现案例。
-
-知识准
+上文中我们研究了下Service的设计和实现，StandardService中包含Executor的调用；这个比较好理解，Tomcat需要并发处理用户的请求，自然而言就想到线程池，那么Tomcat中线程池（Executor）具体是如何实现
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
                                 <i class="fas fa-bookmark fa-fw icon-category"></i>
                                 
-                                <a href="/categories/SpringBoot/" class="post-category">
-                                    SpringBoot
+                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
+                                    Web容器
                                 </a>
                                 
                                 
@@ -788,16 +793,12 @@ TBD
                     
                     <div class="card-action article-tags">
                         
-                        <a href="/tags/Spring/">
-                            <span class="chip bg-color">Spring</span>
+                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
+                            <span class="chip bg-color">Web容器</span>
                         </a>
                         
-                        <a href="/tags/SpringBoot/">
-                            <span class="chip bg-color">SpringBoot</span>
-                        </a>
-                        
-                        <a href="/tags/actuator/">
-                            <span class="chip bg-color">actuator</span>
+                        <a href="/tags/Tomcat/">
+                            <span class="chip bg-color">Tomcat</span>
                         </a>
                         
                     </div>
@@ -807,13 +808,13 @@ TBD
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/47702.html">
+                    <a href="/posts/20698.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/5.jpg" class="responsive-img" alt="69.SpringBoot应用部署 - 使用Docker Compose对容器编排管理">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/16.jpg" class="responsive-img" alt="12.Tomcat - Service的设计和实现: StandardService">
                             
-                            <span class="card-title">69.SpringBoot应用部署 - 使用Docker Compose对容器编排管理</span>
+                            <span class="card-title">12.Tomcat - Service的设计和实现: StandardService</span>
                         </div>
                     </a>
 
@@ -821,21 +822,22 @@ TBD
                         <div class="summary block-with-text">
                             
                                 
-如果docker容器是相互依赖的（比如SpringBoot容器依赖另外一个MySQL的数据库容器），那就需要对容器进行编排。本文主要介绍基于Docker Compose的简单容器化编排SpringBoot应用。
+上文讲了Server的具体实现了，本文主要讲Service的设计和实现；我们从上文其实已经知道Server中包含多个service了。
 
-Docker Compo
+理解思路
+第一：类比StandardServer, 抓住StandardService整体类依赖结构
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
                                 <i class="fas fa-bookmark fa-fw icon-category"></i>
                                 
-                                <a href="/categories/SpringBoot/" class="post-category">
-                                    SpringBoot
+                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
+                                    Web容器
                                 </a>
                                 
                                 
@@ -846,16 +848,12 @@ Docker Compo
                     
                     <div class="card-action article-tags">
                         
-                        <a href="/tags/Spring/">
-                            <span class="chip bg-color">Spring</span>
+                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
+                            <span class="chip bg-color">Web容器</span>
                         </a>
                         
-                        <a href="/tags/SpringBoot/">
-                            <span class="chip bg-color">SpringBoot</span>
-                        </a>
-                        
-                        <a href="/tags/Docker-Compose/">
-                            <span class="chip bg-color">Docker Compose</span>
+                        <a href="/tags/Tomcat/">
+                            <span class="chip bg-color">Tomcat</span>
                         </a>
                         
                     </div>
@@ -865,13 +863,13 @@ Docker Compo
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/11693.html">
+                    <a href="/posts/43205.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/16.jpg" class="responsive-img" alt="68.SpringBoot应用部署 - docker镜像打包,运行和管理">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/9.jpg" class="responsive-img" alt="11.Tomcat - Server的设计和实现: StandardServer">
                             
-                            <span class="card-title">68.SpringBoot应用部署 - docker镜像打包,运行和管理</span>
+                            <span class="card-title">11.Tomcat - Server的设计和实现: StandardServer</span>
                         </div>
                     </a>
 
@@ -879,19 +877,26 @@ Docker Compo
                         <div class="summary block-with-text">
                             
                                 
-随着软虚拟化docker的流行，基于docker的devops技术栈也开始流行。本文主要介绍通过docker-maven-plugin将springboot应用打包成docker镜像，通过Docker桌面化管理工具或者Idea Docke
+基于前面的几篇文章，我们终于可以总体上梳理Server的具体实现了，这里体现在StandardServer具体的功能实现上。
+
+理解思路
+第一：抓住StandardServer整体类依赖结构来理解
+
+
+
+第二：结合server.xml来理
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
                                 <i class="fas fa-bookmark fa-fw icon-category"></i>
                                 
-                                <a href="/categories/SpringBoot/" class="post-category">
-                                    SpringBoot
+                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
+                                    Web容器
                                 </a>
                                 
                                 
@@ -902,16 +907,12 @@ Docker Compo
                     
                     <div class="card-action article-tags">
                         
-                        <a href="/tags/Spring/">
-                            <span class="chip bg-color">Spring</span>
+                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
+                            <span class="chip bg-color">Web容器</span>
                         </a>
                         
-                        <a href="/tags/SpringBoot/">
-                            <span class="chip bg-color">SpringBoot</span>
-                        </a>
-                        
-                        <a href="/tags/docker/">
-                            <span class="chip bg-color">docker</span>
+                        <a href="/tags/Tomcat/">
+                            <span class="chip bg-color">Tomcat</span>
                         </a>
                         
                     </div>
@@ -921,13 +922,13 @@ Docker Compo
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/53775.html">
+                    <a href="/posts/22546.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/9.jpg" class="responsive-img" alt="67.SpringBoot应用部署 - 在linux环境将jar制作成service">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/20.jpg" class="responsive-img" alt="10.Tomcat - 事件的监听机制：观察者模式">
                             
-                            <span class="card-title">67.SpringBoot应用部署 - 在linux环境将jar制作成service</span>
+                            <span class="card-title">10.Tomcat - 事件的监听机制：观察者模式</span>
                         </div>
                     </a>
 
@@ -935,24 +936,26 @@ Docker Compo
                         <div class="summary block-with-text">
                             
                                 
-前文我们将SpringBoot应用打包成jar，那么如何将jar封装成service呢？本文主要介绍将SpringBoot应用部署成linux的service。
+本文承接上文中Lifecycle中实现，引出Tomcat的监听机制。
 
-概述
-基本的java -jar运行方式，和这种运行方式的缺陷。
+引入
+前几篇文章中，我们经常会涉及到Listener相关的内容，比如如下内容中；我们通过引入这些内容，来具体探讨事件监听机制。
 
-Java
+
+Lifecycle中出现的监听器
+
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
                                 <i class="fas fa-bookmark fa-fw icon-category"></i>
                                 
-                                <a href="/categories/SpringBoot/" class="post-category">
-                                    SpringBoot
+                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
+                                    Web容器
                                 </a>
                                 
                                 
@@ -963,16 +966,12 @@ Java
                     
                     <div class="card-action article-tags">
                         
-                        <a href="/tags/Spring/">
-                            <span class="chip bg-color">Spring</span>
+                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
+                            <span class="chip bg-color">Web容器</span>
                         </a>
                         
-                        <a href="/tags/SpringBoot/">
-                            <span class="chip bg-color">SpringBoot</span>
-                        </a>
-                        
-                        <a href="/tags/linux/">
-                            <span class="chip bg-color">linux</span>
+                        <a href="/tags/Tomcat/">
+                            <span class="chip bg-color">Tomcat</span>
                         </a>
                         
                     </div>
@@ -982,13 +981,13 @@ Java
             
             <div class="article col s12 m6 l4" data-aos="zoom-in">
                 <div class="card">
-                    <a href="/posts/15476.html">
+                    <a href="/posts/60663.html">
                         <div class="card-image">
                             
                             
-                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/10.jpg" class="responsive-img" alt="66.SpringBoot应用部署 - 替换tomcat为Undertow容器">
+                            <img src="https://cdn.jsdelivr.net/gh/HubertWongCN/HubertWongCN.github.io/medias/featureimages/9.jpg" class="responsive-img" alt="9.Tomcat - 组件拓展管理:JMX和MBean">
                             
-                            <span class="card-title">66.SpringBoot应用部署 - 替换tomcat为Undertow容器</span>
+                            <span class="card-title">9.Tomcat - 组件拓展管理:JMX和MBean</span>
                         </div>
                     </a>
 
@@ -996,19 +995,22 @@ Java
                         <div class="summary block-with-text">
                             
                                 
-前文我们了解到Jetty更满足公有云的分布式环境的需求，而Tomcat更符合企业级环境；那么从性能的角度来看，更为优秀的servlet容器是Undertow。本文将介绍Undertow，以及SpringBoot集成Undertow的示例。
+我们在前文中讲Lifecycle以及组件，怎么会突然讲JMX和MBean呢？本文通过承接上文Lifecycle讲Tomcat基于JMX的实现。
+
+引入
+我们在前文中讲Lifecycle以及组件，怎么会突然讲JMX和MBean呢？本文通过承
                             
                         </div>
                         <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-08
+                                <i class="far fa-clock fa-fw icon-date"></i>2024-01-09
                             </span>
                             <span class="publish-author">
                                 
                                 <i class="fas fa-bookmark fa-fw icon-category"></i>
                                 
-                                <a href="/categories/SpringBoot/" class="post-category">
-                                    SpringBoot
+                                <a href="/categories/Web%E5%AE%B9%E5%99%A8/" class="post-category">
+                                    Web容器
                                 </a>
                                 
                                 
@@ -1019,16 +1021,12 @@ Java
                     
                     <div class="card-action article-tags">
                         
-                        <a href="/tags/Spring/">
-                            <span class="chip bg-color">Spring</span>
+                        <a href="/tags/Web%E5%AE%B9%E5%99%A8/">
+                            <span class="chip bg-color">Web容器</span>
                         </a>
                         
-                        <a href="/tags/SpringBoot/">
-                            <span class="chip bg-color">SpringBoot</span>
-                        </a>
-                        
-                        <a href="/tags/Undertow/">
-                            <span class="chip bg-color">Undertow</span>
+                        <a href="/tags/Tomcat/">
+                            <span class="chip bg-color">Tomcat</span>
                         </a>
                         
                     </div>
@@ -1053,7 +1051,7 @@ Java
             
         </div>
         <div class="page-info col m4 l4 hide-on-small-only">
-            <div class="center-align b-text-gray">4 / 38</div>
+            <div class="center-align b-text-gray">4 / 40</div>
         </div>
         <div class="col s6 m4 l4">
             
@@ -1084,7 +1082,7 @@ Java
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1489.6k</span>&nbsp;字
+                class="white-color">1549.6k</span>&nbsp;字
             
             
             
