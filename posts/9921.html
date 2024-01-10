@@ -568,7 +568,7 @@
 <li><strong>模糊查询</strong>：根据用户输入模块、时间段和关键字查询日志；</li>
 <li><strong>全链路查询</strong>：根据 callid 查询一次用户请求所有关联的模块日志。</li>
 </ul>
-<h2 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100436619.jpeg" alt="img"></p>
+<h2 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100436619.jpeg"></p>
 <p>企业微信日志检索系统主要分为 6 个模块：</p>
 <ul>
 <li><strong>LogAgent</strong>：和业务模块同机部署，对模块内日志进行聚集，数据批量写分布式文件系统，callid 索引批量发送到 LogMergeSvr 聚集；</li>
@@ -597,7 +597,7 @@
 <li><strong>模块间聚合</strong>：LogMergeSvr 聚合模块间一段时间内的 callid 索引，批量写分布式文件系统，qps 约减少到千分之一；</li>
 <li><strong>全网聚合</strong>：callid 索引文件不利于高效读取，LogIdxSvr 利用 Rocksdb 的 Merge 聚合全网的 callid 索引，一次 IO 可读取 callid 所有日志位置。</li>
 </ol>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100437679.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100437679.jpeg"></p>
 <h3 id="日志查询高性能"><a href="#日志查询高性能" class="headerlink" title="日志查询高性能"></a>日志查询高性能</h3><ul>
 <li><strong>增加索引提升查询性能</strong></li>
 </ul>
@@ -614,7 +614,7 @@
 <li><strong>原始版本</strong>：并发检索 WebSvr 接收用户模糊查询请求（模块+时间段+关键字），依据模块获取机器列表后，按机器列表并发请求到多台 QuerySvr 执行机器粒度日志查询：通过机器 IP 找到机器日志目录，根据时间段拉取时间索引文件，确定日志数据范围，并发拉取日志到本机用关键字做模糊匹配。最终将匹配后的日志返回给 WebSvr 聚合展示给用户。</li>
 </ol>
 <p>通过并发检索的优化手段，模糊查询一个模块一小时日志（12 台机器，7.95GB 日志量）耗时从 1 分钟降到 5.6 秒。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100437106.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100437106.jpeg"></p>
 <ol start="2">
 <li><strong>优化版本</strong>：模糊匹配下沉分布式文件系统 在系统压测时我们发现 QuerySvr 带宽和 cpu 存在性能瓶颈，原因是 QuerySvr 读取大量未模糊匹配的日志数据，打满了网络带宽，并且在 QuerySvr 做模糊匹配也会消耗大量 cpu 资源。我们需要进行性能优化。考虑到分布式文件系统是重 IO 操作，cpu 利用率很低，将模糊匹配逻辑下沉到分布式文件系统，这样既解决了 QuerySvr 带宽和 cpu 性能瓶颈问题，又充分利用了文件系统的 cpu，避免资源浪费。通过模糊匹配下沉的优化手段，模糊查询一个模块一小时日志（12 台机器，7.95GB 日志量）耗时从 5.6 秒降到 2.5 秒。</li>
 </ol>
@@ -641,22 +641,22 @@
 <p>通过前面的设计，目前可以根据模块+时间段+关键字或者 callid 查找到日志了，但是还不够，用户往往还需要对日志做任意维度模糊匹配、日志统计（如：uniq/sort/awk 等）以及模块级全量日志查询。</p>
 </blockquote>
 <h3 id="支持任意维度模糊匹配"><a href="#支持任意维度模糊匹配" class="headerlink" title="支持任意维度模糊匹配"></a>支持任意维度模糊匹配</h3><p>如前所述，通过在分布式文件系统实现模糊匹配逻辑，系统支持对日志做任意维度模糊匹配的需求。通过对比，选择性能最优的 RE2 正则匹配库实现模糊匹配逻辑。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100437108.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100437108.jpeg"></p>
 <h3 id="支持-awk-uniq-sort-等统计指令"><a href="#支持-awk-uniq-sort-等统计指令" class="headerlink" title="支持 awk/uniq/sort 等统计指令"></a>支持 awk/uniq/sort 等统计指令</h3><ol>
 <li><strong>支持统计指令</strong> 用户不仅需要对日志做模糊匹配，还需要对匹配后的日志执行 awk/uniq/sort 等统计指令，其中涉及到指令相互嵌套执行，非常复杂，难以调用相关库实现。我们通过子进程调用系统 shell 支持这一需求。QuerySvr 从分布式文件系统拉取日志数据到本机后，子进程 shell 调用用户传入统计指令处理日志数据，最终结果返回给 WebSvr。子进程处理超时父进程将 kill 掉子进程，防止用户统计任务耗光 QuerySvr 资源。</li>
 </ol>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100437801.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100437801.jpeg"></p>
 <ol start="2">
 <li><strong>安全考虑</strong> 由于用户指令可由用户自定义输入，指令执行的安全问题需要重点考虑。通过两个方法确保执行指令的安全：</li>
 </ol>
 <p><code>changeroot</code>：使用 Linux 的 changeroot 避免用户指令操作系统重要目录；</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100437514.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100437514.jpeg"></p>
 <p><code>沙盒限制</code>：使用 Linux 支持的沙盒隔离技术，只允许执行特定指令。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100438665.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100438665.jpeg"></p>
 <h3 id="支持模块级全量日志查询——异步任务"><a href="#支持模块级全量日志查询——异步任务" class="headerlink" title="支持模块级全量日志查询——异步任务"></a>支持模块级全量日志查询——异步任务</h3><p>模块级全量日志查询通常涉及 TB 级别日志量，因为涉及的数据量过大，查询耗时一般较长，无法给用户提供实时返回，我们通过提供异步任务功能支持这一需求。</p>
 <p>用户异步任务请求通过 WebSvr 转发到 QuerySvr，为避免 QuerySvr 宕机导致异步任务丢失，QuerySvr 会将异步任务写入一致性锁服务中存储，空闲的 QuerySvr 会从一致性锁服务抢锁，抢锁成功后执行该异步任务。</p>
 <p>QuerySvr 根据异步任务的模块信息读取机器列表，按照机器列表并发读取匹配的日志数据，按顺序写入本机磁盘中，在查询结束后更新一致性锁服务状态（存储机 ip 和路径），用户页面刷新会拉取到异步任务最新状态。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100438764.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100438764.jpeg"></p>
 <h2 id="文章来源"><a href="#文章来源" class="headerlink" title="文章来源"></a>文章来源</h2><blockquote>
 <p>转载说明:</p>
 <ul>
@@ -1300,7 +1300,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

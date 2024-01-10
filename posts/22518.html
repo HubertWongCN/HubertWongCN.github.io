@@ -514,9 +514,9 @@
 <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>2017年年初以来，随着Redis产品的用户量越来越大，接入服务越来越多，再加上美团点评Memcache和Redis两套缓存融合，Redis服务端的总体请求量从年初最开始日访问量百亿次级别上涨到高峰时段的万亿次级别，给运维和架构团队都带来了极大的挑战。</p>
 <p>原本稳定的环境也因为请求量的上涨带来了很多不稳定的因素，其中一直困扰我们的就是网卡丢包问题。起初线上存在部分Redis节点还在使用千兆网卡的老旧服务器，而缓存服务往往需要承载极高的查询量，并要求毫秒级的响应速度，如此一来千兆网卡很快就出现了瓶颈。经过整治，我们将千兆网卡服务器替换为了万兆网卡服务器，本以为可以高枕无忧，但是没想到，在业务高峰时段，机器也竟然出现了丢包问题，而此时网卡带宽使用还远远没有达到瓶颈。</p>
 <h2 id="定位网络丢包的原因"><a href="#定位网络丢包的原因" class="headerlink" title="定位网络丢包的原因"></a>定位网络丢包的原因</h2><h3 id="从异常指标入手"><a href="#从异常指标入手" class="headerlink" title="从异常指标入手"></a>从异常指标入手</h3><p>首先，我们在系统监控的<code>net.if.in.dropped</code>指标中，看到有大量数据丢包异常，那么第一步就是要了解这个指标代表什么。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292317489.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292317489.png"></p>
 <p>这个指标的数据源，是读取/proc/net/dev中的数据，监控Agent做简单的处理之后上报。以下为/proc/net/dev的一个示例，可以看到第一行Receive代表in，Transmit代表out，第二行即各个表头字段，再往后每一行代表一个网卡设备具体的值。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292317435.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292317435.png"></p>
 <p>其中各个字段意义如下：</p>
 <table>
 <thead>
@@ -685,7 +685,7 @@
 <li>经过TCP/IP协议逐层处理。</li>
 <li>应用程序通过read()从socket buffer读取数据。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292317052.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292317052.png"></p>
 <h4 id="将网卡收到的数据包转移到主机内存（NIC与驱动交互）"><a href="#将网卡收到的数据包转移到主机内存（NIC与驱动交互）" class="headerlink" title="将网卡收到的数据包转移到主机内存（NIC与驱动交互）"></a>将网卡收到的数据包转移到主机内存（NIC与驱动交互）</h4><p>NIC在接收到数据包之后，首先需要将数据同步到内核中，这中间的桥梁是rx ring buffer。它是由NIC和驱动程序共享的一片区域，事实上，rx ring buffer存储的并不是实际的packet数据，而是一个描述符，这个描述符指向了它真正的存储地址，具体流程如下：</p>
 <ul>
 <li>驱动在内存中分配一片缓冲区用来接收数据包，叫做sk_buffer；</li>
@@ -695,7 +695,7 @@
 <li>网卡收到新的数据包；</li>
 <li>网卡将新数据包通过DMA直接写到sk_buffer中。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292317342.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292317342.png"></p>
 <p>当驱动处理速度跟不上网卡收包速度时，驱动来不及分配缓冲区，NIC接收到的数据包无法及时写到sk_buffer，就会产生堆积，当NIC内部缓冲区写满后，就会丢弃部分数据，引起丢包。这部分丢包为rx_fifo_errors，在/proc/net/dev中体现为fifo字段增长，在ifconfig中体现为overruns指标增长。</p>
 <h4 id="通知系统内核处理（驱动与Linux内核交互）"><a href="#通知系统内核处理（驱动与Linux内核交互）" class="headerlink" title="通知系统内核处理（驱动与Linux内核交互）"></a>通知系统内核处理（驱动与Linux内核交互）</h4><p>这个时候，数据包已经被转移到了sk_buffer中。前文提到，这是驱动程序在内存中分配的一片缓冲区，并且是通过DMA写入的，这种方式不依赖CPU直接将数据写到了内存中，意味着对内核来说，其实并不知道已经有新数据到了内存中。那么如何让内核知道有新数据进来了呢？答案就是中断，通过中断告诉内核有新数据进来了，并需要进行后续处理。</p>
 <p>提到中断，就涉及到硬中断和软中断，首先需要简单了解一下它们的区别：</p>
@@ -704,10 +704,10 @@
 <li>软中断： 由硬中断对应的中断处理程序生成，往往是预先在代码里实现好的，不具有随机性。（除此之外，也有应用程序触发的软中断，与本文讨论的网卡收包无关。）也被称为下半部分。</li>
 </ul>
 <p><strong>当NIC把数据包通过DMA复制到内核缓冲区sk_buffer后，NIC立即发起一个硬件中断。CPU接收后，首先进入上半部分，网卡中断对应的中断处理程序是网卡驱动程序的一部分，之后由它发起软中断，进入下半部分，开始消费sk_buffer中的数据，交给内核协议栈处理</strong>。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292317119.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292317119.png"></p>
 <p>通过中断，能够快速及时地响应网卡数据请求，但如果数据量大，那么会产生大量中断请求，CPU大部分时间都忙于处理中断，效率很低。为了解决这个问题，现在的内核及驱动都采用一种叫NAPI（new API）的方式进行数据处理，其原理可以简单理解为 中断+轮询，在数据量大时，一次中断后通过轮询接收一定数量包再返回，避免产生多次中断。</p>
 <p>整个中断过程的源码部分比较复杂，并且不同驱动的厂商及版本也会存在一定的区别。 以下调用关系基于Linux-3.10.108及内核自带驱动drivers/net/ethernet/intel/ixgbe：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292318653.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292318653.png"></p>
 <p>注意到，enqueue_to_backlog函数中，会对CPU的softnet_data实例中的接收队列（input_pkt_queue）进行判断，如果队列中的数据长度超过netdev_max_backlog ，那么数据包将直接丢弃，这就产生了丢包。netdev_max_backlog是由系统参数net.core.netdev_max_backlog指定的，默认大小是 1000。</p>
 <pre class="language-c" data-language="c"><code class="language-c"> <span class="token comment">/*
  * enqueue_to_backlog is called to queue an skb to a per CPU backlog
@@ -762,7 +762,7 @@ enqueue<span class="token operator">:</span>
 <span class="token punctuation">}</span></code></pre>
 
 <p>内核会为每个CPU Core都实例化一个softnet_data对象，这个对象中的input_pkt_queue用于管理接收的数据包。假如所有的中断都由一个CPU Core来处理的话，那么所有数据包只能经由这个CPU的input_pkt_queue，如果接收的数据包数量非常大，超过中断处理速度，那么input_pkt_queue中的数据包就会堆积，直至超过netdev_max_backlog，引起丢包。这部分丢包可以在cat /proc/net/softnet_stat的输出结果中进行确认：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292318963.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292318963.png"></p>
 <p>其中每行代表一个CPU，第一列是中断处理程序接收的帧数，第二列是由于超过 netdev_max_backlog而丢弃的帧数。 第三列则是在net_rx_action函数中处理数据包超过netdev_budge指定数量或运行时间超过2个时间片的次数。在检查线上服务器之后，发现第一行CPU。硬中断的中断号及统计数据可以在/proc/interrupts中看到，对于多队列网卡，当系统启动并加载NIC设备驱动程序模块时，每个RXTX队列会被初始化分配一个唯一的中断向量号，它通知中断处理程序该中断来自哪个NIC队列。在默认情况下，所有队列的硬中断都由CPU 0处理，因此对应的软中断逻辑也会在CPU 0上处理，在服务器 TOP 的输出中，也可以观察到 %si 软中断部分，CPU 0的占比比其他core高出一截。</p>
 <p>到这里其实有存在一个疑惑，我们线上服务器的内核版本及网卡都支持NAPI，而NAPI的处理逻辑是不会走到enqueue_to_backlog中的，enqueue_to_backlog主要是非NAPI的处理流程中使用的。对此，我们觉得可能和当前使用的Docker架构有关，事实上，我们通过net.if.dropped指标获取到的丢包，都发生在Docker虚拟网卡上，而非宿主机物理网卡上，因此很可能是Docker虚拟网桥转发数据包之后，虚拟网卡层面产生的丢包，这里由于涉及虚拟化部分，就不进一步分析了。</p>
 <p>驱动及内核处理过程中的几个重要函数：</p>
@@ -1166,31 +1166,31 @@ ffff880834282ae0:ffffffff8133bd20-<span class="token operator">&gt;</span><span 
 <p>打开这个文件，我们发现它是在执行static void net_rx_action(struct softirq_action *h)这个函数，而这个函数正是前文提到的，NET_RX_SOFTIRQ对应的软中断处理程序。因此可以确认网卡的软中断在机器上分布非常不均，而且主要集中在CPU 0上。通过/proc/interrupts能确认硬中断集中在CPU 0上，因此软中断也都由CPU 0处理，如何优化网卡的中断成为了我们关注的重点。</p>
 <h2 id="优化策略"><a href="#优化策略" class="headerlink" title="优化策略"></a>优化策略</h2><h3 id="CPU亲缘性"><a href="#CPU亲缘性" class="headerlink" title="CPU亲缘性"></a>CPU亲缘性</h3><p>前文提到，丢包是因为队列中的数据包超过了netdev_max_backlog造成了丢弃，因此首先想到是临时调大netdev_max_backlog能否解决燃眉之急，事实证明，对于轻微丢包调大参数可以缓解丢包，但对于大量丢包则几乎不怎么管用，内核处理速度跟不上收包速度的问题还是客观存在，本质还是因为单核处理中断有瓶颈，即使不丢包，服务响应速度也会变慢。因此如果能同时使用多个CPU Core来处理中断，就能显著提高中断处理的效率，并且每个CPU都会实例化一个softnet_data对象，队列数也增加了。</p>
 <h4 id="中断亲缘性设置"><a href="#中断亲缘性设置" class="headerlink" title="中断亲缘性设置"></a>中断亲缘性设置</h4><p>通过设置中断亲缘性，可以让指定的中断向量号更倾向于发送给指定的CPU Core来处理，俗称“绑核”。命令grep eth /proc/interrupts的第一列可以获取网卡的中断号，如果是多队列网卡，那么就会有多行输出：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292318196.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292318196.png"></p>
 <p>中断的亲缘性设置可以在<code>cat /proc/irq/${中断号}/smp_affinity</code> 或 <code>cat /proc/irq/${中断号}/smp_affinity_list</code>中确认，前者是16进制掩码形式，后者是以CPU Core序号形式。例如下图中，将16进制的400转换成2进制后，为 10000000000，“1”在第10位上，表示亲缘性是第10个CPU Core。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292318893.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292318893.png"></p>
 <p>那为什么中断号只设置一个CPU Core呢？而不是为每一个中断号设置多个CPU Core平行处理。我们经过测试，发现当给中断设置了多个CPU Core后，它也仅能由设置的第一个CPU Core来处理，其他的CPU Core并不会参与中断处理，原因猜想是当CPU可以平行收包时，不同的核收取了同一个queue的数据包，但处理速度不一致，导致提交到IP层后的顺序也不一致，这就会产生乱序的问题，由同一个核来处理可以避免了乱序问题。</p>
 <p>但是，当我们配置了多个Core处理中断后，发现Redis的慢查询数量有明显上升，甚至部分业务也受到了影响，慢查询增多直接导致可用性降低，因此方案仍需进一步优化。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292318620.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292318620.png"></p>
 <h4 id="Redis进程亲缘性设置"><a href="#Redis进程亲缘性设置" class="headerlink" title="Redis进程亲缘性设置"></a>Redis进程亲缘性设置</h4><p>如果某个CPU Core正在处理Redis的调用，执行到一半时产生了中断，那么CPU不得不停止当前的工作转而处理中断请求，中断期间Redis也无法转交给其他core继续运行，必须等处理完中断后才能继续运行。Redis本身定位就是高速缓存，线上的平均端到端响应时间小于1ms，如果频繁被中断，那么响应时间必然受到极大影响。容易想到，由最初的CPU 0单核处理中断，改进到多核处理中断，Redis进程被中断影响的几率增大了，因此我们需要对Redis进程也设置CPU亲缘性，使其与处理中断的Core互相错开，避免受到影响。</p>
 <p>使用命令taskset可以为进程设置CPU亲缘性，操作十分简单，一句taskset -cp cpu-list pid即可完成绑定。经过一番压测，我们发现使用8个core处理中断时，流量直至打满双万兆网卡也不会出现丢包，因此决定将中断的亲缘性设置为物理机上前8个core，Redis进程的亲缘性设置为剩下的所有core。调整后，确实有明显的效果，慢查询数量大幅优化，但对比初始情况，仍然还是高了一些些，还有没有优化空间呢？</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292319750.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292319750.png"></p>
 <p>通过观察，我们发现一个有趣的现象，当只有CPU 0处理中断时，Redis进程更倾向于运行在CPU 0，以及CPU 0同一物理CPU下的其他核上。于是有了以下推测：我们设置的中断亲缘性，是直接选取了前8个核心，但这8个core却可能是来自两块物理CPU的，在/proc/cpuinfo中，通过字段processor和physical id 能确认这一点，那么响应慢是否和物理CPU有关呢？物理CPU又和NUMA架构关联，每个物理CPU对应一个NUMA node，那么接下来就要从NUMA角度进行分析。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292319998.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292319998.png"></p>
 <h3 id="NUMA"><a href="#NUMA" class="headerlink" title="NUMA"></a>NUMA</h3><h4 id="SMP-架构"><a href="#SMP-架构" class="headerlink" title="SMP 架构"></a>SMP 架构</h4><p>随着单核CPU的频率在制造工艺上的瓶颈，CPU制造商的发展方向也由纵向变为横向：从CPU频率转为每瓦性能。CPU也就从单核频率时代过渡到多核性能协调。</p>
 <p><strong>SMP</strong>(对称多处理结构)：即CPU共享所有资源，例如总线、内存、IO等。</p>
 <p><strong>SMP 结构</strong>：一个物理CPU可以有多个物理Core，每个Core又可以有多个硬件线程。即：每个HT有一个独立的L1 cache，同一个Core下的HT共享L2 cache，同一个物理CPU下的多个core共享L3 cache。</p>
 <p>下图(摘自<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/y1NSE5xdh8Nt5hlmK0E8Og">内核月谈</a>)中，一个x86 CPU有4个物理Core，每个Core有两个HT(Hyper Thread)。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292319113.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292319113.png"></p>
 <h4 id="NUMA-架构"><a href="#NUMA-架构" class="headerlink" title="NUMA 架构"></a>NUMA 架构</h4><p>在前面的FSB(前端系统总线)结构中，当CPU不断增长的情况下，共享的系统总线就会因为资源竞争(多核争抢总线资源以访问北桥上的内存)而出现扩展和性能问题。</p>
 <p>在这样的背景下，基于SMP架构上的优化，设计出了NUMA(Non-Uniform Memory Access)非均匀内存访问。</p>
 <p>内存控制器芯片被集成到处理器内部，多个处理器通过QPI链路相连，DRAM也就有了远近之分。(如下图所示：摘自<a target="_blank" rel="noopener" href="http://mechanical-sympathy.blogspot.com/2013/02/cpu-cache-flushing-fallacy.html">CPU Cache</a>)</p>
 <p>CPU 多层Cache的性能差异是很巨大的，比如：L1的访问时长1ns，L2的时长3ns…跨node的访问会有几十甚至上百倍的性能损耗。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292319866.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292319866.png"></p>
 <h3 id="NUMA-架构下的中断优化"><a href="#NUMA-架构下的中断优化" class="headerlink" title="NUMA 架构下的中断优化"></a>NUMA 架构下的中断优化</h3><p>这时我们再回归到中断的问题上，当两个NUMA节点处理中断时，CPU实例化的softnet_data以及驱动分配的sk_buffer都可能是跨Node的，数据接收后对上层应用Redis来说，跨Node访问的几率也大大提高，并且无法充分利用L2、L3 cache，增加了延时。</p>
 <p>同时，由于Linux wake affinity特性，如果两个进程频繁互动，调度系统会觉得它们很有可能共享同样的数据，把它们放到同一CPU核心或NUMA Node有助于提高缓存和内存的访问性能，所以当一个进程唤醒另一个的时候，被唤醒的进程可能会被放到相同的CPU core或者相同的NUMA节点上。此特性对中断唤醒进程时也起作用，在上一节所述的现象中，所有的网络中断都分配给CPU 0去处理，当中断处理完成时，由于wakeup affinity特性的作用，所唤醒的用户进程也被安排给CPU 0或其所在的numa节点上其他core。而当两个NUMA node处理中断时，这种调度特性有可能导致Redis进程在CPU core之间频繁迁移，造成性能损失。</p>
 <p>综合上述，将中断都分配在同一NUMA Node中，中断处理函数和应用程序充分利用同NUMA下的L2、L3缓存、以及同Node下的内存，结合调度系统的wake affinity特性，能够更进一步降低延迟。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292320292.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292320292.png"></p>
 <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://community.intel.com/t5/Ethernet-Products/bd-p/ethernet-products">Intel 官方文档</a></li>
 <li><a target="_blank" rel="noopener" href="https://access.redhat.com/sites/default/files/attachments/20150325_network_performance_tuning.pdf">Redhat 官方文档</a></li>
@@ -1850,7 +1850,7 @@ ffff880834282ae0:ffffffff8133bd20-<span class="token operator">&gt;</span><span 
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -515,7 +515,7 @@
 <p>目前常用的 SQL 优化方式包括但不限于：业务层优化、SQL逻辑优化、索引优化等。其中索引优化通常通过调整索引或新增索引从而达到 SQL 优化的目的。索引优化往往可以在短时间内产生非常巨大的效果。如果能够将索引优化转化成工具化、标准化的流程，减少人工介入的工作量，无疑会大大提高DBA的工作效率。</p>
 <p>SQLAdvisor 是由美团点评公司北京DBA团队开发维护的 SQL 优化工具：输入SQL，输出索引优化建议。 它基于 MySQL 原生词法解析，再结合 SQL 中的 where 条件以及字段选择度、聚合条件、多表 Join 关系等最终输出最优的索引优化建议。目前 SQLAdvisor 在公司内部大量使用，较为成熟、稳定。</p>
 <p>现在，我们非常高兴地将 SQLAdvisor 开源，项目 GitHub 地址：<a target="_blank" rel="noopener" href="https://github.com/Meituan-Dianping/SQLAdvisor">https://github.com/Meituan-Dianping/SQLAdvisor</a> 。我们已经把相关开发工作全面转到 GitHub 上，开源版本和内部使用版本保持完全一致。希望与业内有类似需求的团队，一起打造一款优秀的 SQL 优化产品。</p>
-<h2 id="SQLAdvisor架构流程图"><a href="#SQLAdvisor架构流程图" class="headerlink" title="SQLAdvisor架构流程图"></a>SQLAdvisor架构流程图</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292002098.png" alt="img"></p>
+<h2 id="SQLAdvisor架构流程图"><a href="#SQLAdvisor架构流程图" class="headerlink" title="SQLAdvisor架构流程图"></a>SQLAdvisor架构流程图</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292002098.png"></p>
 <pre class="language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">sql</span>: <span class="token keyword">SELECT</span> id <span class="token keyword">FROM</span> crm_loan <span class="token keyword">WHERE</span> id_card <span class="token operator">=</span> <span class="token string">'1234567'</span>
 cmd: <span class="token punctuation">.</span><span class="token operator">/</span>sqladvisor <span class="token operator">-</span>h xx <span class="token operator">-</span>P xx <span class="token operator">-</span>u xx <span class="token operator">-</span>pxx <span class="token operator">-</span>d xx <span class="token operator">-</span>q <span class="token string">"SELECT id FROM crm_loan WHERE id_card = '1234567'"</span>
 SQLAdvisor输出: <span class="token keyword">alter</span> <span class="token keyword">table</span> crm_loan <span class="token keyword">add</span> <span class="token keyword">index</span> idx_id_card<span class="token punctuation">(</span>id_card<span class="token punctuation">)</span>   </code></pre>
@@ -537,7 +537,7 @@ SQLAdvisor输出: <span class="token keyword">alter</span> <span class="token ke
 <li>每一个非叶子节点代表一次 Join 的结果。</li>
 </ul>
 <p>上述实现时，涉及的函数为：mysql_sql_parse_join(TABLE_LIST *join_table) mysql_sql_parse_join(Item *join_condition) ，主要流程图如下：join流程</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292002713.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292002713.png"></p>
 <h3 id="where-处理"><a href="#where-处理" class="headerlink" title="where 处理"></a>where 处理</h3><ul>
 <li>主要是提取 SQL 语句的 where 条件。where 条件中一般由 AND 和 OR 连接符进行连接，因为 OR 比较难以处理，所以忽略，只处理 AND 连接符。</li>
 <li>由于 where 条件中可以存在 Join 条件，因此需要进行区分。</li>
@@ -550,21 +550,21 @@ SQLAdvisor输出: <span class="token keyword">alter</span> <span class="token ke
 <li>通过计算获取数据采样的起始值offset与采样范围rand_rows： &gt; * offset = (table_count / 2) &gt; 10W ? 10W : (table_count / 2) &gt; * rand_rows =(table_count / 2) &gt; 1W ? 1W : (table_count / 2) &gt; * 使用select count(1) from (select field from table force index(best_index) order by cl.. desc limit rand_rows) where field_print 得到满足条件的rows。 &gt; * cardinality = rows == 0 ? rand_rows : rand_rows / rows; &gt; * 计算完成选择度后，会根据选择度大小，将该条件添加到该表中的备选索引中。</li>
 </ul>
 <p>主要涉及的函数为：mysql_sql_parse_field_cardinality_new() 计算选择度。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292002014.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292002014.png"></p>
 <h3 id="添加备选索引"><a href="#添加备选索引" class="headerlink" title="添加备选索引"></a>添加备选索引</h3><ol>
 <li>mysql_sql_parse_index()将条件按照选择度添加到备选索引链表中。</li>
 <li>上述两函数的流程图如下所示：</li>
 </ol>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292002305.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292002305.png"></p>
 <h3 id="Group-与-Order-处理"><a href="#Group-与-Order-处理" class="headerlink" title="Group 与 Order 处理"></a>Group 与 Order 处理</h3><ul>
 <li>Group 字段与 Order 字段能否用上索引，需要满足如下条件： &gt; * 涉及到的字段必须来自于同一张表，并且这张表必须是确定下来的驱动表。 &gt; * Group by 优于 Order by， 两者只能同时存在一个。 &gt; * Order by 字段的排序方向必须完全一致，否则丢弃整个 Order by 字段列。 &gt; * 当 Order by 条件中包含主键时，如果主键字段为 Order by。 字段列末尾，忽略该主键，否则丢弃整个 Order by 字段列。</li>
 <li>整个索引列排序优先级：等值&gt;(group by | order by )&gt; 非等值。</li>
 <li>该过程中设计的函数主要有： &gt; * mysql_sql_parse_group() 判断 Group 后的字段是否均来自于同一张表。 &gt; * mysql_sql_parse_order() 判断 Order 后的条件是否可以使用。 &gt; * mysql_sql_parse_group_order_add() 将字段依次按照规则添加到备选索引链表中。</li>
 </ul>
 <p>添加group</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292002948.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292002948.png"></p>
 <p>处理group</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292003653.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292003653.png"></p>
 <h3 id="驱动表选择"><a href="#驱动表选择" class="headerlink" title="驱动表选择"></a>驱动表选择</h3><ol>
 <li>经过前期的 where 解析、Join 解析，已经将 SQL 中表关联关系存储起来，并且按照一定逻辑将候选驱动表确定下来。</li>
 <li>在侯选驱动表中，按照每一张表的侯选索引字段中第一个字段进行计算表中结果集大小。</li>
@@ -577,9 +577,9 @@ SQLAdvisor输出: <span class="token keyword">alter</span> <span class="token ke
 <li>由于选定了驱动表，因此需要对被驱动表的索引，根据 Join 条件进行添加。</li>
 <li>该过程涉及的函数主要是：mysql_index_add_condition_field()，流程如下：</li>
 </ol>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292003654.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292003654.png"></p>
 <h3 id="输出建议"><a href="#输出建议" class="headerlink" title="输出建议"></a>输出建议</h3><p>通过上述步骤，已经将每张表的备选索引键全部保存。此时，只要判断每张表中的候选索引键是否在实际表中已存在。没有索引，则给出建议增加对应的索引。 该步骤涉及的函数是：print_index() ，主要的流程图为：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292003124.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292003124.png"></p>
 <ul>
 <li>Functionality Added or Changed<ul>
 <li>调整架构将 SQLParser 与 SQLAdvisor 模块隔离，方便调试。</li>
@@ -1265,7 +1265,7 @@ SQLAdvisor输出: <span class="token keyword">alter</span> <span class="token ke
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

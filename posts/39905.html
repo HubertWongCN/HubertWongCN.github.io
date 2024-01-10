@@ -508,14 +508,14 @@
 <p>在日常工作中，通常需要存储一些日志，譬如用户请求的出入参、系统运行时打印的一些info、error之类的日志，从而对系统在运行时出现的问题有排查的依据。日志存储和检索是个很常见且简单的工作，市面也有很多关于日志搜集、存储、检索的框架可供使用。譬如在只有个位数机器时，可以通过登录服务器，查看log4j之类的框架打印到本地文件的日志。当日志多起来后，可以用elk三剑客处理日志。当日志量进一步增多，可以上消息队列，譬如kafka之类来承接，然后消费入库。或者写本地文件，再采用filebeat之类上报再入库。以上都是较为常见的日志传输和存储的方案，成本可控的情况下，可适用于绝大多数场景。<strong>可以简单总结一下日志框架的功能，大概是暂存、传输、入库保存、快速检索</strong>。</p>
 </blockquote>
 <h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><p>支付中心作为携程集团公共部门，主要负责的业务包括交易、实名绑卡、账户、收单等，由于涉及到交易相关的资金流转以及用户实名认证，部分用户操作环节的中间数据应内控/审计要求需要长时间保存。当前研发应用多，日志量大、格式各异，对于日志的存储和使用产生较大的挑战，故支付数据与研发团队群策群力，共同开发了一套统一日志框架。</p>
-<h2 id="二、总体架构图"><a href="#二、总体架构图" class="headerlink" title="二、总体架构图"></a>二、总体架构图</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434696.png" alt="img"></p>
+<h2 id="二、总体架构图"><a href="#二、总体架构图" class="headerlink" title="二、总体架构图"></a>二、总体架构图</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434696.png"></p>
 <p>核心模块包括：<strong>日志生产、日志采集、日志解析</strong>，其中调用流程如下：</p>
 <ul>
 <li>研发应用/服务接入基于log4j2扩展的统一日志组件，将日志抛送至kafka。</li>
 <li>周期性启动消费kafka topic的camus job将日志写入hdfs。</li>
 <li>T+1启动MR job读取camus写入的hdfs内容并load到hive表。</li>
 </ul>
-<h2 id="三、日志生产-统一日志组件"><a href="#三、日志生产-统一日志组件" class="headerlink" title="三、日志生产-统一日志组件"></a>三、日志生产-统一日志组件</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434518.png" alt="img"></p>
+<h2 id="三、日志生产-统一日志组件"><a href="#三、日志生产-统一日志组件" class="headerlink" title="三、日志生产-统一日志组件"></a>三、日志生产-统一日志组件</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434518.png"></p>
 <p>支付研发基于log4j2自定义了多个Appender，将应用日志以服务调用形式抛送至kafka，并被log_process_service 服务统一处理并提交至携程常用基础日志框架如：CLOG、CAT、ES，各应用无需关心公司日志框架，统一由日志平台处理。</p>
 <p><strong>其优点</strong>：</p>
 <ul>
@@ -534,13 +534,13 @@
 </blockquote>
 <p>字段定义主要是基于日常分析需求，致力于简化数据的使用，故总体原则为json形式，当前原始日志有两部分组成：tag/message，其中tag数据结构为Map，关键数据一般是通过tag内的数据进行检索，明细数据通过message进行检索，tag与message的组成格式为：[[tag]]tag]]tag]]message，目前标准字段包括两类：规范性字段和通用性字段。</p>
 <h4 id="3-1-1-规范性字段格式"><a href="#3-1-1-规范性字段格式" class="headerlink" title="3.1.1 规范性字段格式"></a>3.1.1 规范性字段格式</h4><p>规范性字段需要应用研发一定程度的参与，提供符合字段命名的类和方法。部分字段名称及定义如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434367.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434367.png"></p>
 <p>其中tag可以灵活填充，主要扩展字段如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434806.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434806.png"></p>
 <h4 id="3-1-2-通用字段格式"><a href="#3-1-2-通用字段格式" class="headerlink" title="3.1.2 通用字段格式"></a>3.1.2 通用字段格式</h4><p>日志框架能够自动获取属性，无需研发编码，即可打印。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434356.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434356.png"></p>
 <h3 id="3-2-分区-分桶字段的定义"><a href="#3-2-分区-分桶字段的定义" class="headerlink" title="3.2 分区/分桶字段的定义"></a>3.2 分区/分桶字段的定义</h3><p>当前离线数据分析基于hive引擎，hive的分区分桶设计极大的影响了查询性能，特别是在日志量巨大的场景下，分区字段的选择尤为关键。如：用户进入支付收银台可能会有上百个场景，而每种场景下会有多次服务调用，其中不同场景下服务调用频率差异很大，占用的空间差异也较大，故针对每种场景分配一个唯一的场景号，通过场景号进行分区，可以高效的进行数据分析，而过多的分区也可能导致较多的小文件，对hadoop namenode产生较大的影响，此时结合分桶能够达到优化查询效率且避免分区无限制野蛮增长产生众多过多小文件的问题。</p>
-<h2 id="四、日志采集"><a href="#四、日志采集" class="headerlink" title="四、日志采集"></a>四、日志采集</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434325.png" alt="img"></p>
+<h2 id="四、日志采集"><a href="#四、日志采集" class="headerlink" title="四、日志采集"></a>四、日志采集</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100434325.png"></p>
 <p>日志采集框架基于LinkedIn的开源项目Camus，Camus使用MapReduce读取kafka数据然后写入hdfs，由于无reduce阶端，所有数据处理及写入都在Map侧，很少会发生数据倾斜，Camus具有接入简单，方便扩展，故我们进行了二次开发，以满足当前业务的需要：</p>
 <ul>
 <li><strong>自定义decoder/partitioner</strong>，原生的decoder/partitioner支持的hdfs落地路径主要基于日期，较为粗糙，无法适应业务的需要。故自定义decoder 抽取原始日志分区字段，然后代入partitioner中，生成具有业务含义的hdfs输出路径，为特定时间范围数据回刷提供了高效的解决方案。</li>
@@ -580,7 +580,7 @@
 <pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token assign-left variable">mapreduce.map.memory.mb</span><span class="token operator">=</span><span class="token number">8096</span>
 <span class="token assign-left variable">mapreduce.map.java.opts</span><span class="token operator">=</span>-Xmx6000m</code></pre>
 
-<h2 id="五、统一日志-解析"><a href="#五、统一日志-解析" class="headerlink" title="五、统一日志-解析"></a>五、统一日志-解析</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100435408.jpeg" alt="img"></p>
+<h2 id="五、统一日志-解析"><a href="#五、统一日志-解析" class="headerlink" title="五、统一日志-解析"></a>五、统一日志-解析</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100435408.jpeg"></p>
 <p>鉴于日志解析工作主要集中在MapReduce的Map侧，而Map侧通过参数调整能够很容易控制map的个数，以提高数据解析的并发度，MapReduce主要分为：intputformat、map、shuffle、reduce等几个核心阶段，通过优化各阶段的执行时间，可以显著提高日志解析的速度。</p>
 <h3 id="5-1-inputsplit优化"><a href="#5-1-inputsplit优化" class="headerlink" title="5.1 inputsplit优化"></a>5.1 inputsplit优化</h3><p>MR job中影响map的个数主要有：</p>
 <ul>
@@ -594,8 +594,8 @@
 <h4 id="5-3-1-空文件生产"><a href="#5-3-1-空文件生产" class="headerlink" title="5.3.1 空文件生产"></a>5.3.1 空文件生产</h4><p>在使用的过程中会出现生成众多临时小文件及生成size 为0的小文件，增加了hdfs namenode内存压力，同时空文件也会导致spark表查询失败，可通过LazyOutputFormat进行修复。</p>
 <h4 id="5-3-2-文件重复创建"><a href="#5-3-2-文件重复创建" class="headerlink" title="5.3.2 文件重复创建"></a>5.3.2 文件重复创建</h4><p>MultipleOutputs输出文件一般以name-r-nnnnn的格式进行命名，其中name与程序指定的文件名有关，nnnnn表示reduce任务号。在处理数据较多时，可能会存在reduce侧反复创建已存在的文件，导致任务长时间运行而不能成功，中间生成了大量小文件，对hadoop namenode产生较大压力，影响整个集群响应时间。</p>
 <p>解决方案为：在reduce侧进行数据写入时，需要对exception进行捕捉，一旦出现数据写入exception，即将对应的写入reduce文件删除并终止程序，由于MR支持高可用，当一个reduce taks 失败后会自动重试，重试一定次数依然不能够成功就会导致整个任务失败，每次重试避免了不停的重复创建已存在的文件，引起NN响应时间极速下降。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100435167.png" alt="img"></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100435377.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100435167.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100435377.png"></p>
 <h3 id="5-4-reduce个数调整"><a href="#5-4-reduce个数调整" class="headerlink" title="5.4 reduce个数调整"></a>5.4 reduce个数调整</h3><p>目前日志解析的reduce侧主要用于orc数据写入，当reduce个数较少时，会导致reduce内存溢出，而reduce个数较多时，可能会导致非常多的小文件且占用集群过多资源，可以通过计算map侧输入文件的个数及总占用空间，动态计算需要的reduce个数，以达到合理利用资源的目的。</p>
 <h2 id="六、日志治理"><a href="#六、日志治理" class="headerlink" title="六、日志治理"></a>六、日志治理</h2><blockquote>
 <p>日志落地导致的一个问题是存储空间增长迅速，当前支付中心日均新增ORC压缩原始数据量TB级别且还在持续增长中。</p>
@@ -1241,7 +1241,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

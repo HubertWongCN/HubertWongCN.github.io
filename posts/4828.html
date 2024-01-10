@@ -526,37 +526,37 @@
 <p>下图中，recvfrom 用于接收 Socket 传来的数据，并复制到应用进程的缓冲区 buf 中。这里把 recvfrom() 当成系统调用。</p>
 <pre class="language-c" data-language="c"><code class="language-c"><span class="token class-name">ssize_t</span> <span class="token function">recvfrom</span><span class="token punctuation">(</span><span class="token keyword">int</span> sockfd<span class="token punctuation">,</span> <span class="token keyword">void</span> <span class="token operator">*</span>buf<span class="token punctuation">,</span> <span class="token class-name">size_t</span> len<span class="token punctuation">,</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">sockaddr</span> <span class="token operator">*</span>src_addr<span class="token punctuation">,</span> <span class="token class-name">socklen_t</span> <span class="token operator">*</span>addrlen<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
 
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262139893.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262139893.png"></p>
 <p>或者网友提供的</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262140844.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262140844.png"></p>
 <h3 id="非阻塞式-I-O"><a href="#非阻塞式-I-O" class="headerlink" title="非阻塞式 I/O"></a>非阻塞式 I/O</h3><p>应用进程执行系统调用之后，内核返回一个错误码。应用进程可以继续执行，但是需要不断的执行系统调用来获知 I/O 是否完成，这种方式称为轮询(polling)。</p>
 <p>由于 CPU 要处理更多的系统调用，因此这种模型是比较低效的。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262140702.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262140702.png"></p>
 <p>或者网友提供的</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262140478.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262140478.png"></p>
 <h3 id="I-O-复用"><a href="#I-O-复用" class="headerlink" title="I/O 复用"></a>I/O 复用</h3><p>使用 select 或者 poll 等待数据，并且可以等待多个套接字中的任何一个变为可读，这一过程会被阻塞，当某一个套接字可读时返回。之后再使用 recvfrom 把数据从内核复制到进程中。</p>
 <p>它可以让单个进程具有处理多个 I/O 事件的能力。又被称为 Event Driven I/O，即事件驱动 I/O。</p>
 <p>如果一个 Web 服务器没有 I/O 复用，那么每一个 Socket 连接都需要创建一个线程去处理。如果同时有几万个连接，那么就需要创建相同数量的线程。并且相比于多进程和多线程技术，I/O 复用不需要进程线程创建和切换的开销，系统开销更小。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262141267.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262141267.png"></p>
 <p>或者网友提供的</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262141014.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262141014.png"></p>
 <h3 id="信号驱动-I-O"><a href="#信号驱动-I-O" class="headerlink" title="信号驱动 I/O"></a>信号驱动 I/O</h3><p>应用进程使用 sigaction 系统调用，内核立即返回，应用进程可以继续执行，也就是说等待数据阶段应用进程是非阻塞的。内核在数据到达时向应用进程发送 SIGIO 信号，应用进程收到之后在信号处理程序中调用 recvfrom 将数据从内核复制到应用进程中。</p>
 <p>相比于非阻塞式 I/O 的轮询方式，信号驱动 I/O 的 CPU 利用率更高。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262142742.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262142742.png"></p>
 <p>或者网友提供的</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262142959.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262142959.png"></p>
 <h3 id="异步-I-O"><a href="#异步-I-O" class="headerlink" title="异步 I/O"></a>异步 I/O</h3><p>进行 aio_read 系统调用会立即返回，应用进程继续执行，不会被阻塞，内核会在所有操作完成之后向应用进程发送信号。</p>
 <p>异步 I/O 与信号驱动 I/O 的区别在于，异步 I/O 的信号是通知应用进程 I/O 完成，而信号驱动 I/O 的信号是通知应用进程可以开始 I/O。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262142028.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262142028.png"></p>
 <p>或者网友提供的</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262143888.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262143888.png"></p>
 <h2 id="I-O-模型比较"><a href="#I-O-模型比较" class="headerlink" title="I/O 模型比较"></a>I/O 模型比较</h2><h3 id="同步-I-O-与异步-I-O"><a href="#同步-I-O-与异步-I-O" class="headerlink" title="同步 I/O 与异步 I/O"></a>同步 I/O 与异步 I/O</h3><ul>
 <li>同步 I/O: 应用进程在调用 recvfrom 操作时会阻塞。</li>
 <li>异步 I/O: 不会阻塞。</li>
 </ul>
 <p>阻塞式 I/O、非阻塞式 I/O、I/O 复用和信号驱动 I/O 都是同步 I/O，虽然非阻塞式 I/O 和信号驱动 I/O 在等待数据阶段不会阻塞，但是在之后的将数据从内核复制到应用进程这个操作会阻塞。</p>
 <h3 id="五大-I-O-模型比较"><a href="#五大-I-O-模型比较" class="headerlink" title="五大 I/O 模型比较"></a>五大 I/O 模型比较</h3><p>前四种 I/O 模型的主要区别在于第一个阶段，而第二个阶段是一样的: 将数据从内核复制到应用进程过程中，应用进程会被阻塞。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262143702.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262143702.png"></p>
 <h2 id="IO多路复用"><a href="#IO多路复用" class="headerlink" title="IO多路复用"></a>IO多路复用</h2><blockquote>
 <p>IO多路复用最为重要，后面的文章<a href="/posts/6141.html" title="10.Java NIO - IO多路复用详解">Java NIO - IO多路复用详解</a>将对IO多路复用，Ractor模型以及Java NIO对其的支持作详解。</p>
 </blockquote>
@@ -1213,7 +1213,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -551,7 +551,7 @@
 <p>ForkJoinPool 只接收 ForkJoinTask 任务(在实际使用中，也可以接收 Runnable/Callable 任务，但在真正运行时，也会把这些任务封装成 ForkJoinTask 类型的任务)，RecursiveTask 是 ForkJoinTask 的子类，是一个可以递归执行的 ForkJoinTask，RecursiveAction 是一个无返回值的 RecursiveTask，CountedCompleter 在任务完成执行后会触发执行一个自定义的钩子函数。</p>
 <p>在实际运用中，我们一般都会继承 <code>RecursiveTask</code> 、<code>RecursiveAction</code> 或 <code>CountedCompleter</code> 来实现我们的业务需求，而不会直接继承 ForkJoinTask 类。</p>
 <h3 id="核心思想-分治算法-Divide-and-Conquer"><a href="#核心思想-分治算法-Divide-and-Conquer" class="headerlink" title="核心思想: 分治算法(Divide-and-Conquer)"></a>核心思想: 分治算法(Divide-and-Conquer)</h3><p>分治算法(Divide-and-Conquer)把任务递归的拆分为各个子任务，这样可以更好的利用系统资源，尽可能的使用所有可用的计算能力来提升应用性能。首先看一下 Fork/Join 框架的任务运行机制:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261315952.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261315952.png"></p>
 <ul>
 <li>这里也可以一并看下: <a href="/posts/24555.html" title="2.算法思想 - 分治算法">算法思想 - 分治算法</a></li>
 </ul>
@@ -566,18 +566,18 @@
 <li>默认情况下，工作线程从自己的双端队列获出任务并执行。</li>
 <li>当自己的队列为空时，线程随机从另一个线程的队列末尾调用poll方法窃取任务。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261316881.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261316881.png"></p>
 <h3 id="Fork-Join-框架的执行流程"><a href="#Fork-Join-框架的执行流程" class="headerlink" title="Fork/Join 框架的执行流程"></a>Fork/Join 框架的执行流程</h3><p>上图可以看出ForkJoinPool 中的任务执行分两种:</p>
 <ul>
 <li>直接通过 FJP 提交的外部任务(external/submissions task)，存放在 workQueues 的偶数槽位；</li>
 <li>通过内部 fork 分割的子任务(Worker task)，存放在 workQueues 的奇数槽位。</li>
 </ul>
 <p>那Fork/Join 框架的执行流程是什么样的?</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261316462.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261316462.png"></p>
 <blockquote>
 <p>后续的源码解析将围绕上图进行。</p>
 </blockquote>
-<h2 id="Fork-Join类关系"><a href="#Fork-Join类关系" class="headerlink" title="Fork/Join类关系"></a>Fork/Join类关系</h2><h3 id="ForkJoinPool继承关系"><a href="#ForkJoinPool继承关系" class="headerlink" title="ForkJoinPool继承关系"></a>ForkJoinPool继承关系</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261317765.png" alt="img"></p>
+<h2 id="Fork-Join类关系"><a href="#Fork-Join类关系" class="headerlink" title="Fork/Join类关系"></a>Fork/Join类关系</h2><h3 id="ForkJoinPool继承关系"><a href="#ForkJoinPool继承关系" class="headerlink" title="ForkJoinPool继承关系"></a>ForkJoinPool继承关系</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261317765.png"></p>
 <p>内部类介绍:</p>
 <ul>
 <li>ForkJoinWorkerThreadFactory: 内部线程工厂接口，用于创建工作线程ForkJoinWorkerThread</li>
@@ -592,7 +592,7 @@
 </li>
 <li>伪共享状态: 缓存系统中是以缓存行(cache line)为单位存储的。缓存行是2的整数幂个连续字节，一般为32-256个字节。最常见的缓存行大小是64个字节。当多线程修改互相独立的变量时，如果这些变量共享同一个缓存行，就会无意中影响彼此的性能，这就是伪共享。</li>
 </ul>
-<h3 id="ForkJoinTask继承关系"><a href="#ForkJoinTask继承关系" class="headerlink" title="ForkJoinTask继承关系"></a>ForkJoinTask继承关系</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261317709.png" alt="img"></p>
+<h3 id="ForkJoinTask继承关系"><a href="#ForkJoinTask继承关系" class="headerlink" title="ForkJoinTask继承关系"></a>ForkJoinTask继承关系</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261317709.png"></p>
 <p>ForkJoinTask 实现了 Future 接口，说明它也是一个可取消的异步运算任务，实际上ForkJoinTask 是 Future 的轻量级实现，主要用在纯粹是计算的函数式任务或者操作完全独立的对象计算任务。fork 是主运行方法，用于异步执行；而 join 方法在任务结果计算完毕之后才会运行，用来合并或返回计算结果。 其内部类都比较简单，ExceptionNode 是用于存储任务执行期间的异常信息的单向链表；其余四个类是为 Runnable/Callable 任务提供的适配器类，用于把 Runnable/Callable 转化为 ForkJoinTask 类型的任务(因为 ForkJoinPool 只可以运行 ForkJoinTask 类型的任务)。</p>
 <h2 id="Fork-Join框架源码解析"><a href="#Fork-Join框架源码解析" class="headerlink" title="Fork/Join框架源码解析"></a>Fork/Join框架源码解析</h2><blockquote>
 <p>分析思路: 在对类层次结构有了解以后，我们先看下内部核心参数，然后分析上述流程图。会分4个部分:</p>
@@ -1451,7 +1451,7 @@
 <p>说明: join()方法一把是在任务fork()之后调用，用来获取(或者叫“合并”)任务的执行结果。</p>
 <p>ForkJoinTask的join()和invoke()方法都可以用来获取任务的执行结果(另外还有get方法也是调用了doJoin来获取任务结果，但是会响应运行时异常)，它们对外部提交任务的执行方式一致，都是通过externalAwaitDone方法等待执行结果。不同的是invoke()方法会直接执行当前任务；而join()方法则是在当前任务在队列 top 位时(通过tryUnpush方法判断)才能执行，如果当前任务不在 top 位或者任务执行失败调用ForkJoinPool.awaitJoin方法帮助执行或阻塞当前 join 任务。(所以在官方文档中建议了我们对ForkJoinTask任务的调用顺序，一对 fork-join操作一般按照如下顺序调用: a.fork(); b.fork(); b.join(); a.join();。因为任务 b 是后面进入队列，也就是说它是在栈顶的(top 位)，在它fork()之后直接调用join()就可以直接执行而不会调用ForkJoinPool.awaitJoin方法去等待。)</p>
 <p>在这些方法中，join()相对比较全面，所以之后的讲解我们将从join()开始逐步向下分析，首先看一下join()的执行流程:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261320559.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261320559.png"></p>
 <p>后面的源码分析中，我们首先讲解比较简单的外部 join 任务(externalAwaitDone)，然后再讲解内部 join 任务(从ForkJoinPool.awaitJoin()开始)。</p>
 <h4 id="ForkJoinTask-externalAwaitDone"><a href="#ForkJoinTask-externalAwaitDone" class="headerlink" title="ForkJoinTask.externalAwaitDone()"></a>ForkJoinTask.externalAwaitDone()</h4><pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">int</span> <span class="token function">externalAwaitDone</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
     <span class="token comment">//执行任务</span>
@@ -2577,7 +2577,7 @@ left<span class="token punctuation">.</span><span class="token function">fork</s
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

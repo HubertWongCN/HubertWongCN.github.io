@@ -782,7 +782,7 @@ Thread-1结束</code></pre>
 <pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token operator">&gt;</span>javap <span class="token parameter variable">-verbose</span> SynchronizedDemo2.class</code></pre>
 
 <p>得到如下的信息：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261928281.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261928281.png"></p>
 <p>关注红色方框里的<code>monitorenter</code>和<code>monitorexit</code>即可。</p>
 <p><code>Monitorenter</code>和<code>Monitorexit</code>指令，会让对象在执行，使其锁计数器加1或者减1。每一个对象在同一时间只与一个monitor(锁)相关联，而一个monitor在同一时间只能被一个线程获得，一个对象在尝试获得与这个对象相关联的Monitor锁的所有权的时候，monitorenter指令会发生如下3中情况之一：</p>
 <ul>
@@ -792,7 +792,7 @@ Thread-1结束</code></pre>
 </ul>
 <p><code>monitorexit指令</code>：释放对于monitor的所有权，释放过程很简单，就是讲monitor的计数器减1，如果减完以后，计数器不是0，则代表刚才是重入进来的，当前线程还继续持有这把锁的所有权，如果计数器变成0，则代表当前线程不再拥有该monitor的所有权，即释放锁。</p>
 <p>下图表现了对象，对象监视器，同步队列以及执行线程状态之间的关系：</p>
-<p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-schronized-2.png" alt="img"></p>
+<p><img src="https://raw.githubusercontent.com/HubertWongCN/image_host/main/img/java-thread-x-key-schronized-2.png"></p>
 <p>该图可以看出，任意线程对Object的访问，首先要获得Object的监视器，如果获取失败，该线程就进入同步状态，线程状态变为BLOCKED，当Object的监视器占有者释放后，在同步队列中得线程就会有机会重新获取该监视器。</p>
 <h3 id="可重入原理：加锁次数计数器"><a href="#可重入原理：加锁次数计数器" class="headerlink" title="可重入原理：加锁次数计数器"></a>可重入原理：加锁次数计数器</h3><ul>
 <li><strong>什么是可重入？可重入锁</strong>？</li>
@@ -856,7 +856,7 @@ Thread-1结束</code></pre>
 <span class="token punctuation">}</span></code></pre>
 
 <p>该代码的happens-before关系如图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261929034.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261929034.png"></p>
 <p>在图中每一个箭头连接的两个节点就代表之间的happens-before关系，黑色的是通过程序顺序规则推导出来，红色的为监视器锁规则推导而出：线程A释放锁happens-before线程B加锁，蓝色的则是通过程序顺序规则和监视器锁规则推测出来happens-befor关系，通过传递性规则进一步推导的happens-before关系。现在我们来重点关注2 happens-before 5，通过这个关系我们可以得出什么?</p>
 <p>根据happens-before的定义中的一条:如果A happens-before B，则A的执行结果对B可见，并且A的执行顺序先于B。线程A先对共享变量A进行加一，由2 happens-before 5关系可知线程A的执行结果对线程B可见即线程B所读取到的a的值为1。</p>
 <h2 id="JVM中锁的优化"><a href="#JVM中锁的优化" class="headerlink" title="JVM中锁的优化"></a>JVM中锁的优化</h2><p>简单来说在JVM中monitorenter和monitorexit字节码依赖于底层的操作系统的Mutex Lock来实现的，但是由于使用Mutex Lock需要将当前线程挂起并从用户态切换到内核态来执行，这种切换的代价是非常昂贵的；然而在现实中的大部分情况下，同步方法是运行在单线程环境(无锁竞争环境)如果每次都调用Mutex Lock那么将严重的影响程序的性能。<strong>不过在jdk1.6中对锁的实现引入了大量的优化，如锁粗化(Lock Coarsening)、锁消除(Lock Elimination)、轻量级锁(Lightweight Locking)、偏向锁(Biased Locking)、适应性自旋(Adaptive Spinning)等技术来减少锁操作的开销</strong>。</p>
@@ -888,7 +888,7 @@ Thread-1结束</code></pre>
 <span class="token punctuation">}</span></code></pre>
 
 <p>上述代码使用javap 编译结果</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261929738.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261929738.png"></p>
 <p>众所周知，StringBuilder不是安全同步的，但是在上述代码中，JVM判断该段代码并不会逃逸，则将该代码带默认为线程独有的资源，并不需要同步，所以执行了锁消除操作。(还有Vector中的各种操作也可实现锁消除。在没有逃逸出数据安全防卫内)</p>
 <h3 id="锁粗化"><a href="#锁粗化" class="headerlink" title="锁粗化"></a>锁粗化</h3><p>原则上，我们都知道在加同步锁时，尽可能的将同步块的作用范围限制到尽量小的范围(只在共享数据的实际作用域中才进行同步，这样是为了使得需要同步的操作数量尽可能变小。在存在锁同步竞争中，也可以使得等待锁的线程尽早的拿到锁)。</p>
 <p>大部分上述情况是完美正确的，但是如果存在连串的一系列操作都对同一个对象反复加锁和解锁，甚至加锁操作时出现在循环体中的，那即使没有线程竞争，频繁的进行互斥同步操作也会导致不必要的性能操作。</p>
@@ -905,18 +905,18 @@ Thread-1结束</code></pre>
 <h3 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h3><p>在JDK 1.6之后引入的轻量级锁，需要注意的是轻量级锁并不是替代重量级锁的，而是对在大多数情况下同步块并不会有竞争出现提出的一种优化。它可以减少重量级锁对线程的阻塞带来的线程开销。从而提高并发性能。</p>
 <p>如果要理解轻量级锁，那么必须先要了解HotSpot虚拟机中对象头的内存布局。上面介绍Java对象头也详细介绍过。在对象头中(<code>Object Header</code>)存在两部分。第一部分用于存储对象自身的运行时数据，<code>HashCode</code>、<code>GC Age</code>、<code>锁标记位</code>、<code>是否为偏向锁</code>。等。一般为32位或者64位(视操作系统位数定)。官方称之为<code>Mark Word</code>，它是实现轻量级锁和偏向锁的关键。 另外一部分存储的是指向方法区对象类型数据的指针(<code>Klass Point</code>)，如果对象是数组的话，还会有一个额外的部分用于存储数据的长度。</p>
 <h4 id="轻量级锁加锁"><a href="#轻量级锁加锁" class="headerlink" title="轻量级锁加锁"></a>轻量级锁加锁</h4><p>在线程执行同步块之前，JVM会先在当前线程的栈帧中创建一个名为锁记录(<code>Lock Record</code>)的空间，用于存储锁对象目前的<code>Mark Word</code>的拷贝(JVM会将对象头中的<code>Mark Word</code>拷贝到锁记录中，官方称为<code>Displaced Mark Ward</code>)这个时候线程堆栈与对象头的状态如图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261929110.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261929110.png"></p>
 <p>如上图所示：如果当前对象没有被锁定，那么锁标志位为01状态，JVM在执行当前线程时，首先会在当前线程栈帧中创建锁记录<code>Lock Record</code>的空间用于存储锁对象目前的<code>Mark Word</code>的拷贝。</p>
 <p> 然后，虚拟机使用CAS操作将标记字段Mark Word拷贝到锁记录中，并且将<code>Mark Word</code>更新为指向<code>Lock Record</code>的指针。如果更新成功了，那么这个线程就拥用了该对象的锁，并且对象Mark Word的锁标志位更新为(<code>Mark Word</code>中最后的2bit)00，即表示此对象处于轻量级锁定状态，如图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261929066.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261929066.png"></p>
 <p> 如果这个更新操作失败，JVM会检查当前的<code>Mark Word</code>中是否存在指向当前线程的栈帧的指针，如果有，说明该锁已经被获取，可以直接调用。如果没有，则说明该锁被其他线程抢占了，如果有两条以上的线程竞争同一个锁，那轻量级锁就不再有效，直接膨胀为重量级锁，没有获得锁的线程会被阻塞。此时，锁的标志位为<code>10.Mark Word</code>中存储的指向重量级锁的指针。</p>
 <p> 轻量级解锁时，会使用原子的CAS操作将<code>Displaced Mark Word</code>替换回到对象头中，如果成功，则表示没有发生竞争关系。如果失败，表示当前锁存在竞争关系。锁就会膨胀成重量级锁。两个线程同时争夺锁，导致锁膨胀的流程图如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261930242.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261930242.png"></p>
 <h3 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h3><blockquote>
 <p>引入背景：在大多实际环境下，锁不仅不存在多线程竞争，而且总是由同一个线程多次获取，那么在同一个线程反复获取所释放锁中，其中并还没有锁的竞争，那么这样看上去，多次的获取锁和释放锁带来了很多不必要的性能开销和上下文切换。</p>
 </blockquote>
 <p> 为了解决这一问题，HotSpot的作者在Java SE 1.6 中对Synchronized进行了优化，引入了偏向锁。当一个线程访问同步块并获取锁时，会在对象头和栈帧中的锁记录里存储锁偏向的线程ID，以后该线程在进入和退出同步块时不需要进行CAS操作来加锁和解锁。只需要简单的测试一下对象头的<code>Mark Word</code>里是否存储着指向当前线程的偏向锁。如果成功，表示线程已经获取到了锁。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261930320.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261930320.png"></p>
 <h4 id="偏向锁的撤销"><a href="#偏向锁的撤销" class="headerlink" title="偏向锁的撤销"></a>偏向锁的撤销</h4><p> 偏向锁使用了一种等待竞争出现才会释放锁的机制。所以当其他线程尝试获取偏向锁时，持有偏向锁的线程才会释放锁。但是偏向锁的撤销需要等到全局安全点(就是当前线程没有正在执行的字节码)。它会首先暂停拥有偏向锁的线程，让你后检查持有偏向锁的线程是否活着。如果线程不处于活动状态，直接将对象头设置为无锁状态。如果线程活着，JVM会遍历栈帧中的锁记录，栈帧中的锁记录和对象头要么偏向于其他线程，要么恢复到无锁状态或者标记对象不适合作为偏向锁。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261930842.png"></p>
 <h3 id="锁的优缺点对比"><a href="#锁的优缺点对比" class="headerlink" title="锁的优缺点对比"></a>锁的优缺点对比</h3><table>
@@ -1609,7 +1609,7 @@ Thread-1结束</code></pre>
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -515,7 +515,7 @@
 <p>保证数据在生产部署时的<strong>冗余和可靠性</strong>，通过在不同的机器上保存副本来保证数据的不会因为单点损坏而丢失。能够随时应对数据丢失、机器损坏带来的风险。换一句话来说，还能提高读取能力，用户的读取服务器和写入服务器在不同的地方，而且，由不同的服务器为不同的用户提供服务，提高整个系统的负载。</p>
 </blockquote>
 <p>在**MongoDB中就是复制集（replica set)**： 一组复制集就是一组mongod实例掌管同一个数据集，实例可以在不同的机器上面。实例中包含一个主导，接受客户端所有的写入操作，其他都是副本实例，从主服务器上获得数据并保持同步。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300058906.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300058906.png"></p>
 <h2 id="复制集有哪些成员？"><a href="#复制集有哪些成员？" class="headerlink" title="复制集有哪些成员？"></a>复制集有哪些成员？</h2><blockquote>
 <p>在上图中，我们了解了复制集中的主节点（Primary）和从节点（Secondary), 进一步的我们需要了解更多复制集中的成员，以便深入部署架构和相关配置。</p>
 </blockquote>
@@ -544,7 +544,7 @@
 <p>作为一个辅助可以作为一个备用。在一些复制集中，可能无法在合理的时间内添加新成员的时候。备用成员保持数据的当前最新数据能够替换不可用的成员。</p>
 <p>Priority0节点的选举优先级为0，不会被选举为Primary</p>
 <p>比如你跨机房A、B部署了一个复制集，并且想指定Primary必须在A机房，这时可以将B机房的复制集成员Priority设置为0，这样Primary就一定会是A机房的成员。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059250.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059250.png"></p>
 <p>（注意：如果这样部署，最好将『大多数』节点部署在A机房，否则网络分区时可能无法选出Primary）</p>
 <ul>
 <li><strong>Hidden</strong></li>
@@ -552,13 +552,13 @@
 <p>客户端将不会把读请求分发到隐藏节点上，即使我们设定了 复制集读选项 。</p>
 <p>这些隐藏节点将不会收到来自应用程序的请求。我们可以将隐藏节点专用于报表节点或是备份节点。 延时节点也应该是一个隐藏节点。</p>
 <p>Hidden节点不能被选为主（Priority为0），并且对Driver不可见。因<strong>Hidden节点不会接受Driver的请求，可使用Hidden节点做一些数据备份、离线计算的任务，不会影响复制集的服务</strong>。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059187.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059187.png"></p>
 <ul>
 <li><strong>Delayed</strong></li>
 </ul>
 <p>延时节点的数据集是延时的，因此它可以帮助我们在人为误操作或是其他意外情况下恢复数据。</p>
 <p>举个例子，当应用升级失败，或是误操作删除了表和数据库时，我们可以通过延时节点进行数据恢复。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059708.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059708.png"></p>
 <p>Delayed节点必须是Hidden节点，并且其数据落后与Primary一段时间（可配置，比如1个小时）。</p>
 <p>因Delayed节点的数据比Primary落后一段时间，当错误或者无效的数据写入Primary时，可通过Delayed节点的数据来恢复到之前的时间点。</p>
 <h2 id="复制集常见部署架构？"><a href="#复制集常见部署架构？" class="headerlink" title="复制集常见部署架构？"></a>复制集常见部署架构？</h2><blockquote>
@@ -571,9 +571,9 @@
 </ul>
 </li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059059.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059059.png"></p>
 <p>当主节点宕机后,两个从节点都会进行竞选，其中一个变为主节点，当原主节点恢复后，作为从节点加入当前的复制集群即可。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059073.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059073.png"></p>
 <ul>
 <li>一主一从一仲裁方式<ul>
 <li>一个主节点</li>
@@ -582,9 +582,9 @@
 </ul>
 </li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059818.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300059818.png"></p>
 <p>当主节点宕机时，将会选择从节点成为主，主节点修复后，将其加入到现有的复制集群中即可。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300100859.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300100859.png"></p>
 <h3 id="跨数据中心"><a href="#跨数据中心" class="headerlink" title="跨数据中心"></a>跨数据中心</h3><blockquote>
 <p>单个数据中心中的复制集易受数据中心故障的影响，比如断电，洪水，断网等；所以多个数据中心便是这么引入的。</p>
 </blockquote>
@@ -630,11 +630,11 @@
 </li>
 </ul>
 <p>例如，以下5个成员复制集将其成员分布在三个数据中心中。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300100987.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300100987.png"></p>
 <h4 id="数据转移的优先级"><a href="#数据转移的优先级" class="headerlink" title="数据转移的优先级"></a>数据转移的优先级</h4><p>复制集的某些成员（例如，具有网络限制或资源有限的成员）不应成为故障转移中的主要成员。将不应成为主要成员的成员配置为具priority0。</p>
 <p>在某些情况下，您可能希望将一个数据中心中的成员选为主要成员，然后再选择另一数据中心中的成员。您可以修改priority成员的，以使一个数据中心中priority的成员高于 其他数据中心中的成员。</p>
 <p>在以下示例中，数据中心1中的复制集成员具有比数据中心2和3中的成员更高的优先级；数据中心2中的成员比数据中心3中的成员具有更高的优先级：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300100941.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300100941.png"></p>
 <h2 id="复制集是如何保证数据高可用的？"><a href="#复制集是如何保证数据高可用的？" class="headerlink" title="复制集是如何保证数据高可用的？"></a>复制集是如何保证数据高可用的？</h2><blockquote>
 <p>那么复制集是如何保证数据的高可靠性的呢？或者说它包含有什么机制？这里我们通过两方面阐述：一个是选举机制，另一个是故障转移期间的回滚。</p>
 </blockquote>
@@ -659,7 +659,7 @@
 </ul>
 <p>首先不是所有的节点都会参与投票，一个复制集最高可以有50个节点，但是只有7个投票节点。一个非投票节点它的votes是0即vote0; 它的priority是0即priority0。</p>
 <p>比如：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300101122.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300101122.png"></p>
 <p>同时可投票的节点，必须属于如下状态之一：PRIMARY, SECONDARY, STARTUP2, RECOVERING, ARBITER, ROLLBACK.</p>
 <ul>
 <li><strong>哪些因素可能会影响选举呢？</strong></li>
@@ -1425,7 +1425,7 @@ rs<span class="token punctuation">.</span><span class="token function">reconfig<
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

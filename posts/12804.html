@@ -546,10 +546,10 @@
 <span class="token punctuation">}</span></code></pre>
 
 <p>WT中的数据修改都是在这个链表中进行append操作，每次对值做修改都是append到链表头上，每次读取值的时候读是从链表头根据值对应的修改事务transaction_id和本次读事务的snapshot来判断是否可读，如果不可读，向链表尾方向移动，直到找到读事务能都的数据版本。样例如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300051235.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300051235.png"></p>
 <p>上图中，事务T0发生的时刻最早，T5发生的时刻最晚。T1/T2/T4是对记录做了修改。那么在mvcc list当中就会增加3个版本的数据，分别是11/12/14。如果事务都是基于snapshot级别的隔离，T0只能看到T0之前提交的值10，读事务T3访问记录时它能看到的值是11，T5读事务在访问记录时，由于T4未提交，它也只能看到11这个版本的值。这就是WT 的MVCC基本原理。</p>
 <h3 id="WT事务snapshot"><a href="#WT事务snapshot" class="headerlink" title="WT事务snapshot"></a>WT事务snapshot</h3><p>上面多次提及事务的snapshot，那到底什么是事务的snapshot呢？其实就是事务开始或者进行操作之前对整个WT引擎内部正在执行或者将要执行的事务进行一次截屏，保存当时整个引擎所有事务的状态，确定哪些事务是对自己见的，哪些事务都自己是不可见。说白了就是一些列事务ID区间。WT引擎整个事务并发区间示意图如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300052977.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300052977.png"></p>
 <p>WT引擎中的snapshot_oject是有一个最小执行事务snap_min、一个最大事务snap max和一个处于[snap_min, snap_max]区间之中所有正在执行的写事务序列组成。如果上图在T6时刻对系统中的事务做一次snapshot，那么产生的</p>
 <pre class="language-c" data-language="c"><code class="language-c">snapshot_object <span class="token operator">=</span> <span class="token punctuation">{</span>
 
@@ -576,7 +576,7 @@
 <span class="token punctuation">}</span></code></pre>
 
 <p>transaction_array保存的是图2正在执行事务的区间的事务对象序列。在建立snapshot时，会对整个transaction_array做扫描，确定snap_min/snap_max/snap_array这三个参数和更新oldest_id,在扫描的过程中，凡是transaction_id不等于WT_TNX_NONE都认为是在执行中且有修改操作的事务，直接加入到snap_array当中。整个过程是一个无锁操作过程,这个过程如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300052454.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300052454.png"></p>
 <p>创建snapshot截屏的过程在WT引擎内部是非常频繁，尤其是在大量自动提交型的短事务执行的情况下，由创建snapshot动作引起的CPU竞争是非常大的开销，所以这里WT并没有使用spin lock ,而是采用了上图的一个无锁并发设计，这种设计遵循了我们开始说的并发设计原则。</p>
 <h3 id="事务ID"><a href="#事务ID" class="headerlink" title="事务ID"></a>事务ID</h3><p>从WT引擎创建事务snapshot的过程中现在可以确定，snapshot的对象是有写操作的事务，纯读事务是不会被snapshot的，因为snapshot的目的是隔离mvcc list中的记录，通过MVCC中value的事务ID与读事务的snapshot进行版本读取，与读事务本身的ID是没有关系。在WT引擎中，开启事务时，引擎会将一个WT_TNX_NONE( = 0)的事务ID设置给开启的事务，<strong>当它第一次对事务进行写时，会在数据修改前通过全局事务管理器中的current_id来分配一个全局唯一的事务ID</strong>。这个过程也是通过CPU的CAS_ADD原子操作完成的无锁过程。</p>
 <h2 id="WT的事务过程"><a href="#WT的事务过程" class="headerlink" title="WT的事务过程"></a>WT的事务过程</h2><p>一般事务是两个阶段：<strong>事务执行</strong>和<strong>事务提交</strong>。在事务执行前，我们需要先创建事务对象并开启它，然后才开始执行，如果执行遇到冲突和或者执行失败，我们需要回滚事务(rollback)。如果执行都正常完成，最后只需要提交(commit)它即可。从上面的描述可以知道事务过程有：<code>创建开启</code>、<code>执行</code>、<code>提交</code>和<code>回滚</code>。那么从这几个过程中来分析WT是怎么实现这几个过程的。</p>
@@ -591,11 +591,11 @@
 <li>写入一条redo log到本次事务对象的redo_log_buf当中。</li>
 </ul>
 <p>示意图如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300052564.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300052564.png"></p>
 <h3 id="事务提交"><a href="#事务提交" class="headerlink" title="事务提交"></a>事务提交</h3><p>WT引擎对事务的提交过程比较简单，先将要提交的事务对象中的redo_log_buf中的数据写入到redo log file(重做日志文件)中，并将redo log file持久化到磁盘上。清除提交事务对象的snapshot object,再将提交的事务对象中的transaction_id设置为WT_TNX_NONE，保证其他事务在创建系统事务snapshot时本次事务的状态是已提交的状态。</p>
 <h3 id="事务回滚"><a href="#事务回滚" class="headerlink" title="事务回滚"></a>事务回滚</h3><p>WT引擎对事务的回滚过程也比较简单，先遍历整个operation_array，对每个数组单元对应update的事务id设置以为一个WT_TXN_ABORTED（= uint64_max），标示mvcc 对应的修改单元值被回滚，在其他读事务进行mvcc读操作的时候，跳过这个放弃的值即可。整个过程是一个无锁操作，高效、简洁。</p>
 <h2 id="WT的事务隔离"><a href="#WT的事务隔离" class="headerlink" title="WT的事务隔离"></a>WT的事务隔离</h2><p>传统的数据库事务隔离分为:<code>Read-Uncommited(未提交读)</code>、<code>Read-Commited(提交读)</code>、<code>Repeatable-Read(可重复读)</code>和<code>Serializable(串行化)</code>，WT引擎并没有按照传统的事务隔离实现这四个等级，而是基于snapshot的特点实现了自己的Read-Uncommited、Read-Commited和一种叫做snapshot-Isolation(快照隔离)的事务隔离方式。在WT中不管是选用的是那种事务隔离方式，它都是基于系统中执行事务的快照截屏来实现的。那来看看WT是怎么实现上面三种方式的。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300052565.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300052565.png"></p>
 <h3 id="Read-uncommited"><a href="#Read-uncommited" class="headerlink" title="Read-uncommited"></a>Read-uncommited</h3><p>Read-Uncommited(未提交读)隔离方式的事务在读取数据时总是读取到系统中最新的修改，哪怕是这个修改事务还没有提交一样读取，这其实就是一种脏读。WT引擎在实现这个隔方式时，就是将事务对象中的snap_object.snap_array置为空即可，那么在读取MVCC list中的版本值时，总是读取到MVCC list链表头上的第一个版本数据。举例说明，在图5中，如果T0/T3/T5的事务隔离级别设置成Read-uncommited的话，那么T1/T3/T5在T5时刻之后读取系统的值时，读取到的都是14。一般数据库不会设置成这种隔离方式，它违反了事务的ACID特性。可能在一些注重性能且对脏读不敏感的场景会采用，例如网页cache。</p>
 <h3 id="Read-Commited"><a href="#Read-Commited" class="headerlink" title="Read-Commited"></a>Read-Commited</h3><p>Read-Commited(提交读)隔离方式的事务在读取数据时总是读取到系统中最新提交的数据修改，这个修改事务一定是提交状态。这种隔离级别可能在一个长事务多次读取一个值的时候前后读到的值可能不一样，这就是经常提到的“幻象读”。在WT引擎实现read-commited隔离方式就是事务在执行每个操作前都对系统中的事务做一次截屏，然后在这个截屏上做读写。还是来看图5，T5事务在T4事务提交之前它进行读取前做事务</p>
 <pre class="language-c" data-language="c"><code class="language-c">snapshot<span class="token operator">=</span><span class="token punctuation">{</span>
@@ -664,7 +664,7 @@
 <p>WT就是通过这个LSN来管理重做日志文件的。</p>
 <h3 id="日志格式"><a href="#日志格式" class="headerlink" title="日志格式"></a>日志格式</h3><p>WT引擎的操作日志对象（以下简称为logrec）对应的是提交的事务，事务的每个操作被记录成一个logop对象，一个logrec包含多个logop，logrec是一个通过精密序列化事务操作动作和参数得到的一个二进制buffer，这个buffer的数据是通过事务和操作类型来确定其格式的。</p>
 <p>WT中的日志分为4类：分别是建立checkpoint的操作日志(LOGREC_CHECKPOINT)、普通事务操作日志(LOGREC_COMMIT)、btree page同步刷盘的操作日志(LOGREC_FILE_SYNC)和提供给引擎外部使用的日志(LOGREC_MESSAGE)。这里介绍和执行事务密切先关的LOGREC_COMMIT，这类日志里面由根据K/V的操作方式分为：LOG_PUT(增加或者修改K/V操作)、LOG_REMOVE(单KEY删除操作)和范围删除日志,这几种操作都会记录操作时的key，根据操作方式填写不同的其他参数，例如：update更新操作，就需要将value填上。除此之外，日志对象还会携带btree的索引文件ID、提交事务的ID等，整个logrec和logop的关系结构图如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300052316.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300052316.png"></p>
 <p>对于上图中的logrec header中的为什么会出现两个长度字段：logrec磁盘上的空间长度和在内存中的长度，因为logrec在刷入磁盘之前会进行空间压缩，那么磁盘上的长度和内存中的长度就不一样了。压缩是根据系统配置可选的。</p>
 <h3 id="WAL与日志写并发"><a href="#WAL与日志写并发" class="headerlink" title="WAL与日志写并发"></a>WAL与日志写并发</h3><p>WT引擎在采用WAL（Write-Ahead Log）方式写入日志，WAL通俗点说就是说在事务所有修改提交前需要将其对应的操作日志写入磁盘文件。在事务执行的介绍小节中我们介绍是在什么时候写日志的，这里我们来分析事务日志是怎么写入到磁盘上的，整个写入过程大致分为下面几个阶段：</p>
 <ul>
@@ -675,7 +675,7 @@
 <li>提交事务的日志完成，事务的执行结果也完成了持久化。</li>
 </ul>
 <p>整个过程的示意图如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300053727.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300053727.png"></p>
 <p>WT为了减少日志刷盘造成写IO，对日志罗刷盘操作做了大量的优化，实现一种类似MySQL组提交的刷盘方式。这种刷盘方式会将同时发生提交的事务日志合并到一个slotbuffer中，先完成合并的事务线程会同步等待一个完成刷盘信号，最后完成日志数据合并的事务线程将slotbuffer中的所有日志数据sync到磁盘上并通知在这个slotbuffer中等待其他事务线程刷盘完成。并发事务的logrec合并到slot buffer中的过程是一个完全无锁的过程，这减少了必要的CPU竞争和操作系统上下文切换。</p>
 <p>为了这个无锁设计WT在全局的log管理中定义了一个acitve_ready_slot和一个slot_pool数组结构，大致如下定义：</p>
 <pre class="language-c" data-language="c"><code class="language-c">     wt_log<span class="token punctuation">{</span>
@@ -1371,7 +1371,7 @@ slot_start_offset<span class="token operator">:</span> 合并的logrec存入log 
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

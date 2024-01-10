@@ -577,7 +577,7 @@
 <p>为什么这种方案到目前还有很多项目使用呢？因为不需要在项目代码侧改动，而是只需要在负载均衡侧改动。</p>
 </blockquote>
 <p>方案即将客户端的每次请求都转发至同一台服务器，这就需要负载均衡器能够根据每次请求的会话标识（SessionId）来进行请求转发，如下图所示。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100226731.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100226731.png"></p>
 <p>这种方案实现比较简单，对于Web服务器来说和单机的情况一样。但是可能会带来如下问题：</p>
 <ul>
 <li>如果有一台服务器宕机或者重启，那么这台机器上的会话数据会全部丢失。</li>
@@ -585,21 +585,21 @@
 <li>负载均衡器将变成一个有状态的节点，要将会话保存到具体Web服务器的映射。和无状态节点相比，内存消耗更大，容灾方面也会更麻烦。</li>
 </ul>
 <h3 id="Session-Replication"><a href="#Session-Replication" class="headerlink" title="Session Replication"></a>Session Replication</h3><p>Session Replication 的方案则不对负载均衡器做更改，而是在Web服务器之间增加了会话数据同步的功能，各个服务器之间通过同步保证不同Web服务器之间的Session数据的一致性，如下图所示。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100226631.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100226631.png"></p>
 <p>Session Replication 方案对负载均衡器不再有要求，但是同样会带来以下问题：</p>
 <ul>
 <li>同步Session数据会造成额外的网络带宽的开销，只要Session数据有变化，就需要将新产生的Session数据同步到其他服务器上，服务器数量越多，同步带来的网络带宽开销也就越大。</li>
 <li>每台Web服务器都需要保存全部的Session数据，如果整个集群的Session数量太多的话，则对于每台机器用于保存Session数据的占用会很严重。</li>
 </ul>
 <h3 id="Session-数据集中存储"><a href="#Session-数据集中存储" class="headerlink" title="Session 数据集中存储"></a>Session 数据集中存储</h3><p>Session 数据集中存储方案则是将集群中的所有Session集中存储起来，Web服务器本身则并不存储Session数据，不同的Web服务器从同样的地方来获取Session，如下图所示。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100226991.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100226991.png"></p>
 <p>相对于Session Replication方案，此方案的Session数据将不保存在本机，并且Web服务器之间也没有了Session数据的复制，但是该方案存在的问题在于：</p>
 <ul>
 <li>读写Session数据引入了网络操作，这相对于本机的数据读取来说，问题就在于存在时延和不稳定性，但是通信发生在内网，则问题不大。</li>
 <li>如果集中存储Session的机器或集群出现问题，则会影响应用。</li>
 </ul>
 <h3 id="Cookie-Based"><a href="#Cookie-Based" class="headerlink" title="Cookie Based"></a>Cookie Based</h3><p>Cookie Based 方案是将<strong>Session数据放在Cookie里</strong>，访问Web服务器的时候，再由Web服务器生成对应的Session数据，如下图所示。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100227529.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100227529.png"></p>
 <p>但是Cookie Based 方案依然存在不足：</p>
 <ul>
 <li>Cookie长度的限制。这会导致Session长度的限制。</li>
@@ -617,10 +617,10 @@
 <li>5、客户端发起请求，需要携带该Token；</li>
 <li>6、服务端收到请求后，首先验证Token，之后返回数据。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100227480.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100227480.png"></p>
 <p>如上图为Token实现方式，浏览器第一次访问服务器，根据传过来的唯一标识userId，服务端会通过一些算法，如常用的HMAC-SHA256算法，然后加一个密钥，生成一个token，然后通过BASE64编码一下之后将这个token发送给客户端；客户端将token保存起来，下次请求时，带着token，服务器收到请求后，然后会用相同的算法和密钥去验证token，如果通过，执行业务操作，不通过，返回不通过信息。</p>
 <p>可以对比下图session实现方式，流程大致一致。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100227597.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100227597.png"></p>
 <p><strong>优点</strong>：</p>
 <ul>
 <li>无状态、可扩展 ：在客户端存储的Token是无状态的，并且能够被扩展。基于这种无状态和不存储Session信息，负载均衡器能够将用户信息从一个服务传到其他服务器上。</li>
@@ -1280,7 +1280,7 @@ Access-Control-Allow-Methods: GET, POST, PUT,DELETE
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -524,7 +524,7 @@
 <li>客户端向服务器端发出请求后，客户端会一直等待(不会再做其他事情)，直到服务器端返回结果或者网络出现问题。</li>
 <li>服务器端同样的，当在处理某个客户端A发来的请求时，另一个客户端B发来的请求会等待，直到服务器端的这个处理线程完成上一个处理。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262201622.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262201622.png"></p>
 <h3 id="传统的BIO的问题"><a href="#传统的BIO的问题" class="headerlink" title="传统的BIO的问题"></a>传统的BIO的问题</h3><ul>
 <li>同一时间，服务器只能接受来自于客户端A的请求信息；虽然客户端A和客户端B的请求是同时进行的，但客户端B发送的请求信息只能等到服务器接受完A的请求数据后，才能被接受。</li>
 <li>由于服务器一次只能处理一个客户端请求，当处理完成并返回后(或者异常时)，才能进行第二次请求的处理。很显然，这样的处理方式在高并发的情况下，是不能采用的。</li>
@@ -535,7 +535,7 @@
 <li>客户端一侧，也可以使用一个子线程和服务器端进行通信。这样客户端主线程的其他工作就不受影响了，当服务器端有响应信息的时候再由这个子线程通过 监听模式/观察模式(等其他设计模式)通知主线程。</li>
 </ul>
 <p>如下图所示:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262202633.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262202633.png"></p>
 <p>但是使用线程来解决这个问题实际上是有局限性的:</p>
 <ul>
 <li>虽然在服务器端，请求的处理交给了一个独立线程进行，但是操作系统通知accept()的方式还是单个的。也就是，实际上是服务器接收到数据报文后的“业务处理过程”可以多线程，但是数据报文的接受还是需要一个一个的来(下文的示例代码和debug过程我们可以明确看到这一点)</li>
@@ -825,7 +825,7 @@
 <span class="token punctuation">}</span></code></pre>
 
 <h3 id="看看服务器端的执行效果"><a href="#看看服务器端的执行效果" class="headerlink" title="看看服务器端的执行效果"></a>看看服务器端的执行效果</h3><p>我们主要看一看服务器使用多线程处理时的情况:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262203586.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262203586.png"></p>
 <h3 id="问题根源"><a href="#问题根源" class="headerlink" title="问题根源"></a>问题根源</h3><p>那么重点的问题并不是“是否使用了多线程”，而是为什么accept()、read()方法会被阻塞。即: 异步IO模式 就是为了解决这样的并发性存在的。但是为了说清楚异步IO模式，在介绍IO模式的时候，我们就要首先了解清楚，什么是 阻塞式同步、非阻塞式同步、多路复用同步模式。</p>
 <p>API文档中对于 serverSocket.accept() 方法的使用描述:</p>
 <blockquote>
@@ -835,12 +835,12 @@
 <ul>
 <li>服务器线程发起一个accept动作，询问操作系统 是否有新的socket套接字信息从端口X发送过来。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262203305.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262203305.png"></p>
 <ul>
 <li>注意，是询问操作系统。也就是说socket套接字的IO模式支持是基于操作系统的，那么自然同步IO/异步IO的支持就是需要操作系统级别的了。如下图:</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262204180.png" alt="img"></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262204021.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262204180.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262204021.png"></p>
 <p>如果操作系统没有发现有套接字从指定的端口X来，那么操作系统就会等待。这样serverSocket.accept()方法就会一直等待。这就是为什么accept()方法为什么会阻塞: 它内部的实现是使用的操作系统级别的同步IO。</p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
 <li>文章主要来源于: 银文杰，笔名“说好不能打脸”，<a target="_blank" rel="noopener" href="https://blog.csdn.net/yinwenjie">博客地址</a>。他的书《高性能服务系统构建与实战》。</li>
@@ -1486,7 +1486,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

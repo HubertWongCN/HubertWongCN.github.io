@@ -524,11 +524,11 @@
 <li><code>Learner</code>: 不参与决策，从Proposers/Acceptors学习最新达成一致的提案(Value)。</li>
 </ul>
 <p>在多副本状态机中，每个副本同时具有Proposer、Acceptor、Learner三种角色。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280247242.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280247242.jpg"></p>
 <blockquote>
 <p>可以理解为人大代表(Proposer)在人大向其它代表(Acceptors)提案，通过后让老百姓(Learner)落实。</p>
 </blockquote>
-<h3 id="3个阶段"><a href="#3个阶段" class="headerlink" title="3个阶段"></a>3个阶段</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280247868.jpg" alt="img"></p>
+<h3 id="3个阶段"><a href="#3个阶段" class="headerlink" title="3个阶段"></a>3个阶段</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280247868.jpg"></p>
 <h4 id="第一阶段-Prepare阶段"><a href="#第一阶段-Prepare阶段" class="headerlink" title="第一阶段: Prepare阶段"></a>第一阶段: Prepare阶段</h4><p>Proposer向Acceptors发出Prepare请求，Acceptors针对收到的Prepare请求进行Promise承诺。</p>
 <ul>
 <li><code>Prepare</code>: Proposer生成全局唯一且递增的Proposal ID (可使用时间戳加Server ID)，向所有Acceptors发送Prepare请求，这里无需携带提案内容，只携带Proposal ID即可。</li>
@@ -545,7 +545,7 @@
 <li><code>Accept</code>: Acceptor收到Propose请求后，在不违背自己之前作出的承诺下，接受并持久化当前Proposal ID和提案Value。</li>
 </ul>
 <h4 id="第三阶段-Learn阶段"><a href="#第三阶段-Learn阶段" class="headerlink" title="第三阶段: Learn阶段"></a>第三阶段: Learn阶段</h4><p>Proposer在收到多数Acceptors的Accept之后，标志着本次Accept成功，决议形成，将形成的决议发送给所有Learners。</p>
-<h3 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280247887.jpg" alt="img"></p>
+<h3 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280247887.jpg"></p>
 <ul>
 <li>获取一个Proposal ID n，为了保证Proposal ID唯一，可采用时间戳+Server ID生成；</li>
 <li>Proposer向所有Acceptors广播Prepare(n)请求；</li>
@@ -556,15 +556,15 @@
 <li>提议者接收到过半数请求后，如果发现有返回值result &gt;n，表示有更新的提议，跳转到1；否则value达成一致。</li>
 </ul>
 <h3 id="实现举例"><a href="#实现举例" class="headerlink" title="实现举例"></a>实现举例</h3><p>下面举几个例子，实例1如下图:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280247130.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280247130.jpg"></p>
 <p>图中P代表Prepare阶段，A代表Accept阶段。3.1代表Proposal ID为3.1，其中3为时间戳，1为Server ID。X和Y代表提议Value。</p>
 <p>实例1中P 3.1达成多数派，其Value(X)被Accept，然后P 4.5学习到Value(X)，并Accept。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280248875.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280248875.jpg"></p>
 <p>实例2中P 3.1没有被多数派Accept(只有S3 Accept)，但是被P 4.5学习到，P 4.5将自己的Value由Y替换为X，Accept(X)。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280248619.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280248619.jpg"></p>
 <p>实例3中P 3.1没有被多数派Accept(只有S1 Accept)，同时也没有被P 4.5学习到。由于P 4.5 Propose的所有应答，均未返回Value，则P 4.5可以Accept自己的Value (Y)。后续P 3.1的Accept (X) 会失败，已经Accept的S1，会被覆盖。</p>
 <p>Paxos算法可能形成活锁而永远不会结束，如下图实例所示:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280248328.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280248328.jpg"></p>
 <p>回顾两个承诺之一，Acceptor不再应答Proposal ID小于等于当前请求的Prepare请求。意味着需要应答Proposal ID大于当前请求的Prepare请求。</p>
 <p>两个Proposers交替Prepare成功，而Accept失败，形成活锁(Livelock)。</p>
 <h2 id="Paxos算法推导"><a href="#Paxos算法推导" class="headerlink" title="Paxos算法推导"></a>Paxos算法推导</h2><blockquote>
@@ -577,7 +577,7 @@
 <li>针对每一个要确定的值，运行一次Paxos算法实例(Instance)，形成决议。每一个Paxos实例使用唯一的Instance ID标识。</li>
 <li>在所有Proposers中选举一个Leader，由Leader唯一地提交Proposal给Acceptors进行表决。这样没有Proposer竞争，解决了活锁问题。在系统中仅有一个Leader进行Value提交的情况下，Prepare阶段就可以跳过，从而将两阶段变为一阶段，提高效率。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280249230.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280249230.jpg"></p>
 <p>Multi-Paxos首先需要选举Leader，Leader的确定也是一次决议的形成，所以可执行一次Basic Paxos实例来选举出一个Leader。选出Leader之后只能由Leader提交Proposal，在Leader宕机之后服务临时不可用，需要重新选举Leader继续服务。在系统中仅有一个Leader进行Proposal提交的情况下，Prepare阶段可以跳过。</p>
 <p>Multi-Paxos通过改变Prepare阶段的作用范围至后面Leader提交的所有实例，从而使得Leader的连续提交只需要执行一次Prepare阶段，后续只需要执行Accept阶段，将两阶段变为一阶段，提高了效率。为了区分连续提交的多个实例，每个实例使用一个Instance ID标识，Instance ID由Leader本地递增生成即可。</p>
 <p>Multi-Paxos允许有多个自认为是Leader的节点并发提交Proposal而不影响其安全性，这样的场景即退化为Basic Paxos。</p>
@@ -1231,7 +1231,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

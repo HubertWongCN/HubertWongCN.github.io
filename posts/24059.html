@@ -519,7 +519,7 @@
 <li><a target="_blank" rel="noopener" href="https://raft.github.io/">raft.github.io</a></li>
 </ul>
 <p>这里面有一个Raft Visualization:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280250473.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280250473.png"></p>
 <ul>
 <li><a target="_blank" rel="noopener" href="https://raft.github.io/raft.pdf">In Search of an Understandable Consensus Algorithm</a></li>
 <li><a target="_blank" rel="noopener" href="http://thesecretlivesofdata.com/raft/">动画理解Raft神器</a></li>
@@ -531,11 +531,11 @@
 <li><code>Follower</code>: 接受并持久化Leader同步的日志，在Leader告之日志可以提交之后，提交日志。</li>
 <li><code>Candidate</code>: Leader选举过程中的临时角色。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280251402.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280251402.jpg"></p>
 <p>Raft要求系统在任意时刻最多只有一个Leader，正常工作期间只有Leader和Followers。</p>
-<h3 id="角色状态转换"><a href="#角色状态转换" class="headerlink" title="角色状态转换"></a>角色状态转换</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280251448.jpg" alt="img"></p>
+<h3 id="角色状态转换"><a href="#角色状态转换" class="headerlink" title="角色状态转换"></a>角色状态转换</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280251448.jpg"></p>
 <p>Follower只响应其他服务器的请求。如果Follower超时没有收到Leader的消息，它会成为一个Candidate并且开始一次Leader选举。收到大多数服务器投票的Candidate会成为新的Leader。Leader在宕机之前会一直保持Leader的状态。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280251952.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280251952.jpg"></p>
 <p>Raft算法将时间分为一个个的任期(term)，每一个term的开始都是Leader选举。在成功选举Leader之后，Leader会在整个term内管理整个集群。如果Leader选举失败，该term就会因为没有Leader而结束。</p>
 <h2 id="Raft算法子问题"><a href="#Raft算法子问题" class="headerlink" title="Raft算法子问题"></a>Raft算法子问题</h2><p>Raft实现了和Paxos相同的功能，它将一致性分解为多个子问题: Leader选举(Leader election)、日志同步(Log replication)、安全性(Safety)、日志压缩(Log compaction)、成员变更(Membership change)等</p>
 <h3 id="Leader选举"><a href="#Leader选举" class="headerlink" title="Leader选举"></a>Leader选举</h3><p>Raft 使用心跳(heartbeat)触发Leader选举。当服务器启动时，初始化为Follower。Leader向所有Followers周期性发送heartbeat。如果Follower在选举超时时间内没有收到Leader的heartbeat，就会等待一段随机的时间后发起一次Leader选举。</p>
@@ -545,14 +545,14 @@
 <li>收到了Leader的消息，表示有其它服务器已经抢先当选了Leader；</li>
 <li>没有服务器赢得多数的选票，Leader选举失败，等待选举时间超时后发起下一次选举。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280252166.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280252166.jpg"></p>
 <p>选举出Leader后，Leader通过定期向所有Followers发送心跳信息维持其统治。若Follower一段时间未收到Leader的心跳则认为Leader可能已经挂了，再次发起Leader选举过程。</p>
 <p>Raft保证选举出的Leader上一定具有最新的已提交的日志，这一点将在四、安全性中说明。</p>
 <h3 id="日志同步"><a href="#日志同步" class="headerlink" title="日志同步"></a>日志同步</h3><p>Leader选出后，就开始接收客户端的请求。Leader把请求作为日志条目(Log entries)加入到它的日志中，然后并行的向其他服务器发起 AppendEntries RPC (RPC细节参见八、Raft算法总结)复制日志条目。当这条日志被复制到大多数服务器上，Leader将这条日志应用到它的状态机并向客户端返回执行结果。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280252563.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280252563.jpg"></p>
 <p>某些Followers可能没有成功的复制日志，Leader会无限的重试 AppendEntries RPC直到所有的Followers最终存储了所有的日志条目。</p>
 <p>日志由有序编号(log index)的日志条目组成。每个日志条目包含它被创建时的任期号(term)，和用于状态机执行的命令。如果一个日志条目被复制到大多数服务器上，就被认为可以提交(commit)了。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280252280.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280252280.jpg"></p>
 <p>Raft日志同步保证如下两点:</p>
 <ul>
 <li>如果不同日志中的两个条目有着相同的索引和任期号，则它们所存储的命令是相同的。</li>
@@ -561,7 +561,7 @@
 <p>第一条特性源于Leader在一个term内在给定的一个log index最多创建一条日志条目，同时该条目在日志中的位置也从来不会改变。</p>
 <p>第二条特性源于 AppendEntries 的一个简单的一致性检查。当发送一个 AppendEntries RPC 时，Leader会把新日志条目紧接着之前的条目的log index和term都包含在里面。如果Follower没有在它的日志中找到log index和term都相同的日志，它就会拒绝新的日志条目。</p>
 <p>一般情况下，Leader和Followers的日志保持一致，因此 AppendEntries 一致性检查通常不会失败。然而，Leader崩溃可能会导致日志不一致: 旧的Leader可能没有完全复制完日志中的所有条目。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280252953.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280252953.jpg"></p>
 <p>上图阐述了一些Followers可能和新的Leader日志不同的情况。一个Follower可能会丢失掉Leader上的一些条目，也有可能包含一些Leader没有的条目，也有可能两者都会发生。丢失的或者多出来的条目可能会持续多个任期。</p>
 <p>Leader通过强制Followers复制它的日志来处理日志的不一致，Followers上的不一致的日志会被Leader的日志覆盖。</p>
 <p>Leader为了使Followers的日志同自己的一致，Leader需要找到Followers同它的日志一致的地方，然后覆盖Followers在该位置之后的条目。</p>
@@ -575,7 +575,7 @@
 <li>Leader只能推进commit index来提交当前term的已经复制到大多数服务器上的日志，旧term日志的提交要等到提交当前term的日志来间接提交(log index 小于 commit index的日志被间接提交)。</li>
 </ul>
 <p>之所以要这样，是因为可能会出现已提交的日志又被覆盖的情况:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280252256.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280252256.jpg"></p>
 <p>在阶段a，term为2，S1是Leader，且S1写入日志(term, index)为(2, 2)，并且日志被同步写入了S2；</p>
 <p>在阶段b，S1离线，触发一次新的选主，此时S5被选为新的Leader，此时系统term为3，且写入了日志(term, index)为(3， 2);</p>
 <p>S5尚未将日志推送到Followers就离线了，进而触发了一次新的选主，而之前离线的S1经过重新上线后被选中变成Leader，此时系统term为4，此时S1会将自己的日志同步到Followers，按照上图就是将日志(2， 2)同步到了S3，而此时由于该日志已经被同步到了多数节点(S1, S2, S3)，因此，此时日志(2，2)可以被提交了。；</p>
@@ -596,10 +596,10 @@
 <p>如果将成员变更当成一般的一致性问题，直接向Leader发送成员变更请求，Leader复制成员变更日志，达成多数派之后提交，各服务器提交成员变更日志后从旧成员配置(Cold)切换到新成员配置(Cnew)。</p>
 <p>因为各个服务器提交成员变更日志的时刻可能不同，造成各个服务器从旧成员配置(Cold)切换到新成员配置(Cnew)的时刻不同。</p>
 <p>成员变更不能影响服务的可用性，但是成员变更过程的某一时刻，可能出现在Cold和Cnew中同时存在两个不相交的多数派，进而可能选出两个Leader，形成不同的决议，破坏安全性。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280253188.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280253188.jpg"></p>
 <p>由于成员变更的这一特殊性，成员变更不能当成一般的一致性问题去解决。</p>
 <p>为了解决这一问题，Raft提出了两阶段的成员变更方法。集群先从旧成员配置Cold切换到一个过渡成员配置，称为共同一致(joint consensus)，共同一致是旧成员配置Cold和新成员配置Cnew的组合Cold U Cnew，一旦共同一致Cold U Cnew被提交，系统再切换到新成员配置Cnew。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280253881.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280253881.jpg"></p>
 <p>Raft两阶段成员变更过程如下:</p>
 <ul>
 <li>Leader收到成员变更请求从Cold切成Cnew；</li>
@@ -631,9 +631,9 @@
 </ul>
 <h2 id="Raft与Multi-Paxos对比"><a href="#Raft与Multi-Paxos对比" class="headerlink" title="Raft与Multi-Paxos对比"></a>Raft与Multi-Paxos对比</h2><p>Raft与Multi-Paxos都是基于领导者的一致性算法，乍一看有很多地方相同，下面总结一下Raft与Multi-Paxos的异同。</p>
 <p>Raft与Multi-Paxos中相似的概念:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280253267.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280253267.jpg"></p>
 <p>Raft与Multi-Paxos的不同:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280254999.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280254999.jpg"></p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/32052223">Raft算法详解</a></li>
 </ul>
@@ -1280,7 +1280,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

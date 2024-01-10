@@ -511,7 +511,7 @@
 <p>技术方案的设计和取舍，往往强受限于成本。当成本高企到难以承受时，将必须导致技术方案的升级换代。那么问题来了，仅仅是存个日志怎么就成本难以承受了呢？</p>
 </blockquote>
 <p>以一个常见的日志传输及存储方案来举例，如下图，暂存就是采用客户端写本地文件存日志，传输即是采用MQ，消费入库常见的如ES。下图方案，为了减少部分存储成本，将日志详情存储于压缩更好的Hbase，仅将查询时需要的一些索引字段放在了ES。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100427693.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100427693.png"></p>
 <p>以上作为一个常用的方案，为什么会成本高昂呢。</p>
 <p>简单计算一下，京东App某个模块（是一个模块，非整个App累计），单次用户请求，用户的入参+返回值+流程中打印的日志占用的大小在40k-2M之间，中位数在60k左右。该模块日常每秒约2-5万次访问，高峰时会翻10倍，极高峰可达百万。</p>
 <p>以3万每秒来算，产生的日志大小为1.8G，也就是说即便是低负载时，这个日志框架要吞下1.8G的传输与存储。但这是远远不够的，因为即便放弃极高峰，仅仅支撑偶现的高峰，也需要该系统能支撑秒级15G以上的吞吐。但是这仅仅才是一个模块而已，算上前中台这样的模块还有很多。</p>
@@ -525,10 +525,10 @@
 </blockquote>
 <p>世界上有一个著名的法则叫”奥卡姆剃刀定律”，讲的是程序员该如何选择合适的剃刀，来让自己的秀发光滑柔顺有光泽。</p>
 <p>其实不是的，该定律主要就是八个字”<strong>如无必要，勿增实体</strong>“。当一个流程难以支撑当前的业务时，就该审视一下，哪些步骤是不必要的。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100427707.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100427707.png"></p>
 <p>从这个通用流程中，其实很容易就能发现，经历了很多读写，每次读写都伴随着磁盘的读写（包括MQ也是写磁盘的），和频繁的序列化反序列化，以及翻倍的网络IO。</p>
 <p>那么需要挥舞起奥卡姆的剃刀，做一些删减，把非必要的部分给删掉，就变成了下图的流程：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100427564.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100427564.png"></p>
 <p>可以发现，<strong>其实写本地磁盘、和MQ都是没有必要的，完全可以将日志数据写到本地内存，然后搞个线程，定时通过UDP将日志直接发送到worker端即可</strong>。</p>
 <p>worker接收到之后，解析一下，写入自己的内存队列，再起数个异步线程，批量将队列的数据写入ClickHouse数据库即可。</p>
 <p>可以看到，下图的流程中，那个圆圈明显比上图的圆圈要小，这是为什么呢？因为做了压缩。</p>
@@ -539,7 +539,7 @@
 <blockquote>
 <p>通过上图，可以看到，<strong>当流程中的某些环节并不是必需的时，应该果断砍掉，不要轻易照搬网上的方案，而应该选择更适合的方案</strong>。下面详细讲一下系统是如何设计、运转的。</p>
 </blockquote>
-<h2 id="更强悍的日志搜集系统"><a href="#更强悍的日志搜集系统" class="headerlink" title="更强悍的日志搜集系统"></a>更强悍的日志搜集系统</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100427584.png" alt="img"></p>
+<h2 id="更强悍的日志搜集系统"><a href="#更强悍的日志搜集系统" class="headerlink" title="更强悍的日志搜集系统"></a>更强悍的日志搜集系统</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100427584.png"></p>
 <p>来审视一下这个链路、极短的日志搜集系统。</p>
 <ul>
 <li><strong>配置中心</strong>：用来存储worker的IP地址，供客户端获取自己模块所分配的worker集群的ip。</li>
@@ -550,7 +550,7 @@
 </ul>
 <p>可以看出，这其中最关键的地方是worker端，它的承接流量、消费性能、入库性能将决定着整个链路能否良好地运转。</p>
 <p>主要分别讲解一下client端和worker端的实现。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100427986.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100427986.png"></p>
 <h2 id="Client端聚合日志"><a href="#Client端聚合日志" class="headerlink" title="Client端聚合日志"></a>Client端聚合日志</h2><p>一次请求中，通常要保留的日志信息主要有：</p>
 <ul>
 <li><strong>请求的出入参</strong></li>
@@ -585,26 +585,26 @@
 <li><strong>集群高可用架构</strong></li>
 </ul>
 <p>EasyOLAP部署CH集群是三层结构：域名 + CHProxy + CH节点，域名转发请求到CHProxy，再由CHProxy根据集群节点状态来转发。CHProxy的引入是为了让Query均匀分布在每个节点上，，并对CHProxy做了一定的改进，自动感知集群节点的状态变化。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428751.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428751.png"></p>
 <ul>
 <li><strong>本地表写入</strong></li>
 </ul>
 <p>大吞吐量的数据写入分布式表时，分布式表会将接收的insert数据拆分成多个parts，并通过rand或者shard_key方式转发到各个分片，会引起ch节点网络带宽和merge的工作量增加，导致写入性能下降，并且会增加too many parts的风险和加大zookeeper的压力，另外数据会在分布式表所在节点进行临时落盘，然后异步的发送到本地表所在的节点进行物理存储，中间没有一致性校验，如果分布式表所在的节点出现故障，会存在数据丢失的风险。所以针对以上风险，大吞吐量的数据可直接写入本地表，相较于写入分布式表可以大幅度提升2-3倍的写入性能。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428279.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428279.png"></p>
 <h2 id="多条件查询控制台"><a href="#多条件查询控制台" class="headerlink" title="多条件查询控制台"></a>多条件查询控制台</h2><p>控制台比较简单，主要就是做一些sql语句查询，做好clickhouse的高效查询，这里简单提一些知识点。</p>
 <p>做好数据的分片，如按天分片。用好prewhere查询功能，可以带来性能的提升。做好索引字段的设计，譬如检索常用的时间、pin。</p>
 <p>细节难以尽述，要从百亿千亿数据中，做好极速的查询，还需要对clickhouse的一些查询特性有所了解。</p>
 <p>下图界面展示的即为一些索引项，点击查看详情，则从数据库捞出压缩过的数据，此时才解压并展示给前端。查看链路，则是该次请求中，整个链路用户打印的log（包括线程池内的）。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428531.png" alt="img"></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428792.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428531.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428792.png"></p>
 <h2 id="总结与对比"><a href="#总结与对比" class="headerlink" title="总结与对比"></a>总结与对比</h2><blockquote>
 <p>可以简单的做一些对比，主要在于硬件成本和软件性能的对比。</p>
 </blockquote>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428211.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428211.png"></p>
 <p>从上文可知，磁盘的占用原始方案占用了磁盘（1份），MQ（2份），数据库（1份）。而在新的方案中，磁盘的占用仅剩下clickhouse的（0.8份），clickhouse自身又对数据做了压缩，实际占用空间不到入库容量的80%。</p>
 <p>那么<strong>仅磁盘即可节省75%以上的存储成本</strong>。</p>
 <p>大家都知道，秒级的吞吐量，是伴随着服务器Cpu的耗费的，并不是说只给个大硬盘，即可一台服务器每秒吞吐1个G的。每台服务器秒级的吞吐量是有上限的，秒级占用磁盘的上升，即对应Cpu数量的上升，要支撑一秒1G的磁盘写入，需要5台或以上的服务器。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428700.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100428700.png"></p>
 <p>那么在磁盘的大幅节约下，线性地节省了大量的中间过程Cpu服务器。实际粗略统计效果，<strong>流程中服务器可节约70%以上</strong>。</p>
 <p>在软件性能上，过程很好理解。对Client端的消耗主要就是序列化、写磁盘、读磁盘、反序列化这几步的消耗，Udp则仅有一步序列化。假设MQ集群是有无限的写入能力，可以吞下所有的发过去的日志，那么就是worker端的消费性能对比。</p>
 <p>从MQ拉取并消费，这个过程如果MQ没有积压，则有零拷贝在支撑高速的拉取，如果积压了，则可能产生大量的MQ磁盘IO，拉取速度会大幅下降。这个过程效率会明显低于Udp发送到worker的处理效率，而且占用双份的网络带宽。实际表现上，worker表现出的强劲性能，较之前单条拉取MQ集群时，消费性能提升在10倍以上。</p>
@@ -1248,7 +1248,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

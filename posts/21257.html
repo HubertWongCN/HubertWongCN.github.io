@@ -508,7 +508,7 @@
 <p>DNS的核心工作就是将域名翻译成计算机IP地址, 它是基于UDP协议实现的，本文将具体阐述DNS相关的概念，解析，调度原理（负载均衡和区域调度）等DNS相关的所有知识点。</p>
 </blockquote>
 <h2 id="DNS简介"><a href="#DNS简介" class="headerlink" title="DNS简介"></a>DNS简介</h2><p>域名系统并不像电话号码通讯录那么简单，通讯录主要是单个个体在使用，同一个名字出现在不同个体的通讯录里并不会出现问题，但域名是群体中所有人都在用的，必须要保持唯一性。为了达到唯一性的目的，因特网在命名的时候采用了层次结构的命名方法。每一个域名（本文只讨论英文域名）都是一个标号序列（labels），用字母（A-Z，a-z，大小写等价）、数字（0-9）和连接符（-）组成，标号序列总长度不能超过255个字符，它由点号分割成一个个的标号（label），每个标号应该在63个字符之内，每个标号都可以看成一个层次的域名。级别最低的域名写在左边，级别最高的域名写在右边。域名服务主要是基于UDP实现的，服务器的端口号为53。</p>
-<h3 id="域名层级结构"><a href="#域名层级结构" class="headerlink" title="域名层级结构"></a>域名层级结构</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301737668.png" alt="img"></p>
+<h3 id="域名层级结构"><a href="#域名层级结构" class="headerlink" title="域名层级结构"></a>域名层级结构</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301737668.png"></p>
 <blockquote>
 <p>注意：最开始的域名最后都是带了点号的，比如 <code>www.kernel.org.</code> ，最后面的点号表示根域名服务器，后来发现所有的网址都要加上最后的点，就简化了写法，干脆所有的都不加即<code>www.kernel.org</code>，但是你在网址后面加上点号也是可以正常解析的。</p>
 </blockquote>
@@ -519,7 +519,7 @@
 <li><strong>权限域名服务器</strong>：负责一个区的域名解析工作</li>
 <li><strong>本地域名服务器</strong>：当一个主机发出DNS查询请求的时候，这个查询请求首先就是发给本地域名服务器的。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301738212.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301738212.png"></p>
 <h2 id="DNS-解析流程"><a href="#DNS-解析流程" class="headerlink" title="DNS 解析流程"></a>DNS 解析流程</h2><blockquote>
 <p>网上找了个比较好的例子</p>
 </blockquote>
@@ -535,7 +535,7 @@
 <li>8、重复第7步，直到找到正确的纪录。</li>
 <li>9、本地域名服务器把返回的结果保存到缓存，以备下一次使用，同时还将结果返回给客户机。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301738795.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301738795.png"></p>
 <p>注意事项：</p>
 <p><strong>递归查询</strong>：在该模式下DNS服务器接收到客户机请求，必须使用一个准确的查询结果回复客户机。如果DNS服务器本地没有存储查询DNS信息，那么该服务器会询问其他服务器，并将返回的查询结果提交给客户机。</p>
 <p><strong>迭代查询</strong>：DNS所在服务器若没有可以响应的结果，会向客户机提供其他能够解析查询请求的DNS服务器地址，当客户机发送查询请求时，DNS服务器并不直接回复查询结果，而是告诉客户机另一台DNS服务器地址，客户机再向这台DNS服务器提交请求，依次循环直到返回查询的结果为止。</p>
@@ -720,30 +720,30 @@ No match <span class="token keyword">for</span> domain <span class="token string
 <span class="token operator">&gt;&gt;</span><span class="token operator">&gt;</span> Last update of whois database: <span class="token number">2020</span>-01-31T07:03:29Z <span class="token operator">&lt;&lt;&lt;</span></code></pre>
 
 <h3 id="在线工具查询"><a href="#在线工具查询" class="headerlink" title="在线工具查询"></a>在线工具查询</h3><p><a target="_blank" rel="noopener" href="https://www.nslookuptool.com/chs/">https://www.nslookuptool.com/chs/</a></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301739313.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301739313.png"></p>
 <h2 id="DNS-调度原理"><a href="#DNS-调度原理" class="headerlink" title="DNS 调度原理"></a>DNS 调度原理</h2><blockquote>
 <p>本节转自：<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000010787338">【网易MC】DNS 调度原理解析</a></p>
 </blockquote>
 <p>现在，大部分应用和业务都采用域名作为服务的入口，因此用 DNS 来负载均衡和区域调度是非常普遍的做法，网易云也有着一套基于 DNS 的调度系统。某些用户在进行直播推流时用的并不是网易云的直播 SDK，而是一些第三方的推流软件，如obs，这样就不能使用我们的 GSLB 全局调度服务器来调度。对于这些用户，我们使用 DNS 调度的方式，对不同地域的请求返回不同解析结果，将请求调度到离用户最近的服务器节点，从而减少延迟访问。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301739247.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301739247.jpeg"></p>
 <p>咋一看，DNS 调度这么简单方便，那为什么不让所有的用户都走 DNS 调度呢？想知道原因？来，我们继续讲。</p>
 <h3 id="地理位置调度不准确"><a href="#地理位置调度不准确" class="headerlink" title="地理位置调度不准确"></a>地理位置调度不准确</h3><p>在 DNS 解析过程中，与权威服务器通信的只有 DNS 缓存服务器，所以权威服务器只能根据 DNS 缓存服务器的IP来进行调度。因此 DNS 调度有一个前提：假定用户使用的缓存DNS与用户本身在同个网络内，即至少在同一个 AS(自治域)内，在该前提下，DNS 的解析才是准确的。通常情况下，用户使用 ISP 提供的本地缓存(简称 local DNS)，local DNS 一般与用户在同个网络内，这时候 DNS 调度是有效的。</p>
 <p>但近些年，不少互联网厂商推广基于 BGP Anycast 的公共 DNS (Public DNS)，而这些Anycaset IP 的节点一般是远少于各个ISP的节点，例如可能广州电信用户使用了某公共 DNS，但该公共 DNS 里用户最近的是上海电信节点，甚至更极端的如 Google DNS 8.8.8.8，在中国大陆没有节点(最近的是台湾)。而不幸的是国内有不少用户使用了 Google DNS，这其实降低了他们的网络访问体验。总的来说，<strong>使用公共 DNS，实际上破坏了上文的前提，导致 DNS 区域调度失效，用户以为得到了更快更安全的 DNS 解析，但实际得到了错误的解析，增加了网络访问延迟</strong>。</p>
 <p>传统 DNS 协议的区域调度过程示例如下图，假定某业务以 foo.163.com 对外提供服务，在北京和东京各有一个节点，业务期望国内大陆的用户访问北京节点，而非大陆用户则访问东京节点。因为权威是根据 DNS 缓存来决定返回的结果，所以当用户使用不用的 DNS 缓存时，可能会解析到不同的结果。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301740275.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301740275.jpeg"></p>
 <p>2011 年，Google 为首的几家公司在提出了一个 DNS 的扩展方案 edns-client-subnet (以下简称 ECS)，该扩展方案的核心思想是通过在 DNS 请求报文里加入原始请求的 IP(即 client 的 IP)，使得权威能根据该信息返回正确的结果。目前，该方案仍处于草案阶段。该方案很好地解决了上述提到的 remote DNS 导致解析不准确的问题，但也带了一些问题：</p>
 <ul>
 <li>至少需要 cache 和权威都支持，才能完成完整的 ECS 解析</li>
 <li>ECS 给 cache 增加了很大的缓存压力，因为理论上可能需要为每个IP段分配空间去缓存解析结果</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301740792.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301740792.jpeg"></p>
 <h3 id="规则变更生效时间不确定"><a href="#规则变更生效时间不确定" class="headerlink" title="规则变更生效时间不确定"></a>规则变更生效时间不确定</h3><p>当缓存服务器向权威服务器查询得到记录之后，会将其缓存起来，在缓存有效期内，如果收到相同记录的查询，缓存服务器会直接返回给客户端，而不需要再次向权威查询，当有效期过后，缓存则是需要再次发起查询。这个缓存有效期即是 TTL。</p>
 <p>虽然 DNS 的缓存机制在大多数情况下缩短了客户端的记录解析时间，但缓存也意味着生效同步的延迟。当权威服务器的记录变更时，需要等待一段时间才能让所有客户端能解析到新的结果，因为很可能缓存服务器还缓存着旧的记录。</p>
 <p>我们将权威的记录变更到全网生效这个过程称为 propagation，它的时间是不确定的，理论上的最大值即是 TTL 的值，对于记录变更或删除，这个时间是记录原本的 TTL，对于记录新增则是域的 nTTL 值。</p>
 <p>如果一个域名记录原本的 TTL 是 18000，可以认为，变更该记录理论上需要等待 5 个小时才能保证记录能生效到全网。假设该域名的业务方希望缩短切换的时间，正确的做法是，至少提前5个小时修改记录，仅改小 TTL，例如改为5分钟，等待该变更同步到全网之后，再进行修改指向的操作，确认无误再将 TTL 修改为原本的值。</p>
 <p>虽然 DNS 协议标准里建议缓存服务器应该记住或者缩短 TTL 的值，但实际上，有一些DNS缓存会修改权威服务器的 TTL，将其变大，这在国内几大运营商中是很常见的。例如，某域记录的 TTL 值实际上设置为 60，但在运营商的 DNS 缓存上，却变成 600 或者更大的值，甚至还有一些 DNS 缓存是不遵循 TTL 机制。这些都会影响域名的实际生效时间。</p>
 <h3 id="高可用"><a href="#高可用" class="headerlink" title="高可用"></a>高可用</h3><p>为避免受 DNS 缓存的影响，需要保证 DNS 中 A 记录的 IP 节点高可用性。对此，网易云DNS 调度系统采用的方案是在同一区域的多台直播服务器节点之间做负载均衡，对外只暴露一个虚 IP，这样，即使某台服务器宕机，负载均衡能迅速感知到，排除故障节点，而对 DNS 而言，因为虚 IP 不变而不受影响。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301741146.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312301741146.jpeg"></p>
 <h2 id="DNS-安全相关"><a href="#DNS-安全相关" class="headerlink" title="DNS 安全相关"></a>DNS 安全相关</h2><blockquote>
 <p>本章节部分内容参考自： <a target="_blank" rel="noopener" href="http://blog.oneapm.com/">OneAPM blog</a></p>
 </blockquote>
@@ -1470,7 +1470,7 @@ No match <span class="token keyword">for</span> domain <span class="token string
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -507,7 +507,7 @@
                 <h2 id="0-概述"><a href="#0-概述" class="headerlink" title="0. 概述"></a>0. 概述</h2><p>Dapper–Google生产环境下的分布式跟踪系统。 Dapper的英文论文：<a href="https://link.juejin.cn/?target=http://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/36356.pdf">static.googleusercontent.com/media/resea…</a> 中文论文：<a href="https://link.juejin.cn/?target=https://bigbully.github.io/Dapper-translation/">bigbully.github.io/Dapper-tran…</a> （建议一定要看下）</p>
 <p>分布式调用跟踪系统实际上是随着微服务才火起来的一个概念，Google早在很多年前（2000年初便已经使用自研容器）已经微服务化了，所以他的分布式跟踪理论目前是最成熟的。 分布式跟踪系统出现的原因简单的说是因为在分布式系统中一次请求中会包含很多的RPC，迫切需要一些可以帮助理解系统行为和分析性能问题的工具，需要断定具体哪个服务拖了后腿。</p>
 <p>根据论文来看，先看一个例子：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100230434.awebp" alt="img"> </p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100230434.awebp"> </p>
 <p>A~E分别表示五个服务，用户发起一次请求到A，然后A分别发送RPC请求到B和C，B处理请求后返回，C还要发起两个RPC请求到D和E，和D和E交互之后再返还给A，由A来响应最初的请求。 对于这样一个请求，简单实用的分布式跟踪的实现，就是为服务器上每一次你发送和接收动作来收集跟踪标识符(message identifiers)和时间戳(timestamped events)。也就是将这些记录与特定的请求进行关联到一起。</p>
 <h2 id="1-如何将每个服务的日志与每一条记录与特定的请求关联到一起"><a href="#1-如何将每个服务的日志与每一条记录与特定的请求关联到一起" class="headerlink" title="1. 如何将每个服务的日志与每一条记录与特定的请求关联到一起"></a>1. 如何将每个服务的日志与每一条记录与特定的请求关联到一起</h2><p>目前学术界与工业界有如下两种方案，将一些记录与某个特定的请求关联到一起</p>
 <p><strong>黑盒方案（black box）</strong> 黑盒方案假定需要跟踪的除了上述信息之外没有额外的信息，这样就可以使用统计回归技术来推断两者之间的关系。</p>
@@ -523,9 +523,9 @@
 <p>每个跟踪树Trace都要定义一个全局唯一的TraceID，推荐用64位的整数表示，在这个跟踪中的所有Span都将获取到这个TraceID。 每个Span都有一个ParentSpanID和它自己的SpanID。上图那个例子中A服务的ParentSpanID为空，SpanID为1；然后B服务的ParentSpanID为1，SpanID为2；C服务的ParentSpanID也为1，SpanID为3，以此类推。</p>
 <p>在Dapper跟踪树结构中，树节点是整个架构的基本单元，而每一个节点又是对span的引用。节点之间的连线表示的span和它的父span直接的关系。虽然span在日志文件中只是简单的代表span的开始和结束时间，他们在整个树形结构中却是相对独立的.</p>
 <p>图2：5个span在Dapper跟踪树种短暂的关联关系 </p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100230940.awebp" alt="img"> 在上图中说明了span在一个大的跟踪过程中是什么样的。Dapper记录了span名称，以及每个span的ID和父ID，以重建在一次追踪过程中不同span之间的关系。如果一个span没有父ID被称为root span。所有span都挂在一个特定的跟踪上，也共用一个跟踪id（traceID在图中未示出)。所有这些ID用全局唯一的64位整数标示。在一个典型的Dapper跟踪中，我们希望为每一个RPC对应到一个单一的span上，而且每一个额外的组件层都对应一个跟踪树型结构的层级。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100230940.awebp"> 在上图中说明了span在一个大的跟踪过程中是什么样的。Dapper记录了span名称，以及每个span的ID和父ID，以重建在一次追踪过程中不同span之间的关系。如果一个span没有父ID被称为root span。所有span都挂在一个特定的跟踪上，也共用一个跟踪id（traceID在图中未示出)。所有这些ID用全局唯一的64位整数标示。在一个典型的Dapper跟踪中，我们希望为每一个RPC对应到一个单一的span上，而且每一个额外的组件层都对应一个跟踪树型结构的层级。</p>
 <p>图3：在图2中所示的一个单独的span的细节图 </p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100231571.awebp" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100231571.awebp"></p>
 <p>span除了记录ParentSpanID和自己的SpanID外，还会记录自己请求其他服务的时间和响应时间。由于客户端和服务器上的时间戳来自不同的主机，必须考虑到时间偏差，为了解决这个问题需要约定一个前提，即RPC客户端必须发出请求后，服务端才能收到，即如果服务端的时间戳比客户端发出请求的时间戳还靠前，那么就按请求时间来算，响应时间也是如此。(RPC客户端发送一个请求之后，服务器端才能接收到，对于响应也是一样的（服务器先响应，然后客户端才能接收到这个响应）)，这样一来，服务器端的RPC就有一个时间戳的一个上限和下限。</p>
 <p>从上图可以首先能看出来这个span是一次”Hello.Call”的RPC，SpanID是5，ParentSpanID是3，TraceID是100。 我们重点看一下Client Send, Server Recv, Server Send, Client Recv即CS, SR, SS, CR。</p>
 <ul>
@@ -544,7 +544,7 @@
 <h2 id="3-如何实现应用级透明？"><a href="#3-如何实现应用级透明？" class="headerlink" title="3. 如何实现应用级透明？"></a>3. 如何实现应用级透明？</h2><p>在google的环境中，所有的应用程序使用相同的线程模型、控制流和RPC系统，既然不能让工程师写代码记录日志，那么就只能让这些线程模型、控制流和RPC系统来自动帮助工程师记录日志了。</p>
 <p>举个例子，几乎所有的google进程间通信是建立在一个用C++和JAVA开发的RPC框架上，dapper把跟踪植入这个框架，span的ID和跟踪的ID会从客户端发送到服务端，这样工程师也就不需要关心应用实现层次。</p>
 <p>Dapper跟踪收集的流程 </p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100231297.awebp" alt="img"> 分为3个阶段：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100231297.awebp"> 分为3个阶段：</p>
 <ol>
 <li>各个服务将span数据写到本机日志上；</li>
 <li>dapper守护进程进行拉取，将数据读到dapper收集器里；</li>
@@ -561,10 +561,10 @@
 <p>在Dapper运行期写入到本地磁盘是最昂贵的操作，但是他们的可见损耗大大减少，因为写入日志文件和操作相对于被跟踪的应用系统来说都是异步的。不过，日志写入的操作如果在大流量的情况，尤其是每一个请求都被跟踪的情况下就会变得可以察觉到。</p>
 <h4 id="4-2-跟踪收集的消耗"><a href="#4-2-跟踪收集的消耗" class="headerlink" title="4.2 跟踪收集的消耗"></a>4.2 跟踪收集的消耗</h4><p>谷歌的统计数据： 最坏情况下，Dapper收集日志的守护进程在高于实际情况的负载基准下进行测试时的cpu使用率：没有超过0.3%的单核cpu使用率。 限制了Dapper守护进程为内核scheduler最低的优先级，以防在一台高负载的服务器上发生cpu竞争。 Dapper也是一个带宽资源的轻量级的消费者，每一个span在我们的仓库中传输只占用了平均426的byte。作为网络行为中的极小部分，Dapper的数据收集在Google的生产环境中的只占用了0.01%的网络资源。</p>
 <p>图3：Dapper守护进程在负载测试时的CPU资源使用率 </p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100231584.awebp" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100231584.awebp"></p>
 <h4 id="4-3-在生产环境下对负载的影响"><a href="#4-3-在生产环境下对负载的影响" class="headerlink" title="4.3 在生产环境下对负载的影响"></a>4.3 在生产环境下对负载的影响</h4><p>每个请求都会利用到大量的服务器的高吞吐量的线上服务，这是对有效跟踪最主要的需求之一；这种情况需要生成大量的跟踪数据，并且他们对性能的影响是最敏感的。在表2中我们用集群下的网络搜索服务作为例子，我们通过调整采样率，来衡量Dapper在延迟和吞吐量方面对性能的影响。</p>
 <p>图4：网络搜索集群中，对不同采样率对网络延迟和吞吐的影响。延迟和吞吐的实验误差分别是2.5%和0.15%。 </p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100232187.awebp" alt="img"> 我们看到，虽然对吞吐量的影响不是很明显，但为了避免明显的延迟，跟踪的采样还是必要的。然而，延迟和吞吐量的带来的损失在把采样率调整到小于1/16之后就全部在实验误差范围内。在实践中，我们发现即便采样率调整到1/1024仍然是有足够量的跟踪数据的用来跟踪大量的服务。保持Dapper的性能损耗基线在一个非常低的水平是很重要的，因为它为那些应用提供了一个宽松的环境使用完整的Annotation API而无惧性能损失。使用较低的采样率还有额外的好处，可以让持久化到硬盘中的跟踪数据在垃圾回收机制处理之前保留更长的时间，这样为Dapper的收集组件给了更多的灵活性。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100232187.awebp"> 我们看到，虽然对吞吐量的影响不是很明显，但为了避免明显的延迟，跟踪的采样还是必要的。然而，延迟和吞吐量的带来的损失在把采样率调整到小于1/16之后就全部在实验误差范围内。在实践中，我们发现即便采样率调整到1/1024仍然是有足够量的跟踪数据的用来跟踪大量的服务。保持Dapper的性能损耗基线在一个非常低的水平是很重要的，因为它为那些应用提供了一个宽松的环境使用完整的Annotation API而无惧性能损失。使用较低的采样率还有额外的好处，可以让持久化到硬盘中的跟踪数据在垃圾回收机制处理之前保留更长的时间，这样为Dapper的收集组件给了更多的灵活性。</p>
 <h2 id="5-采样"><a href="#5-采样" class="headerlink" title="5. 采样"></a>5. 采样</h2><p>分布式跟踪系统的实现要求是性能低损耗的，尤其在生产环境中分布式跟踪系统不能影响到核心业务的性能。 Google也不可能每次请求都跟踪的，所以要进行采样，每个应用和服务可以自己设置采样率。采样率应该是每个应用自己的配置里配置的，这样每个应用可以动态调整，特别是刚应用刚上线使可以适当调高采样率。</p>
 <p>一般在系统峰值流量很大的情况下，只需要采样其中很小一部分请求，例如1/1000的采样率，即分布式跟踪系统只会在1000次请求中采样其中的某一次。</p>
 <h4 id="5-1-可变采样"><a href="#5-1-可变采样" class="headerlink" title="5.1 可变采样"></a>5.1 可变采样</h4><p>任何给定进程的Dapper的消耗和每个进程单位时间的跟踪的采样率成正比。Dapper的第一个生产版本在Google内部的所有进程上使用统一的采样率，为1/1024。这个简单的方案是对我们的高吞吐量的线上服务来说是非常有用，因为那些感兴趣的事件(在大吞吐量的情况下)仍然很有可能经常出现，并且通常足以被捕捉到。</p>
@@ -1215,7 +1215,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

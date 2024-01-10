@@ -512,10 +512,10 @@
 </blockquote>
 <p><strong>以一个网上的经典下单减库存例子为例</strong>：</p>
 <p>单体应用所有的业务都使用一个数据库，整个下单流程或许只用在一个方法里同一个事务下操作数据库即可。此时所有操作都在一个事务里，要么全部提交，要么全部回滚。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100151833.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100151833.png"></p>
 <p>但随着业务量不断增长，业务服务化拆分，就会分离出订单中心、库存中心等。而这样就造成业务间相互隔离，每个业务都维护着自己的数据库，数据的交换只能进行服务调用。</p>
 <p>用户再下单时，创建订单和扣减库存，需要同时对订单DB和库存DB进行操作。两步操作必须同时成功，否则就会造成业务混乱，可此时我们只能保证自己服务的数据一致性，无法保证调用其他服务的操作是否成功，所以为了保证整个下单流程的数据一致性，就需要分布式事务介入。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100151319.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100151319.png"></p>
 <h2 id="如何理解分布式事务"><a href="#如何理解分布式事务" class="headerlink" title="如何理解分布式事务"></a>如何理解分布式事务</h2><blockquote>
 <p>分布式的理论角度和分布式事务的知识体系角度理解分布式事务。</p>
 </blockquote>
@@ -534,7 +534,7 @@
 <p>我在梳理这个体系时，发现网上几乎都直接写2PC,3PC,TCC,Seata方案，而实际上这是不成体系的。从分布式事务的体系看，我认为至少应该理清楚，什么是技术方案，什么是中间件，以及形成这些方案的依据；以此，我画了如下的图</p>
 </blockquote>
 <p>如下图，可以帮助你构筑分布式事务的知识体系，一目了然。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100212818.svg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100212818.svg"></p>
 <ul>
 <li><strong>刚性事务</strong>：分布式理论的CP，遵循ACID，对数据要求强一致性。<ul>
 <li>XA协议是一个基于<strong>数据库层面</strong>的分布式事务协议，其分为两部分：<strong>事务管理器（Transaction Manager）</strong>和<strong>本地资源管理器（Resource Manager）</strong>。事务管理器作为一个全局的调度者，负责对各个本地资源管理器统一号令提交或者回滚。主流的诸如Oracle、MySQL等数据库均已实现了XA接口。 <ul>
@@ -590,7 +590,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100213692.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100213692.png"></p>
 <p><strong>两段提交（2PC）的缺点</strong>：</p>
 <p>二阶段提交看似能够提供原子性的操作，但它存在着严重的缺陷：</p>
 <ul>
@@ -612,7 +612,7 @@
 <li><strong>PreCommit</strong>：协调者向所有参与者发送PreCommit命令，询问是否可以进行事务的预提交操作，参与者接收到PreCommit请求后，如参与者成功的执行了事务操作，则返回Yes响应，进入最终commit阶段。一旦参与者中有向协调者发送了No响应，或因网络造成超时，协调者没有接到参与者的响应，协调者向所有参与者发送abort请求，参与者接受abort命令执行事务的中断。</li>
 <li><strong>DoCommit</strong>：在前两个阶段中所有参与者的响应反馈均是YES后，协调者向参与者发送DoCommit命令正式提交事务，如协调者没有接收到参与者发送的ACK响应，会向所有参与者发送abort请求命令，执行事务的中断。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100213859.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100213859.png"></p>
 <p><strong>3PC存在的问题</strong></p>
 <p>3PC工作在同步网络模型上，它假设消息传输时间是有上界的，只存在机器失败而不存在消息失败。这个假设太强，现实的情形是，机器失败是无法完美地检测出来的，消息传输可能因为网络拥堵花费很多时间。同时, 说阻塞是相对, 存在协调者和参与者同时失败的情形下, 3PC事务依然会阻塞。实际上，很少会有系统实现3PC，多数现实的系统会通过复制状态机解决2PC阻塞的问题。比如，如果失败模型不是失败-停止, 而是消息失败（消息延迟或网络分区），那样3PC会产生不一致的情形。</p>
 <p><strong>3PC小结</strong></p>
@@ -632,7 +632,7 @@
 <li><strong>Confirm阶段</strong>：确认执行业务操作，在只预留的资源基础上，发起购买请求。</li>
 <li><strong>Cancel阶段</strong>：只要涉及到的相关业务中，有一个业务方预留资源未成功，则取消所有业务资源的预留请求。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214763.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214763.png"></p>
 <p><strong>TCC的缺点</strong>：</p>
 <p>1.空回滚</p>
 <p>当一个分支事务所在的服务发生宕机或者网络异常导致调用失败，并未执行try方法，当恢复后事务执行回滚操作就会调用此分支事务的cancel方法,如果cancel方法不能处理此种情况就会出现空回滚。</p>
@@ -660,10 +660,10 @@
 <li>Stock Service：库存服务</li>
 <li>Delivery Service：物流服务</li>
 </ol>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214331.webp" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214331.webp"></p>
 <h4 id="基于事件的方式"><a href="#基于事件的方式" class="headerlink" title="基于事件的方式"></a>基于事件的方式</h4><p>在基于事件的方式中，第一个服务执行完本地事务之后，会产生一个事件。其它服务会监听这个事件，触发该服务本地事务的执行，并产生新的事件。</p>
 <p>采用基于事件的saga模式的订单处理流程如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214643.webp" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214643.webp"></p>
 <ol>
 <li>订单服务创建一笔新订单，将订单状态设置为”待处理”，产生事件ORDER_CREATED_EVENT。</li>
 <li>支付服务监听ORDER_CREATED_EVENT，完成扣款并产生事件BILLED_ORDER_EVENT。</li>
@@ -675,7 +675,7 @@
 <p><strong>该模式下分布式事务的回滚</strong></p>
 <p>为了在异常情况下回滚整个分布式事务，我们需要为相关服务提供补偿操作接口。</p>
 <p>假设库存服务由于库存不足没能正确完成备货，我们可以按照下面的流程来回滚整个Saga事务：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214646.webp" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214646.webp"></p>
 <ol>
 <li>库存服务产生事件PRODUCT_OUT_OF_STOCK_EVENT。</li>
 <li>订单服务和支付服务都会监听该事件并做出响应： <ol>
@@ -690,7 +690,7 @@
 <p>接下来，我们将介绍如何使用命令的方式来克服上面提到的缺点。</p>
 <h4 id="基于命令的方式"><a href="#基于命令的方式" class="headerlink" title="基于命令的方式"></a>基于命令的方式</h4><p>在基于命令的方式中，我们会定义一个新的服务，这个服务扮演的角色就和一支交响乐乐队的指挥一样，告诉各个业务参与方，在什么时候做什么事情。我们管这个新服务叫做协调中心。协调中心通过命令/回复的方式来和Saga中其它服务进行交互。</p>
 <p>我们继续以之前的订单流程来举例。下图中的Order Saga Orchestrator就是新引入的协调中心。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214261.webp" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214261.webp"></p>
 <ol>
 <li>订单服务创建一笔新订单，将订单状态设置为”待处理”，然后让Order Saga Orchestrator（OSO）开启创建订单事务。</li>
 <li>OSO发送一个”支付命令”给支付服务，支付服务完成扣款并回复”支付完成”消息。</li>
@@ -702,7 +702,7 @@
 <p>实现协调中心的一个比较好的方式是使用**状态机(Sate Machine)**。</p>
 <p><strong>该模式下分布式事务的回滚</strong></p>
 <p>该模式下的回滚流程如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214856.webp" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100214856.webp"></p>
 <ol>
 <li>库存服务回复OSO一个”库存不足”消息。</li>
 <li>OSO意识到该分布式事务失败了，触发回滚流程：</li>
@@ -741,7 +741,7 @@
 <li>业务处理失败、事务消息发送成功</li>
 </ul>
 <p>整体的流程如下图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215463.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215463.png"></p>
 <p>上图中整体的处理步骤如下：</p>
 <ol>
 <li>事务主动方在同一个本地事务中处理业务和写消息表操作</li>
@@ -771,12 +771,12 @@
 <p>基于 MQ 的分布式事务方案其实是对本地消息表的封装，将本地消息表基于 MQ 内部，其他方面的协议基本与本地消息表一致。</p>
 </blockquote>
 <p>MQ事务方案整体流程和本地消息表的流程很相似，如下图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215047.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215047.png"></p>
 <p>从上图可以看出和本地消息表方案唯一不同就是将本地消息表存在了MQ内部，而不是业务数据库中。</p>
 <p>那么MQ内部的处理尤为重要，下面主要基于 RocketMQ 4.3 之后的版本介绍 MQ 的分布式事务方案。</p>
 <p>在本地消息表方案中，保证事务主动方发写业务表数据和写消息表数据的一致性是基于数据库事务，RocketMQ 的事务消息相对于普通 MQ提供了 2PC 的提交接口，方案如下：</p>
 <p><strong>正常情况：事务主动方发消息</strong></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215229.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215229.png"></p>
 <p>这种情况下，事务主动方服务正常，没有发生故障，发消息流程如下：</p>
 <ul>
 <li>发送方向 MQ 服务端(MQ Server)发送 half 消息。</li>
@@ -786,7 +786,7 @@
 <li>MQ Server 收到 commit 状态则将半消息标记为可投递，订阅方最终将收到该消息；MQ Server 收到 rollback 状态则删除半消息，订阅方将不会接受该消息。</li>
 </ul>
 <p><strong>异常情况：事务主动方消息恢复</strong></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215100.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215100.png"></p>
 <p>在断网或者应用重启等异常情况下，图中 4 提交的二次确认超时未到达 MQ Server，此时处理逻辑如下：</p>
 <ul>
 <li>MQ Server 对该消息发起消息回查。</li>
@@ -809,7 +809,7 @@
 <p>最大努力通知也称为定期校对，是对MQ事务方案的进一步优化。它在事务主动方增加了消息校对的接口，如果事务被动方没有接收到消息，此时可以调用事务主动方提供的消息校对的接口主动获取。</p>
 </blockquote>
 <p>最大努力通知的整体流程如下图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215818.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215818.png"></p>
 <p>在可靠消息事务中，事务主动方需要将消息发送出去，并且消息接收方成功接收，这种可靠性发送是由事务主动方保证的；</p>
 <p>但是最大努力通知，事务主动方尽最大努力（重试，轮询….）将事务发送给事务接收方，但是仍然存在消息接收不到，此时需要事务被动方主动调用事务主动方的消息校对接口查询业务消息并消费，这种通知的可靠性是由事务被动方保证的。</p>
 <p>最大努力通知适用于业务通知类型，例如微信交易的结果，就是通过最大努力通知方式通知各个商户，既有回调通知，也有交易查询接口。</p>
@@ -821,7 +821,7 @@
 <li><strong>TM (Transaction Manager) - 事务管理器</strong>: 定义全局事务的范围：开始全局事务、提交或回滚全局事务。</li>
 <li><strong>RM (Resource Manager) - 资源管理器</strong>: 管理分支事务处理的资源，与TC交谈以注册分支事务和报告分支事务的状态，并驱动分支事务提交或回滚。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215499.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100215499.png"></p>
 <h3 id="Seata-AT-模式"><a href="#Seata-AT-模式" class="headerlink" title="Seata AT 模式"></a>Seata AT 模式</h3><h4 id="前提"><a href="#前提" class="headerlink" title="前提"></a><strong>前提</strong></h4><ul>
 <li>基于支持本地 ACID 事务的关系型数据库。</li>
 <li>Java 应用，通过 JDBC 访问数据库。</li>
@@ -843,15 +843,15 @@
 <p>以一个示例来说明：</p>
 <p>两个全局事务 tx1 和 tx2，分别对 a 表的 m 字段进行更新操作，m 的初始值 1000。</p>
 <p>tx1 先开始，开启本地事务，拿到本地锁，更新操作 m = 1000 - 100 = 900。本地事务提交前，先拿到该记录的 全局锁 ，本地提交释放本地锁。 tx2 后开始，开启本地事务，拿到本地锁，更新操作 m = 900 - 100 = 800。本地事务提交前，尝试拿该记录的 全局锁 ，tx1 全局提交前，该记录的全局锁被 tx1 持有，tx2 需要重试等待 全局锁 。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216479.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216479.png"></p>
 <p>tx1 二阶段全局提交，释放 全局锁 。tx2 拿到 全局锁 提交本地事务。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216655.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216655.png"></p>
 <p>如果 tx1 的二阶段全局回滚，则 tx1 需要重新获取该数据的本地锁，进行反向补偿的更新操作，实现分支的回滚。</p>
 <p>此时，如果 tx2 仍在等待该数据的 全局锁，同时持有本地锁，则 tx1 的分支回滚会失败。分支的回滚会一直重试，直到 tx2 的 全局锁 等锁超时，放弃 全局锁 并回滚本地事务释放本地锁，tx1 的分支回滚最终成功。</p>
 <p>因为整个过程 全局锁 在 tx1 结束前一直是被 tx1 持有的，所以不会发生 脏写 的问题。</p>
 <h4 id="读隔离"><a href="#读隔离" class="headerlink" title="读隔离"></a><strong>读隔离</strong></h4><p>在数据库本地事务隔离级别 读已提交（Read Committed） 或以上的基础上，Seata（AT 模式）的默认全局隔离级别是 读未提交（Read Uncommitted） 。</p>
 <p>如果应用在特定场景下，必需要求全局的 读已提交 ，目前 Seata 的方式是通过 SELECT FOR UPDATE 语句的代理。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216235.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216235.png"></p>
 <p>SELECT FOR UPDATE 语句的执行会申请 全局锁 ，如果 全局锁 被其他事务持有，则释放本地锁（回滚 SELECT FOR UPDATE 语句的本地执行）并重试。这个过程中，查询是被 block 住的，直到 全局锁 拿到，即读取的相关数据是 已提交 的，才返回。</p>
 <p>出于总体性能上的考虑，Seata 目前的方案并没有对所有 SELECT 语句都进行代理，仅针对 FOR UPDATE 的 SELECT 语句。</p>
 <h3 id="Seata-XA-模式"><a href="#Seata-XA-模式" class="headerlink" title="Seata XA 模式"></a>Seata XA 模式</h3><h4 id="前提-1"><a href="#前提-1" class="headerlink" title="前提"></a>前提</h4><ul>
@@ -859,7 +859,7 @@
 <li>Java 应用，通过 JDBC 访问数据库。</li>
 </ul>
 <h4 id="整体机制-1"><a href="#整体机制-1" class="headerlink" title="整体机制"></a>整体机制</h4><p>在 Seata 定义的分布式事务框架内，利用事务资源（数据库、消息服务等）对 XA 协议的支持，以 XA 协议的机制来管理分支事务的一种 事务模式。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216246.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216246.png"></p>
 <p><strong>执行阶段</strong>：</p>
 <ol>
 <li>可回滚：业务 SQL 操作放在 XA 分支中进行，由资源对 XA 协议的支持来保证 可回滚</li>
@@ -874,7 +874,7 @@
 <li><strong>整体运行机制</strong></li>
 </ol>
 <p>XA 模式 运行在 Seata 定义的事务框架内：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216632.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216632.png"></p>
 <ul>
 <li>执行阶段（E xecute）： XA start/XA end/XA prepare + SQL + 注册分支</li>
 <li>完成阶段（F inish）：XA commit/XA rollback</li>
@@ -892,13 +892,13 @@
 <p>第二种方式，对开发者比较友好，和 AT 模式使用一样，开发者完全不必关心 XA 层面的任何问题，保持本地编程模型即可。</p>
 <p>我们优先设计实现第二种方式：数据源代理根据普通数据源中获取的普通 JDBC 连接创建出相应的 XAConnection。</p>
 <p>类比 AT 模式的数据源代理机制，如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216329.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216329.png"></p>
 <p>但是，第二种方法有局限：无法保证兼容的正确性。</p>
 <p>实际上，这种方法是在做数据库驱动程序要做的事情。不同的厂商、不同版本的数据库驱动实现机制是厂商私有的，我们只能保证在充分测试过的驱动程序上是正确的，开发者使用的驱动程序版本差异很可能造成机制的失效。</p>
 <p>这点在 Oracle 上体现非常明显。参见 Druid issue：<a target="_blank" rel="noopener" href="https://github.com/alibaba/druid/issues/3707">https://github.com/alibaba/druid/issues/3707</a></p>
 <p>综合考虑，XA 模式的数据源代理设计需要同时支持第一种方式：基于 XA 数据源进行代理。</p>
 <p>类比 AT 模式的数据源代理机制，如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216222.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100216222.png"></p>
 <ol>
 <li><strong>分支注册</strong></li>
 </ol>
@@ -913,7 +913,7 @@
 <li>一阶段 prepare 行为</li>
 <li>二阶段 commit 或 rollback 行为</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100217372.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100217372.png"></p>
 <p>根据两阶段行为模式的不同，我们将分支事务划分为 Automatic (Branch) Transaction Mode 和 TCC (Branch) Transaction Mode.</p>
 <p>AT 模式基于 支持本地 ACID 事务 的 关系型数据库：</p>
 <ol>
@@ -931,7 +931,7 @@
 <h3 id="Seata-Saga-模式"><a href="#Seata-Saga-模式" class="headerlink" title="Seata Saga 模式"></a>Seata Saga 模式</h3><blockquote>
 <p>Saga模式是SEATA提供的长事务解决方案，在Saga模式中，业务流程中每个参与者都提交本地事务，当出现某一个参与者失败则补偿前面已经成功的参与者，一阶段正向服务和二阶段补偿服务都由业务开发实现。</p>
 </blockquote>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100217825.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100217825.png"></p>
 <h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p><strong>适用场景</strong>：</p>
 <ol>
 <li>业务流程长、业务流程多</li>
@@ -958,7 +958,7 @@
 <li>可以实现服务编排需求，支持单项选择、并发、子流程、参数转换、参数映射、服务执行状态判断、异常捕获等功能</li>
 </ol>
 <p>示例状态图:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100217123.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100217123.png"></p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
 <li><a target="_blank" rel="noopener" href="http://www.dockone.io/article/9903">http://www.dockone.io/article/9903</a></li>
 <li><a target="_blank" rel="noopener" href="https://blog.couchbase.com/saga-pattern-implement-business-transactions-using-microservices-part/">https://blog.couchbase.com/saga-pattern-implement-business-transactions-using-microservices-part/</a></li>
@@ -1599,7 +1599,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

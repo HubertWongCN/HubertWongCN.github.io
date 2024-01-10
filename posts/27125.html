@@ -544,7 +544,7 @@
 <li><strong>重定位阶段</strong>，因为转移导致对象的地址发生了变化，在重定位阶段，所有指向对象旧地址的指针都要调整到对象新的地址上。</li>
 </ul>
 <p>下面以G1为例，通过G1中标记-复制算法过程（G1的Young GC和Mixed GC均采用该算法），分析G1停顿耗时的主要瓶颈。G1垃圾回收周期如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271436980.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271436980.png"></p>
 <p>G1的混合回收过程可以分为标记阶段、清理阶段和复制阶段。</p>
 <h4 id="标记阶段停顿分析"><a href="#标记阶段停顿分析" class="headerlink" title="标记阶段停顿分析"></a>标记阶段停顿分析</h4><ul>
 <li><strong>初始标记阶段</strong>：初始标记阶段是指从GC Roots出发标记全部直接子节点的过程，该阶段是STW的。由于GC Roots数量不多，通常该阶段耗时非常短。</li>
@@ -563,18 +563,18 @@
 <p>与CMS中的ParNew和G1类似，<strong>ZGC也采用标记-复制算法</strong>，不过ZGC对该算法做了重大改进：<strong>ZGC在标记、转移和重定位阶段几乎都是并发</strong>的，这是ZGC实现停顿时间小于10ms目标的最关键原因。</p>
 </blockquote>
 <p>ZGC垃圾回收周期如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271437091.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271437091.png"></p>
 <p>ZGC只有三个STW阶段：初始标记，再标记，初始转移。其中，初始标记和初始转移分别都只需要扫描所有GC Roots，其处理时间和GC Roots的数量成正比，一般情况耗时非常短；再标记阶段STW时间很短，最多1ms，超过1ms则再次进入并发标记阶段。即，ZGC几乎所有暂停都只依赖于GC Roots集合大小，停顿时间不会随着堆的大小或者活跃对象的大小而增加。与ZGC对比，G1的转移阶段完全STW的，且停顿时间随存活对象的大小增加而增加。</p>
 <h3 id="ZGC关键技术"><a href="#ZGC关键技术" class="headerlink" title="ZGC关键技术"></a>ZGC关键技术</h3><p>ZGC通过着色指针和读屏障技术，解决了转移过程中准确访问对象的问题，实现了并发转移。大致原理描述如下：并发转移中“并发”意味着GC线程在转移对象的过程中，应用线程也在不停地访问对象。假设对象发生转移，但对象地址未及时更新，那么应用线程可能访问到旧地址，从而造成错误。而在ZGC中，应用线程访问对象将触发“读屏障”，如果发现对象被移动了，那么“读屏障”会把读出来的指针更新到对象的新地址上，这样应用线程始终访问的都是对象的新地址。那么，JVM是如何判断对象被移动过呢？就是利用对象引用的地址，即着色指针。下面介绍着色指针和读屏障技术细节。</p>
 <h4 id="着色指针"><a href="#着色指针" class="headerlink" title="着色指针"></a>着色指针</h4><blockquote>
 <p>着色指针是一种将信息存储在指针中的技术。</p>
 </blockquote>
 <p>ZGC仅支持64位系统，它把64位虚拟地址空间划分为多个子空间，如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271437567.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271437567.png"></p>
 <p>其中，[0~4TB) 对应Java堆，[4TB ~ 8TB) 称为M0地址空间，[8TB ~ 12TB) 称为M1地址空间，[12TB ~ 16TB) 预留未使用，[16TB ~ 20TB) 称为Remapped空间。</p>
 <p>当应用程序创建对象时，首先在堆空间申请一个虚拟地址，但该虚拟地址并不会映射到真正的物理地址。ZGC同时会为该对象在M0、M1和Remapped地址空间分别申请一个虚拟地址，且这三个虚拟地址对应同一个物理地址，但这三个空间在同一时间有且只有一个空间有效。ZGC之所以设置三个虚拟地址空间，是因为它使用“空间换时间”思想，去降低GC停顿时间。“空间换时间”中的空间是虚拟空间，而不是真正的物理空间。后续章节将详细介绍这三个空间的切换过程。</p>
 <p>与上述地址空间划分相对应，ZGC实际仅使用64位地址空间的第041位，而第4245位存储元数据，第47~63位固定为0。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271437059.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271437059.png"></p>
 <p>ZGC将对象存活信息存储在42~45位中，这与传统的垃圾回收并将对象存活信息放在对象头中完全不同。</p>
 <h4 id="读屏障"><a href="#读屏障" class="headerlink" title="读屏障"></a>读屏障</h4><blockquote>
 <p>读屏障是JVM向应用代码插入一小段代码的技术。当应用线程从堆中读取对象引用时，就会执行这段代码。需要注意的是，仅“从堆中读取对象引用”才会触发这段代码。</p>
@@ -595,7 +595,7 @@ o<span class="token punctuation">.</span><span class="token function">dosomethin
 </ul>
 <p>其实，在标记阶段存在两个地址视图M0和M1，上面的过程显示只用了一个地址视图。<strong>之所以设计成两个，是为了区别前一次标记和当前标记</strong>。也即，第二次进入并发标记阶段后，地址视图调整为M1，而非M0。</p>
 <p>着色指针和读屏障技术不仅应用在并发转移阶段，还应用在并发标记阶段：将对象设置为已标记，传统的垃圾回收器需要进行一次内存访问，并将对象存活信息放在对象头中；而在ZGC中，只需要设置指针地址的第42~45位即可，并且因为是寄存器访问，所以速度比访问内存更快。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271438145.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271438145.png"></p>
 <h2 id="ZGC调优实践"><a href="#ZGC调优实践" class="headerlink" title="ZGC调优实践"></a>ZGC调优实践</h2><blockquote>
 <p>ZGC不是“银弹”，需要根据服务的具体特点进行调优。网络上能搜索到实战经验较少，调优理论需自行摸索，我们在此阶段也耗费了不少时间，最终才达到理想的性能。本文的一个目的是列举一些使用ZGC时常见的问题，帮助大家使用ZGC提高服务可用性。</p>
 </blockquote>
@@ -636,7 +636,7 @@ o<span class="token punctuation">.</span><span class="token function">dosomethin
 <li><strong>元数据分配触发</strong>：元数据区不足时导致，一般不需要关注。 日志中关键字是“Metadata GC Threshold”。</li>
 </ul>
 <h4 id="理解ZGC日志"><a href="#理解ZGC日志" class="headerlink" title="理解ZGC日志"></a>理解ZGC日志</h4><p>一次完整的GC过程，需要注意的点已在图中标出。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271438343.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271438343.png"></p>
 <p>注意：该日志过滤了进入安全点的信息。正常情况，在一次GC过程中还穿插着进入安全点的操作。</p>
 <p>GC日志中每一行都注明了GC过程中的信息，关键信息如下：</p>
 <ul>
@@ -648,7 +648,7 @@ o<span class="token punctuation">.</span><span class="token function">dosomethin
 <li><strong>GC信息统计</strong>：可以定时的打印垃圾收集信息，观察10秒内、10分钟内、10个小时内，从启动到现在的所有统计信息。利用这些统计信息，可以排查定位一些异常点。</li>
 </ul>
 <p>日志中内容较多，关键点已用红线标出，含义较好理解，更详细的解释大家可以自行在网上查阅资料。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271439315.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271439315.png"></p>
 <h4 id="理解ZGC停顿原因"><a href="#理解ZGC停顿原因" class="headerlink" title="理解ZGC停顿原因"></a>理解ZGC停顿原因</h4><p>我们在实战过程中共发现了6种使程序停顿的场景，分别如下：</p>
 <ul>
 <li><strong>GC时，初始标记</strong>：日志中Pause Mark Start。</li>
@@ -656,13 +656,13 @@ o<span class="token punctuation">.</span><span class="token function">dosomethin
 <li><strong>GC时，初始转移</strong>：日志中Pause Relocate Start。</li>
 <li><strong>内存分配阻塞</strong>：当内存不足时线程会阻塞等待GC完成，关键字是”Allocation Stall”。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271439497.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271439497.png"></p>
 <ul>
 <li><strong>安全点</strong>：所有线程进入到安全点后才能进行GC，ZGC定期进入安全点判断是否需要GC。先进入安全点的线程需要等待后进入安全点的线程直到所有线程挂起。</li>
 <li><strong>dump线程、内存</strong>：比如jstack、jmap命令。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271439333.png" alt="img"></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271439649.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271439333.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271439649.png"></p>
 <h3 id="调优案例"><a href="#调优案例" class="headerlink" title="调优案例"></a>调优案例</h3><p>我们维护的服务名叫Zeus，它是美团的规则平台，常用于风控场景中的规则管理。规则运行是基于开源的表达式执行引擎Aviator。Aviator内部将每一条表达式转化成Java的一个类，通过调用该类的接口实现表达式逻辑。</p>
 <p>Zeus服务内的规则数量超过万条，且每台机器每天的请求量几百万。这些客观条件导致Aviator生成的类和方法会产生很多的ClassLoader和CodeCache，这些在使用ZGC时都成为过GC的性能瓶颈。接下来介绍两类调优案例。</p>
 <blockquote>
@@ -1363,7 +1363,7 @@ o<span class="token punctuation">.</span><span class="token function">dosomethin
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

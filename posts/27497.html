@@ -730,19 +730,19 @@
     <span class="token keyword">boolean</span> <span class="token function">apply</span><span class="token punctuation">(</span><span class="token class-name">DynamicContext</span> context<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span></code></pre>
 
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092247377.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092247377.png"></p>
 <p>SqlSource Sql源接口，代表从xml文件或注解映射的sql内容，主要就是用于创建BoundSql，有实现类DynamicSqlSource(动态Sql源)，StaticSqlSource(静态Sql源)等：</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">SqlSource</span> <span class="token punctuation">{</span>
     <span class="token class-name">BoundSql</span> <span class="token function">getBoundSql</span><span class="token punctuation">(</span><span class="token class-name">Object</span> parameterObject<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span></code></pre>
 
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092248923.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092248923.png"></p>
 <p>BoundSql类，封装mybatis最终产生sql的类，包括sql语句，参数，参数源数据等参数：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092248637.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092248637.png"></p>
 <p>XNode，一个Dom API中的Node接口的扩展类：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092248478.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092248478.png"></p>
 <p>BaseBuilder接口及其实现类(属性，方法省略了，大家有兴趣的自己看),这些Builder的作用就是用于构造sql：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092248504.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092248504.png"></p>
 <p>下面我们简单分析下其中4个Builder：</p>
 <ul>
 <li><strong>XMLConfigBuilder</strong>：解析mybatis中configLocation属性中的全局xml文件，内部会使用XMLMapperBuilder解析各个xml文件。</li>
@@ -751,7 +751,7 @@
 <li><strong>XMLScriptBuilder</strong>：解析xml中各个节点sql部分的Builder。</li>
 </ul>
 <p>LanguageDriver接口及其实现类(属性，方法省略了，大家有兴趣的自己看)，该接口主要的作用就是构造sql:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092248077.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092248077.png"></p>
 <p>简单分析下XMLLanguageDriver(处理xml中的sql，RawLanguageDriver处理静态sql)：XMLLanguageDriver内部会使用XMLScriptBuilder解析xml中的sql部分。</p>
 <h3 id="源码分析走起"><a href="#源码分析走起" class="headerlink" title="源码分析走起"></a>源码分析走起</h3><p>Spring与Mybatis整合的时候需要配置SqlSessionFactoryBean，该配置会加入数据源和mybatis xml配置文件路径等信息：</p>
 <pre class="language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>bean</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>sqlSessionFactory<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>org.mybatis.spring.SqlSessionFactoryBean<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
@@ -762,19 +762,19 @@
 
 <p>我们就分析这一段配置背后的细节：</p>
 <p>SqlSessionFactoryBean实现了Spring的InitializingBean接口，InitializingBean接口的afterPropertiesSet方法中会调用buildSqlSessionFactory方法 该方法内部会使用XMLConfigBuilder解析属性configLocation中配置的路径，还会使用XMLMapperBuilder属性解析mapperLocations属性中的各个xml文件。部分源码如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092249564.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092249564.jpeg"></p>
 <p>由于XMLConfigBuilder内部也是使用XMLMapperBuilder，我们就看看XMLMapperBuilder的解析细节：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092249185.jpeg" alt="img"></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092249283.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092249185.jpeg"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092249283.jpeg"></p>
 <p>我们关注一下，增删改查节点的解析：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092249520.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092249520.jpeg"></p>
 <p>XMLStatementBuilder的解析：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092249343.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092249343.jpeg"></p>
 <p>默认会使用XMLLanguageDriver创建SqlSource（Configuration构造函数中设置）。</p>
 <p>XMLLanguageDriver创建SqlSource：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092250459.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092250459.jpeg"></p>
 <p>XMLScriptBuilder解析sql：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092250365.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092250365.jpeg"></p>
 <p>得到SqlSource之后，会放到Configuration中，有了SqlSource，就能拿BoundSql了，BoundSql可以得到最终的sql。</p>
 <h3 id="实例分析"><a href="#实例分析" class="headerlink" title="实例分析"></a>实例分析</h3><p>以下面的xml解析大概说下parseDynamicTags的解析过程：</p>
 <pre class="language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>update</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>update<span class="token punctuation">"</span></span> <span class="token attr-name">parameterType</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>org.format.dynamicproxy.mybatis.bean.User<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
@@ -833,11 +833,11 @@
 <span class="token punctuation">}</span></code></pre>
 
 <p>以上update方法最终通过parseDynamicTags方法得到的SqlNode集合如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092250247.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092250247.png"></p>
 <p>trim节点：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092250049.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092250049.png"></p>
 <p>由于这个update方法是个动态节点，因此构造出了DynamicSqlSource。DynamicSqlSource内部就可以构造sql了:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092250606.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092250606.jpeg"></p>
 <p>DynamicSqlSource内部的SqlNode属性是一个MixedSqlNode。然后我们看看各个SqlNode实现类的apply方法。下面分析一下各个SqlNode实现类的apply方法实现：</p>
 <p>MixedSqlNode：MixedSqlNode会遍历调用内部各个sqlNode的apply方法。</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">boolean</span> <span class="token function">apply</span><span class="token punctuation">(</span><span class="token class-name">DynamicContext</span> context<span class="token punctuation">)</span> <span class="token punctuation">{</span>
@@ -1530,7 +1530,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -513,35 +513,35 @@
 </blockquote>
 <p>在重构前，消息网关和营销系统耦合较紧，包括定制化功能和共用的开发团队。在重构后，逐渐剥离了这种关系，使得消息网关定位为公司级的基础服务层。其主要职责是：受理投递、频次控制、尽力发送、反馈统计、削峰匹配慢速信道。</p>
 <p>下面介绍一下消息网关在唯品会整体系统中的定位。如图1所示，消息网关定位于基础业务服务层，而物理信道定位在基础设施层，两者之间明确的区分了是否业务相关。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100458703.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100458703.jpeg"></p>
 <p>那么消息网关具体内部应该是个什么样子，下面我们一起来看一下图2消息网关的内部构造。一个合格的消息网关应该具有以下的功能：业务友好的受理层，模板管理，频次控制，基于优先级队列的消息分发，反馈统计，延时发送，订阅控制，以及其他一些辅助功能。在第二部分将逐个模块的讲解。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100458859.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100458859.jpeg"></p>
 <h2 id="三、如何设计消息网关"><a href="#三、如何设计消息网关" class="headerlink" title="三、如何设计消息网关"></a>三、如何设计消息网关</h2><p>在图2中，我们全面概览了消息网关内部应该具备的各个功能模块，下面我们逐个模块分解，看看各个部分的功能模块应该如何设计。</p>
 <h3 id="1-消息的受理和分发"><a href="#1-消息的受理和分发" class="headerlink" title="1. 消息的受理和分发"></a>1. 消息的受理和分发</h3><p>在实际的业务场景中，发送给会员，供应商和内部工作人员的消息，分为三种类型：关键性消息，通知类消息，以及营销类消息。关键性消息的特点是，低时延，低吞吐。通知类消息的特点是中时延，高吞吐。营销类消息的特点是中时延，高吞吐。针对不同的消息类型，应该选择不同的受理和分发模块，避免互相干扰。如图3所示。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459046.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459046.jpeg"></p>
 <p>对于关键性消息，某些渠道如短信，必须设置专用的独占信道来满足业务要求。如图4所示，中国移动信道质量较其他的供应商更好，所以对于关键性消息，通过专线连接主要服务商，并同时接入电信联通haproxy做备用线路。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459724.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459724.jpeg"></p>
 <h3 id="2-面向业务友好的接口"><a href="#2-面向业务友好的接口" class="headerlink" title="2. 面向业务友好的接口"></a>2. 面向业务友好的接口</h3><p>对使用消息发送服务的业务方来说，最好的接入方式是访问配置好模板的统一接口（对于需要高度个性化的营销系统，是个例外，营销系统倾向于在系统内部完成消息个性化的逻辑），尽量保持代码接口调用的固定，对于少量变动通过修改配置的方式完成。</p>
 <p>这么做有两点好处，一是消息网关内部的优化和渠道变动逻辑，不需要被业务系统感知。二是使用预设模板降低了系统交互的开销。图5展示了统一接入接口在系统中的位置。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459030.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459030.jpeg"></p>
 <h3 id="3-频次控制"><a href="#3-频次控制" class="headerlink" title="3. 频次控制"></a>3. 频次控制</h3><p>消息网关需要保护会员不被过多的打扰，提供重要的兜底功能。随着业务的发展，商城、金融系统逐步独立，分散的营销系统往往无法从全局上兼顾整体营销。在营销强度模块正式运行之前，控制过度营销的最后一道闸门，控制在消息网关这里。</p>
 <p>图6展示了消息网关在统一接入接口处检查频次控制的情况，对于超过限额的发送请求，会直接拒绝受理。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459039.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459039.png"></p>
 <h3 id="4-用户订阅"><a href="#4-用户订阅" class="headerlink" title="4. 用户订阅"></a>4. 用户订阅</h3><p>现代消息发送系统都会提供用户退订功能，允许用户对希望接收的渠道和功能进行自主选择。那么用户订阅的关系应该维护在哪个系统比较合适呢？在实践中发现订阅关系维护在会员系统比较合适，消息网关查询订阅关系通过接口访问加缓存的方式去获取。同时各个渠道的退订消息，也需要经由消息网关上报到会员系统，更新订阅关系。图7展示了用户订阅的调用图。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459246.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459246.jpeg"></p>
 <h3 id="5-失败重试"><a href="#5-失败重试" class="headerlink" title="5. 失败重试"></a>5. 失败重试</h3><p>消息网关调用下游物理网关，不可避免的会出现调用失败的情况。那么这个时候就需要进行失败重试。失败重试分为2大类，重试失败需要落盘的，和重试失败直接记录异常日志的。验证码属于后者。对于通知类消息，可以容忍一定的时延，采用落盘定时任务轮询重试的方式比较合适。对于营销类消息，在时效期内可以落盘重试，极端情况也可以采用记录异常日志，然后直接丢弃的方式。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459632.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459632.jpeg"></p>
 <h3 id="6-反馈统计"><a href="#6-反馈统计" class="headerlink" title="6. 反馈统计"></a>6. 反馈统计</h3><p>从业务系统投递消息开始，会经过消息网关，物理消息渠道，第三方供应商等多个环节。每个环节都有可能造成消息的丢失，因此设计反馈统计机制很有必要，在错误排查和费用统计等方面有重要作用。实践中，采用反馈队列的方式进行异步统计，有分钟级的延时。对消息的最终发送结果，ETL到大数据，进行费用统计和费用分摊计算。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459101.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459101.jpeg"></p>
 <h2 id="四、消息网关的技术选型"><a href="#四、消息网关的技术选型" class="headerlink" title="四、消息网关的技术选型"></a>四、消息网关的技术选型</h2><p>业务模块开发采用唯品会自研的RPC调用框架Venus，采用OSP协议（唯品会私有协议）来封装RPC调用，底层通信协议采用Netty，传输协议使用Thrift。数据库技术选型MySQL。消息队列用Kafka，应对高吞吐量消息场景。ETL使用自研VDP(类似于阿里开源的Canal)，解析binlog，同步数据到HDFS。图10演示了Venus框架的基本结构。</p>
 <p>Venus框架是一个去中心化的RPC调用框架，Client端对Server端的调用由proxy进行转发。Client到LocalProxy，以及Local Proxy到Server端保持TCP长连接。</p>
 <p>Proxy提供跨语言支持服务治理，服务发现，路由调度，限流熔断等功能，并额外支持HTTP GET +URL Path/Parameter，HTTP POST +JSON和RPC OSP协议的转换。Proxy分为LocalProxy和Remote Proxy。Local Proxy和Client部署在同一台服务器上，通过Domain Socket，减少TCP栈的调用开销。Remote Proxy作为备用链路，提供防火墙穿透，跨组织调用，非Java语言HTTP +JSON调用等功能。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459385.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100459385.png"></p>
 <p>消息网关重度依赖kafka队列，分成消息受理队列，消息异步落盘队列，延时写入队列，反馈队列等。由于整个消息网关基本都是异步化操作，消息的分发有可能早于消息的落盘，这样在数据库消息发送状态更改时，就会出现无法找到的情况。可以采用延时队列，对消息发送状态的落盘动作进行延时写入。</p>
 <h2 id="五、消息网关的监控和降级"><a href="#五、消息网关的监控和降级" class="headerlink" title="五、消息网关的监控和降级"></a>五、消息网关的监控和降级</h2><h3 id="1-消息网关的监控"><a href="#1-消息网关的监控" class="headerlink" title="1. 消息网关的监控"></a>1. 消息网关的监控</h3><p>在日常运维层面，消息网关需要监控如下的指标：一是受理域，分发域各接口的调用情况。这部分数据已经在Venus框架内置，导入Mercury监控系统（类似于携程开源的CAT系统）。二是Kafka队列的消息堆积情况监控。三是采用Zabbix监控数据库服务器的CPU负载，内存使用量，磁盘IO等关键性指标。四是消息网关内部监控各物理渠道的投递时延。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100500159.jpeg" alt="img"></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100500083.png" alt="img"></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100500305.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100500159.jpeg"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100500083.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100500305.jpeg"></p>
 <h3 id="2-消息网关的降级措施"><a href="#2-消息网关的降级措施" class="headerlink" title="2. 消息网关的降级措施"></a>2. 消息网关的降级措施</h3><p>应用于生产系统的消息网关需要部署降级预案，保证故障发生时可以尽快的恢复，降低故障带来的负面影响。下面列出了部分重要的降级预案。</p>
 <ul>
 <li>受理域机器宕机，由Local Proxy调度转发到正常工作的机器上。</li>
@@ -560,7 +560,7 @@
 <li>人群标签由用户画像提供，渠道动态规划由消息网关承载。</li>
 <li>营销系统个性化消息组装，由营销系统自行负责，消息网关只提供发送功能。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100500543.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100500543.jpeg"></p>
 <h3 id="2-消息网关数据的使用"><a href="#2-消息网关数据的使用" class="headerlink" title="2. 消息网关数据的使用"></a>2. 消息网关数据的使用</h3><p>消息网关的投递的营销消息，订阅情况，打开率等是营销画像的重要组成部分。全景营销平台可以将消息投递情况、打开率、花费作为营销强度计算的数据源。</p>
 <p>消息网关数据是各个业务部门费用分摊的主要依据，涉及上市公司的财务审计。</p>
 <p>另外通过消息网关数据统计，可以作为各个渠道服务提供商选择和替换的依据。</p>
@@ -1217,7 +1217,7 @@ net.ipv4.tcp_tw_reuse <span class="token operator">=</span><span class="token nu
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

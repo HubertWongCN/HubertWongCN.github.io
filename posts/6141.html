@@ -581,7 +581,7 @@
 </tbody></table>
 <p>多路复用IO技术最适用的是“高并发”场景，所谓高并发是指1毫秒内至少同时有上千个连接请求准备好。其他情况下多路复用IO技术发挥不出来它的优势。另一方面，使用JAVA NIO进行功能实现，相对于传统的Socket套接字实现要复杂一些，所以实际应用中，需要根据自己的业务需求进行技术选择。</p>
 <h2 id="Reactor模型和Proactor模型"><a href="#Reactor模型和Proactor模型" class="headerlink" title="Reactor模型和Proactor模型"></a>Reactor模型和Proactor模型</h2><h3 id="传统IO模型"><a href="#传统IO模型" class="headerlink" title="传统IO模型"></a>传统IO模型</h3><p>对于传统IO模型，其主要是一个Server对接N个客户端，在客户端连接之后，为每个客户端都分配一个执行线程。如下图是该模型的一个演示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262147980.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262147980.png"></p>
 <p>从图中可以看出，传统IO的特点在于：</p>
 <ul>
 <li>每个客户端连接到达之后，服务端会分配一个线程给该客户端，该线程会处理包括读取数据，解码，业务计算，编码，以及发送数据整个过程；</li>
@@ -594,7 +594,7 @@
 <li>服务端在获取客户端连接，读取数据，以及写入数据的过程都是阻塞类型的，在网络状况不好的情况下，这将极大的降低服务器每个线程的利用率，从而降低服务器吞吐量。</li>
 </ul>
 <h3 id="Reactor事件驱动模型"><a href="#Reactor事件驱动模型" class="headerlink" title="Reactor事件驱动模型"></a>Reactor事件驱动模型</h3><p>在传统IO模型中，由于线程在等待连接以及进行IO操作时都会阻塞当前线程，这部分损耗是非常大的。因而jdk 1.4中就提供了一套非阻塞IO的API。该API本质上是以事件驱动来处理网络事件的，而Reactor是基于该API提出的一套IO模型。如下是Reactor事件驱动模型的示意图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262148017.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262148017.png"></p>
 <p>从图中可以看出，在Reactor模型中，主要有四个角色：客户端连接，Reactor，Acceptor和Handler。这里Acceptor会不断地接收客户端的连接，然后将接收到的连接交由Reactor进行分发，最后有具体的Handler进行处理。改进后的Reactor模型相对于传统的IO模型主要有如下优点：</p>
 <ul>
 <li>从模型上来讲，如果仅仅还是只使用一个线程池来处理客户端连接的网络读写，以及业务计算，那么Reactor模型与传统IO模型在效率上并没有什么提升。但是Reactor模型是以事件进行驱动的，其能够将接收客户端连接，+ 网络读和网络写，以及业务计算进行拆分，从而极大的提升处理效率；</li>
@@ -606,7 +606,7 @@
 <li>大量的业务操作处理；</li>
 </ul>
 <p>基于上述两个问题，这里在单线程Reactor模型的基础上提出了使用线程池的方式处理业务操作的模型。如下是该模型的示意图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262149204.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262149204.png"></p>
 <p>从图中可以看出，在多线程进行业务操作的模型下，该模式主要具有如下特点：</p>
 <ul>
 <li>使用一个线程进行客户端连接的接收以及网络读写事件的处理；</li>
@@ -617,7 +617,7 @@
 <li>网络读写是一个比较消耗CPU的操作，在高并发的情况下，将会有大量的客户端数据需要进行网络读写，此时一个线程将不足以处理这么多请求。</li>
 </ul>
 <h3 id="Reactor模型—-并发读写"><a href="#Reactor模型—-并发读写" class="headerlink" title="Reactor模型—-并发读写"></a>Reactor模型—-并发读写</h3><p>对于使用线程池处理业务操作的模型，由于网络读写在高并发情况下会成为系统的一个瓶颈，因而针对该模型这里提出了一种改进后的模型，即使用线程池进行网络读写，而仅仅只使用一个线程专门接收客户端连接。如下是该模型的示意图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262150614.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262150614.png"></p>
 <p>可以看到，改进后的Reactor模型将Reactor拆分为了mainReactor和subReactor。这里mainReactor主要进行客户端连接的处理，处理完成之后将该连接交由subReactor以处理客户端的网络读写。这里的subReactor则是使用一个线程池来支撑的，其读写能力将会随着线程数的增多而大大增加。对于业务操作，这里也是使用一个线程池，而每个业务请求都只需要进行编解码和业务计算。通过这种方式，服务器的性能将会大大提升，在可见情况下，其基本上可以支持百万连接。</p>
 <h3 id="Reactor模型示例"><a href="#Reactor模型示例" class="headerlink" title="Reactor模型示例"></a>Reactor模型示例</h3><p>对于上述Reactor模型，服务端主要有三个角色：Reactor，Acceptor和Handler。这里基于Doug Lea的文档对其进行了实现，如下是Reactor的实现代码：</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Reactor</span> <span class="token keyword">implements</span> <span class="token class-name">Runnable</span> <span class="token punctuation">{</span>
@@ -773,7 +773,7 @@
 <span class="token punctuation">}</span></code></pre>
 
 <p>在Handler中，主要进行的就是为每一个客户端Channel创建一个Selector，并且监听该Channel的网络读写事件。当有事件到达时，进行数据的读写，而业务操作这交由具体的业务线程池处理。</p>
-<h2 id="JAVA对多路复用IO的支持"><a href="#JAVA对多路复用IO的支持" class="headerlink" title="JAVA对多路复用IO的支持"></a>JAVA对多路复用IO的支持</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262151871.png" alt="img"></p>
+<h2 id="JAVA对多路复用IO的支持"><a href="#JAVA对多路复用IO的支持" class="headerlink" title="JAVA对多路复用IO的支持"></a>JAVA对多路复用IO的支持</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262151871.png"></p>
 <h3 id="重要概念-Channel"><a href="#重要概念-Channel" class="headerlink" title="重要概念: Channel"></a>重要概念: Channel</h3><p>通道，被建立的一个应用程序和操作系统交互事件、传递内容的渠道(注意是连接到操作系统)。一个通道会有一个专属的文件状态描述符。那么既然是和操作系统进行内容的传递，那么说明应用程序可以通过通道读取数据，也可以通过通道向操作系统写数据。</p>
 <p>JDK API中的Channel的描述是:</p>
 <blockquote>
@@ -783,7 +783,7 @@
 <p>A channel is either open or closed. A channel is open upon creation, and once closed it remains closed. Once a channel is closed, any attempt to invoke an I/O operation upon it will cause a ClosedChannelException to be thrown. Whether or not a channel is open may be tested by invoking its isOpen method.</p>
 </blockquote>
 <p>JAVA NIO 框架中，自有的Channel通道包括:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262152142.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262152142.png"></p>
 <p>所有被Selector(选择器)注册的通道，只能是继承了SelectableChannel类的子类。如上图所示</p>
 <ul>
 <li>ServerSocketChannel: 应用服务器程序的监听通道。只有通过这个通道，应用程序才能向操作系统注册支持“多路复用IO”的端口监听。同时支持UDP协议和TCP协议。</li>
@@ -794,7 +794,7 @@
 <p>这句话怎么理解呢? 例如ServerSocketChannel通道它只支持对OP_ACCEPT事件的监听，所以它是不能直接进行网络数据内容的读写的。所以ServerSocketChannel是没有集成Buffer的。</p>
 <p>Buffer有两种工作模式: 写模式和读模式。在读模式下，应用程序只能从Buffer中读取数据，不能进行写操作。但是在写模式下，应用程序是可以进行读操作的，这就表示可能会出现脏读的情况。所以一旦您决定要从Buffer中读取数据，一定要将Buffer的状态改为读模式。</p>
 <p>如下图:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262154715.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262154715.png"></p>
 <ul>
 <li>position: 缓存区目前这在操作的数据块位置</li>
 <li>limit: 缓存区最大可以进行操作的位置。缓存区的读写状态正式由这个属性控制的。</li>
@@ -825,7 +825,7 @@
 <li>实现不同操作系统的支持</li>
 </ul>
 <p>之前已经提到过，多路复用IO技术 是需要操作系统进行支持的，其特点就是操作系统可以同时扫描同一个端口上不同网络连接的事件。所以作为上层的JVM，必须要为 不同操作系统的多路复用IO实现 编写不同的代码。同样我使用的测试环境是Windows，它对应的实现类是sun.nio.ch.WindowsSelectorImpl:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262154059.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262154059.png"></p>
 <h3 id="JAVA-NIO-框架简要设计分析"><a href="#JAVA-NIO-框架简要设计分析" class="headerlink" title="JAVA NIO 框架简要设计分析"></a>JAVA NIO 框架简要设计分析</h3><p>通过上文的描述，我们知道了多路复用IO技术是操作系统的内核实现。在不同的操作系统，甚至同一系列操作系统的版本中所实现的多路复用IO技术都是不一样的。那么作为跨平台的JAVA JVM来说如何适应多种多样的多路复用IO技术实现呢? 面向对象的威力就显现出来了: 无论使用哪种实现方式，他们都会有“选择器”、“通道”、“缓存”这几个操作要素，那么可以为不同的多路复用IO技术创建一个统一的抽象组，并且为不同的操作系统进行具体的实现。JAVA NIO中对各种多路复用IO的支持，主要的基础是java.nio.channels.spi.SelectorProvider抽象类，其中的几个主要抽象方法包括:</p>
 <ul>
 <li>public abstract DatagramChannel openDatagramChannel(): 创建和这个操作系统匹配的UDP 通道实现。</li>
@@ -834,7 +834,7 @@
 <li>public abstract SocketChannel openSocketChannel(): 创建和这个NIO模型匹配的TCP Socket套接字通道(用来反映客户端的TCP连接)</li>
 </ul>
 <p>由于JAVA NIO框架的整个设计是很大的，所以我们只能还原一部分我们关心的问题。这里我们以JAVA NIO框架中对于不同多路复用IO技术的选择器 进行实例化创建的方式作为例子，以点窥豹观全局:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262155724.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262155724.png"></p>
 <p>很明显，不同的SelectorProvider实现对应了不同的 选择器。由具体的SelectorProvider实现进行创建。另外说明一下，实际上netty底层也是通过这个设计获得具体使用的NIO模型，我们后文讲解Netty时，会讲到这个问题。以下代码是Netty 4.0中NioServerSocketChannel进行实例化时的核心代码片段:</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token class-name">ServerSocketChannel</span> <span class="token function">newSocket</span><span class="token punctuation">(</span><span class="token class-name">SelectorProvider</span> provider<span class="token punctuation">)</span> <span class="token punctuation">{</span>
     <span class="token keyword">try</span> <span class="token punctuation">{</span>
@@ -1027,7 +1027,7 @@
 <ul>
 <li>serverChannel.register(Selector sel, int ops, Object att): 实际上register(Selector sel, int ops, Object att)方法是ServerSocketChannel类的父类AbstractSelectableChannel提供的一个方法，表示只要继承了AbstractSelectableChannel类的子类都可以注册到选择器中。通过观察整个AbstractSelectableChannel继承关系，下图中的这些类可以被注册到选择器中:</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262156189.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312262156189.png"></p>
 <ul>
 <li>SelectionKey.OP_ACCEPT: 不同的Channel对象可以注册的“我关心的事件”是不一样的。例如ServerSocketChannel除了能够被允许关注OP_ACCEPT事件外，不允许再关心其他事件了(否则运行时会抛出异常)。以下梳理了常使用的AbstractSelectableChannel子类可以注册的事件列表:</li>
 <li></li>
@@ -1912,7 +1912,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -551,7 +551,7 @@
 <li>加入字符串过程</li>
 </ul>
 <p>下面是每个字符串处理的过程，首先是将字符串str“记录”到BitSet中的过程: 对于字符串str，分别计算h(1，str)，h(2，str)…… h(k，str)。然后将BitSet的第h(1，str)、h(2，str)…… h(k，str)位设为1。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272324967.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272324967.jpeg"></p>
 <p>这样就将字符串str映射到BitSet中的k个二进制位了。</p>
 <ul>
 <li>检查字符串是否存在的过程</li>
@@ -631,7 +631,7 @@
 <h3 id="误报率的产生"><a href="#误报率的产生" class="headerlink" title="误报率的产生"></a>误报率的产生</h3><p>初始状态下，Bloom Filter是一个m位的位数组，且数组被0所填充。同时，我们需要定义k个不同的hash函数，每一个hash函数都随机的将每一个输入元素映射到位数组中的一个位上。那么对于一个确定的输入，我们会得到k个索引。</p>
 <p>插入元素: 经过k个hash函数的映射，我们会得到k个索引，我们把位数组中这k个位置全部置1(不管其中的位之前是0还是1)</p>
 <p>查询元素: 输入元素经过k个hash函数的映射会得到k个索引，如果位数组中这k个索引任意一处是0，那么就说明这个元素不在集合之中；如果元素处于集合之中，那么当插入元素的时候这k个位都是1。但如果这k个索引处的位都是1，被查询的元素就一定在集合之中吗? 答案是不一定，也就是说出现了False Positive的情况(但Bloom Filter不会出现False Negative的情况)</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272325826.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312272325826.png"></p>
 <p>在上图中，当插入x、y、z这三个元素之后，再来查询w，会发现w不在集合之中，而如果w经过三个hash函数计算得出的结果所得索引处的位全是1，那么Bloom Filter就会告诉你，w在集合之中，实际上这里是误报，w并不在集合之中。</p>
 <h3 id="误报率的计算"><a href="#误报率的计算" class="headerlink" title="误报率的计算"></a>误报率的计算</h3><p>Bloom Filter的误报率到底有多大? 下面在数学上进行一番推敲。假设HASH函数输出的索引值落在m位的数组上的每一位上都是等可能的。那么，对于一个给定的HASH函数，在进行某一个运算的时候，一个特定的位没有被设置为1的概率是<br>$$<br>1-\frac{1}{m}<br>$$</p>
 <p>那么，对于所有的k个HASH函数，都没有把这个位设置为1的概率是<br>$$<br>(1-\frac{1}{m})^k<br>$$</p>
@@ -653,7 +653,7 @@
 <p>上一小节中我们曾算出当$k=ln2\sqrt[m]{n}$时错误率$f$最小，这时$f=\frac{k}{2}=\frac{\frac{m\ln2}{n}}{2}=\frac{m\ln2}{2n}$。现在令$f\leq\epsilon$，可以推出<br>$$<br>m\geq n\frac{\log_2(\frac{1}{\epsilon})}{\ln2}=n\log_2e.\log_2(\frac{1}{\epsilon})<br>$$<br>这个结果比前面我们算得的下界$n\log_2(\frac{1}{\epsilon})$大了$\log_2e\approx1.44$倍。这说明在哈希函数的个数取到最优时，要让错误率不超过$\epsilon$，$m$至少需要取到最小值的1.44倍。</p>
 <h2 id="拓展-Counting-Bloom-Filter"><a href="#拓展-Counting-Bloom-Filter" class="headerlink" title="拓展: Counting Bloom Filter"></a>拓展: Counting Bloom Filter</h2><p>从前面对Bloom Filter的介绍可以看出，标准的Bloom Filter是一种很简单的数据结构，它只支持插入和查找两种操作。在所要表达的集合是静态集合的时候，标准Bloom Filter可以很好地工作，但是如果要表达的集合经常变动，标准Bloom Filter的弊端就显现出来了，因为它不支持删除操作。</p>
 <p>Counting Bloom Filter的出现解决了这个问题，它将标准Bloom Filter位数组的每一位扩展为一个小的计数器(Counter)，在插入元素时给对应的k(k为哈希函数个数)个Counter的值分别加1，删除元素时给对应的k个Counter的值分别减1。Counting Bloom Filter通过多占用几倍的存储空间的代价，给Bloom Filter增加了删除操作。下一个问题自然就是，到底要多占用几倍呢?</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280144953.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280144953.jpeg"></p>
 <p>我们先计算第i个Counter被增加$j$次的概率，其中$n$为集合元素个数，$k$为哈希函数个数，$m$为Counter个数(对应着原来位数组的大小):</p>
 <p>$$<br>P(c(i)=j)=\begin{pmatrix} nk \ n\ \end{pmatrix}\left(\frac{1}{m}\right)^j\left(1-\frac{1}{m}\right)^{nk-j}<br>$$<br>上面等式右端的表达式中，前一部分表示从$nk$次哈希中选择$j$次，中间部分表示$j$次哈希都选中了第$i$个Counter，后一部分表示其它$nk – j$次哈希都没有选中第i个Counter。因此，第$i$个Counter的值大于$j$的概率可以限定为:</p>
 <p>$$<br>P(c(i)\geq j)\leq\begin{pmatrix} nk \ j\ \end{pmatrix}\frac{1}{m^j}\leq\left(\frac{enk}{jm}\right)^j<br>$$<br>上式第二步缩放中应用了估计阶乘的斯特林公式:<br>$$<br>n!\approx\left(\frac{n}{e}\right)^n\sqrt{2\pi n}<br>$$<br>在Bloom Filter概念和原理一文中，我们提到过k的最优值为$\frac{m\ln2}{n}$，现在我们限制$k\leq\frac{m\ln2}{n}$，就可以得到如下结论:</p>
@@ -1331,7 +1331,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

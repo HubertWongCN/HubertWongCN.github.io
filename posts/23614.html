@@ -512,7 +512,7 @@
 <p>我们在前文已经阐述了<a href="https://hubertwongcn.github.io/posts/52673.html">Redis 5种基础数据类型详解</a>，分别是字符串(string)、列表(list)、哈希(hash)、集合(set)、有序集合(zset)；那么这些基础类型的底层是如何实现的呢？Redis的每种对象其实都由<strong>对象结构(redisObject)</strong> 与 <strong>对应编码的数据结构</strong>组合而成, 前文是第一部分<a href="https://hubertwongcn.github.io/posts/46260.html">对象机制详解</a>, 本文主要介绍<strong>底层数据结构</strong> 部分。（在这特别提下，大多数人构建知识体系去读源码是不太现实的，这时候我认为更为重要的是，理解为何会出现这样的设计，知道它解决了什么问题，然后对应了解相关知识点，最终在一些应用场景时可以以此来通过调整存储的类型进一步提升优化性能）。</p>
 </blockquote>
 <h2 id="底层数据结构引入"><a href="#底层数据结构引入" class="headerlink" title="底层数据结构引入"></a>底层数据结构引入</h2><p>在对对象机制（redisObject）有了初步认识之后，我们便可以继续理解如下的底层数据结构部分：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202805.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202805.png"></p>
 <ul>
 <li>简单动态字符串 - sds</li>
 <li>压缩列表 - ZipList</li>
@@ -530,14 +530,14 @@
 <ul>
 <li><strong>SDS的总体概览</strong>如下图:</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202479.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202479.png"></p>
 <p>其中<code>sdshdr</code>是头部, <code>buf</code>是真实存储用户数据的地方. 另外注意, 从命名上能看出来, 这个数据结构除了能存储二进制数据, 显然是用于设计作为字符串使用的, 所以在buf中, 用户数据后总跟着一个\0. 即图中 <code>"数据" + "\0" </code>是为所谓的buf。</p>
 <ul>
 <li>如下是<strong>6.0源码中sds相关的结构</strong>：</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202108.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202108.png"></p>
 <p>通过上图我们可以看到，SDS有五种不同的头部. 其中sdshdr5实际并未使用到. 所以实际上有四种不同的头部, 分别如下:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202853.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202853.png"></p>
 <p>其中：</p>
 <ul>
 <li><code>len</code> 保存了SDS保存字符串的长度</li>
@@ -575,15 +575,15 @@
 <p>思考：<strong>这种分配策略会浪费内存资源吗</strong>？</p>
 <p>答：执行过APPEND 命令的字符串会带有额外的预分配空间，这些预分配空间不会被释放，除非该字符串所对应的键被删除，或者等到关闭Redis 之后，再次启动时重新载入的字符串对象将不会有预分配空间。因为执行APPEND 命令的字符串键数量通常并不多，占用内存的体积通常也不大，所以这一般并不算什么问题。另一方面，如果执行APPEND 操作的键很多，而字符串的体积又很大的话，那可能就需要修改Redis 服务器，让它定时释放一些字符串键的预分配空间，从而更有效地使用内存。</p>
 <h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>redis的字符串表示为sds，而不是C字符串（以\0结尾的char*）， 它是Redis 底层所使用的字符串表示，它被用在几乎所有的Redis 模块中。可以看如下对比：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202491.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202491.png"></p>
 <p>一般来说，SDS 除了保存数据库中的字符串值以外，SDS 还可以作为缓冲区（buffer）：包括 AOF 模块中的AOF缓冲区以及客户端状态中的输入缓冲区。</p>
 <h2 id="压缩列表-ZipList"><a href="#压缩列表-ZipList" class="headerlink" title="压缩列表 - ZipList"></a>压缩列表 - ZipList</h2><blockquote>
 <p>ziplist是为了提高存储效率而设计的一种特殊编码的双向链表。它可以存储字符串或者整数，存储整数时是采用整数的二进制而不是字符串形式存储。它能在O(1)的时间复杂度下完成list两端的push和pop操作。但是因为每次操作都需要重新分配ziplist的内存，所以实际复杂度和ziplist的内存使用量相关。</p>
 </blockquote>
 <h3 id="ziplist结构"><a href="#ziplist结构" class="headerlink" title="ziplist结构"></a>ziplist结构</h3><p>先看下6.0中对应的源码和介绍</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202954.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292202954.png"></p>
 <p>整个ziplist在内存中的存储格式如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292203219.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292203219.png"></p>
 <ul>
 <li><code>zlbytes</code>字段的类型是uint32_t, 这个字段中存储的是整个ziplist所占用的内存的字节数</li>
 <li><code>zltail</code>字段的类型是uint32_t, 它指的是ziplist中最后一个entry的偏移量. 用于快速定位最后一个entry, 以快速完成pop等操作</li>
@@ -594,7 +594,7 @@
 <ul>
 <li><strong>先看下源码中相关介绍</strong></li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292203987.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292203987.png"></p>
 <p><strong>第一种情况</strong>：一般结构 <code>&lt;prevlen&gt; &lt;encoding&gt; &lt;entry-data&gt;</code></p>
 <p><code>prevlen</code>：前一个entry的大小，编码方式见下文；</p>
 <p><code>encoding</code>：不同的情况下值不同，用于表示当前entry的类型和长度；</p>
@@ -777,7 +777,7 @@
 <li><code>quicklistEntry</code>是对ziplist中的entry概念的封装. quicklist作为一个封装良好的数据结构, 不希望使用者感知到其内部的实现, 所以需要把ziplist.entry的概念重新包装一下.</li>
 </ul>
 <h3 id="quicklist内存布局图"><a href="#quicklist内存布局图" class="headerlink" title="quicklist内存布局图"></a>quicklist内存布局图</h3><p>quicklist的内存布局图如下所示:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292203730.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292203730.png"></p>
 <h3 id="quicklist更多额外信息"><a href="#quicklist更多额外信息" class="headerlink" title="quicklist更多额外信息"></a>quicklist更多额外信息</h3><p>下面是有关quicklist的更多额外信息:</p>
 <ul>
 <li><pre><code>quicklist.fill
@@ -846,7 +846,7 @@
 
 <p>key 用来保存键，val 属性用来保存值，值可以是一个指针，也可以是uint64_t整数，也可以是int64_t整数。</p>
 <p>注意这里还有一个指向下一个哈希表节点的指针，我们知道哈希表最大的问题是存在哈希冲突，如何解决哈希冲突，有开放地址法和链地址法。这里采用的便是链地址法，通过next这个指针可以将多个哈希值相同的键值对连接在一起，用来<strong>解决哈希冲突</strong>。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292203409.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292203409.png"></p>
 <h3 id="一些要点"><a href="#一些要点" class="headerlink" title="一些要点"></a>一些要点</h3><ul>
 <li><strong>哈希算法</strong>：Redis计算哈希值和索引值方法如下：</li>
 </ul>
@@ -887,7 +887,7 @@ index <span class="token operator">=</span> <span class="token builtin class-nam
 <p><code>length</code> 代表其中存储的整数的个数</p>
 <p><code>contents</code> 指向实际存储数值的连续内存区域, 就是一个数组；整数集合的每个元素都是 contents 数组的一个数组项（item），各个项在数组中按值得大小<strong>从小到大有序排序</strong>，且数组中不包含任何重复项。（虽然 intset 结构将 contents 属性声明为 int8_t 类型的数组，但实际上 contents 数组并不保存任何 int8_t 类型的值，contents 数组的真正类型取决于 encoding 属性的值）</p>
 <h3 id="内存布局图"><a href="#内存布局图" class="headerlink" title="内存布局图"></a>内存布局图</h3><p>其内存布局如下图所示</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292204620.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292204620.png"></p>
 <p>我们可以看到，content数组里面每个元素的数据类型是由encoding来决定的，那么如果原来的数据类型是int16, 当我们再插入一个int32类型的数据时怎么办呢？这就是下面要说的intset的升级。</p>
 <h3 id="整数集合的升级"><a href="#整数集合的升级" class="headerlink" title="整数集合的升级"></a>整数集合的升级</h3><p>当在一个int16类型的整数集合中插入一个int32类型的值，整个集合的所有元素都会转换成32类型。 整个过程有三步：</p>
 <ul>
@@ -904,9 +904,9 @@ index <span class="token operator">=</span> <span class="token builtin class-nam
 <p>跳跃表要解决什么问题呢？如果你一上来就去看它的实现，你很难理解设计的本质，所以先要看它的设计要解决什么问题。</p>
 </blockquote>
 <p>对于于一个单链表来讲，即便链表中存储的数据是有序的，如果我们要想在其中查找某个数据，也只能从头到尾遍历链表。这样查找效率就会很低，时间复杂度会很高，是 O(n)。比如查找12，需要7次查找</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292204429.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292204429.png"></p>
 <p>如果我们增加如下两级索引，那么它搜索次数就变成了3次</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292204697.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292204697.png"></p>
 <h3 id="Redis跳跃表的设计"><a href="#Redis跳跃表的设计" class="headerlink" title="Redis跳跃表的设计"></a>Redis跳跃表的设计</h3><p>redis跳跃表并没有在单独的类（比如skplist.c)中定义，而是其定义在server.h中, 如下:</p>
 <pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">/* ZSETs use a specialized version of Skiplists */</span>
 <span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token class-name">zskiplistNode</span> <span class="token punctuation">{</span>
@@ -926,7 +926,7 @@ index <span class="token operator">=</span> <span class="token builtin class-nam
 <span class="token punctuation">}</span> zskiplist<span class="token punctuation">;</span></code></pre>
 
 <p>其内存布局如下图:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292204087.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292204087.png"></p>
 <p><strong>zskiplist的核心设计要点</strong></p>
 <ul>
 <li><p><strong>头节点</strong>不持有任何数据, 且其level[]的长度为32</p>
@@ -1628,7 +1628,7 @@ About threads: our experience shows that Redis is mostly I/O bound. I'm using th
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -508,9 +508,9 @@
 <p>MyBatis的二级缓存是Application级别的缓存，它可以提高对数据库查询的效率，以提高应用的性能。</p>
 </blockquote>
 <h2 id="MyBatis二级缓存实现"><a href="#MyBatis二级缓存实现" class="headerlink" title="MyBatis二级缓存实现"></a>MyBatis二级缓存实现</h2><p>MyBatis的二级缓存是Application级别的缓存，它可以提高对数据库查询的效率，以提高应用的性能。</p>
-<h3 id="MyBatis的缓存机制整体设计以及二级缓存的工作模式"><a href="#MyBatis的缓存机制整体设计以及二级缓存的工作模式" class="headerlink" title="MyBatis的缓存机制整体设计以及二级缓存的工作模式"></a>MyBatis的缓存机制整体设计以及二级缓存的工作模式</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092303514.png" alt="img"></p>
+<h3 id="MyBatis的缓存机制整体设计以及二级缓存的工作模式"><a href="#MyBatis的缓存机制整体设计以及二级缓存的工作模式" class="headerlink" title="MyBatis的缓存机制整体设计以及二级缓存的工作模式"></a>MyBatis的缓存机制整体设计以及二级缓存的工作模式</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092303514.png"></p>
 <p>如图所示，当开一个会话时，一个SqlSession对象会使用一个Executor对象来完成会话操作，MyBatis的二级缓存机制的关键就是对这个Executor对象做文章。如果用户配置了”cacheEnabled=true”，那么MyBatis在为SqlSession对象创建Executor对象时，会对Executor对象加上一个装饰者：CachingExecutor，这时SqlSession使用CachingExecutor对象来完成操作请求。CachingExecutor对于查询请求，会先判断该查询请求在Application级别的二级缓存中是否有缓存结果，如果有查询结果，则直接返回缓存结果；如果缓存中没有，再交给真正的Executor对象来完成查询操作，之后CachingExecutor会将真正Executor返回的查询结果放置到缓存中，然后在返回给用户。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092303184.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092303184.png"></p>
 <p>CachingExecutor是Executor的装饰者，以增强Executor的功能，使其具有缓存查询的功能，这里用到了设计模式中的装饰者模式，CachingExecutor和Executor的接口的关系如下类图所示：</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092303210.png"></p>
 <h3 id="MyBatis二级缓存的划分"><a href="#MyBatis二级缓存的划分" class="headerlink" title="MyBatis二级缓存的划分"></a>MyBatis二级缓存的划分</h3><p>MyBatis并不是简单地对整个Application就只有一个Cache缓存对象，它将缓存划分的更细，即是Mapper级别的，即每一个Mapper都可以拥有一个Cache对象，具体如下：</p>
@@ -518,13 +518,13 @@
 <li><strong>为每一个Mapper分配一个Cache缓存对象</strong>（使用<code>&lt;cache&gt;</code>节点配置）</li>
 </ul>
 <p>MyBatis将Application级别的二级缓存细分到Mapper级别，即对于每一个Mapper.xml,如果在其中使用了<code>&lt;cache&gt;</code> 节点，则MyBatis会为这个Mapper创建一个Cache缓存对象，如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092304539.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092304539.png"></p>
 <p>注：上述的每一个Cache对象，都会有一个自己所属的namespace命名空间，并且会将Mapper的 namespace作为它们的ID；</p>
 <ul>
 <li><strong>多个Mapper共用一个Cache缓存对象</strong>（使用<code>&lt;cache-ref&gt;</code>节点配置）</li>
 </ul>
 <p>如果你想让多个Mapper公用一个Cache的话，你可以使用<code>&lt;cache-ref namespace=""&gt;</code>节点，来指定你的这个Mapper使用到了哪一个Mapper的Cache缓存。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092304955.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092304955.png"></p>
 <h3 id="使用二级缓存，必须要具备的条件"><a href="#使用二级缓存，必须要具备的条件" class="headerlink" title="使用二级缓存，必须要具备的条件"></a>使用二级缓存，必须要具备的条件</h3><p>MyBatis对二级缓存的支持粒度很细，它会指定某一条查询语句是否使用二级缓存。</p>
 <p>虽然在Mapper中配置了<code>&lt;cache&gt;</code>,并且为此Mapper分配了Cache对象，这并不表示我们使用Mapper中定义的查询语句查到的结果都会放置到Cache对象之中，我们必须指定Mapper中的某条选择语句是否支持缓存，即如下所示，在<code>&lt;select&gt;</code> 节点中配置useCache=”true”，Mapper才会对此Select的查询支持缓存特性，否则，不会对此Select查询，不会经过Cache缓存。如下所示，Select语句配置了useCache=”true”，则表明这条Select语句的查询会使用二级缓存。</p>
 <pre class="language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>select</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>selectByMinSalary<span class="token punctuation">"</span></span> <span class="token attr-name">resultMap</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>BaseResultMap<span class="token punctuation">"</span></span> <span class="token attr-name">parameterType</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>java.util.Map<span class="token punctuation">"</span></span> <span class="token attr-name">useCache</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>true<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span></code></pre>
@@ -546,7 +546,7 @@
 <p>MyBatis自身提供了丰富的，并且功能强大的二级缓存的实现，它拥有一系列的Cache接口装饰者，可以满足各种对缓存操作和更新的策略。</p>
 </blockquote>
 <p>MyBatis定义了大量的Cache的装饰器来增强Cache缓存的功能，如下类图所示。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092304813.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092304813.png"></p>
 <p>对于每个Cache而言，都有一个容量限制，MyBatis各供了各种策略来对Cache缓存的容量进行控制，以及对Cache中的数据进行刷新和置换。MyBatis主要提供了以下几个刷新和置换策略：</p>
 <ul>
 <li>LRU：（Least Recently Used）,最近最少使用算法，即如果缓存中容量已经满了，会将缓存中最近最少被使用的缓存记录清除掉，然后添加新的记录；</li>
@@ -575,7 +575,7 @@
 <h3 id="当前MyBatis二级缓存的工作机制"><a href="#当前MyBatis二级缓存的工作机制" class="headerlink" title="当前MyBatis二级缓存的工作机制"></a>当前MyBatis二级缓存的工作机制</h3><blockquote>
 <p>MyBatis二级缓存的一个重要特点：即松散的Cache缓存管理和维护</p>
 </blockquote>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092304065.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092304065.png"></p>
 <p>一个Mapper中定义的增删改查操作只能影响到自己关联的Cache对象。如上图所示的Mapper namespace1中定义的若干CRUD语句，产生的缓存只会被放置到相应关联的Cache1中，即Mapper namespace2,namespace3,namespace4 中的CRUD的语句不会影响到Cache1。</p>
 <p>可以看出，<strong>Mapper之间的缓存关系比较松散，相互关联的程度比较弱</strong>。</p>
 <p>现在再回到上面描述的问题，如果我们将AMapper和BMapper共用一个Cache对象，那么，当BMapper执行更新操作时，可以清空对应Cache中的所有的缓存数据，这样的话，数据不是也可以保持最新吗？</p>
@@ -1217,7 +1217,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

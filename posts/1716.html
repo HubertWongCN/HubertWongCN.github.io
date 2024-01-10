@@ -712,7 +712,7 @@
 
 <p>说明: 该方法在共享模式下释放，具体的流程再之后会通过一个示例给出。</p>
 <p>所以，对CountDownLatch的await调用大致会有如下的调用链。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261325524.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261325524.png"></p>
 <p>说明: 上图给出了可能会调用到的主要方法，并非一定会调用到，之后，会通过一个示例给出详细的分析。</p>
 <h3 id="核心函数-countDown函数"><a href="#核心函数-countDown函数" class="headerlink" title="核心函数 - countDown函数"></a>核心函数 - countDown函数</h3><p>此函数将递减锁存器的计数，如果计数到达零，则释放所有等待的线程</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">countDown</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
@@ -790,7 +790,7 @@
 
 <p>说明: 此函数在共享模式下释放资源。</p>
 <p>所以，对CountDownLatch的countDown调用大致会有如下的调用链。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261325975.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261325975.png"></p>
 <p>说明: 上图给出了可能会调用到的主要方法，并非一定会调用到，之后，会通过一个示例给出详细的分析。</p>
 <h2 id="CountDownLatch示例"><a href="#CountDownLatch示例" class="headerlink" title="CountDownLatch示例"></a>CountDownLatch示例</h2><p>下面给出了一个使用CountDownLatch的示例。</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>concurrent<span class="token punctuation">.</span></span><span class="token class-name">CountDownLatch</span></span><span class="token punctuation">;</span>
@@ -841,27 +841,27 @@ t2 finish
 main continue</code></pre>
 
 <p>说明: 本程序首先计数器初始化为2。根据结果，可能会存在如下的一种时序图。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261326204.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261326204.png"></p>
 <p>说明: 首先main线程会调用await操作，此时main线程会被阻塞，等待被唤醒，之后t1线程执行了countDown操作，最后，t2线程执行了countDown操作，此时main线程就被唤醒了，可以继续运行。下面，进行详细分析。</p>
 <ul>
 <li>main线程执行countDownLatch.await操作，主要调用的函数如下。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261326980.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261326980.png"></p>
 <p>说明: 在最后，main线程就被park了，即禁止运行了。此时Sync queue(同步队列)中有两个节点，AQS的state为2，包含main线程的结点的nextWaiter指向SHARED结点。</p>
 <ul>
 <li>t1线程执行countDownLatch.countDown操作，主要调用的函数如下。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261326663.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261326663.png"></p>
 <p>说明: 此时，Sync queue队列里的结点个数未发生变化，但是此时，AQS的state已经变为1了。</p>
 <ul>
 <li>t2线程执行countDownLatch.countDown操作，主要调用的函数如下。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261326440.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261326440.png"></p>
 <p>说明: 经过调用后，AQS的state为0，并且此时，main线程会被unpark，可以继续运行。当main线程获取cpu资源后，继续运行。</p>
 <ul>
 <li>main线程获取cpu资源，继续运行，由于main线程是在parkAndCheckInterrupt函数中被禁止的，所以此时，继续在parkAndCheckInterrupt函数运行。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261326989.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261326989.png"></p>
 <p>说明: main线程恢复，继续在parkAndCheckInterrupt函数中运行，之后又会回到最终达到的状态为AQS的state为0，并且head与tail指向同一个结点，该节点的额nextWaiter域还是指向SHARED结点。</p>
 <h2 id="更深入理解"><a href="#更深入理解" class="headerlink" title="更深入理解"></a>更深入理解</h2><h3 id="写道面试题"><a href="#写道面试题" class="headerlink" title="写道面试题"></a>写道面试题</h3><blockquote>
 <p>实现一个容器，提供两个方法，add，size 写两个线程，线程1添加10个元素到容器中，线程2实现监控元素的个数，当个数到5个时，线程2给出提示并结束.</p>
@@ -1634,7 +1634,7 @@ add8</code></pre>
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

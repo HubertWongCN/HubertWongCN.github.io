@@ -512,14 +512,14 @@
 <p>ElasticSearch中最重要原理是文档的索引和文档的读取，本文带你理解ES文档的索引过程。</p>
 </blockquote>
 <h2 id="文档索引步骤顺序"><a href="#文档索引步骤顺序" class="headerlink" title="文档索引步骤顺序"></a>文档索引步骤顺序</h2><h3 id="单个文档"><a href="#单个文档" class="headerlink" title="单个文档"></a>单个文档</h3><p>新建单个文档所需要的步骤顺序：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300308849.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300308849.png"></p>
 <ol>
 <li>客户端向 Node 1 发送新建、索引或者删除请求。</li>
 <li>节点使用文档的 _id 确定文档属于分片 0 。请求会被转发到 Node 3，因为分片 0 的主分片目前被分配在 Node 3 上。</li>
 <li>Node 3 在主分片上面执行请求。如果成功了，它将请求并行转发到 Node 1 和 Node 2 的副本分片上。一旦所有的副本分片都报告成功, Node 3 将向协调节点报告成功，协调节点向客户端报告成功。</li>
 </ol>
 <h3 id="多个文档"><a href="#多个文档" class="headerlink" title="多个文档"></a>多个文档</h3><p>使用 bulk 修改多个文档步骤顺序：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300308188.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300308188.png"></p>
 <ol>
 <li>客户端向 Node 1 发送 bulk 请求。</li>
 <li>Node 1 为每个节点创建一个批量请求，并将这些请求并行转发到每个包含主分片的节点主机。</li>
@@ -528,7 +528,7 @@
 <h2 id="文档索引过程详解"><a href="#文档索引过程详解" class="headerlink" title="文档索引过程详解"></a>文档索引过程详解</h2><h3 id="整体的索引流程"><a href="#整体的索引流程" class="headerlink" title="整体的索引流程"></a>整体的索引流程</h3><blockquote>
 <p>先看下整体的索引流程</p>
 </blockquote>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300308240.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300308240.jpeg"></p>
 <ul>
 <li>协调节点默认使用文档ID参与计算（也支持通过routing），以便为路由提供合适的分片。</li>
 </ul>
@@ -545,13 +545,13 @@
 <ul>
 <li><strong>write 过程</strong></li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300308097.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300308097.png"></p>
 <p>一个新文档过来，会存储在 in-memory buffer 内存缓存区中，顺便会记录 Translog（Elasticsearch 增加了一个 translog ，或者叫事务日志，在每一次对 Elasticsearch 进行操作时均进行了日志记录）。</p>
 <p>这时候数据还没到 segment ，是搜不到这个新文档的。数据只有被 refresh 后，才可以被搜索到。</p>
 <ul>
 <li><strong>refresh 过程</strong></li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300309416.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300309416.png"></p>
 <p>refresh 默认 1 秒钟，执行一次上图流程。ES 是支持修改这个值的，通过 index.refresh_interval 设置 refresh （冲刷）间隔时间。refresh 流程大致如下：</p>
 <ol>
 <li>in-memory buffer 中的文档写入到新的 segment 中，但 segment 是存储在文件系统的缓存中。此时文档可以被搜索到</li>
@@ -562,7 +562,7 @@
 <li><strong>flush 过程</strong></li>
 </ul>
 <p>每隔一段时间—例如 translog 变得越来越大—索引被刷新（flush）；一个新的 translog 被创建，并且一个全量提交被执行</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300309161.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300309161.png"></p>
 <p>上个过程中 segment 在文件系统缓存中，会有意外故障文档丢失。那么，为了保证文档不会丢失，需要将文档写入磁盘。那么文档从文件缓存写入磁盘的过程就是 flush。写入磁盘后，清空 translog。具体过程如下：</p>
 <ol>
 <li>所有在内存缓冲区的文档都被写入一个新的段。</li>
@@ -577,14 +577,14 @@
 <p>由于自动刷新流程每秒会创建一个新的段 ，这样会导致短时间内的段数量暴增。而段数目太多会带来较大的麻烦。 每一个段都会消耗文件句柄、内存和cpu运行周期。更重要的是，每个搜索请求都必须轮流检查每个段；所以段越多，搜索也就越慢。</p>
 <p>Elasticsearch通过在后台进行Merge Segment来解决这个问题。小的段被合并到大的段，然后这些大的段再被合并到更大的段。</p>
 <p>当索引的时候，刷新（refresh）操作会创建新的段并将段打开以供搜索使用。合并进程选择一小部分大小相似的段，并且在后台将它们合并到更大的段中。这并不会中断索引和搜索。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300309208.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300309208.png"></p>
 <p>一旦合并结束，老的段被删除：</p>
 <ol>
 <li>新的段被刷新（flush）到了磁盘。 ** 写入一个包含新段且排除旧的和较小的段的新提交点。</li>
 <li>新的段被打开用来搜索。</li>
 <li>老的段被删除。</li>
 </ol>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300309282.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300309282.png"></p>
 <p>合并大的段需要消耗大量的I/O和CPU资源，如果任其发展会影响搜索性能。Elasticsearch在默认情况下会对合并流程进行资源限制，所以搜索仍然 有足够的资源很好地执行。</p>
 <h2 id="深入ElasticSearch索引文档的实现机制"><a href="#深入ElasticSearch索引文档的实现机制" class="headerlink" title="深入ElasticSearch索引文档的实现机制"></a>深入ElasticSearch索引文档的实现机制</h2><p>提示</p>
 <p>作为选读内容。</p>
@@ -615,13 +615,13 @@
 <p>我们再来看Elasticsearch中的写机制。</p>
 <h3 id="Elasticsearch的写"><a href="#Elasticsearch的写" class="headerlink" title="Elasticsearch的写"></a>Elasticsearch的写</h3><p>Elasticsearch采用多Shard方式，通过配置routing规则将数据分成多个数据子集，每个数据子集提供独立的索引和搜索功能。当写入文档的时候，根据routing规则，将文档发送给特定Shard中建立索引。这样就能实现分布式了。</p>
 <p>此外，Elasticsearch整体架构上采用了一主多副的方式：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300309116.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300309116.png"></p>
 <p>每个Index由多个Shard组成，每个Shard有一个主节点和多个副本节点，副本个数可配。但每次写入的时候，写入请求会先根据_routing规则选择发给哪个Shard，Index Request中可以设置使用哪个Filed的值作为路由参数，如果没有设置，则使用Mapping中的配置，如果mapping中也没有配置，则使用_id作为路由参数，然后通过_routing的Hash值选择出Shard（在OperationRouting类中），最后从集群的Meta中找出出该Shard的Primary节点。</p>
 <p>请求接着会发送给Primary Shard，在Primary Shard上执行成功后，再从Primary Shard上将请求同时发送给多个Replica Shard，请求在多个Replica Shard上执行成功并返回给Primary Shard后，写入请求执行成功，返回结果给客户端。</p>
 <p>这种模式下，写入操作的延时就等于latency = Latency(Primary Write) + Max(Replicas Write)。只要有副本在，写入延时最小也是两次单Shard的写入时延总和，写入效率会较低，但是这样的好处也很明显，避免写入后，单机或磁盘故障导致数据丢失，在数据重要性和性能方面，一般都是优先选择数据，除非一些允许丢数据的特殊场景。</p>
 <p>采用多个副本后，避免了单机或磁盘故障发生时，对已经持久化后的数据造成损害，但是Elasticsearch里为了减少磁盘IO保证读写性能，一般是每隔一段时间（比如5分钟）才会把Lucene的Segment写入磁盘持久化，对于写入内存，但还未Flush到磁盘的Lucene数据，如果发生机器宕机或者掉电，那么内存中的数据也会丢失，这时候如何保证？</p>
 <p>对于这种问题，Elasticsearch学习了数据库中的处理方式：增加CommitLog模块，Elasticsearch中叫TransLog。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300310464.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300310464.jpeg"></p>
 <p>在每一个Shard中，写入流程分为两部分，先写入Lucene，再写入TransLog。</p>
 <p>写入请求到达Shard后，先写Lucene文件，创建好索引，此时索引还在内存里面，接着去写TransLog，写完TransLog后，刷新TransLog数据到磁盘上，写磁盘成功后，请求返回给用户。这里有几个关键点:</p>
 <ul>
@@ -630,7 +630,7 @@
 <li>三是当Elasticsearch作为NoSQL数据库时，查询方式是GetById，这种查询可以直接从TransLog中查询，这时候就成了RT（Real Time）实时系统。四是每隔一段比较长的时间，比如30分钟后，Lucene会把内存中生成的新Segment刷新到磁盘上，刷新后索引文件已经持久化了，历史的TransLog就没用了，会清空掉旧的TransLog。</li>
 </ul>
 <p>上面介绍了Elasticsearch在写入时的两个关键模块，Replica和TransLog，接下来，我们看一下Update流程：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300310582.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300310582.jpeg"></p>
 <p>Lucene中不支持部分字段的Update，所以需要在Elasticsearch中实现该功能，具体流程如下：</p>
 <ul>
 <li>收到Update请求后，从Segment或者TransLog中读取同id的完整Doc，记录版本号为V1。</li>
@@ -646,7 +646,7 @@
 </blockquote>
 <p>在6.0.0及其之后的版本中，前3个单文档操作的实现基本都和Bulk操作一致，甚至有些就是通过调用Bulk的接口实现的。估计接下来几个版本后，Index(Create)，Update，Delete都会被当做Bulk的一种特例化操作被处理。这样，代码和逻辑都会更清晰一些。</p>
 <p>下面，我们就以Bulk请求为例来介绍写入流程。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300310743.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300310743.jpeg"></p>
 <ul>
 <li>红色：Client Node。</li>
 <li>绿色：Primary Node。</li>
@@ -1415,7 +1415,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

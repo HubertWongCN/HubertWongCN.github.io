@@ -529,7 +529,7 @@
 </blockquote>
 <p>如果你发现你的业务服务 API 响应延迟变长，首先你需要先排查服务内部，究竟是哪个环节拖慢了整个服务。</p>
 <p>比较高效的做法是，在服务内部集成链路追踪，也就是在服务访问外部依赖的出入口，记录下每次请求外部依赖的响应延时。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292253668.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292253668.jpeg"></p>
 <p>如果你发现确实是操作 Redis 的这条链路耗时变长了，那么此刻你需要把焦点关注在业务服务到 Redis 这条链路上。</p>
 <p>从你的业务服务到 Redis 这条链路变慢的原因可能也有 2 个：</p>
 <ul>
@@ -620,7 +620,7 @@ CONFIG SET slowlog-max-len <span class="token number">500</span></code></pre>
 <p>第二种情况导致变慢的原因在于，Redis 一次需要返回给客户端的数据过多，更多时间花费在数据协议的组装和网络传输过程中。</p>
 <p>另外，我们还可以从资源使用率层面来分析，如果你的应用程序操作 Redis 的 OPS 不是很大，但 Redis 实例的 CPU 使用率却很高，那么很有可能是使用了复杂度过高的命令导致的。</p>
 <p>除此之外，我们都知道，Redis 是单线程处理客户端请求的，如果你经常使用以上命令，那么当 Redis 处理客户端请求时，一旦前面某个命令发生耗时，就会导致后面的请求发生排队，对于客户端来说，响应延迟也会变长。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292253707.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292253707.jpeg"></p>
 <p>针对这种情况如何解决呢？</p>
 <p>答案很简单，你可以使用以下方法优化你的业务：</p>
 <ul>
@@ -689,7 +689,7 @@ Biggest   zset found <span class="token string">'myzset:2704'</span> has <span c
 <p>如果此时需要过期删除的是一个 bigkey，那么这个耗时会更久。而且，这个操作延迟的命令并不会记录在慢日志中。</p>
 <p>因为慢日志中只记录一个命令真正操作内存数据的耗时，而 Redis 主动删除过期 key 的逻辑，是在命令真正执行之前执行的。</p>
 <p>所以，此时你会看到，<strong>慢日志中没有操作耗时的命令，但我们的应用程序却感知到了延迟变大，其实时间都花费在了删除过期 key 上</strong>，这种情况我们需要尤为注意。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292254915.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292254915.jpeg"></p>
 <p><strong>那遇到这种情况，如何分析和排查</strong>？</p>
 <p>此时，你需要检查你的业务代码，是否存在集中过期 key 的逻辑。</p>
 <p>一般集中过期使用的是 expireat / pexpireat 命令，你需要在代码中搜索这个关键字。</p>
@@ -733,7 +733,7 @@ lazyfree-lazy-expire <span class="token function">yes</span></code></pre>
 <p>具体使用哪种策略，我们需要根据具体的业务场景来配置。</p>
 <p>一般最常使用的是 allkeys-lru / volatile-lru 淘汰策略，它们的处理逻辑是，每次从实例中随机取出一批 key（这个数量可配置），然后淘汰一个最少访问的 key，之后把剩下的 key 暂存到一个池子中，继续随机取一批 key，并与之前池子中的 key 比较，再淘汰一个最少访问的 key。以此往复，直到实例内存降到 maxmemory 之下。</p>
 <p>需要注意的是，Redis 的淘汰数据的逻辑与删除过期 key 的一样，也是在命令真正执行之前执行的，也就是说它也会增加我们操作 Redis 的延迟，而且，写 OPS 越高，延迟也会越明显。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292254717.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292254717.jpeg"></p>
 <p>另外，如果此时你的 Redis 实例中还存储了 bigkey，那么在淘汰删除 bigkey 释放内存时，也会耗时比较久。</p>
 <p>看到了么？bigkey 的危害到处都是，这也是前面我提醒你尽量不存储 bigkey 的原因。</p>
 <p><strong>针对这种情况，如何解决呢</strong>？</p>
@@ -760,7 +760,7 @@ latest_fork_usec:59477</code></pre>
 <p>这个时间就是主进程在 fork 子进程期间，整个实例阻塞无法处理客户端请求的时间。</p>
 <p>如果你发现这个耗时很久，就要警惕起来了，这意味在这期间，你的整个 Redis 实例都处于不可用的状态。</p>
 <p>除了数据持久化会生成 RDB 之外，当主从节点第一次建立数据同步时，主节点也创建子进程生成 RDB，然后发给从节点进行一次全量同步，所以，这个过程也会对 Redis 产生性能影响。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292254318.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292254318.jpeg"></p>
 <p>要想避免这种情况，你可以采取以下方案进行优化：</p>
 <ul>
 <li>控制 Redis 实例的内存：尽量在 10G 以下，执行 fork 的耗时与实例大小有关，实例越大，耗时越久</li>
@@ -782,7 +782,7 @@ latest_fork_usec:59477</code></pre>
 <p>这样做的好处是，父进程有任何写操作，并不会影响子进程的数据持久化（子进程只持久化 fork 这一瞬间整个实例中的所有数据即可，不关心新的数据变更，因为子进程只需要一份内存快照，然后持久化到磁盘上）。</p>
 <p>但是请注意，<strong>主进程在拷贝内存数据时，这个阶段就涉及到新内存的申请，如果此时操作系统开启了内存大页，那么在此期间，客户端即便只修改 10B 的数据，Redis 在申请内存时也会以 2MB 为单位向操作系统申请，申请内存的耗时变长，进而导致每个写请求的延迟增加，影响到 Redis 性能</strong>。</p>
 <p>同样地，如果这个写请求操作的是一个 bigkey，那主进程在拷贝这个 bigkey 内存块时，一次申请的内存会更大，时间也会更久。可见，bigkey 在这里又一次影响到了性能。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292302084.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292302084.jpeg"></p>
 <p><strong>那如何解决这个问题</strong>？</p>
 <p>很简单，你只需要关闭内存大页机制就可以了。</p>
 <p>首先，你需要查看 Redis 机器是否开启了内存大页：</p>
@@ -826,7 +826,7 @@ latest_fork_usec:59477</code></pre>
 <p>你试想这样一种情况：当 Redis 后台线程在执行 AOF 文件刷盘时，如果此时磁盘的 IO 负载很高，那这个后台线程在执行刷盘操作（fsync系统调用）时就会被阻塞住。</p>
 <p>此时的主线程依旧会接收写请求，紧接着，主线程又需要把数据写到文件内存中（write 系统调用），<strong>但此时的后台子线程由于磁盘负载过高，导致 fsync 发生阻塞，迟迟不能返回，那主线程在执行 write 系统调用时，也会被阻塞住，直到后台线程 fsync 执行完成后，主线程执行 write 才能成功返回</strong>。</p>
 <p>看到了么？在这个过程中，主线程依旧有阻塞的风险。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292308956.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292308956.jpeg"></p>
 <p>所以，尽管你的 AOF 配置为 appendfsync everysec，也不能掉以轻心，要警惕磁盘压力过大导致的 Redis 有性能问题。</p>
 <p>那什么情况下会导致磁盘 IO 负载过大？以及如何解决这个问题呢？</p>
 <p>我总结了以下几种情况，你可以参考进行问题排查：</p>
@@ -999,7 +999,7 @@ active-defrag-max-scan-fields <span class="token number">1000</span></code></pre
 <p>好了，以上就是我总结的在使用 Redis 过程中，常见的可能导致延迟、甚至阻塞的问题场景，以及如何快速定位和分析这些问题，并且针对性地提供了解决方案。</p>
 </blockquote>
 <p>这里我也汇总成了思维导图，方便你在排查 Redis 性能问题时，快速地去分析和定位。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292309747.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292309747.png"></p>
 <p>这里再简单总结一下，Redis 的性能问题，既涉及到了业务开发人员的使用方面，也涉及到了 DBA 的运维方面。</p>
 <p>作为业务开发人员，我们需要了解 Redis 的基本原理，例如各个命令执行的时间复杂度、数据过期策略、数据淘汰策略等，从而更合理地使用 Redis 命令，并且结合业务场景进行优化。</p>
 <p>作为 DBA 和运维人员，需要了解 Redis 运行机制，例如数据持久化、内存碎片整理、进程绑核配置。除此之外，还需要了解操作系统相关知识，例如写时复制、内存大页、Swap 机制等等。</p>
@@ -1666,7 +1666,7 @@ active-defrag-max-scan-fields <span class="token number">1000</span></code></pre
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

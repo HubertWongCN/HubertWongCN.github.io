@@ -516,7 +516,7 @@
 <p>巡检工作是保障系统平稳有效运行必不可少的一个环节，目的是能及时发现系统中存在的隐患。我们生活中也随处可见各种巡检，比如电力巡检、消防检查等，正是这些巡检工作，我们才能在稳定的环境下进行工作、生活。巡检对于数据库或者其他IT系统来说也同样至关重要，特别是在降低风险、提高服务稳定性方面起到了非常关键作用。本文介绍了美团MySQL数据库巡检系统的框架和巡检内容，希望能够帮助大家了解什么是数据库巡检，美团的巡检系统架构是如何设计的，以及巡检系统是如何保障MySQL服务稳定运行的。</p>
 </blockquote>
 <h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><p>为了保障数据库的稳定运行，以下核心功能组件必不可少：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292009139.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292009139.png"></p>
 <p>其中，数据库巡检作为运维保障体系最重要的环节之一，能够帮助我们发现数据库存在的隐患，提前治理，做到防患于未然。对于大规模集群而言，灵活健壮的自动化巡检能力，至关重要。</p>
 <p>任何系统都会经历一个原始的阶段，最早的巡检是由中控机+定时巡检脚本+前端展示构成的。但是，随着时间的推移，老巡检方案逐渐暴露出了一些问题：</p>
 <ul>
@@ -534,7 +534,7 @@
 <li><strong>可运营</strong>：用数据做基础，对巡检隐患进行运营，包括推进隐患治理，查看治理效率、趋势、薄弱点等。</li>
 </ul>
 <h2 id="三、系统架构"><a href="#三、系统架构" class="headerlink" title="三、系统架构"></a>三、系统架构</h2><p>美团MySQL数据库巡检系统架构图设计如下。接下来，我们按照架构图从下到上的顺序来对巡检系统主要模块进行简单的介绍：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292009793.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292009793.png"></p>
 <h3 id="1-执行层"><a href="#1-执行层" class="headerlink" title="1. 执行层"></a>1. 执行层</h3><p><strong>巡检执行环境</strong>：由多台巡检执行机组成，巡检任务脚本会同时部署在所有执行机上。执行机会定时从巡检Git仓库拉取最新的脚本，脚本使用Python Virtualenv + Git进行管理，方便扩充新的执行机。</p>
 <p><strong>任务调度</strong>：巡检任务使用了美团基础架构部研发的分布式定时任务系统Crane进行调度，解决传统定时任务单点问题。Crane会随机指派某一台执行机执行任务，假如这台执行机出现故障，会指派其他执行机重新执行任务。一般一个巡检任务对应着一个巡检项，巡检任务会针对特定的巡检目标根据一定的规则来判断是否存在隐患。</p>
 <p><strong>巡检目标</strong>：除了对生产数据库进行巡检以外，还会对高可用组件、中间件等数据库周边产品进行巡检，尽可能覆盖所有会引发数据库故障的风险点。</p>
@@ -562,7 +562,7 @@
 <li>运维周报，主要面向业务线RD负责人和业务线DBA，以静态报告形式展示业务线数据库运行情况以及存在的问题，巡检隐患是报告内容之一。</li>
 </ol>
 <h2 id="四、巡检项目"><a href="#四、巡检项目" class="headerlink" title="四、巡检项目"></a>四、巡检项目</h2><p>巡检项目根据负责方分为DBA和RD，DBA主要负责处理数据库基础功能组件以及影响服务稳定性的隐患。RD主要负责库表设计缺陷、数据库使用不规范等引起的业务故障或性能问题的隐患。也存在需要他们同时参与治理的巡检项，比如“磁盘可用空间预测”等。目前巡检项目共64个，类目分布情况如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010048.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010048.png"></p>
 <ul>
 <li><strong>集群</strong>：主要检查集群拓扑、核心参数等集群层面的隐患；</li>
 <li><strong>机器</strong>：主要检查服务器硬件层面的隐患；</li>
@@ -570,16 +570,16 @@
 <li><strong>高可用/备份/中间件/报警</strong>：主要检查相关核心功能组件是否存在隐患。</li>
 </ul>
 <p>下面，我们通过列举几个巡检任务来对巡检项做简单的说明：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010887.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010887.png"></p>
 <h2 id="五、成果"><a href="#五、成果" class="headerlink" title="五、成果"></a>五、成果</h2><p>美团MySQL巡检系统已稳定运行近一年时间，基于新巡检体系上线的巡检项49个。通过巡检体系持续运行，在团队的共同努力下，我们共治理了8000+核心隐患，近3个月隐患治理周期平均不超过4天，将隐患总数持续保持在极小的量级，有效地保障了数据库的稳定。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010290.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010290.png"></p>
 <p>下面的隐患趋势图，展示了近一年中隐患的个数，数量突然增长是由于新的巡检项上线。从整体趋势上看，隐患存量有非常明显的下降。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010963.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010963.png"></p>
 <p>除了推动内部隐患治理之外，我们还通过对接先知平台，积极推动RD治理隐患数量超过5000个。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010733.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010733.png"></p>
 <p>为了提升用户体验，我们在提升准确率方面也做了重点的投入，让每一个巡检在上线前都会经过严格的测试和校验。</p>
 <p>对比其他先知接入方，DBA上报隐患在总量、转化率、反馈率几个指标上都处于较高水平，可见我们上报的隐患风险也得到了RD的认可。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010937.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292010937.png"></p>
 <p><strong>指标说明</strong>：</p>
 <ul>
 <li>反馈率 = 截止到当前时刻反馈过的风险事件数量/截止到当前时刻产生的风险事件总量 * 100%；</li>
@@ -1250,7 +1250,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

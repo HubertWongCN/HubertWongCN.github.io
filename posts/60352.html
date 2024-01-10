@@ -532,15 +532,15 @@
 <p>B-Tree是为磁盘或其它辅助存储设备而设计的一种数据结构，目的是为了在查找数据的过程中减少磁盘I/O的次数。</p>
 </blockquote>
 <p>一个典型的B-Tree结构如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300047816.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300047816.jpg"></p>
 <p>在整个B-Tree中，从上往下依次为Root结点、内部结点和叶子结点，每个结点就是一个Page，数据以Page为单位在内存和磁盘间进行调度，每个Page的大小决定了相应结点的分支数量，每条索引记录会包含一个数据指针，指向一条数据记录所在文件的偏移量。</p>
 <p>如上图，假设每个结点100个分支，那么所有叶子结点合起来可以包含100万个键值（等于100<em>100</em>100）。通常情况下Root结点和内部结点的Page会驻留在内存中，所以查找一条数据可能只需2次磁盘I/O。但随着数据不断的插入、删除，会涉及到B-Tree结点的分裂、位置提升及合并等操作，因此维护一个B-Tree的平衡也是比较耗时的。</p>
 <h2 id="WiredTiger数据文件在磁盘上的数据结构"><a href="#WiredTiger数据文件在磁盘上的数据结构" class="headerlink" title="WiredTiger数据文件在磁盘上的数据结构"></a>WiredTiger数据文件在磁盘上的数据结构</h2><p>对于WiredTiger存储引擎来说，集合所在的数据文件和相应的索引文件都是按B-Tree结构来组织的，<strong>不同之处在于数据文件对应的B-Tree叶子结点上除了存储键名外（keys），还会存储真正的集合数据（values）</strong>，所以数据文件的存储结构也可以认为是一种B+Tree，其整体结构如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300047269.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300047269.jpg"></p>
 <p>从上图可以看到，B+ Tree中的leaf page包含一个页头（page header）、块头（block header）和真正的数据（key/value），其中页头定义了页的类型、页中实际载荷数据的大小、页中记录条数等信息；块头定义了此页的checksum、块在磁盘上的寻址位置等信息。</p>
 <p>WiredTiger有一个块设备管理的模块，用来为page分配block。如果要定位某一行数据（key/value）的位置，可以先通过block的位置找到此page（相对于文件起始位置的偏移量），再通过page找到行数据的相对位置，最后可以得到行数据相对于文件起始位置的偏移量offsets。由于offsets是一个8字节大小的变量，所以WiredTiger磁盘文件的大小，其最大值可以非常大(264bit)。</p>
 <h2 id="WiredTiger内存上的基础数据结构"><a href="#WiredTiger内存上的基础数据结构" class="headerlink" title="WiredTiger内存上的基础数据结构"></a>WiredTiger内存上的基础数据结构</h2><p>WiredTiger会按需将磁盘的数据<strong>以page为单位加载到内存</strong>，同时在内存会构造相应的B-Tree来存储这些数据。<strong>为了高效的支撑CRUD等操作以及将内存里面发生变化的数据持久化到磁盘上</strong>，WiredTiger也会在内存里面维护其它几种数据结构，如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300047199.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300047199.jpg"></p>
 <p>上图是WiredTiger在内存里面的大概布局图，通过它我们可梳理清楚存储引擎是如何将数据加载到内存，然后如何通过相应数据结构来支持查询、插入、修改操作的。</p>
 <ul>
 <li>内存里面B-Tree包含三种类型的page，即rootpage、internal page和leaf page，前两者包含指向其子页的page index指针，不包含集合中的真正数据，leaf page包含集合中的真正数据即keys/values和指向父页的home指针；</li>
@@ -549,9 +549,9 @@
 <li>内存上的leaf page会维护一个<code>WT_INSERT_HEAD</code>结构的数组变量，具体插入的data会保存在<code>WT_INSERT_HEAD</code>结构中的<code>WT_UPDATE</code>属性上，且通过key属性的offset和size可以计算出此条记录待插入的位置；同时，为了提高寻找待插入位置的效率，每个<code>WT_INSERT_HEAD</code>变量以<strong>跳转链表</strong>的形式构成。</li>
 </ul>
 <p>下图是一个跳转链表的插入示例：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300047087.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300047087.jpg"></p>
 <p>假如现在插入一个16，最终结果如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300047741.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300047741.jpg"></p>
 <p>如果是一个普通的链表，寻找合适的插入位置时，需要经过：</p>
 <p>开始结点-&gt;2-&gt;5-&gt;8-&gt;10-&gt;20的比较；</p>
 <p>对于跳转链表来说只需经过：开始结点-&gt;5-&gt;10-&gt;20的比较，可以看到比在普通链表上寻找插入位置时需要的比较步骤少，所以，<strong>通过跳转链表的数据结构能够提升插入操作的效率</strong>。</p>
@@ -1225,7 +1225,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -507,7 +507,7 @@
                 <blockquote>
 <p>操作日志几乎存在于每个系统中，而这些系统都有记录操作日志的一套 API。操作日志和系统日志不一样，操作日志必须要做到简单易懂。所以如何让操作日志不跟业务逻辑耦合，如何让操作日志的内容易于理解，如何让操作日志的接入更加简单？上面这些都是本文要回答的问题。我们主要围绕着如何“优雅”地记录操作日志展开描述，希望对从事相关工作的同学能够有所帮助或者启发。</p>
 </blockquote>
-<h2 id="1-操作日志的使用场景"><a href="#1-操作日志的使用场景" class="headerlink" title="1. 操作日志的使用场景"></a>1. 操作日志的使用场景</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100430827.png" alt="img"></p>
+<h2 id="1-操作日志的使用场景"><a href="#1-操作日志的使用场景" class="headerlink" title="1. 操作日志的使用场景"></a>1. 操作日志的使用场景</h2><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100430827.png"></p>
 <p><strong>系统日志和操作日志的区别</strong></p>
 <ul>
 <li><strong>系统日志</strong>：系统日志主要是为开发排查问题提供依据，一般打印在日志文件中；系统日志的可读性要求没那么高，日志中会包含代码的信息，比如在某个类的某一行打印了一个日志。</li>
@@ -695,7 +695,7 @@ businessLog<span class="token punctuation">.</span><span class="token function">
 <span class="token punctuation">}</span></code></pre>
 
 <p>这样就不需要在 modifyAddress 方法中通过 LogRecordContext.putVariable() 设置老的快递员了，通过直接新加一个自定义函数 queryOldUser() 参数把派送订单传递进去，就能查到之前的配送人了，只需要让方法的解析在 modifyAddress() 方法执行之前运行。这样的话，我们让业务代码又变得纯净了起来，同时也让“强迫症”不再感到难受了。</p>
-<h2 id="4-代码实现解析"><a href="#4-代码实现解析" class="headerlink" title="4. 代码实现解析"></a>4. 代码实现解析</h2><h3 id="4-1-代码结构"><a href="#4-1-代码结构" class="headerlink" title="4.1 代码结构"></a>4.1 代码结构</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100430675.png" alt="img"></p>
+<h2 id="4-代码实现解析"><a href="#4-代码实现解析" class="headerlink" title="4. 代码实现解析"></a>4. 代码实现解析</h2><h3 id="4-1-代码结构"><a href="#4-1-代码结构" class="headerlink" title="4.1 代码结构"></a>4.1 代码结构</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100430675.png"></p>
 <p>上面的操作日志主要是通过一个 AOP 拦截器实现的，整体主要分为 AOP 模块、日志解析模块、日志保存模块、Starter 模块；组件提供了4个扩展点，分别是：自定义函数、默认处理人、业务保存和查询；业务可以根据自己的业务特性定制符合自己业务的逻辑。</p>
 <h3 id="4-2-模块介绍"><a href="#4-2-模块介绍" class="headerlink" title="4.2 模块介绍"></a>4.2 模块介绍</h3><p>有了上面的分析，已经得出一种我们期望的操作日志记录的方式，接下来我们看下如何实现上面的逻辑。实现主要分为下面几个步骤：</p>
 <ul>
@@ -732,9 +732,9 @@ businessLog<span class="token punctuation">.</span><span class="token function">
 <span class="token punctuation">}</span></code></pre>
 
 <p>注解中除了上面提到参数外，还增加了 fail、category、detail、condition 等参数，这几个参数是为了满足特定的场景，后面还会给出具体的例子。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100430626.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100430626.png"></p>
 <p>为了保持简单，组件的必填参数就两个。业务中的 AOP 逻辑大部分是使用 @Aspect 注解实现的，但是基于注解的 AOP 在 Spring boot 1.5 中兼容性是有问题的，组件为了兼容 Spring boot1.5 的版本我们手工实现 Spring 的 AOP 逻辑。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100431331.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100431331.png"></p>
 <p>切面选择 AbstractBeanFactoryPointcutAdvisor 实现，切点是通过 StaticMethodMatcherPointcut 匹配包含 LogRecordAnnotation 注解的方法。通过实现 MethodInterceptor 接口实现操作日志的增强逻辑。</p>
 <p>下面是拦截器的切点逻辑：</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">LogRecordPointcut</span> <span class="token keyword">extends</span> <span class="token class-name">StaticMethodMatcherPointcut</span> <span class="token keyword">implements</span> <span class="token class-name">Serializable</span> <span class="token punctuation">{</span>
@@ -798,7 +798,7 @@ businessLog<span class="token punctuation">.</span><span class="token function">
 <span class="token punctuation">}</span></code></pre>
 
 <p>拦截逻辑的流程：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100431393.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100431393.png"></p>
 <p>可以看到，操作日志的记录持久化是在方法执行完之后执行的，当方法抛出异常之后会先捕获异常，等操作日志持久化完成后再抛出异常。在业务的方法执行之前，会对提前解析的自定义函数求值，解决了前面提到的需要查询修改之前的内容。</p>
 <h4 id="4-2-2-解析逻辑"><a href="#4-2-2-解析逻辑" class="headerlink" title="4.2.2 解析逻辑"></a>4.2.2 解析逻辑</h4><ul>
 <li><strong>模板解析</strong></li>
@@ -813,7 +813,7 @@ businessLog<span class="token punctuation">.</span><span class="token function">
 <span class="token punctuation">}</span></code></pre>
 
 <p>这个方法将打印 “张三”。LogRecord 解析的类图如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100431550.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100431550.png"></p>
 <ul>
 <li><strong>解析核心类</strong>：LogRecordValueParser 里面封装了自定义函数和 SpEL 解析类 LogRecordExpressionEvaluator。</li>
 </ul>
@@ -849,7 +849,7 @@ businessLog<span class="token punctuation">.</span><span class="token function">
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token class-name">EvaluationContext</span> evaluationContext <span class="token operator">=</span> expressionEvaluator<span class="token punctuation">.</span><span class="token function">createEvaluationContext</span><span class="token punctuation">(</span>method<span class="token punctuation">,</span> args<span class="token punctuation">,</span> targetClass<span class="token punctuation">,</span> ret<span class="token punctuation">,</span> errorMsg<span class="token punctuation">,</span> beanFactory<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
 
 <p>在解析的时候调用 getValue 方法传入的参数 evalContext，就是上面这个 EvaluationContext 对象。下面是 LogRecordEvaluationContext 对象的继承体系：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100431116.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100431116.png"></p>
 <p>LogRecordEvaluationContext 做了三个事情：</p>
 <ul>
 <li>把方法的参数都放到 SpEL 解析的 RootObject 中。</li>
@@ -894,9 +894,9 @@ businessLog<span class="token punctuation">.</span><span class="token function">
 <span class="token punctuation">}</span></code></pre>
 
 <p>上面代码的执行流程如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100431602.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100431602.png"></p>
 <p>看起来没有什么问题，但是使用 LogRecordAnnotation 的方法里面嵌套了另一个使用 LogRecordAnnotation 方法的时候，流程就变成下面的形式：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100432421.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100432421.png"></p>
 <p>可以看到，当方法二执行了释放变量后，继续执行方法一的 logRecord 逻辑，此时解析的时候 <code>ThreadLocal&lt;Map&lt;String, Object&gt;&gt;</code>的 Map 已经被释放掉，所以方法一就获取不到对应的变量了。方法一和方法二共用一个变量 Map 还有个问题是：如果方法二设置了和方法一相同的变量两个方法的变量就会被相互覆盖。所以最终 LogRecordContext 的变量的生命周期需要是下面的形式：</p>
 <p>LogRecordContext 每执行一个方法都会压栈一个 Map，方法执行完之后会 Pop 掉这个 Map，从而避免变量共享和覆盖问题。</p>
 <ul>
@@ -941,7 +941,7 @@ businessLog<span class="token punctuation">.</span><span class="token function">
 <li><strong>自定义函数逻辑</strong></li>
 </ul>
 <p>自定义函数的类图如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100432949.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100432949.png"></p>
 <p>下面是 IParseFunction 的接口定义：executeBefore 函数代表了自定义函数是否在业务代码执行之前解析，上面提到的查询修改之前的内容。</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">IParseFunction</span> <span class="token punctuation">{</span>
 
@@ -1773,7 +1773,7 @@ businessLog<span class="token punctuation">.</span><span class="token function">
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -520,7 +520,7 @@
 <li><strong>时间事件</strong>(time eveat)：Redis 服务器中的一些操作（比如serverCron函数）需要在给定的时间点执行，而时间事件就是处理这类定时操作的。</li>
 </ul>
 <p>事件驱动库的代码主要是在<code>src/ae.c</code>中实现的，其示意图如下所示。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292216611.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292216611.png"></p>
 <p><code>aeEventLoop</code>是整个事件驱动的核心，它管理着文件事件表和时间事件列表，不断地循环处理着就绪的文件事件和到期的时间事件。</p>
 <h3 id="文件事件"><a href="#文件事件" class="headerlink" title="文件事件"></a>文件事件</h3><blockquote>
 <p>Redis基于<strong>Reactor模式</strong>开发了自己的网络事件处理器，也就是文件事件处理器。文件事件处理器使用<strong>IO多路复用技术</strong>（建议先看下 <a href="https://hubertwongcn.github.io/posts/6141.html">Java IO多路复用详解</a> ），同时监听多个套接字，并为套接字关联不同的事件处理函数。当套接字的可读或者可写事件触发时，就会调用相应的事件处理函数。</p>
@@ -535,13 +535,13 @@
 </ul>
 <p>Redis并没有使用 libevent 或者 libev 这样的成熟开源方案，而是自己实现一个非常简洁的事件驱动库 ae_event。</p>
 <p>Redis 使用的IO多路复用技术主要有：<code>select</code>、<code>epoll</code>、<code>evport</code>和<code>kqueue</code>等。每个IO多路复用函数库在 Redis 源码中都对应一个单独的文件，比如<code>ae_select.c</code>，<code>ae_epoll.c</code>， <code>ae_kqueue.c</code>等。Redis 会根据不同的操作系统，按照不同的优先级选择多路复用技术。事件响应框架一般都采用该架构，比如 netty 和 libevent。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292216464.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292216464.png"></p>
 <p>如下图所示，文件事件处理器有四个组成部分，它们分别是套接字、I/O多路复用程序、文件事件分派器以及事件处理器。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292217951.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292217951.png"></p>
 <p>文件事件是对套接字操作的抽象，每当一个套接字准备好执行 <code>accept</code>、<code>read</code>、<code>write</code>和 <code>close</code> 等操作时，就会产生一个文件事件。因为 Redis 通常会连接多个套接字，所以多个文件事件有可能并发的出现。</p>
 <p>I/O多路复用程序负责监听多个套接字，并向文件事件派发器传递那些产生了事件的套接字。</p>
 <p>尽管多个文件事件可能会并发地出现，但I/O多路复用程序总是会将所有产生的套接字都放到同一个队列(也就是后文中描述的aeEventLoop的fired就绪事件表)里边，然后文件事件处理器会以有序、同步、单个套接字的方式处理该队列中的套接字，也就是处理就绪的文件事件。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292217918.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292217918.png"></p>
 <p>所以，一次 Redis 客户端与服务器进行连接并且发送命令的过程如上图所示。</p>
 <ul>
 <li>客户端向服务端发起<strong>建立 socket 连接的请求</strong>，那么监听套接字将产生 AE_READABLE 事件，触发连接应答处理器执行。处理器会对客户端的连接请求</li>
@@ -555,7 +555,7 @@
 </blockquote>
 <p>在 Redis 只运行单线程的情况下，<strong>该机制允许内核中，同时存在多个监听套接字和已连接套接字</strong>。内核会一直监听这些套接字上的连接请求或数据请求。一旦有请求到达，就会交给 Redis 线程处理，这就实现了一个 Redis 线程处理多个 IO 流的效果。</p>
 <p>下图就是基于多路复用的 Redis IO 模型。图中的多个 FD 就是刚才所说的多个套接字。Redis 网络框架调用 epoll 机制，让内核监听这些套接字。此时，Redis 线程不会阻塞在某一个特定的监听或已连接套接字上，也就是说，不会阻塞在某一个特定的客户端请求处理上。正因为此，Redis 可以同时和多个客户端连接并处理请求，从而提升并发性。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292217066.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292217066.jpg"></p>
 <p>基于多路复用的Redis高性能IO模型为了在请求到达时能通知到 Redis 线程，select/epoll 提供了基于事件的回调机制，即针对不同事件的发生，调用相应的处理函数。那么，回调机制是怎么工作的呢？</p>
 <p>其实，select/epoll 一旦监测到 FD 上有请求到达时，就会触发相应的事件。这些事件会被放进一个事件队列，Redis 单线程对该事件队列不断进行处理。这样一来，Redis 无需一直轮询是否有请求实际发生，这就可以避免造成 CPU 资源浪费。同时，Redis 在对事件队列中的事件进行处理时，会调用相应的处理函数，这就实现了基于事件的回调。因为 Redis 一直在对事件队列进行处理，所以能及时响应客户端请求，提升 Redis 的响应性能。</p>
 <p>为了方便你理解，我再以连接请求和读数据请求为例，具体解释一下。</p>
@@ -593,7 +593,7 @@
 <li>如果返回值是 <code>AE_NOMORE</code>，那么这个事件是一个定时事件，该事件在达到后删除，之后不会再重复。</li>
 <li>如果返回值是非 <code>AE_NOMORE</code> 的值，那么这个事件为周期性事件，当一个时间事件到达后，服务器会根据时间处理器的返回值，对时间事件的 when 属性进行更新，让这个事件在一段时间后再次达到。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292217450.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292217450.png"></p>
 <p>服务器所有的时间事件都放在一个无序链表中，每当时间事件执行器运行时，它就遍历整个链表，查找所有已到达的时间事件，并调用相应的事件处理器。正常模式下的Redis服务器只使用serverCron一个时间事件，而在benchmark模式下，服务器也只使用两个时间事件，所以不影响事件执行的性能。</p>
 <h2 id="aeEventLoop的具体实现"><a href="#aeEventLoop的具体实现" class="headerlink" title="aeEventLoop的具体实现"></a>aeEventLoop的具体实现</h2><blockquote>
 <p>介绍完文件事件和时间事件，我们接下来看一下 aeEventLoop的具体实现; 强烈建议先看下 <a href="https://hubertwongcn.github.io/posts/6141.html">Java IO多路复用详解</a>，再来理解。</p>
@@ -765,7 +765,7 @@ err<span class="token operator">:</span>
 <span class="token punctuation">}</span></code></pre>
 
 <p>与aeApiAddEvent类似，aeApiPoll也有多套实现，它其实就做了两件事情，调用epoll_wait阻塞等待epoll的事件就绪，超时时间就是之前根据最快达到时间事件计算而来的超时时间；然后将就绪的epoll事件转换到fired就绪事件。aeApiPoll就是上文所说的I/O多路复用程序。具体过程如下图所示。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292217644.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292217644.png"></p>
 <pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">static</span> <span class="token keyword">int</span> <span class="token function">aeApiPoll</span><span class="token punctuation">(</span>aeEventLoop <span class="token operator">*</span>eventLoop<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">timeval</span> <span class="token operator">*</span>tvp<span class="token punctuation">)</span> 
 <span class="token punctuation">{</span>
     aeApiState <span class="token operator">*</span>state <span class="token operator">=</span> eventLoop<span class="token operator">-&gt;</span>apidata<span class="token punctuation">;</span>
@@ -1552,7 +1552,7 @@ err<span class="token operator">:</span>
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

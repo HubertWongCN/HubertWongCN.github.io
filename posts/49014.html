@@ -515,7 +515,7 @@
 <h3 id="1-2-业务追踪面临挑战"><a href="#1-2-业务追踪面临挑战" class="headerlink" title="1.2 业务追踪面临挑战"></a>1.2 业务追踪面临挑战</h3><p>业务系统往往面临着多样的日常客诉和突发问题，“业务追踪”就成为了关键的应对手段。业务追踪可以看做一次业务执行的现场还原过程，通过执行中的各种记录还原出原始现场，可用于业务逻辑执行情况的分析和问题的定位，是整个系统建设中重要的一环。</p>
 <p>目前在分布式场景下，业务追踪的主流实现方式包括两类，一类是基于日志的ELK方案，一类是基于单次请求调用的会话跟踪方案。然而随着业务逻辑的日益复杂，上述方案越来越不适用于当下的业务系统。</p>
 <h4 id="1-2-1-传统的ELK方案"><a href="#1-2-1-传统的ELK方案" class="headerlink" title="1.2.1 传统的ELK方案"></a>1.2.1 传统的ELK方案</h4><p>日志作为业务系统的必备能力，职责就是记录程序运行期间发生的离散事件，并且在事后阶段用于程序的行为分析，比如曾经调用过什么方法、操作过哪些数据等等。在分布式系统中，ELK技术栈已经成为日志收集和分析的通用解决方案。如下图1所示，伴随着业务逻辑的执行，业务日志会被打印，统一收集并存储至Elasticsearch（下称ES）[2]。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100415599.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100415599.jpeg"></p>
 <p>传统的ELK方案需要开发者在编写代码时尽可能全地打印日志，再通过关键字段从ES中搜集筛选出与业务逻辑相关的日志数据，进而拼凑出业务执行的现场信息。然而该方案存在如下的痛点：</p>
 <ul>
 <li><strong>日志搜集繁琐</strong>：虽然ES提供了日志检索的能力，但是日志数据往往是缺乏结构性的文本段，很难快速完整地搜集到全部相关的日志。</li>
@@ -525,9 +525,9 @@
 <p>综上所述，随着业务逻辑和系统复杂度的攀升，传统的ELK方案在日志搜集、日志筛选和日志分析方面愈加的耗时耗力，很难快速实现对业务的追踪。</p>
 <h4 id="1-2-2-分布式会话跟踪方案"><a href="#1-2-2-分布式会话跟踪方案" class="headerlink" title="1.2.2 分布式会话跟踪方案"></a>1.2.2 分布式会话跟踪方案</h4><p>在分布式系统，尤其是微服务系统中，业务场景的某次请求往往需要经过多个服务、多个中间件、多台机器的复杂链路处理才能完成。为了解决复杂链路排查困难的问题，“分布式会话跟踪方案”诞生。该方案的理论知识由Google在2010年《Dapper》论文[3]中发表，随后Twitter开发出了一个开源版本Zipkin[4]。</p>
 <p>市面上的同类型框架几乎都是以Google Dapper论文为基础进行实现，整体大同小异，都是通过一个分布式全局唯一的id（即traceId），将分布在各个服务节点上的同一次请求串联起来，还原调用关系、追踪系统问题、分析调用数据、统计系统指标。分布式会话跟踪，是一种<strong>会话级别</strong>的追踪能力，如下图2所示，单个分布式请求被还原成一条调用链路，从客户端发起请求抵达系统的边界开始，记录请求流经的每一个服务，直到向客户端返回响应为止。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100415563.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100415563.jpeg"></p>
 <p>分布式会话跟踪的主要作用是<strong>分析分布式系统的调用行为</strong>，并不能很好地应用于业务逻辑的追踪。下图3是一个审核业务场景的追踪案例，业务系统对外提供审核能力，待审对象的审核需要经过“初审”和“复审”两个环节（两个环节关联相同的taskId），因此整个审核环节的执行调用了两次审核接口。如图左侧所示，完整的审核场景涉及众多“业务逻辑”的执行，而分布式会话跟踪只是根据两次RPC调用生成了右侧的两条调用链路，并没有办法准确地描述审核场景业务逻辑的执行，问题主要体现在以下几个方面：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100415948.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100415948.jpeg"></p>
 <ul>
 <li><strong>无法同时追踪多条调用链路</strong></li>
 </ul>
@@ -544,7 +544,7 @@
 <p>因此，无论是传统的ELK方案还是分布式会话跟踪方案，都难以满足日益复杂的业务追踪需求。本文希望能够实现聚焦于业务逻辑追踪的高效解决方案，将业务执行的日志以业务链路为载体进行高效组织和串联，并支持业务执行现场的还原和可视化查看，从而提升定位问题的效率，即<strong>可视化全链路日志追踪</strong>。</p>
 <p>下文将介绍可视化全链路日志追踪的设计思路和通用方案，同时介绍新方案在大众点评内容平台的落地情况，旨在帮助有类似需求的业务系统开发需求的同学提供一些思路。</p>
 <h2 id="2-可视化全链路日志追踪"><a href="#2-可视化全链路日志追踪" class="headerlink" title="2. 可视化全链路日志追踪"></a>2. 可视化全链路日志追踪</h2><h3 id="2-1-设计思路"><a href="#2-1-设计思路" class="headerlink" title="2.1 设计思路"></a>2.1 设计思路</h3><p>可视化全链路日志追踪考虑在前置阶段，即业务执行的同时实现业务日志的高效组织和动态串联，如下图4所示，此时离散的日志数据将会根据业务逻辑进行组织，绘制出执行现场，从而可以实现高效的业务追踪。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416433.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416433.jpeg"></p>
 <p>新方案需要回答两个关键问题：如何高效组织业务日志，以及如何动态串联业务日志。下文将逐一进行回答。</p>
 <ul>
 <li><strong>问题1：如何高效组织业务日志</strong>？</li>
@@ -556,7 +556,7 @@
 <li><strong>逻辑链路</strong>：业务系统对外支撑着众多的业务场景，每个业务场景对应一个完整的业务流程，可以抽象为由逻辑节点组合而成的逻辑链路，如下图5中的逻辑链路就准确完整地描述了“审核业务场景”。</li>
 </ul>
 <p>一次业务追踪就是逻辑链路的某一次执行情况的还原，逻辑链路完整准确地描述了业务逻辑全景，同时作为载体可以实现业务日志的高效组织。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416849.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416849.jpeg"></p>
 <ul>
 <li><strong>问题2：如何动态串联业务日志</strong>？</li>
 </ul>
@@ -568,12 +568,12 @@
 </ul>
 <p>与分布式会话跟踪方案不同的是，当同时串联多次分布式调用时，新方案需要结合业务逻辑选取一个公共id作为标识，例如图5的审核场景涉及2次RPC调用，为了保证2次执行被串联至同一条逻辑链路，此时结合审核业务场景，选择初审和复审相同的“任务id”作为标识，完整地实现审核场景的逻辑链路串联和执行现场还原。</p>
 <h3 id="2-2-通用方案"><a href="#2-2-通用方案" class="headerlink" title="2.2 通用方案"></a>2.2 通用方案</h3><p>明确日志的高效组织和动态串联这两个基本问题后，本文选取图4业务系统中的“逻辑链路1”进行通用方案的详细说明，方案可以拆解为以下步骤：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416747.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416747.jpeg"></p>
 <h4 id="2-2-1-链路定义"><a href="#2-2-1-链路定义" class="headerlink" title="2.2.1 链路定义"></a>2.2.1 链路定义</h4><blockquote>
 <p>“链路定义”的含义为：使用特定语言，静态描述完整的逻辑链路，链路通常由多个逻辑节点，按照一定的业务规则组合而成，业务规则即各个逻辑节点之间存在的执行关系，包括串行、并行、条件分支。</p>
 </blockquote>
 <p><strong>DSL（Domain Specific Language）</strong>是为了解决某一类任务而专门设计的计算机语言，可以通过JSON或XML定义出一系列节点（逻辑节点）的组合关系（业务规则）。因此，本方案选择使用DSL描述逻辑链路，实现逻辑链路从抽象定义到具体实现。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416294.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416294.jpeg"></p>
 <p><strong>逻辑链路1-DSL</strong></p>
 <pre class="language-json" data-language="json"><code class="language-json"><span class="token punctuation">[</span>
   <span class="token punctuation">{</span>
@@ -653,7 +653,7 @@
 <h4 id="2-2-3-链路上报"><a href="#2-2-3-链路上报" class="headerlink" title="2.2.3 链路上报"></a>2.2.3 链路上报</h4><blockquote>
 <p>“链路上报”的含义为：在链路执行过程中，将日志以链路的组织形式进行上报，实现业务现场的准确保存。</p>
 </blockquote>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416712.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416712.jpeg"></p>
 <p>如上图8所示，上报的日志数据包括：节点日志和业务日志。其中节点日志的作用是绘制链路中的已执行节点，记录了节点的开始、结束、输入、输出；业务日志的作用是展示链路节点具体业务逻辑的执行情况，记录了任何对业务逻辑起到解释作用的数据，包括与上下游交互的入参出参、复杂逻辑的中间变量、逻辑执行抛出的异常。</p>
 <h4 id="2-2-4-链路存储"><a href="#2-2-4-链路存储" class="headerlink" title="2.2.4 链路存储"></a>2.2.4 链路存储</h4><blockquote>
 <p>“链路存储”的含义为：将链路执行中上报的日志落地存储，并用于后续的“现场还原”。上报日志可以拆分为链路日志、节点日志和业务日志三类：</p>
@@ -664,7 +664,7 @@
 <li><strong>业务日志</strong>：链路单次执行中，已执行节点中的业务日志信息，包含日志级别、日志时间、日志数据等。</li>
 </ul>
 <p>下图就是链路存储的存储模型，包含了链路日志，节点日志，业务日志、链路元数据（配置数据），并且是如下图9所示的树状结构，其中业务标识作为根节点，用于后续的链路查询。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416332.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100416332.jpeg"></p>
 <h2 id="3-大众点评内容平台实践"><a href="#3-大众点评内容平台实践" class="headerlink" title="3. 大众点评内容平台实践"></a>3. 大众点评内容平台实践</h2><h3 id="3-1-业务特点与挑战"><a href="#3-1-业务特点与挑战" class="headerlink" title="3.1 业务特点与挑战"></a>3.1 业务特点与挑战</h3><blockquote>
 <p>互联网时代，内容为王。内容型平台的核心打法就是搭建内容流水线，保障内容可持续、健康且有价值地流转到内容消费者，并最终形成内容“生产→治理→消费→生产”的良性循环。</p>
 </blockquote>
@@ -675,14 +675,14 @@
 <li><strong>内容的消费方</strong>：希望获得满足其个性化需求的内容，能够吸引其种草，或辅助其做出消费决策。</li>
 </ul>
 <p>生产方的内容模型各异、所需处理手段各不相同，消费方对于内容也有着个性化的要求。如果由各个生产方和消费方单独对接，<strong>内容模型异构、处理流程和输出门槛各异的问题</strong>将带来对接的高成本和低效率。在此背景下，点评内容平台应运而生，作为内容流水线的“治理方”，承上启下实现了内容的统一接入、统一处理和统一输出：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417262.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417262.jpeg"></p>
 <ul>
 <li><strong>统一接入</strong>：统一内容数据模型，对接不同的内容生产方，将异构的内容转化为内容平台通用的数据模型。</li>
 <li><strong>统一处理</strong>：统一处理能力建设，积累并完善通用的机器处理和人工运营能力，保证内容合法合规，属性丰富。</li>
 <li><strong>统一输出</strong>：统一输出门槛建设，对接不同的内容消费方，为下游提供规范且满足其个性化需求的内容数据。</li>
 </ul>
 <p>如下图11所示，是点评内容平台的核心业务流程，每一条内容都会经过这个流程，最终决定在各个渠道下是否分发。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417434.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417434.jpeg"></p>
 <p>内容是否及时、准确经过内容平台的处理，是内容生产方和消费方的核心关注，也是日常值班的主要客诉类型。而内容平台的业务追踪建设，主要面临以下的困难与复杂性：</p>
 <ul>
 <li><strong>业务场景多</strong>：业务流程涉及多个不同的业务场景，且逻辑各异，例如实时接入、人工运营、分发重算等图中列出的部分场景。</li>
@@ -698,13 +698,13 @@
 <li><strong>支持大数据量日志的上报和存储</strong></li>
 </ul>
 <p>点评内容平台实现了图12所示的日志上报架构，支持众多服务统一的日志收集、处理和存储，能够很好地支撑大数据量下的日志追踪建设。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417497.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417497.jpeg"></p>
 <ul>
 <li><strong>日志收集</strong>：各应用服务通过机器上部署的log_agent收集异步上报的日志数据，并统一传输至Kafka通道中，此外针对少量不支持log_agent的服务，搭建了如图所示的中转应用。</li>
 <li><strong>日志解析</strong>：收集的日志通过Kafka接入到Flink中，统一进行解析和处理，根据日志类型对日志进行分类和聚合，解析为链路日志、节点日志和业务日志。</li>
 <li><strong>日志存储</strong>：完成日志解析后，日志会按照树状的存储模型进行落地存储，结合存储的需求分析以及各个存储选项的特点，点评内容平台最终选择HBase作为存储选型。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417412.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417412.png"></p>
 <p>整体而言，log_agent + Kafka + Flink + HBase的日志上报和存储架构能够很好地支持复杂的业务系统，天然支持分布式场景下众多应用的日志上报，同时适用于高流量的数据写入。</p>
 <ul>
 <li><strong>实现众多后端服务的低成本改造</strong></li>
@@ -727,7 +727,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417715.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417715.jpeg"></p>
 <p>下面是TraceLogger工具包分别进行业务日志和节点日志上报的使用案例，整体的改造成本较低。</p>
 <p><strong>业务日志上报</strong>：无学习成本，基本无改造成本。</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">// 替换前：原日志上报</span>
@@ -759,11 +759,11 @@
 
 <h4 id="3-2-2-成果"><a href="#3-2-2-成果" class="headerlink" title="3.2.2 成果"></a>3.2.2 成果</h4><p>基于上述实践，点评内容平台实现了可视化全链路日志追踪，能够一键追踪任意一条内容所有业务场景的执行，并通过可视化的链路进行执行现场的还原，追踪效果如下图所示：</p>
 <p><strong>【链路查询功能】</strong>：根据内容id实时查询该内容所有的逻辑链路执行，覆盖所有的业务场景。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417354.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100417354.jpeg"></p>
 <p><strong>【链路展示功能】</strong>：通过链路图可视化展示业务逻辑的全景，同时展示各个节点的执行情况。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100418234.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100418234.jpeg"></p>
 <p><strong>【节点详情查询功能】</strong>：支持展示任意已执行节点的详情，包括节点输入、输出，以及节点执行过程中的关键业务日志。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100418734.jpeg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401100418734.jpeg"></p>
 <p>目前，可视化全链路日志追踪系统已经成为点评内容平台的“问题排查工具”，我们可以将问题排查耗时从小时级降低到5分钟内；同时也是“测试辅助工具”，利用可视化的日志串联和展示，明显提升了RD自测、QA测试的效率。最后总结一下可视化全链路日志追踪的优点：</p>
 <ul>
 <li><strong>接入成本低</strong>：DSL配置配合简单的日志上报改造，即可快速接入。</li>
@@ -1431,7 +1431,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

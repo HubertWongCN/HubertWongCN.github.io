@@ -537,7 +537,7 @@
 </ul>
 <p>千里之行，始于足下。下面我先介绍下SQL的解析原理。</p>
 <h2 id="SQL解析的原理"><a href="#SQL解析的原理" class="headerlink" title="SQL解析的原理"></a>SQL解析的原理</h2><p>SQL解析与优化是属于编译器范畴，和C等其他语言的解析没有本质的区别。其中分为，词法分析、语法和语义分析、优化、执行代码生成。对应到MySQL的部分，如下图</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291956579.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291956579.png"></p>
 <h3 id="词法分析"><a href="#词法分析" class="headerlink" title="词法分析"></a>词法分析</h3><p>SQL解析由词法分析和语法/语义分析两个部分组成。词法分析主要是把输入转化成一个个Token。其中Token中包含Keyword（也称symbol）和非Keyword。例如，SQL语句 select username from userinfo，在分析之后，会得到4个Token，其中有2个Keyword，分别为select和from：</p>
 <table>
 <thead>
@@ -582,7 +582,7 @@
 <pre class="language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">select</span> username<span class="token punctuation">,</span> ismale <span class="token keyword">from</span> userinfo <span class="token keyword">where</span> age <span class="token operator">&gt;</span> <span class="token number">20</span> <span class="token operator">and</span> <span class="token keyword">level</span> <span class="token operator">&gt;</span> <span class="token number">5</span> <span class="token operator">and</span> <span class="token number">1</span> <span class="token operator">=</span> <span class="token number">1</span></code></pre>
 
 <p>会生成如下语法树。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291956762.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291956762.png"></p>
 <p>对于未接触过编译器实现的同学，肯定会好奇如何才能生成这样的语法树。其背后的原理都是编译器的范畴，可以参考维基百科的一篇文章，以及该链接中的参考书籍。本人也是在学习MySQL源码过程中，阅读了部分内容。由于编译器涉及的内容过多，本人精力和时间有限，不做过多探究。从工程的角度来说，学会如何使用Bison去构建语法树，来解决实际问题，对我们的工作也许有更大帮助。下面我就以Bison为基础，探讨该过程。</p>
 <h4 id="MySQL语法分析树生成过程"><a href="#MySQL语法分析树生成过程" class="headerlink" title="MySQL语法分析树生成过程"></a>MySQL语法分析树生成过程</h4><p>全部的源码在sql/sql_yacc.yy中，在MySQL5.6中有17K行左右代码。这里列出涉及到SQL：</p>
 <pre class="language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">select</span> username<span class="token punctuation">,</span> ismale <span class="token keyword">from</span> userinfo <span class="token keyword">where</span> age <span class="token operator">&gt;</span> <span class="token number">20</span> <span class="token operator">and</span> <span class="token keyword">level</span> <span class="token operator">&gt;</span> <span class="token number">5</span> <span class="token operator">and</span> <span class="token number">1</span> <span class="token operator">=</span> <span class="token number">1</span> </code></pre>
@@ -730,19 +730,19 @@ expr:
 
 <p>在大家浏览上述代码的过程，会发现Bison中嵌入了C++的代码。通过C++代码，把解析到的信息存储到相关对象中。例如表信息会存储到TABLE_LIST中，order_list存储order by子句里的信息，where字句存储在Item中。有了这些信息，再辅助以相应的算法就可以对SQL进行更进一步的处理了。</p>
 <h4 id="核心数据结构及其关系"><a href="#核心数据结构及其关系" class="headerlink" title="核心数据结构及其关系"></a>核心数据结构及其关系</h4><p>在SQL解析中，最核心的结构是SELECT_LEX，其定义在sql/sql_lex.h中。下面仅列出与上述例子相关的部分。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291956883.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291956883.png"></p>
 <p>上面图示中，列名username、ismale存储在item_list中，表名存储在table_list中，条件存储在where中。其中以where条件中的Item层次结构最深，表达也较为复杂，如下图所示。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291957552.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291957552.png"></p>
 <h2 id="SQL解析的应用"><a href="#SQL解析的应用" class="headerlink" title="SQL解析的应用"></a>SQL解析的应用</h2><p>为了更深入的了解SQL解析器，这里给出2个应用SQL解析的例子。</p>
 <h3 id="无用条件去除"><a href="#无用条件去除" class="headerlink" title="无用条件去除"></a>无用条件去除</h3><p>无用条件去除属于优化器的逻辑优化范畴，可以仅仅根据SQL本身以及表结构即可完成，其优化的情况也是较多的，代码在sql/sql_optimizer.cc文件中的remove_eq_conds函数。为了避免过于繁琐的描述，以及大段代码的粘贴，这里通过图来分析以下四种情况。</p>
 <p>a）1=1 and (m &gt; 3 and n &gt; 4)</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291957902.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291957902.png"></p>
 <p>b）1=2 and (m &gt; 3 and n &gt; 4)</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291957120.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291957120.png"></p>
 <p>c）1=1 or (m &gt; 3 and n &gt; 4)</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291957721.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291957721.png"></p>
 <p>d）1=2 or (m &gt; 3 and n &gt; 4)</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291957836.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312291957836.png"></p>
 <p>如果对其代码实现有兴趣的同学，需要对MySQL中的一个重要数据结构Item类有所了解。因为其比较复杂，所以MySQL<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/internals/en/item-class.html">官方文档</a>，专门介绍了Item类。阿里的MySQL小组，也有类似的<a target="_blank" rel="noopener" href="https://www.orczhou.com/index.php/2012/11/mysql-innodb-source-code-optimization-1/">文章</a>。如需更详细的了解，就需要去查看源码中sql/item_*等文件。</p>
 <h3 id="SQL特征生成"><a href="#SQL特征生成" class="headerlink" title="SQL特征生成"></a>SQL特征生成</h3><p>为了确保数据库，这一系统基础组件稳定、高效运行，业界有很多辅助系统。比如慢查询系统、中间件系统。这些系统采集、收到SQL之后，需要对SQL进行归类，以便统计信息或者应用相关策略。归类时，通常需要获取SQL特征。比如SQL:</p>
 <pre class="language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">select</span> username<span class="token punctuation">,</span> ismale <span class="token keyword">from</span> userinfo <span class="token keyword">where</span> age <span class="token operator">&gt;</span> <span class="token number">20</span> <span class="token operator">and</span> <span class="token keyword">level</span> <span class="token operator">&gt;</span> <span class="token number">5</span>；</code></pre>
@@ -1506,7 +1506,7 @@ expr:
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

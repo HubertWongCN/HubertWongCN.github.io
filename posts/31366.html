@@ -522,7 +522,7 @@
 <p>目前，互联网上 Java 的 GC 资料要么是主要讲解理论，要么就是针对单一场景的 GC 问题进行了剖析，对整个体系总结的资料少之又少。前车之鉴，后事之师，美团的几位工程师搜集了内部各种 GC 问题的分析文章，并结合个人的理解做了一些总结，希望能起到“抛砖引玉”的作用，文中若有错误之处，还请大家不吝指正。</p>
 <p>GC 问题处理能力能不能系统性掌握？一些影响因素都是互为因果的问题该怎么分析？比如一个服务 RT 突然上涨，有 GC 耗时增大、线程 Block 增多、慢查询增多、CPU 负载高四个表象，到底哪个是诱因？如何判断 GC 有没有问题？使用 CMS 有哪些常见问题？如何判断根因是什么？如何解决或避免这些问题？阅读完本文，相信你将会对 CMS GC 的问题处理有一个系统性的认知，更能游刃有余地解决这些问题，下面就让我们开始吧！</p>
 <h3 id="1-2-概览"><a href="#1-2-概览" class="headerlink" title="1.2 概览"></a>1.2 概览</h3><p>想要系统性地掌握 GC 问题处理，笔者这里给出一个学习路径，整体文章的框架也是按照这个结构展开，主要分四大步。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271442736.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271442736.png"></p>
 <p><strong>建立知识体系</strong>： 从 JVM 的内存结构到垃圾收集的算法和收集器，学习 GC 的基础知识，掌握一些常用的 GC 问题分析工具。</p>
 <p><strong>确定评价指标</strong>： 了解基本 GC 的评价方法，摸清如何设定独立系统的指标，以及在业务场景中判断 GC 是否存在问题的手段。</p>
 <p><strong>场景调优实践</strong>： 运用掌握的知识和系统评价指标，分析与解决九种 CMS 中常见 GC 问题场景。</p>
@@ -540,7 +540,7 @@
 <li><strong>Card Table</strong>： 中文翻译为卡表，主要是用来标记卡页的状态，每个卡表项对应一个卡页。当卡页中一个对象引用有写操作时，写屏障将会标记对象所在的卡表状态改为 dirty，卡表的本质是用来解决跨代引用的问题。具体怎么解决的可以参考 StackOverflow 上的这个问题 <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/19154607/how-actually-card-table-and-writer-barrier-works">how-actually-card-table-and-writer-barrier-works</a>，或者研读一下 cardTableRS.app 中的源码。</li>
 </ul>
 <h3 id="2-2-JVM-内存划分"><a href="#2-2-JVM-内存划分" class="headerlink" title="2.2 JVM 内存划分"></a>2.2 JVM 内存划分</h3><p>从 JCP（Java Community Process）的官网中可以看到，目前 Java 版本最新已经到了 Java 16，未来的 Java 17 以及现在的 Java 11 和 Java 8 是 LTS 版本，JVM 规范也在随着迭代在变更，由于本文主要讨论 CMS，此处还是放 Java 8 的内存结构。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271442757.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271442757.jpg"></p>
 <p>GC 主要工作在 Heap 区和 MetaSpace 区（上图蓝色部分），在 Direct Memory 中，如果使用的是 DirectByteBuffer，那么在分配内存不够时则是 GC 通过 Cleaner#clean 间接管理。</p>
 <p>任何自动内存管理系统都会面临的步骤：为新对象分配空间，然后收集垃圾对象空间，下面我们就展开介绍一下这些基础知识。</p>
 <h3 id="2-3-分配对象"><a href="#2-3-分配对象" class="headerlink" title="2.3 分配对象"></a>2.3 分配对象</h3><p>Java 中对象地址操作主要使用 Unsafe 调用了 C 的 allocate 和 free 两个方法，分配方法有两种：</p>
@@ -558,12 +558,12 @@
 <p><strong>Mark-Compact</strong> （标记-整理）： 这个算法的主要目的就是解决在非移动式回收器中都会存在的碎片化问题，也分为两个阶段，第一阶段与 Mark-Sweep 类似，第二阶段则会对存活对象按照整理顺序（Compaction Order）进行整理。主要实现有双指针（Two-Finger）回收算法、滑动回收（Lisp2）算法和引线整理（Threaded Compaction）算法等。</p>
 <p><strong>Copying</strong>（复制）： 将空间分为两个大小相同的 From 和 To 两个半区，同一时间只会使用其中一个，每次进行回收时将一个半区的存活对象通过复制的方式转移到另一个半区。有递归（Robert R. Fenichel 和 Jerome C. Yochelson提出）和迭代（Cheney 提出）算法，以及解决了前两者递归栈、缓存行等问题的近似优先搜索算法。复制算法可以通过碰撞指针的方式进行快速地分配内存，但是也存在着空间利用率不高的缺点，另外就是存活对象比较大时复制的成本比较高。</p>
 <p>三种算法在是否移动对象、空间和时间方面的一些对比，假设存活对象数量为 <em>L</em>、堆空间大小为 <em>H</em>，则：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271443488.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271443488.png"></p>
 <p>把 mark、sweep、compaction、copying 这几种动作的耗时放在一起看，大致有这样的关系：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271443928.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271443928.jpg"></p>
 <p>虽然 compaction 与 copying 都涉及移动对象，但取决于具体算法，compaction 可能要先计算一次对象的目标地址，然后修正指针，最后再移动对象。copying 则可以把这几件事情合为一体来做，所以可以快一些。另外，还需要留意 GC 带来的开销不能只看 Collector 的耗时，还得看 Allocator 。如果能保证内存没碎片，分配就可以用 pointer bumping 方式，只需要挪一个指针就完成了分配，非常快。而如果内存有碎片就得用 freelist 之类的方式管理，分配速度通常会慢一些。</p>
 <h3 id="2-5-收集器"><a href="#2-5-收集器" class="headerlink" title="2.5 收集器"></a>2.5 收集器</h3><p>目前在 Hotspot VM 中主要有分代收集和分区收集两大类，具体可以看下面的这个图，不过未来会逐渐向分区收集发展。在美团内部，有部分业务尝试用了 ZGC（感兴趣的同学可以学习下这篇文章 <a target="_blank" rel="noopener" href="https://tech.meituan.com/2020/08/06/new-zgc-practice-in-meituan.html">新一代垃圾回收器ZGC的探索与实践</a>），其余基本都停留在 CMS 和 G1 上。另外在 JDK11 后提供了一个不执行任何垃圾回收动作的回收器 Epsilon（A No-Op Garbage Collector）用作性能分析。另外一个就是 Azul 的 Zing JVM，其 C4（Concurrent Continuously Compacting Collector）收集器也在业内有一定的影响力。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271443213.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271443213.jpg"></p>
 <blockquote>
 <p>备注：值得一提的是，早些年国内 GC 技术的布道者 RednaxelaFX （江湖人称 R 大）也曾就职于 Azul，本文的一部分材料也参考了他的一些文章。</p>
 </blockquote>
@@ -576,9 +576,9 @@
 <li><strong>ZGC</strong>： JDK11 中推出的一款低延迟垃圾回收器，适用于大内存低延迟服务的内存管理和回收，SPECjbb 2015 基准测试，在 128G 的大堆下，最大停顿时间才 1.68 ms，停顿时间远胜于 G1 和 CMS。</li>
 <li><strong>Shenandoah</strong>： 由 Red Hat 的一个团队负责开发，与 G1 类似，基于 Region 设计的垃圾收集器，但不需要 Remember Set 或者 Card Table 来记录跨 Region 引用，停顿时间和堆的大小没有任何关系。停顿时间与 ZGC 接近，下图为与 CMS 和 G1 等收集器的 benchmark。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271444203.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271444203.jpg"></p>
 <h4 id="2-5-3-常用收集器"><a href="#2-5-3-常用收集器" class="headerlink" title="2.5.3 常用收集器"></a>2.5.3 常用收集器</h4><p>目前使用最多的是 CMS 和 G1 收集器，二者都有分代的概念，主要内存结构如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271444006.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271444006.png"></p>
 <h4 id="2-5-4-其他收集器"><a href="#2-5-4-其他收集器" class="headerlink" title="2.5.4 其他收集器"></a>2.5.4 其他收集器</h4><p>以上仅列出常见收集器，除此之外还有很多，如 Metronome、Stopless、Staccato、Chicken、Clover 等实时回收器，Sapphire、Compressor、Pauseless 等并发复制/整理回收器，Doligez-Leroy-Conthier 等标记整理回收器，由于篇幅原因，不在此一一介绍。</p>
 <h3 id="2-6-常用工具"><a href="#2-6-常用工具" class="headerlink" title="2.6 常用工具"></a>2.6 常用工具</h3><p>工欲善其事，必先利其器，此处列出一些笔者常用的工具，具体情况大家可以自由选择，本文的问题都是使用这些工具来定位和分析的。</p>
 <h4 id="2-6-1-命令行终端"><a href="#2-6-1-命令行终端" class="headerlink" title="2.6.1 命令行终端"></a>2.6.1 命令行终端</h4><ul>
@@ -597,13 +597,13 @@
 <li><strong>吞吐量（Throughput）</strong>： 应用系统的生命周期内，由于 GC 线程会占用 Mutator 当前可用的 CPU 时钟周期，吞吐量即为 Mutator 有效花费的时间占系统总运行时间的百分比，例如系统运行了 100 min，GC 耗时 1 min，则系统吞吐量为 99%，吞吐量优先的收集器可以接受较长的停顿。</li>
 </ul>
 <p>目前各大互联网公司的系统基本都更追求低延时，避免一次 GC 停顿的时间过长对用户体验造成损失，衡量指标需要结合一下应用服务的 SLA，主要如下两点来判断：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271445885.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271445885.jpg"></p>
 <p>简而言之，即为一次停顿的时间不超过应用服务的 TP9999，GC 的吞吐量不小于 99.99%。举个例子，假设某个服务 A 的 TP9999 为 80 ms，平均 GC 停顿为 30 ms，那么该服务的最大停顿时间最好不要超过 80 ms，GC 频次控制在 5 min 以上一次。如果满足不了，那就需要调优或者通过更多资源来进行并联冗余。（大家可以先停下来，看看监控平台上面的 gc.meantime 分钟级别指标，如果超过了 6 ms 那单机 GC 吞吐量就达不到 4 个 9 了。）</p>
 <blockquote>
 <p>备注：除了这两个指标之外还有 Footprint（资源量大小测量）、反应速度等指标，互联网这种实时系统追求低延迟，而很多嵌入式系统则追求 Footprint。</p>
 </blockquote>
 <h4 id="3-1-2-读懂-GC-Cause"><a href="#3-1-2-读懂-GC-Cause" class="headerlink" title="3.1.2 读懂 GC Cause"></a>3.1.2 读懂 GC Cause</h4><p>拿到 GC 日志，我们就可以简单分析 GC 情况了，通过一些工具，我们可以比较直观地看到 Cause 的分布情况，如下图就是使用 gceasy 绘制的图表：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271445325.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271445325.png"></p>
 <p>如上图所示，我们很清晰的就能知道是什么原因引起的 GC，以及每次的时间花费情况，但是要分析 GC 的问题，先要读懂 GC Cause，即 JVM 什么样的条件下选择进行 GC 操作，具体 Cause 的分类可以看一下 Hotspot 源码：<code>src/share/vm/gc/shared/gcCause.hpp 和 src/share/vm/gc/shared/gcCause.cpp</code> 中。</p>
 <pre class="language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span> <span class="token class-name">GCCause</span><span class="token double-colon punctuation">::</span><span class="token function">to_string</span><span class="token punctuation">(</span>GCCause<span class="token double-colon punctuation">::</span>Cause cause<span class="token punctuation">)</span> <span class="token punctuation">{</span>
   <span class="token keyword">switch</span> <span class="token punctuation">(</span>cause<span class="token punctuation">)</span> <span class="token punctuation">{</span>
@@ -804,7 +804,7 @@
 <li><strong>MEM 计算型</strong>： 主要是分布式数据计算 Hadoop，分布式存储 HBase、Cassandra，自建的分布式缓存等，对内存要求高，对象存活时间长，Old 区越大越好。</li>
 </ul>
 <p>当然，除了二者之外还有介于两者之间的场景，本篇文章主要讨论第一种情况。对象 Survival Time 分布图，对我们设置 GC 参数有着非常重要的指导意义，如下图就可以简单推算分代的边界。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271445865.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271445865.jpg"></p>
 <h4 id="3-3-2-GC-问题分类"><a href="#3-3-2-GC-问题分类" class="headerlink" title="3.3.2 GC 问题分类"></a>3.3.2 GC 问题分类</h4><p>笔者选取了九种不同类型的 GC 问题，覆盖了大部分场景，如果有更好的场景，欢迎在评论区给出。</p>
 <ul>
 <li><p><strong>Unexpected GC</strong>： 意外发生的 GC，实际上不需要发生，我们可以通过一些手段去避免。</p>
@@ -843,7 +843,7 @@
 </ul>
 <h4 id="3-3-3-排查难度"><a href="#3-3-3-排查难度" class="headerlink" title="3.3.3 排查难度"></a>3.3.3 排查难度</h4><p>一个问题的<strong>解决难度跟它的常见程度成反比</strong>，大部分我们都可以通过各种搜索引擎找到类似的问题，然后用同样的手段尝试去解决。当一个问题在各种网站上都找不到相似的问题时，那么可能会有两种情况，一种这不是一个问题，另一种就是遇到一个隐藏比较深的问题，遇到这种问题可能就要深入到源码级别去调试了。以下 GC 问题场景，排查难度从上到下依次递增。</p>
 <h2 id="4-常见场景分析与解决"><a href="#4-常见场景分析与解决" class="headerlink" title="4. 常见场景分析与解决"></a>4. 常见场景分析与解决</h2><h3 id="4-1-场景一：动态扩容引起的空间震荡"><a href="#4-1-场景一：动态扩容引起的空间震荡" class="headerlink" title="4.1 场景一：动态扩容引起的空间震荡"></a>4.1 场景一：动态扩容引起的空间震荡</h3><h4 id="4-1-1-现象"><a href="#4-1-1-现象" class="headerlink" title="4.1.1 现象"></a>4.1.1 现象</h4><p>服务刚刚启动时 GC 次数较多，最大空间剩余很多但是依然发生 GC，这种情况我们可以通过观察 GC 日志或者通过监控工具来观察堆的空间变化情况即可。GC Cause 一般为 Allocation Failure，且在 GC 日志中会观察到经历一次 GC ，堆内各个空间的大小会被调整，如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271446345.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271446345.png"></p>
 <h4 id="4-1-2-原因"><a href="#4-1-2-原因" class="headerlink" title="4.1.2 原因"></a>4.1.2 原因</h4><p>在 JVM 的参数中 <code>-Xms</code> 和 <code>-Xmx</code> 设置的不一致，在初始化时只会初始 <code>-Xms</code> 大小的空间存储信息，每当空间不够用时再向操作系统申请，这样的话必然要进行一次 GC。具体是通过 <code>ConcurrentMarkSweepGeneration::compute_new_size()</code> 方法计算新的空间大小：</p>
 <pre class="language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">ConcurrentMarkSweepGeneration</span><span class="token double-colon punctuation">::</span><span class="token function">compute_new_size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
   <span class="token function">assert_locked_or_safepoint</span><span class="token punctuation">(</span>Heap_lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -883,7 +883,7 @@
 <span class="token punctuation">}</span></code></pre>
 
 <p>整个伸缩的模型理解可以看这个图，当 committed 的空间大小超过了低水位/高水位的大小，capacity 也会随之调整：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271447808.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271447808.jpg"></p>
 <h4 id="4-1-3-策略"><a href="#4-1-3-策略" class="headerlink" title="4.1.3 策略"></a>4.1.3 策略</h4><p><strong>定位</strong>：观察 CMS GC 触发时间点 <code>Old/MetaSpace </code>区的 committed 占比是不是一个固定的值，或者像上文提到的观察总的内存使用率也可以。</p>
 <p><strong>解决</strong>：尽量将<strong>成对出现的空间大小配置参数设置成固定</strong>的，如 <code>-Xms</code> 和 <code>-Xmx</code>，<code>-XX:MaxNewSize</code> 和 <code>-XX:NewSize</code>，<code>-XX:MetaSpaceSize</code> 和 <code>-XX:MaxMetaSpaceSize</code> 等。</p>
 <h4 id="4-1-4-小结"><a href="#4-1-4-小结" class="headerlink" title="4.1.4 小结"></a>4.1.4 小结</h4><p>一般来说，我们需要保证 Java 虚拟机的堆是稳定的，确保 <code>-Xms</code> 和 <code>-Xmx</code> 设置的是一个值（即初始值和最大值一致），获得一个稳定的堆，同理在 MetaSpace 区也有类似的问题。不过在不追求停顿时间的情况下震荡的空间也是有利的，可以动态地伸缩以节省空间，例如作为富客户端的 Java 应用。</p>
@@ -1129,7 +1129,7 @@ JVM_END
 <h4 id="4-3-3-策略"><a href="#4-3-3-策略" class="headerlink" title="4.3.3 策略"></a>4.3.3 策略</h4><p>了解大概什么原因后，如何定位和解决就很简单了，可以 dump 快照之后通过 JProfiler 或 MAT 观察 Classes 的 Histogram（直方图） 即可，或者直接通过命令即可定位， jcmd 打几次 Histogram 的图，看一下具体是哪个包下的 Class 增加较多就可以定位了。不过有时候也要结合InstBytes、KlassBytes、Bytecodes、MethodAll 等几项指标综合来看下。如下图便是笔者使用 jcmd 排查到一个 Orika 的问题。</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash">jcmd <span class="token operator">&lt;</span>PID<span class="token operator">&gt;</span> GC.class_stats<span class="token operator">|</span><span class="token function">awk</span> <span class="token string">'{print$13}'</span><span class="token operator">|</span><span class="token function">sed</span>  <span class="token string">'s/\(.*\)\.\(.*\)/\1/g'</span><span class="token operator">|</span><span class="token function">sort</span> <span class="token operator">|</span><span class="token function">uniq</span> -c<span class="token operator">|</span><span class="token function">sort</span> <span class="token parameter variable">-nrk1</span></code></pre>
 
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271450227.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271450227.png"></p>
 <p>如果无法从整体的角度定位，可以添加 <code>-XX:+TraceClassLoading</code> 和 <code>-XX:+TraceClassUnLoading</code> 参数观察详细的类加载和卸载信息。</p>
 <h4 id="4-3-4-小结"><a href="#4-3-4-小结" class="headerlink" title="4.3.4 小结"></a>4.3.4 小结</h4><p>原理理解比较复杂，但定位和解决问题会比较简单，经常会出问题的几个点有 Orika 的 classMap、JSON 的 ASMSerializer、Groovy 动态加载类等，基本都集中在反射、Javasisit 字节码增强、CGLIB 动态代理、OSGi 自定义类加载器等的技术点上。另外就是及时给 MetaSpace 区的使用率加一个监控，如果指标有波动提前发现并解决问题。</p>
 <h3 id="4-4-场景四：过早晋升"><a href="#4-4-场景四：过早晋升" class="headerlink" title="4.4 场景四：过早晋升"></a>4.4 场景四：过早晋升</h3><h4 id="4-4-1-现象"><a href="#4-4-1-现象" class="headerlink" title="4.4.1 现象"></a>4.4.1 现象</h4><p>这种场景主要发生在分代的收集器上面，专业的术语称为“Premature Promotion”。90% 的对象朝生夕死，只有在 Young 区经历过几次 GC 的洗礼后才会晋升到 Old 区，每经历一次 GC 对象的 GC Age 就会增长 1，最大通过 <code>-XX:MaxTenuringThreshold</code> 来控制。</p>
@@ -1138,7 +1138,7 @@ JVM_END
 <p>GC 日志中出现<code>“Desired survivor size 107347968 bytes, new threshold 1(max 6)”</code>等信息，说明此时经历过一次 GC 就会放到 Old 区。</p>
 <p><strong>Full GC 比较频繁</strong>，且经历过一次 GC 之后 Old 区的变化比例非常大。</p>
 <p>比如说 Old 区触发的回收阈值是 80%，经历过一次 GC 之后下降到了 10%，这就说明 Old 区的 70% 的对象存活时间其实很短，如下图所示，Old 区大小每次 GC 后从 2.1G 回收到 300M，也就是说回收掉了 1.8G 的垃圾，<strong>只有 300M 的活跃对象</strong>。整个 Heap 目前是 4G，活跃对象只占了不到十分之一。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271451526.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271451526.png"></p>
 <p>过早晋升的危害：</p>
 <ul>
 <li>Young GC 频繁，总的吞吐量下降。</li>
@@ -1210,7 +1210,7 @@ JVM_END
 <p>可以看到 Hotspot 遍历所有对象时，从所有年龄为 0 的对象占用的空间开始累加，如果加上年龄等于 n 的所有对象的空间之后，使用 Survivor 区的条件值（TargetSurvivorRatio / 100，TargetSurvivorRatio 默认值为 50）进行判断，若大于这个值则结束循环，将 n 和 MaxTenuringThreshold 比较，若 n 小，则阈值为 n，若 n 大，则只能去设置最大阈值为 MaxTenuringThreshold。<strong>动态年龄触发后导致更多的对象进入了 Old 区，造成资源浪费</strong>。</p>
 <h4 id="4-4-3-策略"><a href="#4-4-3-策略" class="headerlink" title="4.4.3 策略"></a>4.4.3 策略</h4><p>知道问题原因后我们就有解决的方向，如果是 <strong>Young/Eden 区过小</strong>，我们可以在总的 Heap 内存不变的情况下适当增大 Young 区，具体怎么增加？一般情况下 Old 的大小应当为活跃对象的 2~3 倍左右，考虑到浮动垃圾问题最好在 3 倍左右，剩下的都可以分给 Young 区。</p>
 <p>拿笔者的一次典型过早晋升优化来看，原配置为 Young 1.2G + Old 2.8G，通过观察 CMS GC 的情况找到存活对象大概为 300~400M，于是调整 Old 1.5G 左右，剩下 2.5G 分给 Young 区。仅仅调了一个 Young 区大小参数（-Xmn），整个 JVM 一分钟 Young GC 从 26 次降低到了 11 次，单次时间也没有增加，总的 GC 时间从 1100ms 降低到了 500ms，CMS GC 次数也从 40 分钟左右一次降低到了 7 小时 30 分钟一次。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271451315.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271451315.png"></p>
 <p>如果是分配速率过大：</p>
 <ul>
 <li><strong>偶发较大</strong>：通过内存分析工具找到问题代码，从业务逻辑上做一些优化。</li>
@@ -1219,8 +1219,8 @@ JVM_END
 <h4 id="4-4-4-小结"><a href="#4-4-4-小结" class="headerlink" title="4.4.4 小结"></a>4.4.4 小结</h4><p>过早晋升问题一般不会特别明显，但日积月累之后可能会爆发一波收集器退化之类的问题，所以我们还是要提前避免掉的，可以看看自己系统里面是否有这些现象，如果比较匹配的话，可以尝试优化一下。一行代码优化的 ROI 还是很高的。</p>
 <p>如果在观察 Old 区前后比例变化的过程中，发现可以回收的比例非常小，如从 80% 只回收到了 60%，说明我们大部分对象都是存活的，Old 区的空间可以适当调大些。</p>
 <h4 id="4-4-5-加餐"><a href="#4-4-5-加餐" class="headerlink" title="4.4.5 加餐"></a>4.4.5 加餐</h4><p>关于在调整 Young 与 Old 的比例时，如何选取具体的 NewRatio 值，这里将问题抽象成为一个蓄水池模型，找到以下关键衡量指标，大家可以根据自己场景进行推算。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271452964.jpg" alt="img"></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271452669.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271452964.jpg"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271452669.jpg"></p>
 <ul>
 <li><code>NewRatio</code> 的值 r 与 va、vp、vyc、voc、rs 等值存在一定函数相关性（rs 越小 r 越大、r 越小 vp 越小，…，之前尝试使用 NN 来辅助建模，但目前还没有完全算出具体的公式，有想法的同学可以在评论区给出你的答案）。</li>
 <li>总停顿时间 T 为 Young GC 总时间 Tyc 和 Old GC 总时间 Toc 之和，其中 Tyc 与 vyc 和 vp 相关，Toc 与 voc相关。</li>
@@ -1371,7 +1371,7 @@ JVM_END
 <p>大家可以看一下源码中的日志打印，通过日志我们就可以比较清楚地知道具体的原因，然后就可以着手分析了。</p>
 <h4 id="4-5-3-策略"><a href="#4-5-3-策略" class="headerlink" title="4.5.3 策略"></a>4.5.3 策略</h4><p>我们这里还是拿最常见的达到回收比例这个场景来说，与过早晋升不同的是这些对象确实存活了一段时间，Survival Time 超过了 TP9999 时间，但是又达不到长期存活，如各种数据库、网络链接，带有失效时间的缓存等。</p>
 <p>处理这种常规内存泄漏问题基本是一个思路，主要步骤如下：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271453834.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271453834.jpg"></p>
 <p>Dump Diff 和 Leak Suspects 比较直观就不介绍了，这里说下其它几个关键点：</p>
 <ul>
 <li><strong>内存 Dump</strong>： 使用 jmap、arthas 等 dump 堆进行快照时记得摘掉流量，同时分别在 CMS GC 的发生前后分别 dump 一次。</li>
@@ -1381,7 +1381,7 @@ JVM_END
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271453035.jpg"></p>
 <h4 id="4-5-4-小结"><a href="#4-5-4-小结" class="headerlink" title="4.5.4 小结"></a>4.5.4 小结</h4><p>经过整个流程下来基本就能定位问题了，不过在优化的过程中记得使用<strong>控制变量</strong>的方法来优化，防止一些会加剧问题的改动被掩盖。</p>
 <h3 id="4-6-场景六：单次-CMS-Old-GC-耗时长"><a href="#4-6-场景六：单次-CMS-Old-GC-耗时长" class="headerlink" title="4.6 场景六：单次 CMS Old GC 耗时长"></a>4.6 场景六：单次 CMS Old GC 耗时长</h3><h4 id="4-6-1-现象"><a href="#4-6-1-现象" class="headerlink" title="4.6.1 现象"></a>4.6.1 现象</h4><p>CMS GC 单次 STW 最大超过 1000ms，不会频繁发生，如下图所示最长达到了 8000ms。某些场景下会引起“雪崩效应”，这种场景非常危险，我们应该尽量避免出现。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271453826.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271453826.png"></p>
 <h4 id="4-6-2-原因"><a href="#4-6-2-原因" class="headerlink" title="4.6.2 原因"></a>4.6.2 原因</h4><p>CMS 在回收的过程中，STW 的阶段主要是 Init Mark 和 Final Remark 这两个阶段，也是导致 CMS Old GC 最多的原因，另外有些情况就是在 STW 前等待 Mutator 的线程到达 SafePoint 也会导致时间过长，但这种情况较少，我们在此处主要讨论前者。发生收集器退化或者碎片压缩的场景请看场景七。</p>
 <p>想要知道这两个阶段为什么会耗时，我们需要先看一下这两个阶段都会干什么。</p>
 <p>核心代码都在 /src/hotspot/share/gc/cms/concurrentMarkSweepGeneration.cpp 中，内部有个线程 ConcurrentMarkSweepThread 轮询来校验，Old 区的垃圾回收相关细节被完全封装在 CMSCollector 中，调用入口就是 ConcurrentMarkSweepThread 调用的 <code>CMSCollector::collect_in_background</code> 和 ConcurrentMarkSweepGeneration 调用的 <code>CMSCollector::collect</code> 方法，此处我们讨论大多数场景的 collect_in_background。整个过程中会 STW 的主要是 initial Mark 和 Final Remark，核心代码在 VM_CMS_Initial_Mark / VM_CMS_Final_Remark 中，执行时需要将执行权交由 VMThread 来执行。</p>
@@ -1519,7 +1519,7 @@ JVM_END
   <span class="token function">log_trace</span><span class="token punctuation">(</span>gc<span class="token punctuation">,</span> task<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token string">"Finished remaining root initial mark scan work in %dth thread: %3.3f sec"</span><span class="token punctuation">,</span> worker_id<span class="token punctuation">,</span> _timer<span class="token punctuation">.</span><span class="token function">seconds</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span></code></pre>
 
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271454620.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271454620.jpg"></p>
 <p>整个过程比较简单，从 GC Root 出发标记 Old 中的对象，处理完成后借助 BitMap 处理下 Young 区对 Old 区的引用，整个过程基本都比较快，很少会有较大的停顿。</p>
 <ul>
 <li>CMS Final Remark 执行步骤，实现在 <code>CMSCollector::checkpointRootsFinalWork()</code> 中，整体代码和步骤如下：</li>
@@ -1615,7 +1615,7 @@ JVM_END
       <span class="token string">"Should be clear by end of the final marking"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">}</span></code></pre>
 
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271454149.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271454149.jpg"></p>
 <p>Final Remark 是最终的第二次标记，这种情况只有在 Background GC 执行了 InitialMarking 步骤的情形下才会执行，如果是 Foreground GC 执行的 InitialMarking 步骤则不需要再次执行 FinalRemark。Final Remark 的开始阶段与 Init Mark 处理的流程相同，但是后续多了 Card Table 遍历、Reference 实例的清理并将其加入到 Reference 维护的 pend_list 中，如果要收集元数据信息，还要清理 SystemDictionary、CodeCache、SymbolTable、StringTable 等组件中不再使用的资源。</p>
 <h4 id="4-6-3-策略"><a href="#4-6-3-策略" class="headerlink" title="4.6.3 策略"></a>4.6.3 策略</h4><p>知道了两个 STW 过程执行流程，我们分析解决就比较简单了，由于大部分问题都出在 Final Remark 过程，这里我们也拿这个场景来举例，主要步骤：</p>
 <p>+【<strong>方向</strong>】 观察详细 GC 日志，找到出问题时 Final Remark 日志，分析下 Reference 处理和元数据处理 real 耗时是否正常，详细信息需要通过 -XX:+PrintReferenceGC 参数开启。基本在日志里面就能定位到大概是哪个方向出了问题，耗时超过 10% 的就需要关注。</p>
@@ -1670,7 +1670,7 @@ JVM_END
 <p><strong>晋升失败（Promotion Failed）</strong></p>
 <p>顾名思义，晋升失败就是指在进行 Young GC 时，Survivor 放不下，对象只能放入 Old，但此时 Old 也放不下。直觉上乍一看这种情况可能会经常发生，但其实因为有 concurrentMarkSweepThread 和担保机制的存在，发生的条件是很苛刻的，除非是短时间将 Old 区的剩余空间迅速填满，例如上文中说的动态年龄判断导致的过早晋升（见下文的增量收集担保失败）。另外还有一种情况就是内存碎片导致的 Promotion Failed，Young GC 以为 Old 有足够的空间，结果到分配时，晋级的大对象找不到连续的空间存放。</p>
 <p>使用 CMS 作为 GC 收集器时，运行过一段时间的 Old 区如下图所示，清除算法导致内存出现多段的不连续，出现大量的内存碎片。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271455529.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271455529.png"></p>
 <p>碎片带来了两个问题：</p>
 <ul>
 <li><strong>空间分配效率较低</strong>：上文已经提到过，如果是连续的空间 JVM 可以通过使用 pointer bumping 的方式来分配，而对于这种有大量碎片的空闲链表则需要逐个访问 freelist 中的项来访问，查找可以存放新建对象的地址。</li>
@@ -1714,14 +1714,14 @@ JVM_END
 </ul>
 <p>这种情况排查起来比较困难，我们可以通过 Google perftools + Btrace 等工具，帮助我们分析出问题的代码在哪里。</p>
 <p>gperftools 是 Google 开发的一款非常实用的工具集，它的原理是在 Java 应用程序运行时，当调用 malloc 时换用它的 libtcmalloc.so，这样就能对内存分配情况做一些统计。我们使用 gperftools 来追踪分配内存的命令。如下图所示，通过 gperftools 发现 Java_java_util_zip_Inflater_init 比较可疑。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271456893.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271456893.png"></p>
 <p>接下来可以使用 Btrace，尝试定位具体的调用栈。Btrace 是 Sun 推出的一款 Java 追踪、监控工具，可以在不停机的情况下对线上的 Java 程序进行监控。如下图所示，通过 Btrace 定位出项目中的 ZipHelper 在频繁调用 GZIPInputStream ，在堆外内存分配对象。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271456517.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271456517.png"></p>
 <p>最终定位到是，项目中对 GIPInputStream 的使用错误，没有正确的 close()。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271456488.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271456488.png"></p>
 <p>除了项目本身的原因，还可能有外部依赖导致的泄漏，如 Netty 和 Spring Boot，详细情况可以学习下这两篇文章，Spring Boot引起的“堆外内存泄漏”排查及经验总结、Netty堆外内存泄露排查盛宴。</p>
 <h4 id="4-8-4-小结"><a href="#4-8-4-小结" class="headerlink" title="4.8.4 小结"></a>4.8.4 小结</h4><p>首先可以使用 NMT + jcmd 分析泄漏的堆外内存是哪里申请，确定原因后，使用不同的手段，进行原因定位。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271457983.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271457983.png"></p>
 <h3 id="4-9-场景九：JNI-引发的-GC-问题"><a href="#4-9-场景九：JNI-引发的-GC-问题" class="headerlink" title="4.9 场景九：JNI 引发的 GC 问题"></a>4.9 场景九：JNI 引发的 GC 问题</h3><h4 id="4-9-1-现象"><a href="#4-9-1-现象" class="headerlink" title="4.9.1 现象"></a>4.9.1 现象</h4><p>在 GC 日志中，出现 GC Cause 为 GCLocker Initiated GC。</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token number">2020</span>-09-23T16:49:09.727+0800: <span class="token number">504426.742</span>: <span class="token punctuation">[</span>GC <span class="token punctuation">(</span>GCLocker Initiated GC<span class="token punctuation">)</span> <span class="token number">504426.742</span>: <span class="token punctuation">[</span>ParNew <span class="token punctuation">(</span>promotion failed<span class="token punctuation">)</span>: 209716K-<span class="token operator">&gt;</span>6042K<span class="token punctuation">(</span>1887488K<span class="token punctuation">)</span>, <span class="token number">0.0843330</span> secs<span class="token punctuation">]</span> 1449487K-<span class="token operator">&gt;</span>1347626K<span class="token punctuation">(</span>3984640K<span class="token punctuation">)</span>, <span class="token number">0.0848963</span> secs<span class="token punctuation">]</span> <span class="token punctuation">[</span>Times: <span class="token assign-left variable">user</span><span class="token operator">=</span><span class="token number">0.19</span> <span class="token assign-left variable">sys</span><span class="token operator">=</span><span class="token number">0.00</span>, <span class="token assign-left variable">real</span><span class="token operator">=</span><span class="token number">0.09</span> secs<span class="token punctuation">]</span>
 <span class="token number">2020</span>-09-23T16:49:09.812+0800: <span class="token number">504426.827</span>: <span class="token punctuation">[</span>Full GC <span class="token punctuation">(</span>GCLocker Initiated GC<span class="token punctuation">)</span> <span class="token number">504426.827</span>: <span class="token punctuation">[</span>CMS: 1341583K-<span class="token operator">&gt;</span>419699K<span class="token punctuation">(</span>2097152K<span class="token punctuation">)</span>, <span class="token number">1.8482275</span> secs<span class="token punctuation">]</span> 1347626K-<span class="token operator">&gt;</span>419699K<span class="token punctuation">(</span>3984640K<span class="token punctuation">)</span>, <span class="token punctuation">[</span>Metaspace: 297780K-<span class="token operator">&gt;</span>297780K<span class="token punctuation">(</span>1329152K<span class="token punctuation">)</span><span class="token punctuation">]</span>, <span class="token number">1.8490564</span> secs<span class="token punctuation">]</span> <span class="token punctuation">[</span>Times: <span class="token assign-left variable">user</span><span class="token operator">=</span><span class="token number">1.62</span> <span class="token assign-left variable">sys</span><span class="token operator">=</span><span class="token number">0.20</span>, <span class="token assign-left variable">real</span><span class="token operator">=</span><span class="token number">1.85</span> secs<span class="token punctuation">]</span></code></pre>
@@ -1780,7 +1780,7 @@ JNIEXPORT <span class="token keyword">void</span> JNICALL <span class="token fun
 <span class="token punctuation">}</span></code></pre>
 
 <p>运行该 JNI 程序，可以看到发生的 GC 都是 GCLocker Initiated GC，并且注意在 “Acquired” 和 “Released” 时不可能发生 GC。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271457438.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271457438.png"></p>
 <p>GC Locker 可能导致的不良后果有：</p>
 <ul>
 <li>如果此时是 Young 区不够 Allocation Failure 导致的 GC，由于无法进行 Young GC，会将对象直接分配至 Old 区。</li>
@@ -1792,11 +1792,11 @@ JNIEXPORT <span class="token keyword">void</span> JNICALL <span class="token fun
 <li>JNI 调用需要谨慎，不一定可以提升性能，反而可能造成 GC 问题。</li>
 <li>升级 JDK 版本到 14，避免 <a target="_blank" rel="noopener" href="https://bugs.openjdk.java.net/browse/JDK-8048556">JDK-8048556</a> 导致的重复 GC。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271458823.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271458823.png"></p>
 <h4 id="4-9-4-小结"><a href="#4-9-4-小结" class="headerlink" title="4.9.4 小结"></a>4.9.4 小结</h4><p>JNI 产生的 GC 问题较难排查，需要谨慎使用。</p>
 <h2 id="5-总结"><a href="#5-总结" class="headerlink" title="5. 总结"></a>5. 总结</h2><p>在这里，我们把整个文章内容总结一下，方便大家整体地理解回顾。</p>
 <h3 id="5-1-处理流程（SOP）"><a href="#5-1-处理流程（SOP）" class="headerlink" title="5.1 处理流程（SOP）"></a>5.1 处理流程（SOP）</h3><p>下图为整体 GC 问题普适的处理流程，重点的地方下面会单独标注，其他的基本都是标准处理流程，此处不再赘述，最后在整个问题都处理完之后有条件的话建议做一下复盘。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271458132.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271458132.jpg"></p>
 <ul>
 <li><strong>制定标准</strong>： 这块内容其实非常重要，但大部分系统都是缺失的，笔者过往面试的同学中只有不到一成的同学能给出自己的系统 GC 标准到底什么样，其他的都是用的统一指标模板，缺少预见性，具体指标制定可以参考 3.1 中的内容，需要结合应用系统的 TP9999 时间和延迟、吞吐量等设定具体的指标，而不是被问题驱动。</li>
 <li><strong>保留现场</strong>： 目前线上服务基本都是分布式服务，某个节点发生问题后，如果条件允许一定不要直接操作重启、回滚等动作恢复，优先通过摘掉流量的方式来恢复，这样我们可以将堆、栈、GC 日志等关键信息保留下来，不然错过了定位根因的时机，后续解决难度将大大增加。当然除了这些，应用日志、中间件日志、内核日志、各种 Metrics 指标等对问题分析也有很大帮助。</li>
@@ -1813,7 +1813,7 @@ JNIEXPORT <span class="token keyword">void</span> JNICALL <span class="token fun
 <li><strong>调优重点</strong>： 总体上来讲，我们开发的过程中遇到的问题类型也基本都符合正态分布，太简单或太复杂的基本遇到的概率很低，笔者这里将中间最重要的三个场景添加了“*”标识，希望阅读完本文之后可以观察下自己负责的系统，是否存在上述问题。</li>
 <li><strong>GC 参数</strong>： 如果堆、栈确实无法第一时间保留，一定要保留 GC 日志，这样我们最起码可以看到 GC Cause，有一个大概的排查方向。关于 GC 日志相关参数，最基本的 -XX:+HeapDumpOnOutOfMemoryError 等一些参数就不再提了，笔者建议添加以下参数，可以提高我们分析问题的效率。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271459983.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312271459983.png"></p>
 <ul>
 <li><strong>其他建议</strong>： 上文场景中没有提到，但是对 GC 性能也有提升的一些建议。<ul>
 <li><strong>主动式 GC</strong>： 也有另开生面的做法，通过监控手段监控观测 Old 区的使用情况，即将到达阈值时将应用服务摘掉流量，手动触发一次 Major GC，减少 CMS GC 带来的停顿，但随之系统的健壮性也会减少，如非必要不建议引入。</li>
@@ -2492,7 +2492,7 @@ JNIEXPORT <span class="token keyword">void</span> JNICALL <span class="token fun
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

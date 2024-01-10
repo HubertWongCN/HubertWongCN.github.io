@@ -531,7 +531,7 @@
 
 <p>说明: Semaphore实现了Serializable接口，即可以进行序列化。</p>
 <h3 id="类的内部类"><a href="#类的内部类" class="headerlink" title="类的内部类"></a>类的内部类</h3><p>Semaphore总共有三个内部类，并且三个内部类是紧密相关的，下面先看三个类的关系。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261333178.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261333178.png"></p>
 <p>说明: Semaphore与ReentrantLock的内部类的结构相同，类内部总共存在Sync、NonfairSync、FairSync三个类，NonfairSync与FairSync类继承自Sync类，Sync类继承自AbstractQueuedSynchronizer抽象类。下面逐个进行分析。</p>
 <h3 id="类的内部类-Sync类"><a href="#类的内部类-Sync类" class="headerlink" title="类的内部类 - Sync类"></a>类的内部类 - Sync类</h3><p>Sync类的源码如下</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">// 内部类，继承自AQS</span>
@@ -603,7 +603,7 @@
 <span class="token punctuation">}</span></code></pre>
 
 <p>说明: Sync类的属性相对简单，只有一个版本号，Sync类存在如下方法和作用如下。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261334270.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261334270.png"></p>
 <h3 id="类的内部类-NonfairSync类"><a href="#类的内部类-NonfairSync类" class="headerlink" title="类的内部类 - NonfairSync类"></a>类的内部类 - NonfairSync类</h3><p>NonfairSync类继承了Sync类，表示采用非公平策略获取资源，其只有一个tryAcquireShared方法，重写了AQS的该方法，其源码如下:</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token keyword">class</span> <span class="token class-name">NonfairSync</span> <span class="token keyword">extends</span> <span class="token class-name">Sync</span> <span class="token punctuation">{</span>
     <span class="token comment">// 版本号</span>
@@ -667,7 +667,7 @@
 
 <p>说明: 该方法中将会调用Sync对象的acquireSharedInterruptibly(从AQS继承而来的方法)方法，而acquireSharedInterruptibly方法在上一篇CountDownLatch中已经进行了分析，在此不再累赘。</p>
 <p>最终可以获取大致的方法调用序列(假设使用非公平策略)。如下图所示。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261334252.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261334252.png"></p>
 <p>说明: 上图只是给出了大体会调用到的方法，和具体的示例可能会有些差别，之后会根据具体的示例进行分析。</p>
 <h3 id="核心函数分析-release函数"><a href="#核心函数分析-release函数" class="headerlink" title="核心函数分析 - release函数"></a>核心函数分析 - release函数</h3><p>此方法释放一个(多个)许可，将其返回给信号量，源码如下。</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">release</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
@@ -676,7 +676,7 @@
 
 <p>说明: 该方法中将会调用Sync对象的releaseShared(从AQS继承而来的方法)方法，而releaseShared方法在上一篇CountDownLatch中已经进行了分析，在此不再累赘。</p>
 <p>最终可以获取大致的方法调用序列(假设使用非公平策略)。如下图所示:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335971.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335971.png"></p>
 <p>说明: 上图只是给出了大体会调用到的方法，和具体的示例可能会有些差别，之后会根据具体的示例进行分析。</p>
 <h2 id="Semaphore示例"><a href="#Semaphore示例" class="headerlink" title="Semaphore示例"></a>Semaphore示例</h2><p>下面给出了一个使用Semaphore的示例。</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>concurrent<span class="token punctuation">.</span></span><span class="token class-name">Semaphore</span></span><span class="token punctuation">;</span>
@@ -741,42 +741,42 @@ t2 acquire successfully
 t2 release successfully</code></pre>
 
 <p>说明: 首先，生成一个信号量，信号量有10个许可，然后，main，t1，t2三个线程获取许可运行，根据结果，可能存在如下的一种时序。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335888.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335888.png"></p>
 <p>说明: 如上图所示，首先，main线程执行acquire操作，并且成功获得许可，之后t1线程执行acquire操作，成功获得许可，之后t2执行acquire操作，由于此时许可数量不够，t2线程将会阻塞，直到许可可用。之后t1线程释放许可，main线程释放许可，此时的许可数量可以满足t2线程的要求，所以，此时t2线程会成功获得许可运行，t2运行完成后释放许可。下面进行详细分析。</p>
 <ul>
 <li>main线程执行semaphore.acquire操作。主要的函数调用如下图所示。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335106.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335106.png"></p>
 <p>说明: 此时，可以看到只是AQS的state变为了5，main线程并没有被阻塞，可以继续运行。</p>
 <ul>
 <li>t1线程执行semaphore.acquire操作。主要的函数调用如下图所示。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335845.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335845.png"></p>
 <p>说明: 此时，可以看到只是AQS的state变为了2，t1线程并没有被阻塞，可以继续运行。</p>
 <ul>
 <li>t2线程执行semaphore.acquire操作。主要的函数调用如下图所示。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335630.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335630.png"></p>
 <p>说明: 此时，t2线程获取许可不会成功，之后会导致其被禁止运行，值得注意的是，AQS的state还是为2。</p>
 <ul>
 <li>t1执行semaphore.release操作。主要的函数调用如下图所示。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335124.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261335124.png"></p>
 <p>说明: 此时，t2线程将会被unpark，并且AQS的state为5，t2获取cpu资源后可以继续运行。</p>
 <ul>
 <li>main线程执行semaphore.release操作。主要的函数调用如下图所示。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261336655.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261336655.png"></p>
 <p>说明: 此时，t2线程还会被unpark，但是不会产生影响，此时，只要t2线程获得CPU资源就可以运行了。此时，AQS的state为10。</p>
 <ul>
 <li>t2获取CPU资源，继续运行，此时t2需要恢复现场，回到parkAndCheckInterrupt函数中，也是在should继续运行。主要的函数调用如下图所示。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261336642.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261336642.png"></p>
 <p>说明: 此时，可以看到，Sync queue中只有一个结点，头节点与尾节点都指向该结点，在setHeadAndPropagate的函数中会设置头节点并且会unpark队列中的其他结点。</p>
 <ul>
 <li>t2线程执行semaphore.release操作。主要的函数调用如下图所示。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261336391.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261336391.png"></p>
 <p>说明: t2线程经过release后，此时信号量的许可又变为10个了，此时Sync queue中的结点还是没有变化。</p>
 <h2 id="更深入理解"><a href="#更深入理解" class="headerlink" title="更深入理解"></a>更深入理解</h2><h3 id="单独使用Semaphore是不会使用到AQS的条件队列的"><a href="#单独使用Semaphore是不会使用到AQS的条件队列的" class="headerlink" title="单独使用Semaphore是不会使用到AQS的条件队列的"></a>单独使用Semaphore是不会使用到AQS的条件队列的</h3><p>不同于CyclicBarrier和ReentrantLock，单独使用Semaphore是不会使用到AQS的条件队列的，其实，只有进行await操作才会进入条件队列，其他的都是在同步队列中，只是当前线程会被park。</p>
 <h3 id="场景问题"><a href="#场景问题" class="headerlink" title="场景问题"></a>场景问题</h3><h4 id="semaphore初始化有10个令牌，11个线程同时各调用1次acquire方法，会发生什么"><a href="#semaphore初始化有10个令牌，11个线程同时各调用1次acquire方法，会发生什么" class="headerlink" title="semaphore初始化有10个令牌，11个线程同时各调用1次acquire方法，会发生什么?"></a>semaphore初始化有10个令牌，11个线程同时各调用1次acquire方法，会发生什么?</h4><p>答案：拿不到令牌的线程阻塞，不会继续往下运行。</p>
@@ -1438,7 +1438,7 @@ t2 release successfully</code></pre>
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

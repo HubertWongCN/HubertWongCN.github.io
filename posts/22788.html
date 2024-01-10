@@ -526,7 +526,7 @@
 <li>读操作：主库、从库都可以接收；</li>
 <li>写操作：首先到主库执行，然后，主库将写操作同步给从库。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292221426.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292221426.png"></p>
 <h2 id="主从复制原理"><a href="#主从复制原理" class="headerlink" title="主从复制原理"></a>主从复制原理</h2><blockquote>
 <p>注意：在2.8版本之前只有全量复制，而2.8版本后有全量和增量复制：</p>
 </blockquote>
@@ -547,7 +547,7 @@
 <li><strong>全量复制的三个阶段</strong></li>
 </ul>
 <p>你可以先看一下下面这张图，有个整体感知，接下来我再具体介绍。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292221710.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292221710.jpg"></p>
 <p><strong>第一阶段是主从库间建立连接、协商同步的过程</strong>，主要是为全量复制做准备。在这一步，从库和主库建立起连接，并告诉主库即将进行同步，主库确认回复后，主从库间就可以开始同步了。</p>
 <p>具体来说，从库给主库发送 psync 命令，表示要进行数据同步，主库根据这个命令的参数来启动复制。psync 命令包含了主库的 runID 和复制进度 offset 两个参数。runID，是每个 Redis 实例启动时都会自动生成的一个随机 ID，用来唯一标记这个实例。当从库和主库第一次复制时，因为不知道主库的 runID，所以将 runID 设为“？”。offset，此时设为 -1，表示第一次复制。主库收到 psync 命令后，会用 FULLRESYNC 响应命令带上两个参数：主库 runID 和主库目前的复制进度 offset，返回给从库。从库收到响应后，会记录下这两个参数。这里有个地方需要注意，FULLRESYNC 响应表示第一次复制采用的全量复制，也就是说，主库会把当前所有的数据都复制给从库。</p>
 <p><strong>第二阶段，主库将所有数据同步给从库</strong>。从库收到数据后，在本地完成数据加载。这个过程依赖于内存快照生成的 RDB 文件。</p>
@@ -564,7 +564,7 @@
 <li><strong>增量复制的流程</strong></li>
 </ul>
 <p>你可以先看一下下面这张图，有个整体感知，接下来我再具体介绍。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292221376.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292221376.jpg"></p>
 <p>先看两个概念： <code>replication buffer</code> 和 <code>repl_backlog_buffer</code></p>
 <p><code>repl_backlog_buffer</code>：它是为了从库断开之后，如何找到主从差异数据而设计的环形缓冲区，从而避免全量复制带来的性能开销。如果从库断开时间太久，repl_backlog_buffer环形缓冲区被主库的写命令覆盖了，那么从库连上主库后只能乖乖地进行一次全量复制，所以<strong>repl_backlog_buffer配置尽量大一些，可以降低主从断开后全量复制的概率</strong>。而在repl_backlog_buffer中找主从差异的数据后，如何发给从库呢？这就用到了replication buffer。</p>
 <p><code>replication buffer</code>：Redis和客户端通信也好，和从库通信也好，Redis都需要给分配一个 内存buffer进行数据交互，客户端是一个client，从库也是一个client，我们每个client连上Redis后，Redis都会分配一个client buffer，所有数据交互都是通过这个buffer进行的：Redis先把数据写到这个buffer中，然后再把buffer中的数据发到client socket中再通过网络发送出去，这样就完成了数据交互。所以主从在增量同步时，从库作为一个client，也会分配一个buffer，只不过这个buffer专门用来传播用户的写命令到从库，保证主从数据一致，我们通常把它叫做replication buffer。</p>
@@ -604,7 +604,7 @@
 <pre class="language-bash" data-language="bash"><code class="language-bash">replicaof 所选从库的IP <span class="token number">6379</span></code></pre>
 
 <p>这样一来，这些从库就会知道，在进行同步时，不用再和主库进行交互了，只要和级联的从库进行写操作同步就行了，这就可以减轻主库上的压力，如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292221931.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292221931.jpg"></p>
 <p>级联的“主-从-从”模式好了，到这里，我们了解了主从库间通过全量复制实现数据同步的过程，以及通过“主 - 从 - 从”模式分担主库压力的方式。那么，一旦主从库完成了全量复制，它们之间就会一直维护一个网络连接，主库会通过这个连接将后续陆续收到的命令操作再同步给从库，这个过程也称为基于长连接的命令传播，可以避免频繁建立连接的开销。</p>
 <h3 id="读写分离及其中的问题"><a href="#读写分离及其中的问题" class="headerlink" title="读写分离及其中的问题"></a>读写分离及其中的问题</h3><p>在主从复制基础上实现的读写分离，可以实现Redis的读负载均衡：由主节点提供写服务，由一个或多个从节点提供读服务（多个从节点既可以提高数据冗余程度，也可以最大化读负载能力）；在读负载较大的应用场景下，可以大大提高Redis服务器的并发量。下面介绍在使用Redis读写分离时，需要注意的问题。</p>
 <ul>
@@ -1279,7 +1279,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -564,11 +564,11 @@
 <p>附上log4j2与logback性能对比的benchmark，这份benchmark是Apache Logging出的，有多大水分不知道，仅供参考</p>
 </blockquote>
 <p>同步写文件日志的benchmark：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261434383.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261434383.png"></p>
 <p>异步写日志的benchmark：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261434251.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261434251.png"></p>
 <p>当然，这些benchmark都是在日志Pattern中不包含Location信息（如日志代码行号 ，调用者信息，Class名/源码文件名等）时测定的，如果输出Location信息的话，性能谁也拯救不了：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261434049.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261434049.png"></p>
 <h2 id="日志库之日志门面"><a href="#日志库之日志门面" class="headerlink" title="日志库之日志门面"></a>日志库之日志门面</h2><h3 id="common-logging"><a href="#common-logging" class="headerlink" title="common-logging"></a>common-logging</h3><blockquote>
 <p>common-logging 是 apache 的一个开源项目。也称Jakarta Commons Logging，缩写 JCL。</p>
 </blockquote>
@@ -580,7 +580,7 @@
 <p>什么，作者又是 Ceki Gulcu！这位大神写了 Log4j、Logback 和 slf4j，专注日志组件开发五百年，一直只能超越自己。</p>
 <p>类似于 Common-Logging，slf4j 是对不同日志框架提供的一个 API 封装，可以在部署的时候不修改任何配置即可接入一种日志实现方案。但是，slf4j 在编译时静态绑定真正的 Log 库。使用 SLF4J 时，如果你需要使用某一种日志实现，那么你必须选择正确的 SLF4J 的 jar 包的集合（各种桥接包）。</p>
 <p>官网地址: <a target="_blank" rel="noopener" href="http://www.slf4j.org/">http://www.slf4j.org/</a></p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261435869.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261435869.png"></p>
 <h3 id="common-logging-vs-slf4j"><a href="#common-logging-vs-slf4j" class="headerlink" title="common-logging vs slf4j"></a>common-logging vs slf4j</h3><blockquote>
 <p>slf4j 库类似于 Apache Common-Logging。但是，他在编译时静态绑定真正的日志库。这点似乎很麻烦，其实也不过是导入桥接 jar 包而已。</p>
 </blockquote>
@@ -638,7 +638,7 @@
 <li>什么是桥接呢</li>
 </ul>
 <p>假如你正在开发应用程序所调用的组件当中已经使用了 common-logging，这时你需要 jcl-over-slf4j.jar 把日志信息输出重定向到 slf4j-api，slf4j-api 再去调用 slf4j 实际依赖的日志组件。这个过程称为桥接。下图是官方的 slf4j 桥接策略图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261436360.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261436360.png"></p>
 <p>从图中应该可以看出，无论你的老项目中使用的是 common-logging 或是直接使用 log4j、java.util.logging，都可以使用对应的桥接 jar 包来解决兼容问题。</p>
 <ul>
 <li>slf4j 兼容 common-logging</li>
@@ -1113,7 +1113,7 @@ logger<span class="token punctuation">.</span><span class="token function">debug
 
 <p>虽然对于自己来说是方便了，但是如果所有人都这样来做的话，那log输出就没法看了！正确的做法是使用grep 来看只自己关心的日志。</p>
 <h3 id="对现有系统日志架构的改造建议"><a href="#对现有系统日志架构的改造建议" class="headerlink" title="对现有系统日志架构的改造建议"></a>对现有系统日志架构的改造建议</h3><p>如果现有系统使用JCL作为日志门面，又确实面临着JCL的ClassLoader机制带来的问题，完全可以引入slf4j并通过桥接库将JCL api输出的日志桥接至slf4j，再通过适配库适配至现有的日志输出服务（如log4j），如下图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261437493.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261437493.png"></p>
 <p>这样做不需要任何代码级的改造，就可以解决JCL的ClassLoader带来的问题，但没有办法享受日志模板等slf4j的api带来的优点。不过之后在现系统上开发的新功能就可以使用slf4j的api了，老代码也可以分批进行改造。</p>
 <p>如果现有系统使用JCL作为日志门面，又头疼JCL不支持logback和log4j2等新的日志服务，也可以通过桥接库以slf4j替代JCL，但同样无法直接享受slf4j api的优点。</p>
 <p>如果想要使用slf4j的api，那么就不得不进行代码改造了，当然改造也可以参考1中提到的方式逐步进行。</p>
@@ -1764,7 +1764,7 @@ logger<span class="token punctuation">.</span><span class="token function">debug
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

@@ -521,30 +521,30 @@
 <li><code>负载(Load)</code>: 负载问题实际上是从另一个角度看待分散性问题。既然不同的终端可能将相同的内容映射到不同的缓冲区中，那么对于一个特定的缓冲区而言，也可能被不同的用户映射为不同 的内容。与分散性一样，这种情况也是应当避免的，因此好的哈希算法应能够尽量降低缓冲的负荷。</li>
 </ul>
 <h2 id="一致性Hash算法"><a href="#一致性Hash算法" class="headerlink" title="一致性Hash算法"></a>一致性Hash算法</h2><h3 id="Hash环"><a href="#Hash环" class="headerlink" title="Hash环"></a>Hash环</h3><p>使用常见的hash算法可以把一个key值哈希到一个具有2^32个桶的空间中。也可以理解成，将key值哈希到 [0, 2^32) 的一个数字空间中。 我们假设这个是个首尾连接的环形空间。如下图:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280242495.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280242495.jpg"></p>
 <p>假设我们现在有key1,key2,key3,key4 4个key值，我们通过一定的hash算法，将其对应到上面的环形hash空间中。</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token assign-left variable">k1</span><span class="token operator">=</span>hash<span class="token punctuation">(</span>key1<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token assign-left variable">k2</span><span class="token operator">=</span>hash<span class="token punctuation">(</span>key2<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token assign-left variable">k3</span><span class="token operator">=</span>hash<span class="token punctuation">(</span>key3<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token assign-left variable">k4</span><span class="token operator">=</span>hash<span class="token punctuation">(</span>key4<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
 
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280242811.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280242811.jpg"></p>
 <p>同样的，假设我们有3台cache服务器，把缓存服务器通过hash算法，加入到上述的环中。一般情况下是根据机器的IP地址或者唯一的计算机别名进行哈希。</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token assign-left variable">c1</span><span class="token operator">=</span>hash<span class="token punctuation">(</span>cache1<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token assign-left variable">c2</span><span class="token operator">=</span>hash<span class="token punctuation">(</span>cache2<span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token assign-left variable">c3</span><span class="token operator">=</span>hash<span class="token punctuation">(</span>cache3<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
 
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280243915.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280243915.jpg"></p>
 <p>接下来就是数据如何存储到cache服务器上了，key值哈希之后的结果顺时针找上述环形hash空间中，距离自己最近的机器节点，然后将数据存储到上面， 如上图所示，k1 存储到 c3 服务器上， k4,k3存储到c1服务器上， k2存储在c2服务器上。用图表示如下:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280243922.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280243922.jpg"></p>
 <h3 id="删除节点"><a href="#删除节点" class="headerlink" title="删除节点"></a>删除节点</h3><p>假设cache3服务器宕机，这时候需要从集群中将其摘除。那么，之前存储再c3上的k1，将会顺时针寻找距离它最近的一个节点，也就是c1节点，这样，k1就会存储到c1上了，看一看下下面的图，比较清晰。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280243051.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280243051.jpg"></p>
 <p>摘除c3节点之后，只影响到了原先存储再c3上的k1，而k3、k4、k2都没有受到影响，也就意味着解决了最开始的解决方案(hash(key)%N)中可能带来的雪崩问题。</p>
 <h3 id="增加节点"><a href="#增加节点" class="headerlink" title="增加节点"></a>增加节点</h3><p>新增C4节点之后，原先存储到C1的k4，迁移到了C4，分担了C1上的存储压力和流量压力。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280244258.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280244258.jpg"></p>
 <h3 id="不平衡的问题"><a href="#不平衡的问题" class="headerlink" title="不平衡的问题"></a>不平衡的问题</h3><p>上面的简单的一致性hash的方案在某些情况下但依旧存在问题: 一个节点宕机之后，数据需要落到距离他最近的节点上，会导致下个节点的压力突然增大，可能导致雪崩，整个服务挂掉。</p>
 <p>如下图所示:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280244758.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280244758.jpg"></p>
 <p>当节点C3摘除之后，之前再C3上的k1就要迁移到C1上，这时候带来了两部分的压力:</p>
 <ul>
 <li>之前请求到C3上的流量转嫁到了C1上,会导致C1的流量增加，如果之前C3上存在热点数据，则可能导致C1扛不住压力挂掉。</li>
@@ -569,7 +569,7 @@ hash<span class="token punctuation">(</span>Visual300<span class="token punctuat
 hash<span class="token punctuation">(</span>Visual301<span class="token punctuation">)</span>—<span class="token operator">&gt;</span> V301  —<span class="token operator">&gt;</span> Real3</code></pre>
 
 <p>key值的hash结果如上，这里暂时不写了。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280245415.jpg" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280245415.jpg"></p>
 <p>和之前介绍的不添加虚拟节点的类似，主要聊下如果宕机之后的情况。</p>
 <p>假设Real1机器宕机，则会发生一下情况。</p>
 <ul>
@@ -577,7 +577,7 @@ hash<span class="token punctuation">(</span>Visual301<span class="token punctuat
 <li>原先存储再虚拟节点V101上的k4数据将迁移到V200上，也就意味着迁移到了Real2机器上。</li>
 </ul>
 <p>结果如下图:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280245962.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312280245962.png"></p>
 <p>这个就解决之前的问题了，某个节点宕机之后，存储及流量压力并没有全部转移到某台机器上，而是分散到了多台节点上。解决了节点宕机可能存在的雪崩问题。</p>
 <p>当物理节点多的时候，虚拟节点多，这个的雪崩可能就越小。</p>
 <h2 id="一致性Hash的应用"><a href="#一致性Hash的应用" class="headerlink" title="一致性Hash的应用"></a>一致性Hash的应用</h2><h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
@@ -1224,7 +1224,7 @@ hash<span class="token punctuation">(</span>Visual301<span class="token punctuat
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

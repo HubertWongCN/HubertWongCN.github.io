@@ -620,7 +620,7 @@ d289c575dcbc4bdd2931585fd4339089e461a27d <span class="token number">127.0</span>
 <li>否则返回MOVED重定向</li>
 </ul>
 <p>这个过程中有两点需要具体理解下： <strong>MOVED重定向</strong> 和 <strong>ASK重定向</strong>。</p>
-<h3 id="Moved-重定向"><a href="#Moved-重定向" class="headerlink" title="Moved 重定向"></a>Moved 重定向</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292227555.png" alt="img"></p>
+<h3 id="Moved-重定向"><a href="#Moved-重定向" class="headerlink" title="Moved 重定向"></a>Moved 重定向</h3><p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292227555.png"></p>
 <ul>
 <li>槽命中：直接返回结果</li>
 <li>槽不命中：即当前键命令所请求的键不在当前请求的节点中，则当前节点会向客户端发送一个Moved 重定向，客户端根据Moved 重定向所包含的内容找到目标节点，再一次发送命令。</li>
@@ -628,20 +628,20 @@ d289c575dcbc4bdd2931585fd4339089e461a27d <span class="token number">127.0</span>
 <p>从下面可以看出 php 的槽位9244不在当前节点中，所以会重定向到节点 192.168.2.23:7001中。redis-cli会帮你自动重定向（如果没有集群方式启动，即没加参数 -c，redis-cli不会自动重定向），并且编写程序时，寻找目标节点的逻辑需要交予程序员手动完成。</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash">cluster keyslot keyName <span class="token comment"># 得到keyName的槽</span></code></pre>
 
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292226080.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292226080.png"></p>
 <h3 id="ASK-重定向"><a href="#ASK-重定向" class="headerlink" title="ASK 重定向"></a>ASK 重定向</h3><p>Ask重定向发生于集群伸缩时，集群伸缩会导致槽迁移，当我们去源节点访问时，此时数据已经可能已经迁移到了目标节点，使用Ask重定向来解决此种情况。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292227702.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292227702.png"></p>
 <h3 id="smart客户端"><a href="#smart客户端" class="headerlink" title="smart客户端"></a>smart客户端</h3><p>上述两种重定向的机制使得客户端的实现更加复杂，提供了smart客户端（JedisCluster）来<strong>减低复杂性，追求更好的性能</strong>。客户端内部负责计算/维护键-&gt; 槽 -&gt; 节点映射，用于快速定位目标节点。</p>
 <p>实现原理：</p>
 <ul>
 <li>从集群中选取一个可运行节点，使用 cluster slots得到槽和节点的映射关系</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292227155.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292227155.png"></p>
 <ul>
 <li>将上述映射关系存到本地，通过映射关系就可以直接对目标节点进行操作（CRC16(key) -&gt; slot -&gt; node），很好地避免了Moved重定向，并为每个节点创建JedisPool</li>
 <li>至此就可以用来进行命令操作</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292227944.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292227944.png"></p>
 <h2 id="状态检测及维护"><a href="#状态检测及维护" class="headerlink" title="状态检测及维护"></a>状态检测及维护</h2><blockquote>
 <p>Redis Cluster中节点状态如何维护呢？这里便涉及 <strong>有哪些状态</strong>，<strong>底层协议Gossip</strong>，及<strong>具体的通讯（心跳）机制</strong>。</p>
 </blockquote>
@@ -707,7 +707,7 @@ d289c575dcbc4bdd2931585fd4339089e461a27d <span class="token number">127.0</span>
 <li>从pong包中的gossip得到未知的其他节点</li>
 <li>循环上述过程，直到最终加入集群</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292228768.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292228768.png"></p>
 <p>2，<strong>Slots信息</strong></p>
 <ul>
 <li>判断发送者声明的slots信息，跟本地记录的是否有不同</li>
@@ -744,7 +744,7 @@ d289c575dcbc4bdd2931585fd4339089e461a27d <span class="token number">127.0</span>
 <li>超过半数后变成新Master</li>
 <li>广播Pong通知其他集群节点</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292229277.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292229277.png"></p>
 <h2 id="扩容-缩容"><a href="#扩容-缩容" class="headerlink" title="扩容&amp;缩容"></a>扩容&amp;缩容</h2><blockquote>
 <p>Redis Cluster是如何进行扩容和缩容的呢？</p>
 </blockquote>
@@ -775,7 +775,7 @@ A:migrate B.ip B.port <span class="token string">""</span> <span class="token nu
 <p>还有一些方案出现在历史舞台上，我挑了几个经典的。简单了解下，增强下关联的知识体系。</p>
 </blockquote>
 <h3 id="Redis-Sentinel-集群-Keepalived-Haproxy"><a href="#Redis-Sentinel-集群-Keepalived-Haproxy" class="headerlink" title="Redis Sentinel 集群 + Keepalived/Haproxy"></a>Redis Sentinel 集群 + Keepalived/Haproxy</h3><p>底层是 Redis Sentinel 集群，代理着 Redis 主从，Web 端通过 VIP 提供服务。当主节点发生故障，比如机器故障、Redis 节点故障或者网络不可达，Redis 之间的切换通过 Redis Sentinel 内部机制保障，VIP 切换通过 Keepalived 保障。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292229015.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292229015.png"></p>
 <p>优点：</p>
 <ul>
 <li>秒级切换</li>
@@ -789,7 +789,7 @@ A:migrate B.ip B.port <span class="token string">""</span> <span class="token nu
 </ul>
 <h3 id="Twemproxy"><a href="#Twemproxy" class="headerlink" title="Twemproxy"></a>Twemproxy</h3><p>多个同构 Twemproxy（配置相同）同时工作，接受客户端的请求，根据 hash 算法，转发给对应的 Redis。</p>
 <p>Twemproxy 方案比较成熟了，但是效果并不是很理想。一方面是定位问题比较困难，另一方面是它对自动剔除节点的支持不是很友好。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292229196.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292229196.png"></p>
 <p>优点：</p>
 <ul>
 <li>开发简单，对应用几乎透明</li>
@@ -803,7 +803,7 @@ A:migrate B.ip B.port <span class="token string">""</span> <span class="token nu
 <li>Twitter 内部已放弃使用该方案，新使用的架构未开源</li>
 </ul>
 <h3 id="Codis"><a href="#Codis" class="headerlink" title="Codis"></a>Codis</h3><p>Codis 是由豌豆荚开源的产品，涉及组件众多，其中 ZooKeeper 存放路由表和代理节点元数据、分发 Codis-Config 的命令；Codis-Config 是集成管理工具，有 Web 界面供使用；Codis-Proxy 是一个兼容 Redis 协议的无状态代理；Codis-Redis 基于 Redis 2.8 版本二次开发，加入 slot 支持，方便迁移数据。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292229092.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312292229092.png"></p>
 <p>优点：</p>
 <ul>
 <li>开发简单，对应用几乎透明</li>
@@ -1473,7 +1473,7 @@ A:migrate B.ip B.port <span class="token string">""</span> <span class="token nu
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

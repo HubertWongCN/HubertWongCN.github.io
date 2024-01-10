@@ -531,9 +531,9 @@
 <li><code>mongos</code>: 查询的路由, 提供客户端和分片集群之间的接口。</li>
 <li><code>config servers</code>: 存储元数据和配置数据。</li>
 </ul>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300102752.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300102752.png"></p>
 <p>这里要注意mongos提供的是客户端application与MongoDB分片集群的路由功能，这里分片集群包含了分片的collection和非分片的collection。如下展示了通过路由访问分片的collection和非分片的collection:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300102685.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300102685.png"></p>
 <h2 id="分片数据如何存储：Chunk"><a href="#分片数据如何存储：Chunk" class="headerlink" title="分片数据如何存储：Chunk"></a>分片数据如何存储：Chunk</h2><blockquote>
 <p>分片的内部是如何管理数据的呢？</p>
 </blockquote>
@@ -559,7 +559,7 @@
 <li><code>大的chunksize</code>：数据分裂少。数据块移动集中消耗IO资源。通常100-200M</li>
 </ul>
 <h3 id="chunk分裂及迁移"><a href="#chunk分裂及迁移" class="headerlink" title="chunk分裂及迁移"></a>chunk分裂及迁移</h3><p>随着数据的增长，其中的数据大小超过了配置的chunk size，默认是64M，则这个chunk就会分裂成两个。数据的增长会让chunk分裂得越来越多。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300103429.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300103429.png"></p>
 <p>这时候，各个shard 上的chunk数量就会不平衡。这时候，mongos中的一个组件balancer 就会执行自动平衡。把chunk从chunk数量最多的shard节点挪动到数量最少的节点。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300103184.png"></p>
 <p><strong>chunkSize 对分裂及迁移的影响</strong></p>
@@ -590,7 +590,7 @@
 <p>分片过程中利用哈希索引作为分片，基于哈希片键最大的好处就是保证数据在各个节点分布基本均匀。</p>
 </blockquote>
 <p>对于基于哈希的分片，MongoDB计算一个字段的哈希值，并用这个哈希值来创建数据块。在使用基于哈希分片的系统中，拥有<strong>相近分片键</strong>的文档很可能不会存储在同一个数据块中，因此数据的分离性更好一些。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300103004.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300103004.png"></p>
 <blockquote>
 <p><strong>注意</strong></p>
 <p><strong>这里要注意，哈希分片是只能基于一个字段吗？MongoDB4.4版本中已经可以针对<code>复合索引字段</code>进行哈希分片。</strong></p>
@@ -599,12 +599,12 @@
 <p>将单个Collection的数据分散存储在多个shard上，用户可以指定根据集合内文档的某个字段即shard key来进行范围分片（range sharding）。</p>
 </blockquote>
 <p>对于基于范围的分片，MongoDB按照片键的范围把数据分成不同部分:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300103272.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300103272.png"></p>
 <p>在使用片键做范围划分的系统中，拥有<strong>相近分片键</strong>的文档很可能存储在同一个数据块中，因此也会存储在同一个分片中。</p>
 <h3 id="哈希和范围的结合"><a href="#哈希和范围的结合" class="headerlink" title="哈希和范围的结合"></a>哈希和范围的结合</h3><p>如下是基于X索引字段进行范围分片，但是随着X的增长，大于20的数据全部进入了Chunk C, 这导致了数据的不均衡。 </p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300103588.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300103588.png"></p>
 <p>这时对X索引字段建哈希索引：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300104380.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300104380.png"></p>
 <h2 id="分片数据按区域：Zone"><a href="#分片数据按区域：Zone" class="headerlink" title="分片数据按区域：Zone"></a>分片数据按区域：Zone</h2><blockquote>
 <p>在分片群集中可以基于分片键划分数据的<a target="_blank" rel="noopener" href="https://docs.mongodb.com/manual/core/zone-sharding/">区域(zone)</a>, 你可以将每个区域(zone)与集群中的一个或多个分片关联。</p>
 </blockquote>
@@ -615,7 +615,7 @@
 <li>根据分片硬件的硬件/性能将数据路由到分片。</li>
 </ul>
 <p>下图说明了具有三个分片和两个区域的分片集群。 A区域代表下边界为1且上限为10的范围。B区域代表下边界为10且上限为20的范围。分片Alpha和Beta具有A区域。 分片Beta也具有B区。分片Charlie没有与之关联的区域。 群集处于稳定状态。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300104464.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312300104464.png"></p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://docs.mongodb.com/manual/sharding/">https://docs.mongodb.com/manual/sharding/</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/clsn/p/8214345.html">https://www.cnblogs.com/clsn/p/8214345.html</a></li>
@@ -1265,7 +1265,7 @@
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             

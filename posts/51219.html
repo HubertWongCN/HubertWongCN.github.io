@@ -514,7 +514,7 @@
 <li>JNDI 使用JNDI实现的数据源</li>
 </ul>
 <p>相应地，MyBatis内部分别定义了实现了java.sql.DataSource接口的UnpooledDataSource，PooledDataSource类来表示UNPOOLED、POOLED类型的数据源。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092254419.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092254419.png"></p>
 <p>对于JNDI类型的数据源DataSource，则是通过JNDI上下文中取值。</p>
 <h2 id="官网DataSource配置内容清单"><a href="#官网DataSource配置内容清单" class="headerlink" title="官网DataSource配置内容清单"></a>官网DataSource配置内容清单</h2><p>dataSource 元素使用标准的 JDBC 数据源接口来配置 JDBC 连接对象的资源。</p>
 <p>大多数 MyBatis 应用程序会按示例中的例子来配置数据源。虽然数据源配置是可选的，但如果要启用延迟加载特性，就必须配置数据源。 有三种内建的数据源类型（也就是 <code>type="[UNPOOLED|POOLED|JNDI]"</code>）：</p>
@@ -608,7 +608,7 @@
 <li>JNDI JndiDataSourceFactory</li>
 </ul>
 <p>其类图如下所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092254924.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092254924.png"></p>
 <p>MyBatis创建了DataSource实例后，会将其放到Configuration对象内的Environment对象中，供以后使用。</p>
 <h2 id="DataSource什么时候创建Connection对象"><a href="#DataSource什么时候创建Connection对象" class="headerlink" title="DataSource什么时候创建Connection对象"></a>DataSource什么时候创建Connection对象</h2><p>当我们需要创建SqlSession对象并需要执行SQL语句时，这时候MyBatis才会去调用dataSource对象来创建java.sql.Connection对象。也就是说，java.sql.Connection对象的创建一直延迟到执行SQL语句的时候。</p>
 <p>比如，我们有如下方法执行一个简单的SQL语句：</p>
@@ -682,7 +682,7 @@ sqlSession<span class="token punctuation">.</span><span class="token function">s
 <li><strong>返回Connection对象</strong>。</li>
 </ul>
 <p>上述的序列图如下所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092255779.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092255779.png"></p>
 <p>总结：从上述的代码中可以看到，我们每调用一次getConnection()方法，都会通过DriverManager.getConnection()返回新的java.sql.Connection实例。</p>
 <h2 id="为什么要使用连接池"><a href="#为什么要使用连接池" class="headerlink" title="为什么要使用连接池"></a>为什么要使用连接池</h2><ul>
 <li><strong>创建一个java.sql.Connection实例对象的代价</strong></li>
@@ -723,7 +723,7 @@ sqlSession<span class="token punctuation">.</span><span class="token function">s
 <span class="token punctuation">}</span>  </code></pre>
 
 <p>上述程序的执行结果为：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092255007.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092255007.png"></p>
 <p>从此结果可以清楚地看出，创建一个Connection对象，用了250 毫秒；而执行SQL的时间用了170毫秒。</p>
 <p>创建一个Connection对象用了250毫秒！这个时间对计算机来说可以说是一个非常奢侈的！</p>
 <p>这仅仅是一个Connection对象就有这么大的代价，设想一下另外一种情况：如果我们在Web应用程序中，为用户的每一个请求就操作一次数据库，当有10000个在线用户并发操作的话，对计算机而言，仅仅创建Connection对象不包括做业务的时间就要损耗10000×250ms= 250 0000 ms = 2500 s = 41.6667 min,竟然要41分钟！！！如果对高用户群体使用这样的系统，简直就是开玩笑！</p>
@@ -742,7 +742,7 @@ sqlSession<span class="token punctuation">.</span><span class="token function">s
 <li><strong>activeConnections</strong>: 活动(active)状态的PooledConnection对象被放置到名为activeConnections的ArrayList中，表示当前正在被使用的PooledConnection集合，调用PooledDataSource的getConnection()方法时，会优先从idleConnections集合中取PooledConnection对象,如果没有，则看此集合是否已满，如果未满，PooledDataSource会创建出一个PooledConnection，添加到此集合中，并返回。</li>
 </ul>
 <p><strong>PoolState连接池的大致结构</strong>如下所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092255273.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092255273.png"></p>
 <ul>
 <li><strong>获取java.sql.Connection对象的过程</strong></li>
 </ul>
@@ -907,7 +907,7 @@ sqlSession<span class="token punctuation">.</span><span class="token function">s
 <span class="token punctuation">}</span> </code></pre>
 
 <p>对应的处理流程图如下所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092257096.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202401092257096.png"></p>
 <p>如上所示,对于PooledDataSource的getConnection()方法内，先是调用类PooledDataSource的popConnection()方法返回了一个PooledConnection对象，然后调用了PooledConnection的getProxyConnection()来返回Connection对象。</p>
 <ul>
 <li><strong>java.sql.Connection对象的回收</strong></li>
@@ -1636,7 +1636,7 @@ sqlSession<span class="token punctuation">.</span><span class="token function">s
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1839.9k</span>&nbsp;字
+                class="white-color">1852.2k</span>&nbsp;字
             
             
             
