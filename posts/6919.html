@@ -601,7 +601,7 @@ flag <span class="token operator">=</span> <span class="token boolean">true</spa
 <li>内存系统的重排序。由于处理器使用缓存和读 / 写缓冲区，这使得加载和存储操作看上去可能是在乱序执行。</li>
 </ul>
 <p>从 java 源代码到最终实际执行的指令序列，会分别经历下面三种重排序：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261850323.png" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261850323.png" alt="重排序"></p>
 <p>上述的 1 属于编译器重排序，2 和 3 属于处理器重排序。这些重排序都可能会导致多线程程序出现内存可见性问题。对于编译器，JMM 的编译器重排序规则会禁止特定类型的编译器重排序（不是所有的编译器重排序都要禁止）。对于处理器重排序，JMM 的处理器重排序规则会要求 java 编译器在生成指令序列时，插入特定类型的内存屏障（memory barriers，intel 称之为 memory fence）指令，通过内存屏障指令来禁止特定类型的处理器重排序（不是所有的处理器重排序都要禁止）。</p>
 <p>具体可以参看：<a href="/posts/53385.html" title="7.JVM 基础 - Java 内存模型详解">Java 内存模型详解</a>的重排序章节。</p>
 <h2 id="JAVA是怎么解决并发问题的-JMM-Java内存模型"><a href="#JAVA是怎么解决并发问题的-JMM-Java内存模型" class="headerlink" title="JAVA是怎么解决并发问题的: JMM(Java内存模型)"></a>JAVA是怎么解决并发问题的: JMM(Java内存模型)</h2><p>Java 内存模型是个很复杂的规范，强烈推荐你看后续（应该是网上能找到最好的材料之一了）：<a href="/posts/53385.html" title="7.JVM 基础 - Java 内存模型详解">Java 内存模型详解</a>。</p>
@@ -650,27 +650,27 @@ x <span class="token operator">=</span> x <span class="token operator">+</span> 
 <p>Single Thread rule</p>
 </blockquote>
 <p>在一个线程内，在程序前面的操作先行发生于后面的操作。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261901142.png" alt="image"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261901142.png" alt="Single Thread rule"></p>
 <h4 id="2-管程锁定规则"><a href="#2-管程锁定规则" class="headerlink" title="2. 管程锁定规则"></a>2. 管程锁定规则</h4><blockquote>
 <p>Monitor Lock Rule</p>
 </blockquote>
 <p>一个 unlock 操作先行发生于后面对同一个锁的 lock 操作。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261902442.png" alt="image"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261902442.png" alt="Monitor Lock Rule"></p>
 <h4 id="3-volatile-变量规则"><a href="#3-volatile-变量规则" class="headerlink" title="3. volatile 变量规则"></a>3. volatile 变量规则</h4><blockquote>
 <p>Volatile Variable Rule</p>
 </blockquote>
 <p>对一个 volatile 变量的写操作先行发生于后面对这个变量的读操作。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261902332.png" alt="image"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261902332.png" alt="Volatile Variable Rule"></p>
 <h4 id="4-线程启动规则"><a href="#4-线程启动规则" class="headerlink" title="4. 线程启动规则"></a>4. 线程启动规则</h4><blockquote>
-<p>Thread Start Rule</p>
+<p>Volatile Variable Rule</p>
 </blockquote>
 <p>Thread 对象的 start() 方法调用先行发生于此线程的每一个动作。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261902796.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261902796.png" alt="Volatile Variable Rule"></p>
 <h4 id="5-线程加入规则"><a href="#5-线程加入规则" class="headerlink" title="5. 线程加入规则"></a>5. 线程加入规则</h4><blockquote>
 <p>Thread Join Rule</p>
 </blockquote>
 <p>Thread 对象的结束先行发生于 join() 方法返回。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261902860.png" alt="image"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261902860.png" alt="Thread Join Rule"></p>
 <h4 id="6-线程中断规则"><a href="#6-线程中断规则" class="headerlink" title="6. 线程中断规则"></a>6. 线程中断规则</h4><blockquote>
 <p>Thread Interruption Rule</p>
 </blockquote>
@@ -890,7 +890,7 @@ executorService<span class="token punctuation">.</span><span class="token functi
 <span class="token punctuation">}</span></code></pre>
 
 <p>它所对应的底层结构图为:</p>
-<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261905734.png" alt="image"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/HubertWongCN/image_host/img/202312261905734.png" alt="ThreadLocal 底层结构图"></p>
 <p>每个 Thread 都有一个 ThreadLocal.ThreadLocalMap 对象，Thread 类中就定义了 ThreadLocal.ThreadLocalMap 成员。</p>
 <pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">/* ThreadLocal values pertaining to this thread. This map is maintained
  * by the ThreadLocal class. */</span>
@@ -1551,7 +1551,7 @@ executorService<span class="token punctuation">.</span><span class="token functi
             <br>
             
             &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                class="white-color">1807k</span>&nbsp;字
+                class="white-color">1839.9k</span>&nbsp;字
             
             
             
